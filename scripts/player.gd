@@ -20,6 +20,13 @@ func _ready() -> void:
 	cs.shape = r
 	add_child(cs)
 	camera = Camera2D.new()
+	camera.zoom = Vector2(2, 2)  # integer zoom keeps pixels crisp; closer, more detailed view
+	for a in OS.get_cmdline_user_args():  # screenshot helper: -- --zoom=1 --at=x,y (tiles)
+		if a.begins_with("--zoom="):
+			camera.zoom = Vector2.ONE * float(a.substr(7))
+		elif a.begins_with("--at="):
+			var xy := a.substr(5).split(",")
+			position = Vector2(float(xy[0]), float(xy[1])) * 32.0
 	camera.position_smoothing_enabled = false  # integer pixel snap: no sub-pixel camera
 	add_child(camera)
 

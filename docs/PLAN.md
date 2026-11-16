@@ -10,6 +10,17 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Core loop doc + save/load skeleton + input map
 - [x] Name check note (Steam/itch/trademark) recorded in docs/NAME_CHECK.md
 
+## Phase 0.5: Art pass to the owner's reference (docs/ART_TARGET.md) - owner priority 2026-11-16
+- [x] Detailed original sprites (pine, oak, bush, rock, shore stones, lily pads, reeds, fish, dock, bearded player) via tools/gen_sprites.py
+- [x] Painted ground shader: water depth + submerged boulders + ripples, mossy shore stones, layered grass, dirt path
+- [x] Water decor placement (lily pads, reeds, swimming fish shadows) + dock at shore near spawn, camera zoom 2
+- [ ] Soft drop shadows under trees, rocks, bushes, player
+- [ ] Tree/reed wind sway (vertex shader) and lily pad bob
+- [ ] Prop reflections/darkening in water; dock shadow on water
+- [ ] Higher-detail player (more frames, tool-use poses) and NPC base
+- [ ] Bank height: raised grass edge over shore stones (3/4 depth illusion)
+- [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
+
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
 - [x] Camera2D follow with integer pixel snap
@@ -17,7 +28,8 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] HUD: clock, day, season, money labels bound to GameState
 - [x] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
 - [x] TileMap world chunk (64x64) generated from seed, with collision
-- [ ] Interactable base class + nearest-target highlight (yellow outline) + interact prompt
+- [x] Nearest-target highlight (yellow outline on the faced tree/rock)
+- [ ] Interactable base class + interact prompt
 - [x] Inventory model + hotbar UI (tests: stack, add, remove) [model + tool hotbar done; item-slot hotbar UI still to do]
 - [x] Tool use on facing tile: hoe tills soil
 - [x] Plant seed from crops.json, watering can waters
@@ -25,7 +37,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Energy bar limiting actions (Stardew-style limiter)
 - [ ] Fishing: cast on water tile, bite timer
 - [ ] Fishing: reel mini-game + fish table in data/fish.json
-- [ ] Visible fish shadows in water
+- [x] Visible fish shadows in water
 - [x] Axe chops trees (hits, drops wood, stump/regrow)
 - [x] Pickaxe breaks rocks (drops stone)
 - [ ] Build mode: grid ghost placement with valid/invalid colour

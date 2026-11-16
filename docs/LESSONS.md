@@ -4,3 +4,5 @@
 - After adding a new `class_name` script run `godot --headless --path . --import` BEFORE tests, else "identifier not declared" errors. The runner (-s mode) cannot compile scripts referencing autoloads (GameState): keep testable logic in pure classes (PlayerMath, HudText, DayNight) and keep autoload use in nodes.
 - Screenshots: `tools/screenshot.sh` (xvfb + --write-movie) writes /tmp/mv*.png; view with Read. `-s` script screenshots do not work (autoloads missing).
 - JSON numbers load as floats: `int in json_array` is false in Godot; compare with int(x) in a loop.
+- Shader compile errors never show in headless runs or tests: always run tools/screenshot.sh after shader edits (it greps "SHADER ERROR") and look at the frame. A blank beige screen = shader failed.
+- Screenshot helper args: `tools/screenshot.sh 20 -- --zoom=1 --at=x,y` (tile coords) to inspect any spot.

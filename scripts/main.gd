@@ -7,8 +7,10 @@ var world: World
 var hotbar: Hotbar
 var toast: Label
 var toast_t := 0.0
+var highlighted: Sprite2D = null
 
 func _ready() -> void:
+	y_sort_enabled = true
 	world = World.new()
 	add_child(world)
 	world.build(1)
@@ -19,6 +21,10 @@ func _ready() -> void:
 		GameState.nodes.add("rock", c)
 	player = Player.new()
 	player.position = Vector2(32.5, 32.5) * 32.0
+	if world.gen.dock.size() > 0:  # start at the dock: the first view is the pond
+		var d0: Vector2i = world.gen.dock[0]
+		var d1: Vector2i = world.gen.dock[1]
+		player.position = (Vector2(d0 - (d1 - d0)) + Vector2(0.5, 0.6)) * 32.0
 	add_child(player)
 	modulate_node = CanvasModulate.new()
 	add_child(modulate_node)
@@ -41,6 +47,7 @@ func _process(delta: float) -> void:
 		GameState.save_game()  # bedtime / pass-out: next day, autosave
 	modulate_node.color = DayNight.tint(GameState.clock.minutes)
 
+	_update_highlight()
 	toast_t -= delta
 	if toast_t <= 0.0:
 		toast.text = ""
@@ -53,3 +60,16 @@ func _unhandled_input(e: InputEvent) -> void:
 		if msg != "":
 			toast.text = msg
 			toast_t = 1.5
+
+func _update_highlight() -> void:
+	## Yellow outline on the tree/rock the player faces (the interact target).
+	var cell := PlayerMath.facing_tile(player.position, player.facing)
+	var s: Sprite2D = null
+	if GameState.nodes.is_solid(cell):
+		s = world.prop_sprite(cell)
+	if s != highlighted:
+		if highlighted != null:
+			Outline.set_enabled(highlighted, false)
+		if s != null:
+			Outline.set_enabled(s, true)
+		highlighted = s

@@ -2,6 +2,9 @@ class_name FarmView
 extends Node2D
 ## Draws tilled soil, watering and crop growth stages (placeholder rects) from FarmModel.
 
+func _ready() -> void:
+	z_index = -9
+
 func _process(_d: float) -> void:
 	queue_redraw()
 
