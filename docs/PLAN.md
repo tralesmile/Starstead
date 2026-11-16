@@ -18,10 +18,10 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
 - [x] TileMap world chunk (64x64) generated from seed, with collision
 - [ ] Interactable base class + nearest-target highlight (yellow outline) + interact prompt
-- [ ] Inventory model + hotbar UI (tests: stack, add, remove)
-- [ ] Tool use on facing tile: hoe tills soil
-- [ ] Plant seed from crops.json, watering can waters
-- [ ] Crop growth per day tick, harvest gives item
+- [x] Inventory model + hotbar UI (tests: stack, add, remove) [model + tool hotbar done; item-slot hotbar UI still to do]
+- [x] Tool use on facing tile: hoe tills soil
+- [x] Plant seed from crops.json, watering can waters
+- [x] Crop growth per day tick, harvest gives item
 - [ ] Energy bar limiting actions (Stardew-style limiter)
 - [ ] Fishing: cast on water tile, bite timer
 - [ ] Fishing: reel mini-game + fish table in data/fish.json
@@ -65,4 +65,5 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 (runner appends here: idea, source link, date)
 - Use GUT or GdUnit4 for richer tests (mocking, signals) once scenes get complex | https://helpmetest.com/blog/godot-gut-advanced-testing/ | 2026-11-16
 - Study Stardew balance analysis (crop profit vs time, energy as limiter) before tuning crops.json | https://mechanicsofmagic.com/2021/05/26/critical-play-balance-stardew-valley/ | 2026-11-16
+- Pixel-art top-down movement: keep camera smoothing off + snap_2d_transforms_to_pixel to avoid sub-pixel jitter (applied) | https://forum.godotengine.org/t/the-character-shakes-when-moving/103543 | 2026-11-16
 - Weakest part vs comparables right now: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.

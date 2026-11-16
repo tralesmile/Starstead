@@ -7,9 +7,18 @@ const SAVE_PATH := "user://save.json"
 var clock := GameClock.new()
 var money: int = 500
 var inventory: Dictionary = {}  # item_id -> count
+var farm := FarmModel.new(DataDB.load_json("crops"))
+var bag := Inventory.new(30, _limits())
 var world: String = "earth"
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
+
+static func _limits() -> Dictionary:
+	var out := {}
+	var items = DataDB.load_json("items")
+	for id in items:
+		out[id] = int(items[id].stack)
+	return out
 
 func add_item(id: String, n: int = 1) -> void:
 	inventory[id] = int(inventory.get(id, 0)) + n
@@ -24,6 +33,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
+		"farm": farm.to_array(), "bag": bag.to_array(),
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -37,6 +47,9 @@ func from_dict(d: Dictionary) -> bool:
 	world = str(d.get("world", "earth"))
 	rep_honest = int(d.get("rep_honest", 0))
 	rep_street = int(d.get("rep_street", 0))
+	farm.from_array(d.get("farm", []))
+	if d.has("bag"):
+		bag.from_array(d["bag"])
 	return true
 
 func save_game(path: String = SAVE_PATH) -> bool:
