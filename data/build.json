@@ -1,0 +1,6 @@
+{
+  "floor": {"name": "Wood Floor", "cost": {"wood": 2}, "solid": false, "sprite": "build_floor"},
+  "wall":  {"name": "Wood Wall",  "cost": {"wood": 4}, "solid": true,  "sprite": "build_wall"},
+  "door":  {"name": "Wood Door",  "cost": {"wood": 6}, "solid": false, "sprite": "build_door"},
+  "fence": {"name": "Fence",      "cost": {"wood": 2}, "solid": true,  "sprite": "build_fence"}
+}

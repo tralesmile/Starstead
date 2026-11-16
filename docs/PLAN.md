@@ -68,8 +68,8 @@ Physics / feel:
 - [x] Visible fish shadows in water
 - [x] Axe chops trees (hits, drops wood, stump/regrow)
 - [x] Pickaxe breaks rocks (drops stone)
-- [ ] Build mode: grid ghost placement with valid/invalid colour
-- [ ] Placeable floor, wall, door, fence consuming inventory
+- [x] Build mode: grid ghost placement with valid/invalid colour
+- [x] Placeable floor, wall, door, fence consuming inventory
 - [ ] Roof + simple house/farm blueprint
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)

@@ -9,6 +9,7 @@ var toast: Label
 var toast_t := 0.0
 var highlighted: Sprite2D = null
 var shop: ShopView
+var build_view: BuildView
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
@@ -42,6 +43,10 @@ func _ready() -> void:
 	toast.position = Vector2(8, 24)
 	add_child(toast)
 	add_child(FishingView.new(fishing))
+	build_view = BuildView.new()
+	add_child(build_view)
+	build_view.setup(world, world.gen, player)
+	build_view.message.connect(_say)
 	shop = ShopView.new()
 	shop.closed.connect(func(): player.set_physics_process(true))
 	add_child(shop)
@@ -50,6 +55,23 @@ func _ready() -> void:
 	add_child(prompt)
 	if GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
+	if "--build-demo" in OS.get_cmdline_user_args():  # screenshot helper: a little house next to the player
+		GameState.bag.add("wood", 99)
+		var o := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0)) + Vector2i(2, -3)
+		var bm: BuildModel = GameState.build
+		for dx in 4:
+			for dy in 3:
+				var c := o + Vector2i(dx, dy)
+				var pid := "floor"
+				if dy == 0 or dx == 0 or dx == 3:
+					pid = "wall"
+				if dy == 0 and dx == 2:
+					pid = "door"
+				if dy == 2 and dx > 0 and dx < 3:
+					pid = "floor"
+				bm.place(c, pid, 9.0, false, GameState.bag)
+		bm.place(o + Vector2i(5, 1), "fence", 9.0, false, GameState.bag)
+		build_view.setup(world, world.gen, player)
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
@@ -72,6 +94,8 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if shop.visible:
+		return
+	if build_view.handle_key(e):
 		return
 	if e.is_action_pressed("interact"):
 		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
