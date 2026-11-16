@@ -45,3 +45,16 @@ func test_camera_clamp() -> void:
 	check_eq(CameraMath.clamp_to_world(Vector2(10, 10), Vector2(160, 90), w), Vector2(160, 90))
 	check_eq(CameraMath.clamp_to_world(Vector2(1000, 1000), Vector2(160, 90), w), Vector2(1000, 1000))
 	check_eq(CameraMath.clamp_to_world(Vector2(5, 5), Vector2(2000, 2000), w), Vector2(1024, 1024))
+
+func test_ambient_night_and_paths() -> void:
+	check_eq(AmbientMath.night_factor(300.0), 0.0)
+	check_eq(AmbientMath.night_factor(900.0), 1.0)
+	check(AmbientMath.night_factor(800.0) > 0.0 and AmbientMath.night_factor(800.0) < 1.0)
+	for i in 14:
+		for t in [0.0, 3.3, 99.0]:
+			check(AmbientMath.firefly_pos(i, t).length() < 170.0, "firefly %d out of range" % i)
+			var g := AmbientMath.firefly_glow(i, t)
+			check(g >= 0.0 and g <= 1.0)
+	for i in 8:
+		var y := AmbientMath.leaf_pos(i, 12.3).y
+		check(y >= -170.0 and y <= 130.0)

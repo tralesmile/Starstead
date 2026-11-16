@@ -10,6 +10,7 @@ var toast_t := 0.0
 var highlighted: Sprite2D = null
 var shop: ShopView
 var build_view: BuildView
+var ambient: AmbientView
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
@@ -42,6 +43,10 @@ func _ready() -> void:
 	toast = Label.new()
 	toast.position = Vector2(8, 24)
 	add_child(toast)
+	ambient = AmbientView.new()
+	ambient.player = player
+	world.add_child(ambient)
+	player.footstep.connect(func(): ambient.puff(player.position))
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -55,6 +60,9 @@ func _ready() -> void:
 	add_child(prompt)
 	if GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
+	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
+		if a.begins_with("--hour="):
+			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
 	if "--build-demo" in OS.get_cmdline_user_args():  # screenshot helper: a little house next to the player
 		GameState.bag.add("wood", 99)
 		var o := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0)) + Vector2i(2, -3)

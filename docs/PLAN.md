@@ -30,7 +30,7 @@ Graphics:
 - [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
 - [ ] Tool-specific poses and held tool sprites (hoe, axe, can, rod)
 - [ ] Light rays / sun specular glints on water; foam where water meets dock posts
-- [ ] Ambient particles: drifting leaves, fireflies at night, dust when running
+- [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [ ] Weather: rain (drops + ripples), fog, storm darkening
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
