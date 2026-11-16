@@ -14,6 +14,7 @@ var shake_left := 0.0
 var shake_total := 0.2
 var shake_amp := 1.0
 var _last_frame := 0
+var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
 signal footstep
 
 func _ready() -> void:
@@ -41,6 +42,10 @@ func _ready() -> void:
 		elif a.begins_with("--at="):
 			var xy := a.substr(5).split(",")
 			position = Vector2(float(xy[0]), float(xy[1])) * 32.0
+	camera.limit_left = 0
+	camera.limit_top = 0
+	camera.limit_right = 64 * 32
+	camera.limit_bottom = 64 * 32
 	camera.position_smoothing_enabled = false  # integer pixel snap: no sub-pixel camera
 	add_child(camera)
 
@@ -64,11 +69,12 @@ func _physics_process(delta: float) -> void:
 		if PlayerMath.footstep_due(_last_frame, col):
 			footstep.emit()
 	_last_frame = col
+	look = CameraMath.ease_offset(look, CameraMath.look_target(move_v, PlayerMath.SPEED), delta)
+	var sh := Vector2.ZERO
 	if shake_left > 0.0:
 		shake_left -= delta
-		camera.offset = HitMath.shake_offset(shake_left, shake_total, shake_amp, _t + shake_left)
-	elif camera.offset != Vector2.ZERO:
-		camera.offset = Vector2.ZERO
+		sh = HitMath.shake_offset(shake_left, shake_total, shake_amp, _t + shake_left)
+	camera.offset = CameraMath.snap(look) + sh
 	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel
 
 func shake(amp: float = 1.0, secs: float = 0.15) -> void:

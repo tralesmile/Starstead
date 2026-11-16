@@ -40,13 +40,13 @@ Physics / feel:
 - [x] Trees and bushes fade semi-transparent when the player is behind them (player now y-sorts with props)
 - [x] Footstep signal synced to walk frames (audio later); wet-bank slowdown, faster on paths
 - [x] Knockback + hit-stop + whole-pixel shake framework (HitMath, wired to axe/pickaxe)
-- [ ] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
+- [x] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
 - [ ] Reeds part when the player walks through; squash/stretch on tool hit
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
 - [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [ ] Grass tufts sway near the player; footprints on dirt paths
-- [ ] Camera: tiny look-ahead in walk direction (integer-snapped), soft limits at chunk edge
+- [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)
