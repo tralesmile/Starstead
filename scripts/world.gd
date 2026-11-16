@@ -14,6 +14,7 @@ var gen: WorldGen
 var layer: TileMapLayer
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
+var lily_pads: Array[LilyPad] = []
 
 func build(seed_value: int = 1) -> void:
 	gen = WorldGen.new(seed_value)
@@ -106,11 +107,14 @@ func _build_water_decor() -> void:
 	var lily := load("res://assets/sprites/lily_pads.png")
 	for c in gen.lilies:
 		for k in r.randi_range(1, 3):
-			var s := Sprite2D.new()
+			var s := LilyPad.new()
 			s.texture = lily
 			s.region_enabled = true
 			s.region_rect = Rect2(16 * r.randi_range(0, 3), 0, 16, 16)
-			s.position = Vector2(c) * 32.0 + Vector2(r.randf_range(6, 26), r.randf_range(6, 26)).round()
+			s.base = Vector2(c) * 32.0 + Vector2(r.randf_range(6, 26), r.randf_range(6, 26)).round()
+			s.position = s.base
+			s.phase = r.randf_range(0.0, TAU)
+			lily_pads.append(s)
 			s.z_index = -5
 			add_child(s)
 	var reed := load("res://assets/sprites/reeds.png")

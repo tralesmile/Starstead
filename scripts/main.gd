@@ -23,6 +23,8 @@ func _ready() -> void:
 		GameState.nodes.add("rock", c)
 	player = Player.new()
 	player.gen = world.gen
+	for lp in world.lily_pads:
+		lp.player = player
 	player.position = Vector2(32.5, 32.5) * 32.0
 	if world.gen.dock.size() > 0:  # start at the dock: the first view is the pond
 		var d0: Vector2i = world.gen.dock[0]
