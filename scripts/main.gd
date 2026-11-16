@@ -22,6 +22,7 @@ func _ready() -> void:
 	for c in world.gen.rocks:
 		GameState.nodes.add("rock", c)
 	player = Player.new()
+	player.gen = world.gen
 	player.position = Vector2(32.5, 32.5) * 32.0
 	if world.gen.dock.size() > 0:  # start at the dock: the first view is the pond
 		var d0: Vector2i = world.gen.dock[0]
@@ -65,6 +66,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		var cell := PlayerMath.facing_tile(player.position, player.facing)
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
 		world.sync_props(GameState.nodes)
+		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
+			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))
 		if msg != "":
 			toast.text = msg
 			toast_t = 1.5
@@ -135,3 +138,27 @@ func _update_fishing(delta: float) -> void:
 func _say(msg: String) -> void:
 	toast.text = msg
 	toast_t = 1.5
+
+func _hit_feedback(cell: Vector2i, tool: String, broke: bool) -> void:
+	## Wood chips / stone sparks, 1px shake and a tiny freeze so chops feel weighty.
+	var p := CPUParticles2D.new()
+	p.position = Vector2(cell) * 32.0 + Vector2(16, 20)
+	p.emitting = true
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.amount = 14 if broke else 6
+	p.lifetime = 0.45
+	p.direction = Vector2(0, -1)
+	p.spread = 70.0
+	p.initial_velocity_min = 40.0
+	p.initial_velocity_max = 90.0
+	p.gravity = Vector2(0, 260)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.0
+	p.color = Color(0.72, 0.5, 0.28) if tool == "axe" else Color(0.85, 0.85, 0.8)
+	world.add_child(p)
+	get_tree().create_timer(1.0).timeout.connect(p.queue_free)
+	player.shake(1.0 if not broke else 2.0, 0.12)
+	var force := 1.5 if broke else 0.8
+	Engine.time_scale = 0.1
+	get_tree().create_timer(HitMath.hitstop(force), true, false, true).timeout.connect(func(): Engine.time_scale = 1.0)

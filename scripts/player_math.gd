@@ -43,3 +43,20 @@ static func walk_frame_hd(t: float, moving: bool) -> int:
 	if not moving:
 		return 0
 	return 1 + int(t * WALK_FPS) % 6
+
+const WET_BANK_FACTOR := 0.8   # squelching along the water's edge
+const PATH_FACTOR := 1.1       # packed dirt paths are quicker
+
+static func terrain_factor(sdf: float, on_path: bool) -> float:
+	## Speed multiplier from the ground under the feet. sdf >= 0 is land; the first tile of
+	## land next to the water is wet. Water itself is blocked by collision, so this never
+	## needs a deep-water case.
+	if sdf < 0.0:
+		return 0.6  # wading (dock gaps, future shallow ford)
+	if sdf < 0.9:
+		return WET_BANK_FACTOR
+	return PATH_FACTOR if on_path else 1.0
+
+static func footstep_due(prev_frame: int, frame: int) -> bool:
+	## A footfall lands when the walk cycle enters frame 2 or 5 (feet pass the body) from another frame.
+	return frame != prev_frame and (frame == 2 or frame == 5)

@@ -7,6 +7,14 @@ var sprite: Sprite2D
 var camera: Camera2D
 var _t := 0.0
 var tool_t := 0.0
+var gen: WorldGen = null      # set by main: terrain speed lookup
+var move_v := Vector2.ZERO    # input-driven velocity (knockback is added on top)
+var knock := Vector2.ZERO
+var shake_left := 0.0
+var shake_total := 0.2
+var shake_amp := 1.0
+var _last_frame := 0
+signal footstep
 
 func _ready() -> void:
 	sprite = Sprite2D.new()
@@ -38,7 +46,13 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = PlayerMath.accelerate(velocity, input, delta)
+	var mult := 1.0
+	if gen != null:
+		var c := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
+		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), gen.tile_at(c.x, c.y) >= WorldGen.PATH and gen.tile_at(c.x, c.y) < WorldGen.PATH + 3)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult)
+	knock = HitMath.decay(knock, delta)
+	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
 	move_and_slide()
 	var moving := velocity.length() > 8.0
@@ -46,7 +60,24 @@ func _physics_process(delta: float) -> void:
 	tool_t -= delta
 	var col := PlayerMath.TOOL_FRAME if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
 	sprite.frame = facing * 8 + col
+	if moving and tool_t <= 0.0:
+		if PlayerMath.footstep_due(_last_frame, col):
+			footstep.emit()
+	_last_frame = col
+	if shake_left > 0.0:
+		shake_left -= delta
+		camera.offset = HitMath.shake_offset(shake_left, shake_total, shake_amp, _t + shake_left)
+	elif camera.offset != Vector2.ZERO:
+		camera.offset = Vector2.ZERO
 	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel
+
+func shake(amp: float = 1.0, secs: float = 0.15) -> void:
+	shake_amp = amp
+	shake_total = secs
+	shake_left = secs
+
+func push(from: Vector2, force: float = 1.0) -> void:
+	knock = HitMath.knockback(from, position, force)
 
 func swing() -> void:
 	## Show the tool pose briefly (called by main when a tool is used).
