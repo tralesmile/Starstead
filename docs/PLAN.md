@@ -4,19 +4,35 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 
 ## Phase 0: Pre-production (weeks 1-4)
 - [x] Godot 4 project scaffold (project.godot, scenes/, scripts/, assets/, tests/), run headless
-- [ ] Art style test: tileset + player + water + tree placeholders in the reference style
+- [ ] Art: generate placeholder 32x32 grass/dirt/path tiles as PNG via a Python script (tools/gen_art.py)
+- [ ] Art: water tile (2 depth shades) + tree + rock + player sprite placeholders
+- [ ] Art: yellow interactable outline shader/helper
 - [x] Core loop doc + save/load skeleton + input map
 - [x] Name check note (Steam/itch/trademark) recorded in docs/NAME_CHECK.md
 
 ## Phase 1: Prototype (months 2-3)
-- [ ] Player walk, camera, 4-direction animation placeholders
-- [ ] Day/night cycle, clock, simple HUD
-- [ ] Tile map world chunk with interactables highlighted (yellow outline)
-- [ ] Farming: till, plant, water, grow, harvest, inventory
-- [ ] Fishing mini-game on water tiles with visible fish
-- [ ] Tree chopping, wood, stone gathering
-- [ ] Basic building: grid placement of walls/floor/roof/door, fences, a basic farm and house
-- [ ] One shop: buy/sell, money
+- [ ] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
+- [ ] Camera2D follow with integer pixel snap
+- [ ] 4-direction facing + walk-cycle placeholder animation
+- [ ] HUD: clock, day, season, money labels bound to GameState
+- [ ] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
+- [ ] TileMap world chunk (64x64) generated from seed, with collision
+- [ ] Interactable base class + nearest-target highlight (yellow outline) + interact prompt
+- [ ] Inventory model + hotbar UI (tests: stack, add, remove)
+- [ ] Tool use on facing tile: hoe tills soil
+- [ ] Plant seed from crops.json, watering can waters
+- [ ] Crop growth per day tick, harvest gives item
+- [ ] Energy bar limiting actions (Stardew-style limiter)
+- [ ] Fishing: cast on water tile, bite timer
+- [ ] Fishing: reel mini-game + fish table in data/fish.json
+- [ ] Visible fish shadows in water
+- [ ] Axe chops trees (hits, drops wood, stump/regrow)
+- [ ] Pickaxe breaks rocks (drops stone)
+- [ ] Build mode: grid ghost placement with valid/invalid colour
+- [ ] Placeable floor, wall, door, fence consuming inventory
+- [ ] Roof + simple house/farm blueprint
+- [ ] Shop UI: sell items to shop for money
+- [ ] Shop UI: buy seeds/tools
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
 
 ## Phase 2: Vertical slice (months 4-6)
