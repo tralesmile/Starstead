@@ -31,6 +31,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [ ] Build mode: grid ghost placement with valid/invalid colour
 - [ ] Placeable floor, wall, door, fence consuming inventory
 - [ ] Roof + simple house/farm blueprint
+- [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [ ] Shop UI: sell items to shop for money
 - [ ] Shop UI: buy seeds/tools
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
