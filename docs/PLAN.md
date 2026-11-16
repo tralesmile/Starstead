@@ -21,6 +21,25 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [ ] Bank height: raised grass edge over shore stones (3/4 depth illusion)
 - [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
 
+## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
+Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
+Graphics:
+- [ ] Wind sway shader on trees, bushes, reeds (top moves, base fixed); lily pads bob
+- [ ] Raised grass bank over shoreline stones (3/4 height illusion, dark lip shadow on water)
+- [ ] Higher-detail player sheet (more walk frames, tool poses: hoe, axe, can, rod)
+- [ ] Light rays / sun specular glints on water; foam where water meets dock posts
+- [ ] Ambient particles: drifting leaves, fireflies at night, dust when running
+- [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
+- [ ] Weather: rain (drops + ripples), fog, storm darkening
+- [ ] Tool-hit feedback: wood chips, stone sparks, screen shake 1px, squash on hit
+Physics / feel:
+- [ ] Player acceleration + friction (no instant start/stop), tested in PlayerMath
+- [ ] Rounded/capsule player collider + corner sliding so you do not snag on trees
+- [ ] Trees and bushes fade semi-transparent when the player is behind them
+- [ ] Footstep timing synced to walk frames; slower walking in shallow water
+- [ ] Knockback + hit-stop framework (for combat and tool hits later)
+- [ ] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
+
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
 - [x] Camera2D follow with integer pixel snap
