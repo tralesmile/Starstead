@@ -14,9 +14,9 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
 - [x] Camera2D follow with integer pixel snap
 - [x] 4-direction facing + walk-cycle placeholder animation
-- [ ] HUD: clock, day, season, money labels bound to GameState
-- [ ] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
-- [ ] TileMap world chunk (64x64) generated from seed, with collision
+- [x] HUD: clock, day, season, money labels bound to GameState
+- [x] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
+- [x] TileMap world chunk (64x64) generated from seed, with collision
 - [ ] Interactable base class + nearest-target highlight (yellow outline) + interact prompt
 - [ ] Inventory model + hotbar UI (tests: stack, add, remove)
 - [ ] Tool use on facing tile: hoe tills soil
