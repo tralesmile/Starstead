@@ -4,16 +4,16 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 
 ## Phase 0: Pre-production (weeks 1-4)
 - [x] Godot 4 project scaffold (project.godot, scenes/, scripts/, assets/, tests/), run headless
-- [ ] Art: generate placeholder 32x32 grass/dirt/path tiles as PNG via a Python script (tools/gen_art.py)
-- [ ] Art: water tile (2 depth shades) + tree + rock + player sprite placeholders
-- [ ] Art: yellow interactable outline shader/helper
+- [x] Art: generate placeholder 32x32 grass/dirt/path tiles as PNG via a Python script (tools/gen_art.py)
+- [x] Art: water tile (2 depth shades) + tree + rock + player sprite placeholders
+- [x] Art: yellow interactable outline shader/helper
 - [x] Core loop doc + save/load skeleton + input map
 - [x] Name check note (Steam/itch/trademark) recorded in docs/NAME_CHECK.md
 
 ## Phase 1: Prototype (months 2-3)
-- [ ] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
-- [ ] Camera2D follow with integer pixel snap
-- [ ] 4-direction facing + walk-cycle placeholder animation
+- [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
+- [x] Camera2D follow with integer pixel snap
+- [x] 4-direction facing + walk-cycle placeholder animation
 - [ ] HUD: clock, day, season, money labels bound to GameState
 - [ ] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
 - [ ] TileMap world chunk (64x64) generated from seed, with collision
