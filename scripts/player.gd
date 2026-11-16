@@ -14,6 +14,9 @@ func _ready() -> void:
 	sprite.vframes = 4
 	sprite.offset = Vector2(0, -12)
 	add_child(sprite)
+	var sh := World.make_shadow(20)
+	sh.scale = Vector2(0.6, 0.7)
+	add_child(sh)
 	var cs := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
 	r.size = Vector2(14, 8)

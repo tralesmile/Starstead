@@ -86,6 +86,7 @@ func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBo
 	s.texture = load(tex)
 	s.offset = off
 	b.add_child(s)
+	b.add_child(make_shadow(s.texture.get_width() * 0.7))
 	var c := CollisionShape2D.new()
 	var rs := RectangleShape2D.new()
 	rs.size = body
@@ -147,4 +148,13 @@ func sync_props(nodes: ResourceNodes) -> void:
 		var b: StaticBody2D = props[cell]
 		var solid := nodes.is_solid(cell)
 		b.visible = solid
-		b.get_child(1).set_deferred("disabled", not solid)
+		b.get_child(2).set_deferred("disabled", not solid)
+
+static func make_shadow(width: float) -> Sprite2D:
+	## Soft oval drop shadow under a prop/character (drawn above ground, below sprites).
+	var sh := Sprite2D.new()
+	sh.texture = load("res://assets/sprites/shadow.png")
+	sh.scale = Vector2(width / 32.0, maxf(1.0, width / 48.0)).round() if width > 40 else Vector2(1, 1)
+	sh.position = Vector2(0, 2)
+	sh.z_index = -3
+	return sh

@@ -14,7 +14,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Detailed original sprites (pine, oak, bush, rock, shore stones, lily pads, reeds, fish, dock, bearded player) via tools/gen_sprites.py
 - [x] Painted ground shader: water depth + submerged boulders + ripples, mossy shore stones, layered grass, dirt path
 - [x] Water decor placement (lily pads, reeds, swimming fish shadows) + dock at shore near spawn, camera zoom 2
-- [ ] Soft drop shadows under trees, rocks, bushes, player
+- [x] Soft drop shadows under trees, rocks, bushes, player
 - [ ] Tree/reed wind sway (vertex shader) and lily pad bob
 - [ ] Prop reflections/darkening in water; dock shadow on water
 - [ ] Higher-detail player (more frames, tool-use poses) and NPC base

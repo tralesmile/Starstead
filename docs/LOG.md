@@ -7,3 +7,4 @@
 2026-11-16 | Run (cont.) | Added Energy limiter, ResourceNodes (axe: trees with stump+regrow, pickaxe: rocks), props sync with collision, HUD energy. 28 tests green. Next: Interactable base + highlight, fishing, build mode, shop.
 2026-11-16 | Run (end) | Shop sell/buy logic + tests (UI split into its own item). Run total: 16 PLAN items ticked, 29 tests green.
 2026-11-16 | Art pass (owner feedback) | New original sprite set (tools/gen_sprites.py, subagent), ground.gdshader (depth water, submerged boulders, ripples, mossy shore, painterly grass/dirt), SDF + dock + lily/reed placement in WorldGen, FishShadow, y-sorted props, camera zoom 2, yellow outline on faced tree/rock. 33 tests green; screenshots checked. Next: prop shadows, wind sway, bank height, soil/crop art.
+2026-11-16 | Art pass (cont.) | Soft oval drop shadows under props and player. 33 tests green.
