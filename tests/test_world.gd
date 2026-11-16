@@ -48,3 +48,11 @@ func test_data_image() -> void:
 	var img := World.data_image(g)
 	check_eq(img.get_width(), 64)
 	check(img.get_pixel(32, 32).r > 0.5, "spawn is land in data")
+
+func test_fade_behind_tree() -> void:
+	var base := Vector2(100, 100)
+	var size := Vector2(80, 96)
+	var off := Vector2(0, -44)
+	check(WorldFade.is_behind(Vector2(100, 80), base, size, off), "behind canopy")
+	check(not WorldFade.is_behind(Vector2(100, 110), base, size, off), "in front")
+	check(not WorldFade.is_behind(Vector2(200, 80), base, size, off), "beside")

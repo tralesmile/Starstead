@@ -25,7 +25,7 @@ func _ready() -> void:
 		var d0: Vector2i = world.gen.dock[0]
 		var d1: Vector2i = world.gen.dock[1]
 		player.position = (Vector2(d0 - (d1 - d0)) + Vector2(0.5, 0.6)) * 32.0
-	add_child(player)
+	world.add_child(player)  # same y-sorted parent as props so it can walk behind trees
 	modulate_node = CanvasModulate.new()
 	add_child(modulate_node)
 	add_child(Hud.new())
@@ -48,12 +48,14 @@ func _process(delta: float) -> void:
 	modulate_node.color = DayNight.tint(GameState.clock.minutes)
 
 	_update_highlight()
+	_update_fade(delta)
 	toast_t -= delta
 	if toast_t <= 0.0:
 		toast.text = ""
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_pressed("use_tool"):
+		player.swing()
 		var cell := PlayerMath.facing_tile(player.position, player.facing)
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
 		world.sync_props(GameState.nodes)
@@ -73,3 +75,17 @@ func _update_highlight() -> void:
 		if s != null:
 			Outline.set_enabled(s, true)
 		highlighted = s
+
+func _update_fade(delta: float) -> void:
+	## Trees/bushes the player walks behind turn see-through (keeps the player visible).
+	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	for dy in range(0, 4):
+		for dx in range(-2, 3):
+			var c := pc + Vector2i(dx, dy)
+			var s := world.prop_sprite(c)
+			if s == null:
+				continue
+			var body: Node2D = s.get_parent()
+			var behind := WorldFade.is_behind(player.position, body.position, s.texture.get_size(), s.offset)
+			var target := 0.5 if behind else 1.0
+			s.modulate.a = move_toward(s.modulate.a, target, delta * 4.0)

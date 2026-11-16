@@ -6,3 +6,5 @@
 - JSON numbers load as floats: `int in json_array` is false in Godot; compare with int(x) in a loop.
 - Shader compile errors never show in headless runs or tests: always run tools/screenshot.sh after shader edits (it greps "SHADER ERROR") and look at the frame. A blank beige screen = shader failed.
 - Screenshot helper args: `tools/screenshot.sh 20 -- --zoom=1 --at=x,y` (tile coords) to inspect any spot.
+- Canvas shaders: in fragment(), COLOR already includes the texture; multiplying by texture again kills outlines. Pass modulate via a varying from vertex(). `return` is not allowed in fragment().
+- Nested y-sort did not merge here: put the player under the same y-sorted parent (World) as the props.

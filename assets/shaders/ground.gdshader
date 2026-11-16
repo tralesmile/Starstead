@@ -47,18 +47,33 @@ vec4 voronoi(vec2 p) {
 	}
 	return vec4(d1, d2 - d1, id);
 }
+float sdf_at(vec2 tile) {
+	vec2 warp = vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5;
+	float r = texture(data, (tile + warp * 0.9) / 64.0).r;
+	return (r - 0.5) * 2.0 * sdf_range + (fbm(tile * 2.5) - 0.5) * 0.5;
+}
 float band(float v, float steps) { return floor(v * steps + 0.5) / steps; }
 
 void fragment() {
 	vec2 px = floor(UV * chunk_px) + 0.5;      // world pixel centre
 	vec2 tile = px / 32.0;                       // tile units
-	vec2 warp = vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5;
-	vec4 d = texture(data, (tile + warp * 0.9) / 64.0);
-	float sdf = (d.r - 0.5) * 2.0 * sdf_range;  // tiles; negative = water
-	sdf += (fbm(tile * 2.5) - 0.5) * 0.5;
+	vec4 d = texture(data, (tile + (vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5) * 0.9) / 64.0);
+	float sdf = sdf_at(tile);
+	// 3/4 view bank: where land lies just NORTH of shore/water we see the bank's vertical stone face
+	float sN = sdf_at(tile - vec2(0.0, 0.55));
+	float sS = sdf_at(tile + vec2(0.0, 0.3));
 	vec3 col;
-
-	if (sdf < 0.0) {
+	if (sdf < 0.42 && sN >= 0.42 && sdf > -0.6) {
+		// ---- bank face: stacked mossy stones, darker toward the waterline
+		float k = clamp((0.42 - sdf) / 1.0, 0.0, 1.0);
+		vec4 v = voronoi(tile * vec2(2.6, 4.0) + 11.0);
+		float sh = band(clamp(1.0 - v.x * 1.3 + (hash(v.zw) - 0.5) * 0.3 - k * 0.5, 0.0, 1.0), 3.0);
+		col = mix(STONE_D * 0.85, STONE_M * 0.95, sh);
+		col = mix(STONE_D * 0.55, col, smoothstep(0.03, 0.1, v.y));
+		col = mix(col, MOSS * 0.8, step(0.6, fbm(tile * 6.0 + 3.0)) * (1.0 - k) * 0.7);
+		col = mix(col, GRASS_D * 0.6, 1.0 - smoothstep(0.0, 0.08, sN - 0.42) );  // grass overhang shadow
+		if (sdf < -0.35) col = mix(col, DEEP, 0.5);   // wet base
+	} else if (sdf < 0.0) {
 		// ---- water: see-through, darkening with depth, submerged stones, ripples
 		float depth = -sdf;
 		float t = clamp(depth / 5.0, 0.0, 1.0);
@@ -68,9 +83,9 @@ void fragment() {
 		vec2 bp = tile * 1.3 + 3.0;
 		vec4 v = voronoi(bp);
 		float hv = hash(v.zw);
-		float radius = 0.26 + 0.2 * hash(v.zw + 7.0);
-		float present = step(0.45, hv) * (1.0 - smoothstep(0.15, 0.75, t));
-		float body = 1.0 - smoothstep(radius - 0.04, radius, v.x + (vnoise(tile * 6.0) - 0.5) * 0.08);
+		float radius = 0.18 + 0.36 * hash(v.zw + 7.0) * hash(v.zw + 13.0);
+		float present = step(0.62, hv) * (1.0 - smoothstep(0.05, 0.5, t));
+		float body = 1.0 - smoothstep(radius - 0.04, radius, v.x + (vnoise(tile * 4.0) - 0.5) * 0.22);
 		vec4 v2 = voronoi(bp + vec2(0.1, 0.1));
 		float lit = band(clamp(0.45 + (v2.x - v.x) * 3.5 + (radius - v.x) * 0.8, 0.0, 1.0), 3.0);
 		vec3 rockc = mix(SUNK_ROCK * 0.8, SUNK_ROCK * 1.05, lit);
@@ -133,6 +148,7 @@ void fragment() {
 			col = dc;
 		}
 		col = mix(col, col * 0.8, (1.0 - smoothstep(0.42, 0.7, sdf)) * 0.5);  // damp grass near shore
+		if (sS < 0.42 && sdf < 0.6) col = mix(col, GRASS_L * 1.05, 0.55);    // sunlit lip above a bank face
 	}
 	COLOR = vec4(col, 1.0);
 }

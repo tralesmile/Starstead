@@ -23,10 +23,12 @@ func build(seed_value: int = 1) -> void:
 	for p in gen.trees:
 		var tex: String = PROP_TEX[gen.tree_kinds[p]]
 		props[p] = _prop(tex, p, Vector2(12, 8), Vector2(0, -48 + 4))
+		Outline.set_sway(prop_sprite(p), 2.0 if gen.tree_kinds[p] == "oak" else 1.4, p.x * 0.7 + p.y * 0.3)
 	for p in gen.rocks:
 		props[p] = _prop(PROP_TEX.rock, p, Vector2(24, 14), Vector2(0, -12))
 	for p in gen.bushes:
-		_prop(PROP_TEX.bush, p, Vector2(20, 8), Vector2(0, -12))
+		var bush := _prop(PROP_TEX.bush, p, Vector2(20, 8), Vector2(0, -12))
+		Outline.set_sway(bush.get_child(0), 1.0, p.x + p.y)
 	_build_water_decor()
 
 static func data_image(g: WorldGen) -> Image:
@@ -117,6 +119,7 @@ func _build_water_decor() -> void:
 		s.texture = reed
 		s.flip_h = r.randf() < 0.5
 		s.position = Vector2(c) * 32.0 + Vector2(16 + r.randi_range(-6, 6), 12)
+		Outline.set_sway(s, 2.0, c.x * 1.3 + c.y)
 		add_child(s)
 	if gen.dock.size() > 0:
 		var a: Vector2i = gen.dock[0]

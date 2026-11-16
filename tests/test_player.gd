@@ -19,3 +19,24 @@ func test_walk_frame_and_tile() -> void:
 	check(PlayerMath.walk_frame(0.0, true) == 1, "step frame")
 	check(PlayerMath.facing_tile(Vector2(40, 40), PlayerMath.Facing.RIGHT) == Vector2i(2, 1), "facing tile")
 	check(PlayerMath.facing_tile(Vector2(40, 40), PlayerMath.Facing.UP) == Vector2i(1, 0), "facing up")
+
+func test_accel_and_friction() -> void:
+	var v := Vector2.ZERO
+	v = PlayerMath.accelerate(v, Vector2(1, 0), 1.0 / 60.0)
+	check(v.x > 0.0 and v.x < PlayerMath.SPEED, "ramps up, not instant")
+	for i in 12:
+		v = PlayerMath.accelerate(v, Vector2(1, 0), 1.0 / 60.0)
+	check(absf(v.x - PlayerMath.SPEED) < 0.01, "reaches full speed within ~0.2s")
+	for i in 6:
+		v = PlayerMath.accelerate(v, Vector2.ZERO, 1.0 / 60.0)
+	check(v == Vector2.ZERO, "stops quickly with friction")
+	var d := PlayerMath.accelerate(Vector2.ZERO, Vector2(1, 1), 10.0)
+	check(absf(d.length() - PlayerMath.SPEED) < 0.01, "diagonal capped")
+
+func test_walk_frame_hd() -> void:
+	check_eq(PlayerMath.walk_frame_hd(3.0, false), 0)
+	var seen := {}
+	for i in 12:
+		seen[PlayerMath.walk_frame_hd(i * 0.1, true)] = true
+	check_eq(seen.size(), 6, "all six walk frames used")
+	check(not seen.has(0) and not seen.has(7), "walk never shows idle/tool frames")

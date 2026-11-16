@@ -24,21 +24,27 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
-- [ ] Wind sway shader on trees, bushes, reeds (top moves, base fixed); lily pads bob
-- [ ] Raised grass bank over shoreline stones (3/4 height illusion, dark lip shadow on water)
-- [ ] Higher-detail player sheet (more walk frames, tool poses: hoe, axe, can, rod)
+- [x] Wind sway shader on trees, bushes, reeds (top moves, base fixed, whole-pixel steps, gusts)
+- [ ] Lily pads bob/drift; reeds part when the player walks through
+- [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
+- [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
+- [ ] Tool-specific poses and held tool sprites (hoe, axe, can, rod)
 - [ ] Light rays / sun specular glints on water; foam where water meets dock posts
 - [ ] Ambient particles: drifting leaves, fireflies at night, dust when running
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [ ] Weather: rain (drops + ripples), fog, storm darkening
 - [ ] Tool-hit feedback: wood chips, stone sparks, screen shake 1px, squash on hit
 Physics / feel:
-- [ ] Player acceleration + friction (no instant start/stop), tested in PlayerMath
-- [ ] Rounded/capsule player collider + corner sliding so you do not snag on trees
-- [ ] Trees and bushes fade semi-transparent when the player is behind them
+- [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
+- [x] Rounded/capsule player collider + corner sliding so you do not snag on trees
+- [x] Trees and bushes fade semi-transparent when the player is behind them (player now y-sorts with props)
 - [ ] Footstep timing synced to walk frames; slower walking in shallow water
 - [ ] Knockback + hit-stop framework (for combat and tool hits later)
 - [ ] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
+- [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
+- [ ] Grass tufts sway near the player; footprints on dirt paths
+- [ ] Camera: tiny look-ahead in walk direction (integer-snapped), soft limits at chunk edge
+- [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math

@@ -6,21 +6,24 @@ var facing: int = PlayerMath.Facing.DOWN
 var sprite: Sprite2D
 var camera: Camera2D
 var _t := 0.0
+var tool_t := 0.0
 
 func _ready() -> void:
 	sprite = Sprite2D.new()
-	sprite.texture = load("res://assets/sprites/player.png")
-	sprite.hframes = 3
+	sprite.texture = load("res://assets/sprites/player_hd.png")
+	sprite.hframes = 8
 	sprite.vframes = 4
-	sprite.offset = Vector2(0, -12)
+	sprite.offset = Vector2(0, -22)  # feet (y=46 of the 48px frame) on the body origin
 	add_child(sprite)
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
 	add_child(sh)
 	var cs := CollisionShape2D.new()
-	var r := RectangleShape2D.new()
-	r.size = Vector2(14, 8)
+	var r := CapsuleShape2D.new()  # rounded feet collider: slides around tree trunks instead of snagging
+	r.radius = 5.0
+	r.height = 14.0
 	cs.shape = r
+	cs.rotation = PI / 2.0
 	add_child(cs)
 	camera = Camera2D.new()
 	camera.zoom = Vector2(2, 2)  # integer zoom keeps pixels crisp; closer, more detailed view
@@ -35,9 +38,16 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = PlayerMath.velocity(input)
-	facing = PlayerMath.facing_for(velocity, facing)
+	velocity = PlayerMath.accelerate(velocity, input, delta)
+	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
 	move_and_slide()
-	_t += delta if velocity != Vector2.ZERO else 0.0
-	sprite.frame = facing * 3 + PlayerMath.walk_frame(_t, velocity != Vector2.ZERO)
-	position = position.round()  # pixel snap
+	var moving := velocity.length() > 8.0
+	_t = _t + delta if moving else 0.0
+	tool_t -= delta
+	var col := PlayerMath.TOOL_FRAME if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
+	sprite.frame = facing * 8 + col
+	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel
+
+func swing() -> void:
+	## Show the tool pose briefly (called by main when a tool is used).
+	tool_t = 0.18
