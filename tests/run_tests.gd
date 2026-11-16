@@ -13,7 +13,11 @@ func _init() -> void:
 			files.append(f)
 	files.sort()
 	for f in files:
-		var t = load("res://tests/" + f).new()
+		var script = load("res://tests/" + f)
+		if script == null or not script.can_instantiate():
+			fail("cannot load " + f)
+			continue
+		var t = script.new()
 		t.runner = self
 		for m in t.get_method_list():
 			if str(m.name).begins_with("test_"):
