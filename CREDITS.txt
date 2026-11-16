@@ -1,0 +1,2 @@
+Starstead asset credits (CC0/free-license only)
+No third-party assets yet. Godot Engine (MIT) is the engine.

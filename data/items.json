@@ -1,0 +1,8 @@
+{
+  "wood": {"name": "Wood", "price": 5, "stack": 99},
+  "stone": {"name": "Stone", "price": 4, "stack": 99},
+  "turnip_seed": {"name": "Turnip Seeds", "price": 10, "stack": 99},
+  "turnip": {"name": "Turnip", "price": 24, "stack": 99},
+  "egg": {"name": "Egg", "price": 20, "stack": 99},
+  "milk": {"name": "Milk", "price": 45, "stack": 99}
+}

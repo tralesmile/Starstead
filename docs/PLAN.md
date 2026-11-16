@@ -3,10 +3,10 @@
 Rule: one pillar at a time; every new feature must connect to at least one other. Never leave `main` broken.
 
 ## Phase 0: Pre-production (weeks 1-4)
-- [ ] Godot 4 project scaffold (project.godot, scenes/, scripts/, assets/, tests/), run headless
+- [x] Godot 4 project scaffold (project.godot, scenes/, scripts/, assets/, tests/), run headless
 - [ ] Art style test: tileset + player + water + tree placeholders in the reference style
-- [ ] Core loop doc + save/load skeleton + input map
-- [ ] Name check note (Steam/itch/trademark) recorded in docs/NAME_CHECK.md
+- [x] Core loop doc + save/load skeleton + input map
+- [x] Name check note (Steam/itch/trademark) recorded in docs/NAME_CHECK.md
 
 ## Phase 1: Prototype (months 2-3)
 - [ ] Player walk, camera, 4-direction animation placeholders
@@ -47,3 +47,6 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- Use GUT or GdUnit4 for richer tests (mocking, signals) once scenes get complex | https://helpmetest.com/blog/godot-gut-advanced-testing/ | 2026-11-16
+- Study Stardew balance analysis (crop profit vs time, energy as limiter) before tuning crops.json | https://mechanicsofmagic.com/2021/05/26/critical-play-balance-stardew-valley/ | 2026-11-16
+- Weakest part vs comparables right now: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
