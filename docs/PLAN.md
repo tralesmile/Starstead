@@ -22,12 +22,12 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Tool use on facing tile: hoe tills soil
 - [x] Plant seed from crops.json, watering can waters
 - [x] Crop growth per day tick, harvest gives item
-- [ ] Energy bar limiting actions (Stardew-style limiter)
+- [x] Energy bar limiting actions (Stardew-style limiter)
 - [ ] Fishing: cast on water tile, bite timer
 - [ ] Fishing: reel mini-game + fish table in data/fish.json
 - [ ] Visible fish shadows in water
-- [ ] Axe chops trees (hits, drops wood, stump/regrow)
-- [ ] Pickaxe breaks rocks (drops stone)
+- [x] Axe chops trees (hits, drops wood, stump/regrow)
+- [x] Pickaxe breaks rocks (drops stone)
 - [ ] Build mode: grid ghost placement with valid/invalid colour
 - [ ] Placeable floor, wall, door, fence consuming inventory
 - [ ] Roof + simple house/farm blueprint

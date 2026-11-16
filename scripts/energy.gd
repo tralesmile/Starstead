@@ -1,0 +1,23 @@
+class_name Energy
+extends RefCounted
+## Stardew-style limiter: tools cost energy; sleeping restores; passing out restores less.
+
+const MAX := 100
+const COSTS := {"hoe": 2, "watering_can": 1, "axe": 4, "pickaxe": 4, "seed": 0, "hand": 0, "rod": 2}
+var value: float = MAX
+
+func cost_of(tool: String) -> int:
+	return int(COSTS.get(tool, 0 if tool.ends_with("_seed") else 1))
+
+func can_use(tool: String) -> bool:
+	return value >= cost_of(tool)
+
+func spend(tool: String) -> bool:
+	if not can_use(tool):
+		return false
+	value -= cost_of(tool)
+	return true
+
+func new_day(passed_out: bool) -> void:
+	value = MAX * (0.5 if passed_out else 1.0)
+	value = float(MAX) if not passed_out else 50.0

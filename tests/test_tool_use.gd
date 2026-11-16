@@ -25,3 +25,18 @@ func test_no_seeds_and_blocked_tiles() -> void:
 	check_eq(ToolUse.apply("hoe", Vector2i(32, 32 + 0), farm, inv, 0, gen) == "" , false if gen.tile_at(32, 32) <= 5 else true)
 	var wp := Vector2i(-1, -1)  # outside = deep water
 	check_eq(ToolUse.apply("hoe", wp, farm, inv, 0, gen), "")
+
+func test_axe_with_energy() -> void:
+	var farm := FarmModel.new(DataDB.load_json("crops"))
+	var inv := Inventory.new(10)
+	var nodes := ResourceNodes.new()
+	var en := Energy.new()
+	nodes.add("tree", Vector2i(1, 1))
+	var last := ""
+	for i in 5:
+		last = ToolUse.apply("axe", Vector2i(1, 1), farm, inv, 0, null, nodes, en)
+	check_eq(last, "Got 3 wood")
+	check_eq(inv.count("wood"), 3)
+	check_eq(en.value, 80.0)
+	en.value = 1.0
+	check_eq(ToolUse.apply("axe", Vector2i(1, 1), farm, inv, 0, null, nodes, en), "Too tired")

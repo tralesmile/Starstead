@@ -4,6 +4,7 @@ extends Node2D
 
 var gen: WorldGen
 var layer: TileMapLayer
+var props: Dictionary = {}  # cell -> StaticBody2D
 
 func build(seed_value: int = 1) -> void:
 	gen = WorldGen.new(seed_value)
@@ -27,11 +28,11 @@ func build(seed_value: int = 1) -> void:
 		for x in WorldGen.SIZE:
 			layer.set_cell(Vector2i(x, y), 0, Vector2i(gen.tiles[y * WorldGen.SIZE + x], 0))
 	for p in gen.trees:
-		_prop("res://assets/sprites/tree.png", p, Vector2(12, 8), Vector2(0, -32))
+		props[p] = _prop("res://assets/sprites/tree.png", p, Vector2(12, 8), Vector2(0, -32))
 	for p in gen.rocks:
-		_prop("res://assets/sprites/rock.png", p, Vector2(24, 18), Vector2.ZERO)
+		props[p] = _prop("res://assets/sprites/rock.png", p, Vector2(24, 18), Vector2.ZERO)
 
-func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> void:
+func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBody2D:
 	var b := StaticBody2D.new()
 	b.position = Vector2(cell) * 32.0 + Vector2(16, 28)
 	var s := Sprite2D.new()
@@ -45,3 +46,12 @@ func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> void:
 	b.add_child(c)
 	b.y_sort_enabled = true
 	add_child(b)
+	return b
+
+func sync_props(nodes: ResourceNodes) -> void:
+	## Shows/hides prop sprites and collision to match ResourceNodes state.
+	for cell in props:
+		var b: StaticBody2D = props[cell]
+		var solid := nodes.is_solid(cell)
+		b.visible = solid
+		b.get_child(1).set_deferred("disabled", not solid)

@@ -10,4 +10,4 @@ func _init() -> void:
 	add_child(label)
 
 func _process(_d: float) -> void:
-	label.text = HudText.format(GameState.clock, GameState.money)
+	label.text = HudText.format(GameState.clock, GameState.money) + "  EN %d" % int(GameState.energy.value)

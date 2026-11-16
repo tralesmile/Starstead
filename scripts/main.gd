@@ -13,6 +13,10 @@ func _ready() -> void:
 	add_child(world)
 	world.build(1)
 	add_child(FarmView.new())
+	for c in world.gen.trees:
+		GameState.nodes.add("tree", c)
+	for c in world.gen.rocks:
+		GameState.nodes.add("rock", c)
 	player = Player.new()
 	player.position = Vector2(32.5, 32.5) * 32.0
 	add_child(player)
@@ -31,6 +35,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if GameState.clock.advance(delta):
 		GameState.farm.next_day()
+		GameState.nodes.next_day()
+		GameState.energy.new_day(false)
+		world.sync_props(GameState.nodes)
 		GameState.save_game()  # bedtime / pass-out: next day, autosave
 	modulate_node.color = DayNight.tint(GameState.clock.minutes)
 
@@ -41,7 +48,8 @@ func _process(delta: float) -> void:
 func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_pressed("use_tool"):
 		var cell := PlayerMath.facing_tile(player.position, player.facing)
-		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen)
+		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
+		world.sync_props(GameState.nodes)
 		if msg != "":
 			toast.text = msg
 			toast_t = 1.5
