@@ -20,8 +20,8 @@ func entries(inv: Inventory) -> Array:
 		var n := inv.count(id)
 		if tab == Tab.SELL and n > 0:
 			out.append({"id": id, "name": items[id].name, "price": int(items[id].price), "count": n})
-		elif tab == Tab.BUY and String(id).ends_with("_seed"):
-			out.append({"id": id, "name": items[id].name, "price": int(items[id].price), "count": n})
+		elif tab == Tab.BUY and bool(items[id].get("buy", false)):
+			out.append({"id": id, "name": items[id].name, "price": Shop.buy_price(items, id), "count": n})
 	return out
 
 func switch_tab() -> void:

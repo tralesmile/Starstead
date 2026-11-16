@@ -24,7 +24,7 @@ func test_buy_tab_seeds_only() -> void:
 	var e := m.entries(inv)
 	check(e.size() >= 1)
 	for x in e:
-		check(String(x.id).ends_with("_seed"))
+		check(bool(items[x.id].get("buy", false)))
 	var r := m.confirm(inv, 100)
 	check_eq(r.money, 90)
 	check_eq(inv.count("turnip_seed"), 1)
@@ -51,3 +51,16 @@ func test_interactables() -> void:
 	check(r.at(Vector2i(0, 0)).is_empty())
 	check_eq(r.near(Vector2(100, 130), Vector2i(3, 4)).kind, "shop")
 	check_eq(r.near(Vector2(3.5 * 32, 4.5 * 32), Vector2i(9, 9)).kind, "shop")
+
+func test_buy_wood_uses_buy_price() -> void:
+	var items = DataDB.load_json("items")
+	var inv := _inv()
+	check_eq(Shop.buy_price(items, "wood"), 12)
+	check_eq(Shop.buy(inv, items, "wood", 2, 100), 76)
+	check_eq(inv.count("wood"), 2)
+	var m := ShopMenu.new(items)
+	m.switch_tab()
+	var ids := []
+	for x in m.entries(inv):
+		ids.append(x.id)
+	check("wood" in ids and "turnip_seed" in ids)

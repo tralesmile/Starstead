@@ -2,7 +2,9 @@
   "wood": {
     "name": "Wood",
     "price": 5,
-    "stack": 99
+    "stack": 99,
+    "buy": true,
+    "buy_price": 12
   },
   "stone": {
     "name": "Stone",
@@ -12,7 +14,8 @@
   "turnip_seed": {
     "name": "Turnip Seeds",
     "price": 10,
-    "stack": 99
+    "stack": 99,
+    "buy": true
   },
   "turnip": {
     "name": "Turnip",

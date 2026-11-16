@@ -13,7 +13,12 @@ static func sell(inv: Inventory, items: Dictionary, id: String, n: int, money: i
 static func buy(inv: Inventory, items: Dictionary, id: String, n: int, money: int) -> int:
 	if not items.has(id):
 		return -1
-	var cost := int(items[id].price * BUY_MARKUP) * n
+	var cost := buy_price(items, id) * n
 	if cost > money or inv.add(id, n) > 0:
 		return -1
 	return money - cost
+
+static func buy_price(items: Dictionary, id: String) -> int:
+	## Explicit buy_price wins (e.g. wood is dearer to buy than to sell); else price * markup.
+	var it: Dictionary = items[id]
+	return int(it.get("buy_price", int(it.price * BUY_MARKUP)))

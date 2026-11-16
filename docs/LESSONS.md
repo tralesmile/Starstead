@@ -8,3 +8,4 @@
 - Screenshot helper args: `tools/screenshot.sh 20 -- --zoom=1 --at=x,y` (tile coords) to inspect any spot.
 - Canvas shaders: in fragment(), COLOR already includes the texture; multiplying by texture again kills outlines. Pass modulate via a varying from vertex(). `return` is not allowed in fragment().
 - Nested y-sort did not merge here: put the player under the same y-sorted parent (World) as the props.
+- New class_name scripts need `--import` before tests, else the test file 'cannot load'. GDScript: float % float is invalid, use fposmod. Night glow under CanvasModulate: divide colour by DayNight.tint to cancel it.

@@ -7,3 +7,5 @@
 2026-11-16 | Owner said the graphics are bad and sent a reference screenshot to match | Inserted "Phase 0.5 art pass" before the remaining Phase 1 items (reorder, nothing cut); ground is now a procedural shader instead of the flat tile atlas (atlas kept only as invisible collision layer). Reference image not committed (possible third-party art); style described in docs/ART_TARGET.md instead.
 2026-11-16 | Plan said "slower walking in shallow water" but all water tiles are blocked by collision | Applied slowdown on the wet bank (sdf<0.9) and a speed bonus on paths instead; wading factor kept for future fords.
 2026-11-16 | git push prints "repository moved" notice | Still pushes fine; remote is tralesmile/Starstead.
+2026-11-16 | Repo clone was on a detached HEAD so git pull --rebase failed | Ran checkout -B main + reset to origin/main (clean tree) and continued.
+2026-11-16 | Camera 'soft limits' | Used hard Camera2D limits; soft clamp math kept in CameraMath for later.

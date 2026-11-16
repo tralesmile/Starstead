@@ -42,11 +42,15 @@ Physics / feel:
 - [x] Knockback + hit-stop + whole-pixel shake framework (HitMath, wired to axe/pickaxe)
 - [x] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
 - [ ] Reeds part when the player walks through; squash/stretch on tool hit
+- [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
 - [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [ ] Grass tufts sway near the player; footprints on dirt paths
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
+- [ ] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
+- [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling (corners/T-joins)
+- [ ] Day/night: ambient fireflies exist; add warm lanterns that light the ground
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)
@@ -70,7 +74,7 @@ Physics / feel:
 - [x] Pickaxe breaks rocks (drops stone)
 - [x] Build mode: grid ghost placement with valid/invalid colour
 - [x] Placeable floor, wall, door, fence consuming inventory
-- [ ] Roof + simple house/farm blueprint
+- [ ] Roof + simple house/farm blueprint (pieces exist; add roof piece, blueprint stamp, interior fade when inside)
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)
 - [x] Shop UI: buy seeds (tools: still to add to the BUY tab)
@@ -104,6 +108,8 @@ Physics / feel:
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- Grid-building plugins separate placement rules (validators) from indicators, which our BuildModel.check mirrors; consider per-piece rules (needs floor beneath, wall adjacency) | https://chris-tutorials.itch.io/grid-building-godot/devlog | 2026-11-16
+- Weakest part vs comparables (run 5): still no NPCs/animals/town and no goal loop beyond chores; build mode now exists but nothing to build for. Next: NPC base + routines.
 - Use GUT or GdUnit4 for richer tests (mocking, signals) once scenes get complex | https://helpmetest.com/blog/godot-gut-advanced-testing/ | 2026-11-16
 - Study Stardew balance analysis (crop profit vs time, energy as limiter) before tuning crops.json | https://mechanicsofmagic.com/2021/05/26/critical-play-balance-stardew-valley/ | 2026-11-16
 - Pixel-art top-down movement: keep camera smoothing off + snap_2d_transforms_to_pixel to avoid sub-pixel jitter (applied) | https://forum.godotengine.org/t/the-character-shakes-when-moving/103543 | 2026-11-16
