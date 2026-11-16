@@ -8,6 +8,8 @@ var hotbar: Hotbar
 var toast: Label
 var toast_t := 0.0
 var highlighted: Sprite2D = null
+var shop: ShopView
+var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
 
@@ -40,6 +42,12 @@ func _ready() -> void:
 	toast.position = Vector2(8, 24)
 	add_child(toast)
 	add_child(FishingView.new(fishing))
+	shop = ShopView.new()
+	shop.closed.connect(func(): player.set_physics_process(true))
+	add_child(shop)
+	prompt = Label.new()
+	prompt.position = Vector2(260, 300)
+	add_child(prompt)
 	if GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
 	$HUD.queue_free()
@@ -54,6 +62,8 @@ func _process(delta: float) -> void:
 	modulate_node.color = DayNight.tint(GameState.clock.minutes)
 
 	_update_fishing(delta)
+	var near := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	_update_highlight()
 	_update_fade(delta)
 	toast_t -= delta
@@ -61,6 +71,16 @@ func _process(delta: float) -> void:
 		toast.text = ""
 
 func _unhandled_input(e: InputEvent) -> void:
+	if shop.visible:
+		return
+	if e.is_action_pressed("interact"):
+		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+		if it.get("kind", "") == "shop":
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+			shop.open()
+			return
 	if e.is_action_pressed("use_tool") and hotbar.current() == "rod":
 		_rod_pressed()
 	elif e.is_action_pressed("use_tool"):

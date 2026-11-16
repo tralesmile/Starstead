@@ -25,7 +25,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
 - [x] Wind sway shader on trees, bushes, reeds (top moves, base fixed, whole-pixel steps, gusts)
-- [ ] Lily pads bob/drift; reeds part when the player walks through
+- [x] Lily pads bob/drift and part around the player (reeds parting still to do)
 - [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
 - [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
 - [ ] Tool-specific poses and held tool sprites (hoe, axe, can, rod)
@@ -33,14 +33,17 @@ Graphics:
 - [ ] Ambient particles: drifting leaves, fireflies at night, dust when running
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [ ] Weather: rain (drops + ripples), fog, storm darkening
-- [ ] Tool-hit feedback: wood chips, stone sparks, screen shake 1px, squash on hit
+- [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
 - [x] Rounded/capsule player collider + corner sliding so you do not snag on trees
 - [x] Trees and bushes fade semi-transparent when the player is behind them (player now y-sorts with props)
-- [ ] Footstep timing synced to walk frames; slower walking in shallow water
-- [ ] Knockback + hit-stop framework (for combat and tool hits later)
+- [x] Footstep signal synced to walk frames (audio later); wet-bank slowdown, faster on paths
+- [x] Knockback + hit-stop + whole-pixel shake framework (HitMath, wired to axe/pickaxe)
 - [ ] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
+- [ ] Reeds part when the player walks through; squash/stretch on tool hit
+- [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
+- [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [ ] Grass tufts sway near the player; footprints on dirt paths
 - [ ] Camera: tiny look-ahead in walk direction (integer-snapped), soft limits at chunk edge
@@ -54,14 +57,14 @@ Physics / feel:
 - [x] Day/night tint from GameClock (CanvasModulate), bedtime/pass-out to next day with save
 - [x] TileMap world chunk (64x64) generated from seed, with collision
 - [x] Nearest-target highlight (yellow outline on the faced tree/rock)
-- [ ] Interactable base class + interact prompt
+- [x] Interactable base class + interact prompt (Interactables registry, E prompt label)
 - [x] Inventory model + hotbar UI (tests: stack, add, remove) [model + tool hotbar done; item-slot hotbar UI still to do]
 - [x] Tool use on facing tile: hoe tills soil
 - [x] Plant seed from crops.json, watering can waters
 - [x] Crop growth per day tick, harvest gives item
 - [x] Energy bar limiting actions (Stardew-style limiter)
-- [ ] Fishing: cast on water tile, bite timer
-- [ ] Fishing: reel mini-game + fish table in data/fish.json
+- [x] Fishing: cast on water tile, bite timer
+- [x] Fishing: reel mini-game + fish table in data/fish.json
 - [x] Visible fish shadows in water
 - [x] Axe chops trees (hits, drops wood, stump/regrow)
 - [x] Pickaxe breaks rocks (drops stone)
@@ -69,8 +72,8 @@ Physics / feel:
 - [ ] Placeable floor, wall, door, fence consuming inventory
 - [ ] Roof + simple house/farm blueprint
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
-- [ ] Shop UI: sell items to shop for money
-- [ ] Shop UI: buy seeds/tools
+- [x] Shop UI: sell items to shop for money (market stall + ShopView)
+- [x] Shop UI: buy seeds (tools: still to add to the BUY tab)
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
 
 ## Phase 2: Vertical slice (months 4-6)
@@ -104,4 +107,6 @@ Physics / feel:
 - Use GUT or GdUnit4 for richer tests (mocking, signals) once scenes get complex | https://helpmetest.com/blog/godot-gut-advanced-testing/ | 2026-11-16
 - Study Stardew balance analysis (crop profit vs time, energy as limiter) before tuning crops.json | https://mechanicsofmagic.com/2021/05/26/critical-play-balance-stardew-valley/ | 2026-11-16
 - Pixel-art top-down movement: keep camera smoothing off + snap_2d_transforms_to_pixel to avoid sub-pixel jitter (applied) | https://forum.godotengine.org/t/the-character-shakes-when-moving/103543 | 2026-11-16
-- Weakest part vs comparables right now: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
+- Hit-stop should use real-time timers, trauma-based stacking shake | https://forum.godotengine.org/t/game-feel-effects-that-stack-without-fighting-your-code-trauma-shake-real-time-hit-stop-and-apply-the-difference/146379 | 2026-11-16
+- Fishing minigame tuning: bar size/gravity vs fish darting; consider a bar-size upgrade via rod level | https://stardewvalleywiki.com/Fishing | 2026-11-16
+- Weakest part vs comparables (2026-11-16 run 4): world is empty of life: no NPCs, animals or goals beyond farming/fishing; next priority NPCs + town. Earlier note: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.

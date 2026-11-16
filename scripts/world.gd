@@ -15,6 +15,7 @@ var layer: TileMapLayer
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
+var interactables := Interactables.new()
 
 func build(seed_value: int = 1) -> void:
 	gen = WorldGen.new(seed_value)
@@ -31,6 +32,7 @@ func build(seed_value: int = 1) -> void:
 		var bush := _prop(PROP_TEX.bush, p, Vector2(20, 8), Vector2(0, -12))
 		Outline.set_sway(bush.get_child(0), 1.0, p.x + p.y)
 	_build_water_decor()
+	_build_stall()
 
 static func data_image(g: WorldGen) -> Image:
 	## 64x64 RGBA8: R = sdf mapped to 0..1 (0.5 = shore), G = path mask, B = dirt mask.
@@ -165,3 +167,37 @@ static func make_shadow(width: float) -> Sprite2D:
 	sh.position = Vector2(0, 2)
 	sh.z_index = -3
 	return sh
+
+func _stall_cell() -> Vector2i:
+	## Nearest dry, empty 2-wide spot 4-9 tiles from the spawn dock.
+	var from := Vector2i(32, 32)
+	if gen.dock.size() > 1:
+		var d0: Vector2i = gen.dock[0]
+		var d1: Vector2i = gen.dock[1]
+		from = d0 - (d1 - d0)
+	for r in range(4, 10):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if maxi(absi(dx), absi(dy)) != r:
+					continue
+				var c := from + Vector2i(dx, dy)
+				var ok := true
+				for k in 2:
+					var q := c + Vector2i(k, 0)
+					if q.x < 1 or q.y < 2 or q.x >= WorldGen.SIZE - 1 or q.y >= WorldGen.SIZE - 1:
+						ok = false
+					elif gen.sdf_at(q.x, q.y) < 2.5 or gen.tile_at(q.x, q.y) >= WorldGen.PATH or q in gen.trees or q in gen.rocks or q in gen.bushes:
+						ok = false
+				if ok:
+					return c
+	return Vector2i(-1, -1)
+
+func _build_stall() -> void:
+	var c := _stall_cell()
+	if c.x < 0:
+		return
+	var b := _prop("res://assets/sprites/stall.png", c, Vector2(56, 10), Vector2(0, -28))
+	b.position = Vector2(c.x * 32 + 32, c.y * 32 + 30)
+	props.erase(c)  # not a ResourceNodes prop
+	interactables.add(c, "shop", "E: Shop")
+	interactables.add(c + Vector2i(1, 0), "shop", "E: Shop")
