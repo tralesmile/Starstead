@@ -2,7 +2,7 @@ class_name ToolUse
 extends RefCounted
 ## Pure tool application on a target cell. Returns a short message (empty = nothing happened).
 
-const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe"]
+const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", "rod"]
 
 static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null) -> String:
 	if energy != null and not energy.can_use(tool):
