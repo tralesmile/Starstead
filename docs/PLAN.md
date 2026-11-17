@@ -41,7 +41,7 @@ Physics / feel:
 - [x] Footstep signal synced to walk frames (audio later); wet-bank slowdown, faster on paths
 - [x] Knockback + hit-stop + whole-pixel shake framework (HitMath, wired to axe/pickaxe)
 - [x] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
-- [ ] Reeds part when the player walks through
+- [x] Reeds part when the player walks through (ReedMath + prop shader push)
 - [x] Squash/stretch on tool swing (HitMath.squash, tested, wired to player sprite)
 - [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
@@ -51,7 +51,7 @@ Physics / feel:
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
 - [ ] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
 - [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)
-- [ ] Day/night: ambient fireflies exist; add warm lanterns that light the ground
+- [x] Day/night: warm lanterns that light the ground (Lantern + PointLight2D, DayNight.lamp_strength)
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)
@@ -112,6 +112,9 @@ Physics / feel:
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- NPCs currently walk straight lines and slide along water; replace with AStarGrid2D over land cells for routes around trees/buildings | https://papierkorp.github.io/blog/posts/godot-4-2d-pathing | 2026-11-17
+- NPC art is a tinted copy of the player sheet: needs distinct NPC sprites + dialogue box + houses at the schedule places | 2026-11-17
+- Roof piece only fades over enclosed floors; hut blueprint has a single interior cell, add a bigger house blueprint with roof cells | 2026-11-17
 - NPC schedule techniques (time-slot tables, pathing to place targets) | https://forum.godotengine.org/t/what-technique-should-i-use-for-a-schedule/138270 | 2026-11-17
 - Weakest vs comparables (2026-11-17): NPC data exists but nobody is visible in the world yet; NpcView is the next priority.
 - Grid-building plugins separate placement rules (validators) from indicators, which our BuildModel.check mirrors; consider per-piece rules (needs floor beneath, wall adjacency) | https://chris-tutorials.itch.io/grid-building-godot/devlog | 2026-11-16

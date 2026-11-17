@@ -16,3 +16,8 @@ func test_passout_new_day() -> void:
 	var c := GameClock.new()
 	check(c.advance(2000.0), "day ends")
 	check_eq(c.day, 2)
+
+func test_lamp_strength_day_vs_night() -> void:
+	check(DayNight.lamp_strength(300.0) < 0.01)   # noon-ish
+	check(DayNight.lamp_strength(1000.0) > 0.8)   # night
+	check(DayNight.lamp_strength(780.0) > 0.0 and DayNight.lamp_strength(780.0) < 1.0)  # dusk ramps

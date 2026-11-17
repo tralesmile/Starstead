@@ -15,6 +15,7 @@ var layer: TileMapLayer
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
+var lanterns: Array[Lantern] = []
 var reed_sprites: Array[Sprite2D] = []
 var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
@@ -35,6 +36,7 @@ func build(seed_value: int = 1) -> void:
 		Outline.set_sway(bush.get_child(0), 1.0, p.x + p.y)
 	_build_water_decor()
 	_build_stall()
+	_build_lanterns()
 
 static func data_image(g: WorldGen) -> Image:
 	## 64x64 RGBA8: R = sdf mapped to 0..1 (0.5 = shore), G = path mask, B = dirt mask.
@@ -218,3 +220,26 @@ func _build_stall() -> void:
 	props.erase(c)  # not a ResourceNodes prop
 	interactables.add(c, "shop", "E: Shop")
 	interactables.add(c + Vector2i(1, 0), "shop", "E: Shop")
+
+func _build_lanterns() -> void:
+	## Lantern posts: one each side of the dock landing and one by the stall.
+	var spots: Array[Vector2] = []
+	if gen.dock.size() > 1:
+		var d0: Vector2i = gen.dock[0]
+		var d1: Vector2i = gen.dock[1]
+		var land := d0 - (d1 - d0)
+		spots.append((Vector2(land) + Vector2(0.5, 1.9)) * 32.0)
+		spots.append((Vector2(land) + Vector2(0.5, -0.9)) * 32.0)
+	var sc := _stall_cell()
+	if sc.x >= 0:
+		spots.append(Vector2(sc.x * 32 + 70, sc.y * 32 + 30))
+	for i in spots.size():
+		var l := Lantern.new()
+		l.position = spots[i]
+		l.phase = float(i) * 2.1
+		add_child(l)
+		lanterns.append(l)
+
+func set_lamps(k: float) -> void:
+	for l in lanterns:
+		l.strength = k

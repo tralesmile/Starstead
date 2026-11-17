@@ -19,3 +19,9 @@ static func tint(minutes: float) -> Color:
 			var t := clampf((minutes - a[0]) / float(b[0] - a[0]), 0.0, 1.0)
 			return (a[1] as Color).lerp(b[1], t)
 	return KEYS[KEYS.size() - 1][1]
+
+static func lamp_strength(minutes: float) -> float:
+	## 0 in daylight, 1 at night: how strongly lanterns glow (ramps with the dusk tint).
+	var t := tint(minutes)
+	var dark := 1.0 - (t.r + t.g + t.b) / 3.0
+	return clampf((dark - 0.05) / 0.45, 0.0, 1.0)

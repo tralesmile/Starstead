@@ -10,3 +10,4 @@
 2026-11-16 | Repo clone was on a detached HEAD so git pull --rebase failed | Ran checkout -B main + reset to origin/main (clean tree) and continued.
 2026-11-16 | Camera 'soft limits' | Used hard Camera2D limits; soft clamp math kept in CameraMath for later.
 2026-11-17 | Run ended with 4 model-level slices and no in-game wiring for NPCs/autotile/blueprint; no screenshot-visible change besides squash | Split the PLAN items into model (done) and view (unchecked) so next run wires them.
+2026-11-17 | roof sprite name in build.json clashed with build_floor | Pointed roof at new build_roof.png. NPCs reuse tinted player sheet and walk straight lines (no pathing yet); logged in Backlog.
