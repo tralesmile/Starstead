@@ -16,6 +16,7 @@ var dialogue: DialogueView
 var car: CarView
 var police: PoliceView
 var robbery: RobberyView
+var combat: CombatView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -103,6 +104,11 @@ func _ready() -> void:
 	robbery.setup(town, world, police, player)
 	robbery.message.connect(_say)
 	add_child(robbery)
+	combat = CombatView.new()
+	combat.setup(world, player, npcs, police)
+	combat.message.connect(_say)
+	npcs.combat = combat
+	add_child(combat)
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -236,6 +242,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 	if e.is_action_pressed("use_tool") and hotbar.current() == "rod":
 		_rod_pressed()
+	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
+		if GameState.energy.can_use("club") and combat.cd <= 0.0:
+			GameState.energy.spend("club")
+			player.swing()
+			combat.attack("club")
 	elif e.is_action_pressed("use_tool"):
 		player.swing()
 		var cell := PlayerMath.facing_tile(player.position, player.facing)

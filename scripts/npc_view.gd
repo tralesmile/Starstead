@@ -17,6 +17,7 @@ var world: Node2D
 var data: Dictionary
 var actors: Array = []  # {npc, node, sprite, face, t, goal, path}
 var grid: AStarGrid2D
+var combat: CombatView
 
 func setup(w: Node2D, g: WorldGen) -> void:
 	world = w
@@ -64,6 +65,8 @@ func _process(delta: float) -> void:
 	var h := NpcSchedule.hour_of(GameState.clock.minutes)
 	for a in actors:
 		var body: Node2D = a["node"]
+		if combat != null and combat.is_down(body):
+			continue  # knocked out: lies where it fell
 		var goal := cell_for(a["npc"], h)
 		var before := body.position
 		if goal != a["goal"]:  # new destination: plan a route around trees/rocks/water
