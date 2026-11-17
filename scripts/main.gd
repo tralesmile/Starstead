@@ -200,6 +200,15 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--farm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:
+		var o := TargetMath.cell_of(player.position) + Vector2i(2, -2)
+		for dx in 5:
+			for dy in 3:
+				var c := o + Vector2i(dx, dy)
+				GameState.farm.till(c)
+				GameState.farm.soil[c].watered = (dx + dy) % 2 == 0
+				GameState.farm.soil[c].crop = "turnip" if dy < 2 else ""
+				GameState.farm.soil[c].age = dx
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait"]:
 			GameState.bag.add(id, 7)
@@ -366,6 +375,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		world.sync_props(GameState.nodes)
+		if msg == "Tilled":
+			_dirt_puff(cell)
 		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
 			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))
 		if msg != "":
@@ -512,3 +523,22 @@ func _update_cursor() -> void:
 	cursor.reach = TargetMath.in_reach(player.position, c)
 	if mouse_aim and cursor.reach and not car.driving:
 		player.facing = TargetMath.facing_toward(player.position, c, player.facing)
+
+func _dirt_puff(cell: Vector2i) -> void:
+	var p := CPUParticles2D.new()
+	p.position = TargetMath.center_of(cell) + Vector2(0, 6)
+	p.emitting = true
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.amount = 9
+	p.lifetime = 0.4
+	p.direction = Vector2(0, -1)
+	p.spread = 80.0
+	p.initial_velocity_min = 25.0
+	p.initial_velocity_max = 60.0
+	p.gravity = Vector2(0, 220)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.0
+	p.color = Color(0.45, 0.3, 0.18)
+	world.add_child(p)
+	get_tree().create_timer(0.8).timeout.connect(p.queue_free)

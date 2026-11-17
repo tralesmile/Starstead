@@ -85,8 +85,8 @@ Items, pickup, inventory (2, 3, 4)
 - [x] Inventory screen (Tab): 30-slot icon grid, hover tooltip (name, sell price), click-to-move/merge/swap, S sort, X trash, money + energy (item descriptions and tabs later)
 - [ ] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
 Farming + working the land (7)
-- [ ] Tilled soil autotile (connected dark/wet soil edges), wet soil darker, crop growth stage sprites (4-5 stages) + harvest pop animation
-- [ ] Hoe on grass makes soil with a dig animation + dirt particles; scythe/hand cuts grass for fibre/hay; weeds appear and can be cleared
+- [x] Tilled soil autotile (connected furrows, darker wet soil), 5-stage turnip + generic crop sprites (tools/gen_farm.py, FarmModel.stage), dirt puff on tilling; harvest pops as pickups
+- [ ] (dirt particles done) Hoe dig animation; scythe/hand cuts grass for fibre/hay; weeds appear and can be cleared
 - [ ] Watering can holds water (refill at water, bar in hotbar), waters a 1x1 tile now and 3x1 line with upgrade; scarecrow + sprinkler placeable
 - [ ] Seed packets by season, crop quality by fertiliser, farming skill xp and levels
 Wood chopping (8)

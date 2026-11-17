@@ -78,3 +78,9 @@ func from_array(a: Array) -> void:
 	soil = {}
 	for e in a:
 		soil[Vector2i(int(e.x), int(e.y))] = {"watered": bool(e.watered), "crop": str(e.crop), "age": int(e.age)}
+
+## Growth frame 0..frames-1 for a crop of `age` days out of `total` (last frame = ripe, only when age >= total).
+static func stage(age: int, total: int, frames: int = 5) -> int:
+	if total <= 0 or age >= total:
+		return frames - 1
+	return clampi(int(float(age) / float(total) * float(frames - 1)), 0, frames - 2)
