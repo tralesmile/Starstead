@@ -41,7 +41,8 @@ Physics / feel:
 - [x] Footstep signal synced to walk frames (audio later); wet-bank slowdown, faster on paths
 - [x] Knockback + hit-stop + whole-pixel shake framework (HitMath, wired to axe/pickaxe)
 - [x] Vehicle physics prototype math (drift, grip, handbrake) for the car slice
-- [ ] Reeds part when the player walks through; squash/stretch on tool hit
+- [ ] Reeds part when the player walks through
+- [x] Squash/stretch on tool swing (HitMath.squash, tested, wired to player sprite)
 - [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
 - [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
@@ -49,7 +50,7 @@ Physics / feel:
 - [ ] Grass tufts sway near the player; footprints on dirt paths
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
 - [ ] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
-- [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling (corners/T-joins)
+- [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)
 - [ ] Day/night: ambient fireflies exist; add warm lanterns that light the ground
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
@@ -74,14 +75,17 @@ Physics / feel:
 - [x] Pickaxe breaks rocks (drops stone)
 - [x] Build mode: grid ghost placement with valid/invalid colour
 - [x] Placeable floor, wall, door, fence consuming inventory
-- [ ] Roof + simple house/farm blueprint (pieces exist; add roof piece, blueprint stamp, interior fade when inside)
+- [x] Roof piece, blueprint stamp (hut) and enclosed-room detection in BuildModel (tests)
+- [ ] Wire blueprint stamp key + roof/interior fade into BuildView
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)
 - [x] Shop UI: buy seeds (tools: still to add to the BUY tab)
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
 
 ## Phase 2: Vertical slice (months 4-6)
-- [ ] Small town + farm, NPCs with routines
+- [x] NPC schedule model + data/npcs.json (NpcSchedule, tested)
+- [ ] NpcView: spawn NPC sprites, walk their schedule in the world, talk prompt
+- [ ] Small town + farm layout
 - [ ] One drivable car (top-down physics), fuel/repair stub
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)
 - [ ] Police/wanted-level basics, basic combat
@@ -108,6 +112,8 @@ Physics / feel:
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- NPC schedule techniques (time-slot tables, pathing to place targets) | https://forum.godotengine.org/t/what-technique-should-i-use-for-a-schedule/138270 | 2026-11-17
+- Weakest vs comparables (2026-11-17): NPC data exists but nobody is visible in the world yet; NpcView is the next priority.
 - Grid-building plugins separate placement rules (validators) from indicators, which our BuildModel.check mirrors; consider per-piece rules (needs floor beneath, wall adjacency) | https://chris-tutorials.itch.io/grid-building-godot/devlog | 2026-11-16
 - Weakest part vs comparables (run 5): still no NPCs/animals/town and no goal loop beyond chores; build mode now exists but nothing to build for. Next: NPC base + routines.
 - Use GUT or GdUnit4 for richer tests (mocking, signals) once scenes get complex | https://helpmetest.com/blog/godot-gut-advanced-testing/ | 2026-11-16

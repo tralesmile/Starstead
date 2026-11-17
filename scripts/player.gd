@@ -10,6 +10,7 @@ var tool_t := 0.0
 var gen: WorldGen = null      # set by main: terrain speed lookup
 var move_v := Vector2.ZERO    # input-driven velocity (knockback is added on top)
 var knock := Vector2.ZERO
+var squash_left := 0.0
 var shake_left := 0.0
 var shake_total := 0.2
 var shake_amp := 1.0
@@ -63,6 +64,9 @@ func _physics_process(delta: float) -> void:
 	var moving := velocity.length() > 8.0
 	_t = _t + delta if moving else 0.0
 	tool_t -= delta
+	if squash_left > 0.0:
+		squash_left = maxf(squash_left - delta, 0.0)
+	sprite.scale = HitMath.squash(squash_left, 0.22)
 	var col := PlayerMath.TOOL_FRAME if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
 	sprite.frame = facing * 8 + col
 	if moving and tool_t <= 0.0:
@@ -88,3 +92,4 @@ func push(from: Vector2, force: float = 1.0) -> void:
 func swing() -> void:
 	## Show the tool pose briefly (called by main when a tool is used).
 	tool_t = 0.18
+	squash_left = 0.22

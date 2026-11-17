@@ -65,3 +65,53 @@ func from_dict(d: Dictionary) -> void:
 		var p: PackedStringArray = str(k).split(",")
 		if p.size() == 2 and defs.has(str(d[k])):
 			placed[Vector2i(int(p[0]), int(p[1]))] = str(d[k])
+
+# --- Blueprints and rooms -------------------------------------------------
+const BLUEPRINTS := {
+	"hut": {
+		"name": "Small Hut",
+		"cells": [
+			[0, 0, "wall"], [1, 0, "wall"], [2, 0, "wall"],
+			[0, 1, "wall"], [1, 1, "floor"], [2, 1, "wall"],
+			[0, 2, "wall"], [1, 2, "door"], [2, 2, "wall"],
+		],
+	},
+}
+
+func blueprint_cost(name: String) -> Dictionary:
+	var total := {}
+	for e in BLUEPRINTS[name].cells:
+		for id in defs[e[2]].cost:
+			total[id] = int(total.get(id, 0)) + int(defs[e[2]].cost[id])
+	return total
+
+func stamp(name: String, origin: Vector2i, bag: Inventory) -> int:
+	## Places every affordable, free piece of the blueprint (no water/blocked data here,
+	## the view pre-checks); returns the number of pieces placed.
+	var n := 0
+	if not BLUEPRINTS.has(name):
+		return 0
+	for e in BLUEPRINTS[name].cells:
+		var c := origin + Vector2i(int(e[0]), int(e[1]))
+		if place(c, str(e[2]), 3.0, false, bag) == "":
+			n += 1
+	return n
+
+func is_enclosed(cell: Vector2i, limit: int = 64) -> bool:
+	## True when `cell` (a floor) is sealed by solid pieces/doors: flood fill over
+	## non-solid, non-door cells that stays under `limit` tiles. Used to fade roofs/interior.
+	var seen := {cell: true}
+	var q := [cell]
+	while not q.is_empty():
+		var c: Vector2i = q.pop_back()
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var n: Vector2i = c + d
+			if seen.has(n):
+				continue
+			if placed.has(n) and (is_solid(n) or placed[n] == "door"):
+				continue
+			seen[n] = true
+			if seen.size() > limit:
+				return false
+			q.append(n)
+	return true

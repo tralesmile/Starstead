@@ -27,3 +27,12 @@ static func shake_offset(t_left: float, total: float, amp: float, phase: float) 
 		return Vector2.ZERO
 	var k := t_left / total
 	return Vector2(roundf(sin(phase * 91.0) * amp * k), roundf(cos(phase * 57.0) * amp * k))
+
+static func squash(t_left: float, total: float, strength: float = 0.25) -> Vector2:
+	## Sprite scale for squash/stretch on a hit: starts squashed (wide, short), springs
+	## back with one small overshoot, ends at exactly (1,1).
+	if t_left <= 0.0 or total <= 0.0:
+		return Vector2.ONE
+	var k := 1.0 - t_left / total
+	var a := strength * (1.0 - k) * cos(k * PI * 1.5)
+	return Vector2(1.0 + a, 1.0 - a)
