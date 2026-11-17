@@ -32,8 +32,9 @@ Graphics:
 - [ ] Light rays / sun specular glints on water; foam where water meets dock posts
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
+- [x] Rain waters crops at day end (FarmModel.rain_water)
 - [x] Weather: rain (drops + splashes, overcast darkening, seeded per day; WeatherMath)
-- [ ] Weather: fog, storm lightning, rain ripples on water, rain waters crops
+- [ ] Weather: fog, storm lightning, rain ripples on water
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -46,7 +47,8 @@ Physics / feel:
 - [x] Squash/stretch on tool swing (HitMath.squash, tested, wired to player sprite)
 - [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
-- [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
+- [x] Fish journal (count + best size per species, saved, shown on catch)
+- [ ] Fishing: rod/bait upgrades, legendary fish events, journal screen
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [ ] Grass tufts sway near the player

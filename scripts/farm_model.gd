@@ -41,6 +41,11 @@ func water(cell: Vector2i) -> bool:
 	soil[cell].watered = true
 	return true
 
+func rain_water() -> void:
+	## Rain soaks every tilled cell (called at day end when it rained).
+	for cell in soil:
+		soil[cell].watered = true
+
 func is_ripe(cell: Vector2i) -> bool:
 	if not soil.has(cell) or soil[cell].crop == "":
 		return false

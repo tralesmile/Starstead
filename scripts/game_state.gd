@@ -12,6 +12,7 @@ var bag := Inventory.new(30, _limits())
 var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var build := BuildModel.new(DataDB.load_json("build"))
+var journal := FishJournal.new()
 var world: String = "earth"
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
@@ -36,7 +37,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "bag": bag.to_array(), "build": build.to_dict(),
+		"farm": farm.to_array(), "bag": bag.to_array(), "build": build.to_dict(), "journal": journal.to_dict(),
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -52,6 +53,7 @@ func from_dict(d: Dictionary) -> bool:
 	rep_street = int(d.get("rep_street", 0))
 	farm.from_array(d.get("farm", []))
 	build.from_dict(d.get("build", {}))
+	journal.from_dict(d.get("journal", {}))
 	if d.has("bag"):
 		bag.from_array(d["bag"])
 	return true

@@ -106,6 +106,9 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if GameState.clock.advance(delta):
+		if rain_today > 0.0:
+			GameState.farm.rain_water()  # it rained today: crops are watered
+			_say("Rain watered the crops")
 		GameState.farm.next_day()
 		GameState.nodes.next_day()
 		GameState.energy.new_day(false)
@@ -223,7 +226,9 @@ func _update_fishing(delta: float) -> void:
 	fishing.tick(delta, Input.is_action_pressed("use_tool"))
 	if fishing.state == Fishing.State.CAUGHT:
 		GameState.bag.add(fishing.fish_id, 1)
-		_say("Caught a " + fish_table[fishing.fish_id].name + "!")
+		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
+		var rec := GameState.journal.record(fishing.fish_id, sz)
+		_say("Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:
 		_say("It got away")
