@@ -14,6 +14,7 @@ var ambient: AmbientView
 var npcs: NpcView
 var dialogue: DialogueView
 var car: CarView
+var police: PoliceView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -92,6 +93,11 @@ func _ready() -> void:
 	car.position = _car_spot()
 	car.toast.connect(_say)
 	world.add_child(car)
+	police = PoliceView.new()
+	police.setup(world, player, self, world.gen)
+	police.message.connect(_say)
+	car.crime.connect(police.commit)
+	world.add_child(police)
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)

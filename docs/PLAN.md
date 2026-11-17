@@ -105,7 +105,8 @@ Physics / feel:
 - [x] Robbery model (RobberyModel, data/loot.json: locks, lockpick, noise, loot, NPC memory/dog; tested)
 - [ ] One house to rob in play: wire RobberyModel to a town house (E to pick, loot prompt, noise bar)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
-- [ ] Wanted HUD stars + police NPC spawn + arrest, basic combat
+- [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
+- [ ] Basic combat (melee swing, NPC health), more crime triggers (robbery, theft)
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [ ] Animal in play: spawn wild chicken/horse, feed to tame, ride, gear UI
 - [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)

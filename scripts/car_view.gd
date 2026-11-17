@@ -14,6 +14,7 @@ var health := VehicleMath.HEALTH_MAX
 var _skid_t := 0.0
 var _smoke: CPUParticles2D
 signal toast(msg: String)
+signal crime(kind: String, pos: Vector2)
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -87,6 +88,8 @@ func _physics_process(delta: float) -> void:
 		if dmg > 0.0:
 			health = maxf(0.0, health - dmg)
 			toast.emit("Crash! Car health %d%%" % int(health))
+			if dmg >= 8.0 and driving:
+				crime.emit("hit_and_run", position)
 		vel *= 0.4  # bump
 	rotation = heading
 	sprite.rotation = 0.0
