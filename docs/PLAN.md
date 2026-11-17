@@ -103,7 +103,8 @@ Physics / feel:
 - [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
 - [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
 - [x] Robbery model (RobberyModel, data/loot.json: locks, lockpick, noise, loot, NPC memory/dog; tested)
-- [ ] One house to rob in play: wire RobberyModel to a town house (E to pick, loot prompt, noise bar)
+- [x] One house to rob in play: RobberyView on town doors (E pick lock, E loot, noise wakes residents -> heat, memory)
+- [ ] Robbery: enter interior scene, dogs bark, police respond to noise
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
 - [ ] Basic combat (melee swing, NPC health), more crime triggers (robbery, theft)

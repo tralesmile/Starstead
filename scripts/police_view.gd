@@ -34,6 +34,10 @@ func commit(kind: String, pos: Vector2) -> void:
 	heat = WantedMath.add(heat, kind, PoliceModel.witnessed(cop_pos, pos) or cops.size() > 0 or randf() < 0.5)
 	_sync_cops()
 
+func add_heat(h: float) -> void:
+	heat = clampf(heat + h, 0.0, WantedMath.MAX_HEAT)
+	_sync_cops()
+
 func stars() -> int:
 	return WantedMath.stars(heat)
 

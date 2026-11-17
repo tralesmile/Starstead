@@ -15,6 +15,7 @@ var npcs: NpcView
 var dialogue: DialogueView
 var car: CarView
 var police: PoliceView
+var robbery: RobberyView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -98,6 +99,10 @@ func _ready() -> void:
 	police.message.connect(_say)
 	car.crime.connect(police.commit)
 	world.add_child(police)
+	robbery = RobberyView.new()
+	robbery.setup(town, world, police, player)
+	robbery.message.connect(_say)
+	add_child(robbery)
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -217,6 +222,11 @@ func _unhandled_input(e: InputEvent) -> void:
 		var nn := npcs.near(player.position + Vector2(0, -8))
 		if it.is_empty() and not nn.is_empty():
 			dialogue.open(nn["npc"], nn["activity"])
+			return
+		if it.get("kind", "") == "door":
+			var fc := PlayerMath.facing_tile(player.position, player.facing)
+			var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+			robbery.interact(fc if not robbery.building_at(fc).is_empty() else pc)
 			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO
