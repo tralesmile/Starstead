@@ -52,3 +52,11 @@ func test_work_shift_promotes() -> void:
 	var bad := m.work_shift("farmhand", 3.0, {}, 100.0, 0)
 	check(not bad["ok"])
 	check_eq(bad["pay"], 0)
+
+func test_shift_clock_and_places() -> void:
+	var m := _m()
+	for id in m.ids():
+		check(m.place_of(id) != "", id)
+	check_eq(m.minutes_after_shift("farmhand", 0.0), 240.0)
+	check_eq(m.minutes_after_shift("farmhand", 1190.0), float(GameClock.DAY_LENGTH_MIN) - 1.0)
+	check(JobModel.reason_text("rep", "Mechanic").contains("reputation"))

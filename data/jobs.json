@@ -1,32 +1,101 @@
 {
   "farmhand": {
-    "name": "Farmhand", "pay": 40, "energy": 25, "xp_per_shift": 10,
-    "hours": {"start": 6, "end": 14},
-    "rep": {"kind": "honest", "min": 0},
+    "name": "Farmhand",
+    "pay": 40,
+    "energy": 25,
+    "xp_per_shift": 10,
+    "hours": {
+      "start": 6,
+      "end": 14
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 0
+    },
     "ranks": [
-      {"name": "Hired Hand", "pay_mult": 1.0, "xp": 0},
-      {"name": "Foreman", "pay_mult": 1.25, "xp": 50},
-      {"name": "Farm Manager", "pay_mult": 1.6, "xp": 150}
-    ]
+      {
+        "name": "Hired Hand",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Foreman",
+        "pay_mult": 1.25,
+        "xp": 50
+      },
+      {
+        "name": "Farm Manager",
+        "pay_mult": 1.6,
+        "xp": 150
+      }
+    ],
+    "place": "barn",
+    "shift_hours": 4
   },
   "delivery_driver": {
-    "name": "Delivery Driver", "pay": 65, "energy": 30, "xp_per_shift": 12,
-    "hours": {"start": 8, "end": 20},
-    "rep": {"kind": "honest", "min": 10},
+    "name": "Delivery Driver",
+    "pay": 65,
+    "energy": 30,
+    "xp_per_shift": 12,
+    "hours": {
+      "start": 8,
+      "end": 20
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 10
+    },
     "ranks": [
-      {"name": "Courier", "pay_mult": 1.0, "xp": 0},
-      {"name": "Route Lead", "pay_mult": 1.3, "xp": 60},
-      {"name": "Dispatcher", "pay_mult": 1.7, "xp": 180}
-    ]
+      {
+        "name": "Courier",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Route Lead",
+        "pay_mult": 1.3,
+        "xp": 60
+      },
+      {
+        "name": "Dispatcher",
+        "pay_mult": 1.7,
+        "xp": 180
+      }
+    ],
+    "place": "stall",
+    "shift_hours": 4
   },
   "mechanic": {
-    "name": "Mechanic", "pay": 90, "energy": 35, "xp_per_shift": 15,
-    "hours": {"start": 18, "end": 4},
-    "rep": {"kind": "street", "min": 10},
+    "name": "Mechanic",
+    "pay": 90,
+    "energy": 35,
+    "xp_per_shift": 15,
+    "hours": {
+      "start": 18,
+      "end": 4
+    },
+    "rep": {
+      "kind": "street",
+      "min": 10
+    },
     "ranks": [
-      {"name": "Grease Monkey", "pay_mult": 1.0, "xp": 0},
-      {"name": "Wrench", "pay_mult": 1.35, "xp": 80},
-      {"name": "Chop Shop Boss", "pay_mult": 1.8, "xp": 220}
-    ]
+      {
+        "name": "Grease Monkey",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Wrench",
+        "pay_mult": 1.35,
+        "xp": 80
+      },
+      {
+        "name": "Chop Shop Boss",
+        "pay_mult": 1.8,
+        "xp": 220
+      }
+    ],
+    "place": "workshop",
+    "shift_hours": 4
   }
 }

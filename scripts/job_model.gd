@@ -71,3 +71,18 @@ func work_shift(id: String, hour: float, rep: Dictionary, energy: float, xp: int
 	var nxp := xp + int(j["xp_per_shift"])
 	return {"ok": true, "reason": "", "pay": pay, "energy_cost": int(j["energy"]), "xp_gain": int(j["xp_per_shift"]),
 		"xp": nxp, "promoted": rank_index(id, nxp) > rank_index(id, xp), "rank": rank_name(id, nxp)}
+
+## Game minutes after a shift, never past the end of the day (so a shift cannot skip the night's pass-out).
+func minutes_after_shift(id: String, minutes: float) -> float:
+	return minf(minutes + float(jobs[id].get("shift_hours", 4)) * 60.0, float(GameClock.DAY_LENGTH_MIN) - 1.0)
+
+func place_of(id: String) -> String:
+	return String(jobs[id].get("place", ""))
+
+## Human reason for a refused shift.
+static func reason_text(why: String, job_name: String) -> String:
+	match why:
+		"hours": return "%s: not working hours" % job_name
+		"rep": return "%s: your reputation is too low" % job_name
+		"energy": return "%s: too tired" % job_name
+	return "Cannot work"

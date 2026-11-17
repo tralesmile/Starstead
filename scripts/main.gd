@@ -18,6 +18,7 @@ var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
+var jobs: JobView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -105,6 +106,10 @@ func _ready() -> void:
 	robbery.setup(town, world, police, player)
 	robbery.message.connect(_say)
 	add_child(robbery)
+	jobs = JobView.new()
+	jobs.setup(player, town.buildings, world.stall_cell())
+	jobs.message.connect(_say)
+	add_child(jobs)
 	animals = AnimalView.new()
 	animals.setup(world, player, world.gen)
 	animals.message.connect(_say)
@@ -201,6 +206,8 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
+	if prompt.text == "" and not shop.visible:
+		prompt.text = jobs.prompt()
 	var an_near := animals.near(player.position)
 	if prompt.text == "" and not shop.visible and not an_near.is_empty():
 		prompt.text = animals.prompt_for(an_near)
