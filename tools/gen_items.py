@@ -430,6 +430,28 @@ def river_king():
     return i
 icons['river_king'] = river_king
 
+def crab_pot():
+    i = Ic()
+    i.ell(8, 9, 6, 5, "#a8885a")
+    for x in (4, 6, 8, 10, 12):
+        i.line(x, 5, x, 13, "#6a4e2a")
+    i.line(3, 8, 13, 8, "#6a4e2a"); i.line(3, 11, 13, 11, "#6a4e2a")
+    i.rect(6, 2, 9, 4, "#d8503a")      # float
+    i.px(7, 2, "#ff9a80")
+    return i
+icons['crab_pot'] = crab_pot
+
+def crab():
+    i = Ic()
+    i.ell(8, 9, 5.5, 3.6, "#d8583a"); i.ell(8, 8, 4, 2.4, "#ee7a58")
+    i.rect(2, 5, 4, 7, "#d8583a"); i.rect(12, 5, 14, 7, "#d8583a")    # claws
+    i.px(3, 4, "#ee7a58"); i.px(13, 4, "#ee7a58")
+    for x in (4, 6, 10, 12):
+        i.px(x, 13, "#a8402a")
+    i.px(6, 7, "#ffffff"); i.px(10, 7, "#ffffff")
+    return i
+icons['crab'] = crab
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():

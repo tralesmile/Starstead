@@ -14,3 +14,15 @@ d.ellipse([11, 9, 19, 12], fill=(238, 170, 110))
 for x, y in [(6, 7), (4, 10), (26, 7), (28, 10), (16, 4), (11, 5), (21, 5)]:
     d.point((x, y), fill=(150, 210, 255))                                # spray droplets
 im.save(os.path.join(ROOT, "assets", "sprites", "sprinkler.png")); print("wrote sprinkler.png")
+
+# crab pot world sprite 32x32: woven cage floating on water with a red float
+im = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+d.ellipse([5, 20, 27, 29], fill=(20, 60, 70, 90))                          # water shadow
+d.ellipse([7, 12, 25, 26], fill=(168, 136, 90), outline=OUT)
+for x in (10, 13, 16, 19, 22):
+    d.line([(x, 14), (x, 24)], fill=(106, 78, 42))
+d.line([(8, 17), (24, 17)], fill=(106, 78, 42)); d.line([(8, 21), (24, 21)], fill=(106, 78, 42))
+d.ellipse([12, 11, 20, 15], fill=(120, 90, 50), outline=OUT)
+d.line([(16, 11), (16, 5)], fill=OUT)                                       # rope
+d.ellipse([13, 1, 19, 7], fill=(216, 80, 58), outline=OUT); d.point((15, 3), fill=(255, 160, 140))
+im.save(os.path.join(ROOT, "assets", "sprites", "crab_pot.png")); print("wrote crab_pot.png")

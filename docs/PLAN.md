@@ -94,7 +94,7 @@ Wood chopping (8)
 - [x] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
 Fishing (6)
 - [x] Fishing visuals: line from the rod tip, bobber that bobs/dips, splash rings, "!" alert, framed reel bar with the fish icon (BobberMath, FishingWorldView). Hold-to-cast done (power bar, 2-7 tiles, CastMath; farther = deeper water)
-- [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
+- [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, [x] crab pots placeable (shop 150, hotbar 0 cycles sprinkler/crab pot, fill overnight, hand empties; CrabPots tested, saved) and legendary River King + journal screen
 Houses, buildings, graphics (5, 10)
 - [x] Interior system: E at a door -> fade -> room (InteriorModel layouts, InteriorView, 16 interior sprites via tools/gen_interior.py), walk out through the door gap to return to the exact outside spot; barn, workshop, farmhouse walk-in, other houses after picking the lock
 - [x] Farmhouse placed near the start with a bed (E sleeps: next day, crops grow, autosave). [x] storage chest in the farmhouse (E near it: ChestView, click/shift-click moves stacks, saved; ChestModel tested). [x] kitchen/cooking (farmhouse stove: CookView, 6 recipes in data/recipes.json, dishes restore energy, right-click a dish in the bag to eat; CookModel tested). [ ] NPC home furniture; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel

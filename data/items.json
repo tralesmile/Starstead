@@ -273,5 +273,18 @@
   "price": 1500,
   "stack": 1,
   "rarity": "gold"
+ },
+ "crab_pot": {
+  "name": "Crab Pot",
+  "price": 60,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 150,
+  "rarity": "bronze"
+ },
+ "crab": {
+  "name": "Crab",
+  "price": 38,
+  "stack": 99
  }
 }

@@ -8,6 +8,8 @@ const GAP := 2
 var selected := 0
 var seed_ids: Array = []   # every seed in crops.json; the seed slot plants the chosen one
 var seed_idx := 0
+const PLACEABLES := ["sprinkler", "crab_pot"]   # slot 0 holds both; press its key again to switch
+var place_idx := 0
 var canvas: Control
 var tool_tex: Texture2D = load("res://assets/sprites/held_tools.png")
 var item_tex: Texture2D = load("res://assets/sprites/items.png")
@@ -28,6 +30,8 @@ func slot_tool(i: int) -> String:
 	var t: String = ToolUse.TOOLS[i]
 	if t == "turnip_seed" and not seed_ids.is_empty():
 		return seed_ids[seed_idx % seed_ids.size()]
+	if t == "sprinkler":
+		return PLACEABLES[place_idx % PLACEABLES.size()]
 	return t
 
 func cycle_seed() -> void:
@@ -47,6 +51,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		if i >= 0 and i < ToolUse.TOOLS.size():
 			if i == selected and ToolUse.TOOLS[i] == "turnip_seed":
 				cycle_seed()
+			elif i == selected and ToolUse.TOOLS[i] == "sprinkler":
+				place_idx = (place_idx + 1) % PLACEABLES.size()
 			selected = i
 
 func _process(_d: float) -> void:
@@ -72,7 +78,7 @@ func _draw_bar() -> void:
 			var f := GameState.can.fraction()
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0, 0, 0, 0.7))
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2((SLOT - 6) * f, 3)), Color(0.35, 0.7, 1.0))
-		if t.ends_with("_seed") or t == "sprinkler":
+		if t.ends_with("_seed") or t == "sprinkler" or t == "crab_pot":
 			canvas.draw_string(font, r.position + Vector2(SLOT - 13, SLOT - 3), str(GameState.bag.count(t)), HORIZONTAL_ALIGNMENT_RIGHT, 12, 9, Color(1, 1, 1))
 		if sel:
 			canvas.draw_rect(r.grow(2), Color(1.0, 0.85, 0.2), false, 2.0)

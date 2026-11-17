@@ -55,6 +55,7 @@ func _ready() -> void:
 	add_child(world)
 	world.build(1)
 	add_child(FarmView.new())
+	world.add_child(CrabPotView.new())
 	town = TownView.new()
 	town.setup(world, world.gen, world.stall_cell())
 	world.add_child(town)
@@ -312,6 +313,12 @@ func _process(delta: float) -> void:
 		GameState.journal.record("carp", 38)
 		GameState.journal.record("carp", 44)
 		journal_view.toggle()
+	if "--pot-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		var pc := TargetMath.cell_of(player.position)
+		for dx in range(-3, 0):
+			var c := pc + Vector2i(dx, 1)
+			if GameState.pots.place(c, world.gen.sdf_at(c.x, c.y)):
+				GameState.pots.pots[c]["ready"] = ["crab"] if dx == -2 else []
 	if "--chest-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.chest.add("wood", 30)
 		GameState.chest.add("egg", 6)
@@ -528,6 +535,27 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.swing()
 		var cell := _target_cell()
 		var dl: Array = []
+		if hotbar.current() == "crab_pot":
+			if GameState.bag.count("crab_pot") < 1:
+				_say("No crab pots - buy them at the shop")
+			elif GameState.pots.place(cell, world.gen.sdf_at(cell.x, cell.y)):
+				GameState.bag.remove("crab_pot", 1)
+				_splash_fx(cell)
+				_say("Crab pot placed - check it tomorrow")
+			else:
+				_say("Needs open water, half a tile out")
+			return
+		if hotbar.current() == "hand" and GameState.pots.pots.has(cell):
+			var got: Array = GameState.pots.collect(cell)
+			if got.is_empty():
+				GameState.pots.pick_up(cell)
+				GameState.bag.add("crab_pot", 1)
+				_say("Picked up the crab pot")
+			else:
+				for id in got:
+					drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
+				_say("Emptied the crab pot (%d)" % got.size())
+			return
 		if hotbar.current() == "watering_can":
 			GameState.can.set_capacity(LineMath.capacity_for(20, GameState.bag, axe_table))
 			if world.gen.sdf_at(cell.x, cell.y) < 0.0:
@@ -801,6 +829,11 @@ func _end_day() -> void:
 	if sprinkled > 0:
 		_say("Sprinklers watered %d tiles" % sprinkled)
 	GameState.farm.next_day()
+	var rngp := RandomNumberGenerator.new()
+	rngp.seed = GameState.clock.day * 31 + 5
+	var caught := GameState.pots.day_tick(rngp)
+	if caught > 0:
+		_say("Your crab pots caught something")
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
 	animals.day_tick()
