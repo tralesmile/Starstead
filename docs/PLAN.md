@@ -33,7 +33,7 @@ Graphics:
 - [x] Foam rings at dock posts (DockFoam)
 - [x] Light rays on water
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
-- [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
+- [x] Long evening shadows (ShadowMath: shadows lean west in the morning, east at dusk, stretch near the horizon, fade at night; World.apply_sun). [ ] warm point lights at night (lanterns, windows partly done)
 - [x] Rain waters crops at day end (FarmModel.rain_water)
 - [x] Weather: rain (drops + splashes, overcast darkening, seeded per day; WeatherMath)
 - [x] Weather: rain ripples on water (WeatherMath.ripple, elliptical rings)
@@ -104,7 +104,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
 - [ ] Graphics: seasonal ground/tree colours, grass-to-path tile transitions, porches and fences art
 - [ ] Physics: camera look-ahead tuned for dead zone at car speeds
-- [ ] Physics: stamina-based sprint inertia, dust on hard direction changes, mount stamina
+- [x] Physics: sprint inertia (PlayerMath.sprint_ease) and skid dust on hard reversals (is_skid). [ ] mount stamina
 
 ## Backlog additions (2026-11-17 research)
 - Stardew-like satisfaction comes from small visible progress each day (skill levels, quality stars, tool upgrades) plus low-stress loops: https://www.popsci.com/health/stardew-valley-psychology-farming/ and https://mechanicsofmagic.com/?p=1915 . Weakest part of Starstead vs Stardew: progression feedback (no levels/upgrades before today) -> added skills + axe upgrades; next: pickaxe/hoe/can upgrades, level-up fanfare, crop quality stars.

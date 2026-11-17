@@ -7,6 +7,7 @@ var world: World
 var hotbar: Hotbar
 var toast: Label
 var toast_t := 0.0
+var _sun_applied := -1.0
 var highlighted: Sprite2D = null
 var shop: ShopView
 var build_view: BuildView
@@ -319,6 +320,9 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
+	if absf(GameState.clock.minutes - _sun_applied) >= 6.0 or _sun_applied < 0.0:
+		_sun_applied = GameState.clock.minutes
+		World.apply_sun(get_tree(), _sun_applied)
 	town.set_night(0.0 if interior.active else DayNight.lamp_strength(GameState.clock.minutes))
 	world.part_reeds(player.position, delta)
 	var near := world.interactables.near(player.position, _target_cell())

@@ -230,7 +230,26 @@ static func make_shadow(width: float) -> Sprite2D:
 	sh.scale = Vector2(width / 32.0, maxf(1.0, width / 48.0)).round() if width > 40 else Vector2(1, 1)
 	sh.position = Vector2(0, 2)
 	sh.z_index = -3
+	sh.add_to_group("sun_shadows")
+	sh.set_meta("base_scale", sh.scale)
+	sh.set_meta("base_pos", sh.position)
 	return sh
+
+static func apply_sun(tree: SceneTree, minutes: float) -> void:
+	## Leans and stretches every drop shadow to the sun (ShadowMath), fading them at night.
+	var dx := ShadowMath.offset_x(minutes)
+	var st := ShadowMath.stretch(minutes)
+	var a := ShadowMath.strength(minutes)
+	for n in tree.get_nodes_in_group("sun_shadows"):
+		var sh := n as Sprite2D
+		if sh == null or not sh.has_meta("base_scale"):
+			continue
+		var bs: Vector2 = sh.get_meta("base_scale")
+		var bp: Vector2 = sh.get_meta("base_pos")
+		var w := bs.x * 32.0
+		sh.scale = Vector2(bs.x * st, bs.y)
+		sh.position = Vector2(bp.x + roundf(dx * clampf(w / 40.0, 0.35, 1.6)), bp.y)
+		sh.modulate.a = a
 
 func stall_cell() -> Vector2i:
 	return _stall_cell()
