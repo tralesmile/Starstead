@@ -128,5 +128,21 @@
   "buy": true,
   "buy_price": 800,
   "rarity": "silver"
+ },
+ "pickaxe_copper": {
+  "name": "Copper Pickaxe",
+  "price": 50,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 300,
+  "rarity": "bronze"
+ },
+ "pickaxe_iron": {
+  "name": "Iron Pickaxe",
+  "price": 150,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 800,
+  "rarity": "silver"
  }
 }

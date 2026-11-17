@@ -21,7 +21,7 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 		"axe", "pickaxe":
 			if nodes == null:
 				return ""
-			var r := nodes.hit(cell, tool, axe_power(inv, axes) if tool == "axe" else 1)
+			var r := nodes.hit(cell, tool, axe_power(inv, axes, tool))
 			if r.is_empty():
 				return ""
 			if r.has("id"):
@@ -56,10 +56,10 @@ static func _give(inv: Inventory, drops, id: String, n: int) -> void:
 	else:
 		drops.append({"id": id, "n": n})
 
-static func axe_power(inv: Inventory, axes: Dictionary) -> int:
+static func axe_power(inv: Inventory, axes: Dictionary, tool: String = "axe") -> int:
 	## Best axe upgrade in the bag decides chop power (1 = starter axe).
 	var best := 1
 	for id in axes:
-		if inv.count(id) > 0:
+		if String(id).begins_with(tool + "_") and inv.count(id) > 0:
 			best = maxi(best, int(axes[id].power))
 	return best

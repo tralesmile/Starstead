@@ -19,5 +19,7 @@
  "fur_coat": 17,
  "armour": 18,
  "axe_copper": 19,
- "axe_iron": 20
+ "axe_iron": 20,
+ "pickaxe_copper": 21,
+ "pickaxe_iron": 22
 }

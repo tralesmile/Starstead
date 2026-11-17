@@ -18,3 +18,10 @@ func test_axe_data_and_icons_exist() -> void:
 	for id in d:
 		check(JSON.parse_string(FileAccess.open("res://data/items.json", FileAccess.READ).get_as_text()).has(id))
 		check(JSON.parse_string(FileAccess.open("res://data/item_icons.json", FileAccess.READ).get_as_text()).has(id))
+
+func test_upgrades_only_apply_to_their_own_tool() -> void:
+	var inv := Inventory.new(30, {"pickaxe_iron": 1})
+	inv.add("pickaxe_iron")
+	var t := {"axe_iron": {"power": 3}, "pickaxe_iron": {"power": 3}}
+	check_eq(ToolUse.axe_power(inv, t, "axe"), 1)
+	check_eq(ToolUse.axe_power(inv, t, "pickaxe"), 3)

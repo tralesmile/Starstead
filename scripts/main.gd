@@ -41,7 +41,7 @@ var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
 var bait_table: Dictionary = DataDB.load_json("bait")
 var rod_table: Dictionary = DataDB.load_json("rods")
-var axe_table: Dictionary = DataDB.load_json("axes")
+var axe_table: Dictionary = _merge(DataDB.load_json("axes"), DataDB.load_json("pickaxes"))
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -694,3 +694,8 @@ func _splash_fx(cell: Vector2i, soil_drops := false) -> void:
 	p.color = Color(0.6, 0.8, 1.0, 0.9) if not soil_drops else Color(0.5, 0.7, 0.95, 0.8)
 	world.add_child(p)
 	get_tree().create_timer(0.9).timeout.connect(p.queue_free)
+
+func _merge(a: Dictionary, b: Dictionary) -> Dictionary:
+	var o := a.duplicate()
+	o.merge(b)
+	return o
