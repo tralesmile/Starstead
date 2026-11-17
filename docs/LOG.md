@@ -37,3 +37,4 @@
 2026-11-17 | Run (cont.) | Context action: E harvests a ripe crop on the faced/underfoot tile (ContextAction, tested). 247 tests green, ERROR grep clean. Next: weeds/scythe, mount stamina, crop quality stars, pick-up/chest context actions.
 2026-11-17 | Run (3h, parallel run overlap) | Camera look-ahead/dead zone scale with speed for the car (tested, car-demo screenshot checked: car stays framed with road ahead). Hoe/can upgrades and pickup floaters pushed earlier. My own skid/shadow duplicates of the parallel run were dropped.
 2026-11-17 | Run (cont.) | Fish journal screen on J (JournalView, screenshot checked: silhouettes, caught rows, legend updated). 253 tests green.
+2026-11-17 | Run (cont.) | Graphics: grass-to-path transition (ground shader fringe + blade tips + creeping grass), before/after at the dock path: edge now reads as grass overhanging dirt instead of a flat cut. Closer to ART_TARGET (painterly grass/orange path edge). 253 tests green.

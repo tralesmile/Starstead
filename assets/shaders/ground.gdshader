@@ -156,6 +156,16 @@ void fragment() {
 			dc = mix(dc, DIRT_D, (1.0 - smoothstep(0.5, 0.54, pe)) * 0.45);  // soft darker rim
 			col = dc;
 		}
+		// grass -> path transition: darker grass fringe hugging the edge, tufts leaning over it, and grass specks creeping into the dirt rim
+		if (pe <= 0.5 && pe > 0.36) {
+			float fr = smoothstep(0.36, 0.5, pe);
+			col = mix(col, GRASS_D * 0.92, fr * 0.7);
+			if (hash(floor(px / 2.0) + 13.0) > 0.72 && pe > 0.43) col = mix(col, GRASS_L, 0.8);  // lit blade tips on the lip
+		} else if (pe > 0.5 && pe < 0.6) {
+			float sp = hash(floor(px / 2.0) + 71.0);
+			if (sp > 0.8) col = mix(col, GRASS_M, 0.7);                                          // grass creeping onto the dirt
+			else if (pe < 0.53) col = mix(col, DIRT_D, 0.25);
+		}
 		col = mix(col, col * 0.8, (1.0 - smoothstep(0.42, 0.7, sdf)) * 0.5);  // damp grass near shore
 		if (sS < 0.42 && sdf < 0.6) col = mix(col, GRASS_L * 1.05, 0.55);    // sunlit lip above a bank face
 	}
