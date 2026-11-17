@@ -4,6 +4,8 @@ extends CharacterBody2D
 
 var facing: int = PlayerMath.Facing.DOWN
 var speed_mult := 1.0  # >1 while riding
+var zoom_step := 2     # user zoom 1..3 (integer: crisp pixels)
+var zoom_bias := 0     # -1 while driving/riding
 var rain := 0.0   # current rain 0..1 (set by main): muddy ground
 var sprite: Sprite2D
 var camera: Camera2D
@@ -62,6 +64,8 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():  # screenshot helper: -- --zoom=1 --at=x,y (tiles)
 		if a.begins_with("--zoom="):
 			camera.zoom = Vector2.ONE * float(a.substr(7))
+			zoom_step = clampi(int(float(a.substr(7))), 1, 3)
+			zoom_bias = 0
 		elif a.begins_with("--at="):
 			var xy := a.substr(5).split(",")
 			position = Vector2(float(xy[0]), float(xy[1])) * 32.0
@@ -113,6 +117,9 @@ func _physics_process(delta: float) -> void:
 		shake_left -= delta
 		sh = HitMath.shake_offset(shake_left, shake_total, shake_amp, _t + shake_left)
 	camera.offset = CameraMath.snap(look) + sh
+	var zt := float(TargetMath.effective_zoom(zoom_step, zoom_bias))
+	if absf(camera.zoom.x - zt) > 0.01:
+		camera.zoom = Vector2.ONE * move_toward(camera.zoom.x, zt, delta * 8.0)  # quick glide between integer zooms
 	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel
 
 func shake(amp: float = 1.0, secs: float = 0.15) -> void:

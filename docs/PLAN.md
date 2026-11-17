@@ -72,10 +72,12 @@ Physics / feel:
 ## Phase 1.5: Feel & polish (OWNER PRIORITY 2026-11-17, do these BEFORE new Phase 2/3 items; order chosen by owner: feel first)
 Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.
 Controls + camera (1, 9)
-- [ ] Mouse support: tile cursor under the mouse (yellow outline), left-click = use current tool on that tile (within reach), right-click = interact/talk/enter, scroll wheel + 1-0/-/= change hotbar slot, Tab = inventory
+- [x] Mouse support: tile cursor (yellow in reach), left-click uses the tool on that tile, right-click interacts, wheel changes slot, Ctrl+wheel or +/- zoom (TargetMath, CursorView, legend line)
+- [ ] Tab opens the inventory screen (see inventory items below)
 - [ ] Context action: when nothing is selected, E/click does the obvious thing (talk, open door, pick up, harvest); on-screen key hints shown in a small bottom-right legend, rebindable later
-- [ ] Camera: smooth follow with dead-zone, zoom in/out (mouse wheel + Ctrl or +/- keys, integer steps 1-3), look-ahead kept, snap to pixels, shake kept; camera clamps at map edges
-- [ ] Camera: zoom out automatically while driving the car and riding the horse
+- [x] Camera zoom 1-3 (Ctrl+wheel, +/-) with a quick glide; look-ahead, pixel snap, shake and edge limits kept
+- [ ] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
+- [x] Camera zooms out one step while driving the car or riding the horse
 Items, pickup, inventory (2, 3, 4)
 - [ ] Dropped items in the world: chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
 - [ ] Item icons: 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops

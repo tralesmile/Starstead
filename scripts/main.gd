@@ -18,6 +18,9 @@ var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
+var cursor: CursorView
+var mouse_aim := false
+var legend: Label
 var jobs: JobView
 var race: RaceView
 var town: TownView
@@ -136,6 +139,17 @@ func _ready() -> void:
 	add_child(shop)
 	dialogue = DialogueView.new()
 	add_child(dialogue)
+	cursor = CursorView.new()
+	cursor.z_index = 30
+	world.add_child(cursor)
+	legend = Label.new()
+	legend.position = Vector2(8, 322)
+	legend.add_theme_font_size_override("font_size", 10)
+	legend.modulate = Color(1, 1, 1, 0.7)
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag   Shift: sprint"
+	var leg_layer := CanvasLayer.new()
+	leg_layer.add_child(legend)
+	add_child(leg_layer)
 	prompt = Label.new()
 	prompt.position = Vector2(260, 300)
 	add_child(prompt)
@@ -177,6 +191,9 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--mouse-demo" in OS.get_cmdline_user_args():  # screenshot helper: mouse hovering 2 tiles right of the player
+		mouse_aim = true
+		get_viewport().warp_mouse(Vector2(320 + 2 * 64 + 20, 180 - 10))
 	if "--swing-demo" in OS.get_cmdline_user_args():  # screenshot helper: hold the axe mid-swing
 		player.held_tool = "axe"
 		player.facing = PlayerMath.Facing.RIGHT
@@ -214,7 +231,7 @@ func _process(delta: float) -> void:
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
 	world.part_reeds(player.position, delta)
-	var near := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+	var near := world.interactables.near(player.position, _target_cell())
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
@@ -230,6 +247,8 @@ func _process(delta: float) -> void:
 		prompt.text = "E: Drive"
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
+	player.zoom_bias = -1 if (car.driving or animals.riding != null) else 0
+	_update_cursor()
 	_update_highlight()
 	_update_fade(delta)
 	toast_t -= delta
@@ -237,6 +256,30 @@ func _process(delta: float) -> void:
 		toast.text = ""
 
 func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventMouseMotion:
+		mouse_aim = true
+	elif e is InputEventKey and e.pressed and not e.echo and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down") or e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
+		mouse_aim = false  # walking with the keyboard goes back to the tile in front of you
+	if e is InputEventMouseButton and e.pressed and not shop.visible:
+		if e.button_index == MOUSE_BUTTON_WHEEL_UP or e.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			var dir := -1 if e.button_index == MOUSE_BUTTON_WHEEL_UP else 1
+			if e.ctrl_pressed:
+				player.zoom_step = TargetMath.zoom_step(player.zoom_step, -dir)
+			else:
+				hotbar.selected = TargetMath.cycle(hotbar.selected, dir, ToolUse.TOOLS.size())
+			return
+		if e.button_index == MOUSE_BUTTON_LEFT or e.button_index == MOUSE_BUTTON_RIGHT:
+			mouse_aim = true
+			var act := "use_tool" if e.button_index == MOUSE_BUTTON_LEFT else "interact"
+			var ev := InputEventAction.new()
+			ev.action = act
+			ev.pressed = true
+			_unhandled_input(ev)
+			return
+	if e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_EQUAL or e.keycode == KEY_KP_ADD):
+		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
+	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
+		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
 	if dialogue.handle(e):
 		get_viewport().set_input_as_handled()
 		return
@@ -259,7 +302,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		animals.dismount()
 		return
 	if e.is_action_pressed("interact"):
-		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+		var it := world.interactables.near(player.position, _target_cell())
 		var nn := npcs.near(player.position + Vector2(0, -8))
 		if it.is_empty() and not nn.is_empty():
 			dialogue.open(nn["npc"], nn["activity"])
@@ -269,7 +312,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			animals.interact(an)
 			return
 		if it.get("kind", "") == "door":
-			var fc := PlayerMath.facing_tile(player.position, player.facing)
+			var fc := _target_cell()
 			var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
 			robbery.interact(fc if not robbery.building_at(fc).is_empty() else pc)
 			return
@@ -290,7 +333,7 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed("use_tool"):
 		player.held_tool = hotbar.current()
 		player.swing()
-		var cell := PlayerMath.facing_tile(player.position, player.facing)
+		var cell := _target_cell()
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
 		world.sync_props(GameState.nodes)
 		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
@@ -301,7 +344,7 @@ func _unhandled_input(e: InputEvent) -> void:
 
 func _update_highlight() -> void:
 	## Yellow outline on the tree/rock the player faces (the interact target).
-	var cell := PlayerMath.facing_tile(player.position, player.facing)
+	var cell := _target_cell()
 	var s: Sprite2D = null
 	if GameState.nodes.is_solid(cell):
 		s = world.prop_sprite(cell)
@@ -328,7 +371,7 @@ func _update_fade(delta: float) -> void:
 
 func _water_cell_ahead() -> Vector2i:
 	## First water cell 1-4 tiles in front of the player (cast distance), or (-1,-1).
-	var base := PlayerMath.facing_tile(player.position, player.facing)
+	var base := _target_cell()
 	var dir := base - Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
 	for k in 4:
 		var c := base + dir * k
@@ -360,7 +403,7 @@ func _rod_pressed() -> void:
 		fishing.hook()
 
 func _update_fishing(delta: float) -> void:
-	fishing.tick(delta, Input.is_action_pressed("use_tool"))
+	fishing.tick(delta, Input.is_action_pressed("use_tool") or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
 	if fishing.state == Fishing.State.CAUGHT:
 		GameState.bag.add(fishing.fish_id, 1)
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
@@ -423,3 +466,19 @@ func _near_workshop(p: Vector2) -> bool:
 		if b["id"] == "workshop" and p.distance_to(TownModel.sprite_bottom_center(b)) < 160.0:
 			return true
 	return false
+
+func _target_cell() -> Vector2i:
+	## Mouse tile when aiming with the mouse and in reach, otherwise the tile in front of the player.
+	if mouse_aim:
+		var c := TargetMath.cell_of(get_global_mouse_position())
+		if TargetMath.in_reach(player.position, c):
+			return c
+	return PlayerMath.facing_tile(player.position, player.facing)
+
+func _update_cursor() -> void:
+	var c := TargetMath.cell_of(get_global_mouse_position())
+	cursor.active = mouse_aim and not car.driving and not shop.visible
+	cursor.cell = c
+	cursor.reach = TargetMath.in_reach(player.position, c)
+	if mouse_aim and cursor.reach and not car.driving:
+		player.facing = TargetMath.facing_toward(player.position, c, player.facing)
