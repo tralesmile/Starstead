@@ -76,7 +76,7 @@ Physics / feel:
 - [x] Build mode: grid ghost placement with valid/invalid colour
 - [x] Placeable floor, wall, door, fence consuming inventory
 - [x] Roof piece, blueprint stamp (hut) and enclosed-room detection in BuildModel (tests)
-- [ ] Wire blueprint stamp key + roof/interior fade into BuildView
+- [x] Wire blueprint stamp key + roof/interior fade into BuildView
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)
 - [x] Shop UI: buy seeds (tools: still to add to the BUY tab)

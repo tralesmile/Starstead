@@ -28,3 +28,9 @@ func test_squash_ends_at_one() -> void:
 	check_eq(HitMath.squash(0.0, 0.2), Vector2.ONE)
 	var s := HitMath.squash(0.2, 0.2)
 	check(s.x > 1.0 and s.y < 1.0)
+
+func test_roof_piece_selectable_with_sprite() -> void:
+	check("roof" in BuildModel.PIECES)
+	var d: Dictionary = DataDB.load_json("build")
+	for p in BuildModel.PIECES:
+		check(FileAccess.file_exists("res://assets/sprites/%s.png" % d[p]["sprite"]), p)

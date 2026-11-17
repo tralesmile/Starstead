@@ -11,6 +11,8 @@ var idx := 0
 var ghost: Sprite2D
 var label: Label
 var reason := ""
+var _roofs: Dictionary = {}  # Vector2i -> roof Sprite2D
+var inside := false
 var _sprites: Dictionary = {}  # Vector2i -> Node2D
 signal message(text: String)
 
@@ -37,6 +39,10 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 	s.texture = _tex(piece_id)
 	s.centered = false
 	s.offset = Vector2(-16, -s.texture.get_height())
+	if bool(GameState.build.defs[piece_id].get("roof", false)):
+		s.z_index = 40  # over the player; faded while you are inside
+		s.offset = Vector2(-16, -32 - 8)
+		_roofs[cell] = s
 	if piece_id == "floor":
 		s.z_index = -8  # under props and the player
 		body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
@@ -52,6 +58,7 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 	_sprites[cell] = body
 
 func _unspawn(cell: Vector2i) -> void:
+	_roofs.erase(cell)
 	if _sprites.has(cell):
 		_sprites[cell].queue_free()
 		_sprites.erase(cell)
@@ -62,7 +69,37 @@ func target() -> Vector2i:
 func _blocked(c: Vector2i) -> bool:
 	return GameState.nodes.is_solid(c) or GameState.farm.soil.has(c)
 
+func _update_roofs(d: float) -> void:
+	## Roofs fade out while the player stands on an enclosed floor, back in outside.
+	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	inside = _roofs.size() > 0 and GameState.build.placed.has(pc) and GameState.build.placed[pc] in ["floor", "roof"] and GameState.build.is_enclosed(pc)
+	var want := 0.0 if inside else 1.0
+	for c in _roofs:
+		var s: Sprite2D = _roofs[c]
+		s.modulate.a = move_toward(s.modulate.a, want, d * 4.0)
+
+func stamp_blueprint(name: String) -> void:
+	## Place the blueprint with its centre-top at the faced cell; only if every cell is free and dry.
+	var o := target() - Vector2i(1, 0)
+	var bm: BuildModel = GameState.build
+	for e in BuildModel.BLUEPRINTS[name].cells:
+		var c := o + Vector2i(int(e[0]), int(e[1]))
+		var why := bm.check(c, "floor", gen.sdf_at(c.x, c.y), _blocked(c), GameState.bag) if bm.placed.has(c) == false else "Occupied"
+		if why == "Occupied" or why == "Too close to water" or why == "Something is in the way":
+			message.emit("No room: " + why)
+			return
+	if not GameState.bag.count("wood") >= int(bm.blueprint_cost(name).get("wood", 0)):
+		message.emit("Need %d wood" % int(bm.blueprint_cost(name).get("wood", 0)))
+		return
+	var n := bm.stamp(name, o, GameState.bag)
+	for e in BuildModel.BLUEPRINTS[name].cells:
+		var c := o + Vector2i(int(e[0]), int(e[1]))
+		if bm.placed.has(c) and not _sprites.has(c):
+			_spawn(c, bm.placed[c])
+	message.emit("Built %s (%d pieces)" % [BuildModel.BLUEPRINTS[name].name, n])
+
 func _process(_d: float) -> void:
+	_update_roofs(_d)
 	ghost.visible = active
 	if not active:
 		return
@@ -82,13 +119,16 @@ func handle_key(e: InputEvent) -> bool:
 	if e is InputEventKey and e.pressed and not e.echo:
 		if e.keycode == KEY_B:
 			active = not active
-			message.emit("Build mode ON (Q piece, F place, X demolish)" if active else "Build mode off")
+			message.emit("Build mode ON (Q piece, F place, H hut, X demolish)" if active else "Build mode off")
 			return true
 		if not active:
 			return false
 		if e.keycode == KEY_Q:
 			idx = (idx + 1) % BuildModel.PIECES.size()
 			message.emit(GameState.build.defs[piece()].name)
+			return true
+		if e.keycode == KEY_H:
+			stamp_blueprint("hut")
 			return true
 		if e.keycode == KEY_X:
 			var c := target()

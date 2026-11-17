@@ -2,7 +2,7 @@ class_name BuildModel
 extends RefCounted
 ## Pure build-mode rules: placement validity, cost, refund. Cells are Vector2i tile coords.
 
-const PIECES := ["floor", "wall", "door", "fence"]
+const PIECES := ["floor", "wall", "door", "fence", "roof"]
 var defs: Dictionary
 var placed: Dictionary = {}  # Vector2i -> piece id
 

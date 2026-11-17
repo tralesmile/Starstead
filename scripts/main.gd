@@ -67,6 +67,11 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
+	if "--hut-demo" in OS.get_cmdline_user_args():  # screenshot helper: stamp a hut via the blueprint key path
+		GameState.bag.add("wood", 99)
+		player.position += Vector2(160, 0)
+		player.facing = PlayerMath.Facing.RIGHT
+		build_view.stamp_blueprint("hut")
 	if "--build-demo" in OS.get_cmdline_user_args():  # screenshot helper: a little house next to the player
 		GameState.bag.add("wood", 99)
 		var o := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0)) + Vector2i(2, -3)
