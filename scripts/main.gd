@@ -27,6 +27,7 @@ var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
 var chest_view: ChestView
+var cook_view: CookView
 var drops_view: DropsView
 var float_fx: FloatFx
 var mouse_aim := false
@@ -158,6 +159,7 @@ func _ready() -> void:
 	add_child(dialogue)
 	inv_view = InventoryView.new()
 	inv_view.closed.connect(func(): player.set_physics_process(true))
+	inv_view.ate.connect(func(n, g): _say("Ate %s (+%d energy)" % [n, g]))
 	add_child(inv_view)
 	journal_view = JournalView.new()
 	journal_view.closed.connect(func(): player.set_physics_process(true))
@@ -165,9 +167,18 @@ func _ready() -> void:
 	chest_view = ChestView.new()
 	chest_view.closed.connect(func(): player.set_physics_process(true))
 	add_child(chest_view)
+	cook_view = CookView.new()
+	cook_view.closed.connect(func(): player.set_physics_process(true))
+	cook_view.cooked.connect(func(n): _say("Cooked " + n))
+	add_child(cook_view)
 	interior = InteriorView.new()
 	interior.setup(world, player, self)
 	interior.sleep_requested.connect(_sleep)
+	interior.cook_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		cook_view.open())
 	interior.chest_requested.connect(func():
 		player.velocity = Vector2.ZERO
 		player.move_v = Vector2.ZERO
@@ -300,6 +311,10 @@ func _process(delta: float) -> void:
 		GameState.chest.add("egg", 6)
 		GameState.bag.add("stone", 12)
 		chest_view.open()
+	if "--cook-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		for id in ["potato", "egg", "turnip", "tomato", "pumpkin", "milk"]:
+			GameState.bag.add(id, 2)
+		cook_view.open()
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)
@@ -422,6 +437,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.velocity = Vector2.ZERO
 			player.move_v = Vector2.ZERO
 			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
+	if cook_view.visible:
+		cook_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if chest_view.visible:

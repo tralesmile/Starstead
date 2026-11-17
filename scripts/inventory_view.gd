@@ -4,6 +4,7 @@ extends CanvasLayer
 ## click a slot then another to move/merge/swap, S sorts, X or Delete throws the picked slot away.
 
 signal closed
+signal ate(name: String, gained: int)
 const COLS := 10
 const CELL := 28.0
 const ORIGIN := Vector2(140, 96)
@@ -45,6 +46,14 @@ func handle(e: InputEvent) -> bool:
 		return false
 	if e.is_action_pressed("pause"):
 		toggle()
+		return true
+	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_RIGHT:
+		var ri := _slot_under_mouse()
+		if ri >= 0 and GameState.bag.slots[ri] != null:
+			var id: String = GameState.bag.slots[ri].id
+			var gained := CookModel.eat(GameState.bag, items, GameState.energy, id)
+			if gained >= 0:
+				ate.emit(String(items[id].name), gained)
 		return true
 	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 		var i := _slot_under_mouse()
@@ -101,7 +110,7 @@ func _draw_all() -> void:
 			canvas.draw_rect(r.grow(1), Color(1.0, 0.85, 0.2), false, 2.0)
 		elif i == hover:
 			canvas.draw_rect(r, Color(1, 1, 1, 0.8), false, 1.0)
-	var hint := "Click a slot, then another to move/swap   S sort   X trash   Tab close"
+	var hint := "Click a slot, then another to move/swap   Right-click: eat   S sort   X trash   Tab close"
 	canvas.draw_string(font, ORIGIN + Vector2(0, rows * CELL + 10), hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 1, 1, 0.8))
 	if hover >= 0 and bag.slots[hover] != null:
 		var id: String = bag.slots[hover].id

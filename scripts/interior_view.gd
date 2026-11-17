@@ -4,6 +4,7 @@ extends Node
 ## fade in. Leaving through the door gap (or Esc) returns to the exact outside spot.
 ## Actions: sleep (farmhouse bed), loot (robbery of house furniture).
 
+signal cook_requested
 signal chest_requested
 signal sleep_requested
 signal loot_requested(building: Dictionary)
@@ -170,8 +171,9 @@ func rel() -> Vector2:
 func prompt() -> String:
 	if not active or busy:
 		return ""
-	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest"])
+	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest", "cook"])
 	match String(a.get("action", "")):
+		"cook": return "E: Cook at the stove"
 		"chest": return "E: Open the storage chest"
 		"sleep": return "E: Sleep until morning"
 		"loot": return "E: Search the %s" % a["id"]
@@ -181,8 +183,11 @@ func interact() -> bool:
 	## E key inside a room; returns true when handled.
 	if not active or busy:
 		return false
-	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest"])
+	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest", "cook"])
 	match String(a.get("action", "")):
+		"cook":
+			cook_requested.emit()
+			return true
 		"chest":
 			chest_requested.emit()
 			return true

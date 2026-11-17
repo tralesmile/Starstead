@@ -33,5 +33,11 @@
  "pumpkin_seed": 31,
  "potato": 32,
  "tomato": 33,
- "pumpkin": 34
+ "pumpkin": 34,
+ "baked_potato": 35,
+ "fried_egg": 36,
+ "grilled_fish": 37,
+ "turnip_stew": 38,
+ "tomato_salad": 39,
+ "pumpkin_pie": 40
 }

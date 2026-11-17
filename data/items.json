@@ -225,5 +225,47 @@
   "name": "Pumpkin",
   "price": 90,
   "stack": 99
+ },
+ "baked_potato": {
+  "name": "Baked Potato",
+  "price": 45,
+  "stack": 20,
+  "energy": 25,
+  "rarity": "bronze"
+ },
+ "fried_egg": {
+  "name": "Fried Egg",
+  "price": 30,
+  "stack": 20,
+  "energy": 20,
+  "rarity": "bronze"
+ },
+ "grilled_fish": {
+  "name": "Grilled Fish",
+  "price": 60,
+  "stack": 20,
+  "energy": 35,
+  "rarity": "bronze"
+ },
+ "turnip_stew": {
+  "name": "Turnip Stew",
+  "price": 70,
+  "stack": 20,
+  "energy": 40,
+  "rarity": "silver"
+ },
+ "tomato_salad": {
+  "name": "Tomato Salad",
+  "price": 75,
+  "stack": 20,
+  "energy": 45,
+  "rarity": "silver"
+ },
+ "pumpkin_pie": {
+  "name": "Pumpkin Pie",
+  "price": 220,
+  "stack": 20,
+  "energy": 90,
+  "rarity": "silver"
  }
 }

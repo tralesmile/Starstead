@@ -43,3 +43,4 @@
 2026-11-17 | Run 2 (cont.) | Farmhouse storage chest (ChestView/ChestModel, saved in GameState.chest, screenshot checked). 264 tests green.
 2026-11-17 | Run 2 (cont.) | Sprinklers (placeable, 3x3 nightly watering, saved, shop, icon+world sprite; screenshot checked). 268 tests green.
 2026-11-17 | Run 2 (cont.) | Three seasonal crops + seed cycling on the seed slot (FarmModel.in_season, Hotbar.cycle_seed). 272 tests green.
+2026-11-17 | Run 2 (cont.) | Cooking at the farmhouse stove + eating from the bag (6 dishes, icons, CookModel/CookView, screenshot checked). 276 tests green.

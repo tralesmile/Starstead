@@ -399,6 +399,24 @@ icons['potato'] = potato
 icons['tomato'] = tomato
 icons['pumpkin'] = pumpkin
 
+def dish(food, food_l, extra=None):
+    def f():
+        i = Ic()
+        i.ell(8, 10, 7, 3.5, "#e8e8f0")      # plate
+        i.ell(8, 9, 5.5, 2.6, "#c8ccd8")
+        i.ell(8, 8, 4.5, 2.6, food)
+        i.px(6, 7, food_l); i.px(7, 7, food_l); i.px(9, 8, food_l)
+        if extra:
+            extra(i)
+        return i
+    return f
+icons['baked_potato'] = dish("#c89a58", "#f0d898", lambda i: (i.px(8, 6, "#fff4a0"), i.px(7, 6, "#fff4a0")))
+icons['fried_egg'] = dish("#f6f2e4", "#ffffff", lambda i: (i.ell(8, 8, 1.6, 1.4, "#f8c030"), i.px(7, 7, "#fff0a0")))
+icons['grilled_fish'] = dish("#b0a08a", "#e0d0b0", lambda i: (i.px(11, 8, "#8a7a6a"), i.px(5, 8, "#8a7a6a"), i.px(8, 7, "#6a5a4a")))
+icons['turnip_stew'] = dish("#b87aa8", "#e8d8e8", lambda i: (i.px(7, 6, "#5ab04a"), i.px(9, 7, "#f4f0f4")))
+icons['tomato_salad'] = dish("#78b848", "#a0d868", lambda i: (i.px(6, 7, "#e04a3a"), i.px(9, 7, "#e04a3a"), i.px(8, 8, "#e04a3a")))
+icons['pumpkin_pie'] = dish("#e8902c", "#f8c060", lambda i: (i.px(6, 7, "#c86a10"), i.px(10, 8, "#c86a10"), i.px(8, 6, "#fff0c8")))
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
 
 def main():

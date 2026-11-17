@@ -22,7 +22,7 @@ static func layout(kind: String) -> Dictionary:
 				_f("rug", "int_rug", 3, 2, 3, 2, false),
 				_f("bed", "int_bed", 0, 1, 1, 2, true, "sleep"),
 				_f("chest", "int_chest", 2, 0, 1, 1, true, "chest"),
-				_f("stove", "int_stove", 4, 0, 1, 1),
+				_f("stove", "int_stove", 4, 0, 1, 1, true, "cook"),
 				_f("shelf", "int_shelf", 6, 0, 1, 1),
 				_f("dresser", "int_dresser", 8, 0, 1, 1),
 				_f("table", "int_table", 3, 3, 2, 1),
