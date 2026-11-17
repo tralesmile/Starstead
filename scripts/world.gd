@@ -12,6 +12,7 @@ const PROP_TEX := {
 
 var gen: WorldGen
 var layer: TileMapLayer
+var flower_sprites: Array = []
 var stumps: Dictionary = {}  # cell -> Sprite2D shown while a tree is chopped
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
@@ -46,6 +47,7 @@ func build(seed_value: int = 1) -> void:
 		Outline.set_sway(bush.get_child(0), 1.0, p.x + p.y)
 	_build_water_decor()
 	_build_reflections()
+	_build_flowers()
 	_build_stall()
 	_build_lanterns()
 
@@ -333,3 +335,39 @@ func _process(_delta: float) -> void:
 	for r in reflections:
 		(r["s"] as Sprite2D).position.x = float(r["x"]) + roundf(sin(t * 1.6 + float(r["phase"])) * 1.4)
 		(r["s"] as Sprite2D).visible = (r["src"] as Node2D).visible
+
+func _build_flowers() -> void:
+	## Clustered meadow flowers: low-frequency noise picks patches, each patch leans to one or two colours.
+	var noise := FastNoiseLite.new()
+	noise.seed = gen.seed_value * 31 + 7
+	noise.frequency = 0.09
+	var hue := FastNoiseLite.new()
+	hue.seed = gen.seed_value * 17 + 3
+	hue.frequency = 0.05
+	var r := RandomNumberGenerator.new()
+	r.seed = gen.seed_value + 99
+	var tex := load("res://assets/sprites/flowers.png")
+	var count := 0
+	for y in range(2, WorldGen.SIZE - 2):
+		for x in range(2, WorldGen.SIZE - 2):
+			var c := Vector2i(x, y)
+			if gen.sdf_at(x, y) < 2.2 or gen.tile_at(x, y) >= WorldGen.PATH or c in gen.trees or c in gen.rocks or c in gen.bushes or c in gen.dock:
+				continue
+			if noise.get_noise_2d(x, y) < 0.18 or r.randf() > 0.38:
+				continue
+			var s := Sprite2D.new()
+			s.texture = tex
+			s.hframes = 6
+			var base := int(clampf((hue.get_noise_2d(x, y) + 1.0) * 3.0, 0.0, 5.0))
+			s.frame = base if r.randf() < 0.75 else r.randi_range(0, 5)
+			s.flip_h = r.randf() < 0.5
+			s.offset = Vector2(0, -7)
+			s.position = Vector2(c) * 32.0 + Vector2(r.randi_range(6, 26), r.randi_range(12, 28))
+			Outline.set_sway(s, 1.2, float(x) * 0.9 + float(y))
+			s.z_index = -3
+			add_child(s)
+			flower_sprites.append(s)
+			reed_sprites.append(s)  # flowers bend away from the walker like tufts
+			count += 1
+			if count >= 520:
+				return

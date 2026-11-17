@@ -101,6 +101,10 @@ Houses, buildings, graphics (5, 10)
 - [x] (chimney smoke + window lights at night done; existing sprites already have shingles/windows) Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 
+- [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
+- [ ] Graphics: seasonal ground/tree colours, grass-to-path tile transitions, porches and fences art
+- [ ] Physics: stamina-based sprint inertia, dust on hard direction changes, mount stamina
+
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
 - [x] Camera2D follow with integer pixel snap
