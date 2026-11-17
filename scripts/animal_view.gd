@@ -12,6 +12,10 @@ var gen: WorldGen
 var model := AnimalModel.new(DataDB.load_json("animals"))
 var critters: Array = []  # {st, node, sprite, wild, prog, target, t, frames, cols}
 var riding = null
+var mount_stamina := 1.0
+var mount_winded := false
+var stamina_bar: ColorRect
+var stamina_back: ColorRect
 var heart: Sprite2D
 
 func setup(w: Node2D, p: Player, g: WorldGen) -> void:
@@ -103,6 +107,8 @@ func interact(c: Dictionary) -> void:
 func _mount(c: Dictionary) -> void:
 	riding = c
 	player.speed_mult = AnimalModel.ride_mult(model.ride_speed(c["st"]))
+	mount_stamina = 1.0
+	mount_winded = false
 	message.emit("Riding %s - E to dismount" % model.animals[c["id"]]["name"])
 
 func dismount() -> void:
@@ -111,6 +117,8 @@ func dismount() -> void:
 	riding["node"].position = player.position + Vector2(24, 0)
 	riding = null
 	player.speed_mult = 1.0
+	if stamina_back != null:
+		stamina_back.visible = false
 
 func day_tick() -> void:
 	for c in critters:
@@ -143,6 +151,7 @@ func _process(delta: float) -> void:
 			var dv := player.velocity
 			s.flip_h = dv.x < -1.0 if absf(dv.x) > 1.0 else s.flip_h
 			c["step"] = c["step"] + delta * (8.0 if dv.length() > 8.0 else 0.0)
+			_update_stamina(c, dv.length(), delta)
 			s.frame = int(c["step"]) % 2
 			continue
 		s.offset.y = -(14.0 if c["id"] == "horse" else 8.0)
@@ -183,3 +192,27 @@ func _process(delta: float) -> void:
 			s.frame = int(c["step"]) % 2
 		else:
 			s.frame = 0
+
+func _update_stamina(c: Dictionary, speed: float, delta: float) -> void:
+	var full := AnimalModel.ride_mult(model.ride_speed(c["st"]))
+	mount_stamina = MountMath.step(mount_stamina, speed, delta)
+	var was := mount_winded
+	mount_winded = MountMath.winded(mount_stamina, mount_winded)
+	player.speed_mult = MountMath.speed_scale(mount_winded, full)
+	if mount_winded and not was:
+		message.emit("Your mount is winded - rest a moment")
+	if stamina_back == null:
+		stamina_back = ColorRect.new()
+		stamina_back.color = Color(0, 0, 0, 0.6)
+		stamina_back.size = Vector2(22, 4)
+		stamina_back.position = Vector2(-11, -44)
+		stamina_bar = ColorRect.new()
+		stamina_bar.position = Vector2(1, 1)
+		stamina_back.add_child(stamina_bar)
+	if stamina_back.get_parent() != c["node"]:
+		if stamina_back.get_parent() != null:
+			stamina_back.get_parent().remove_child(stamina_back)
+		(c["node"] as Node2D).add_child(stamina_back)
+	stamina_back.visible = mount_stamina < 0.995
+	stamina_bar.size = Vector2(20.0 * mount_stamina, 2)
+	stamina_bar.color = Color(0.9, 0.35, 0.25) if mount_winded else Color(0.4, 0.85, 0.4)
