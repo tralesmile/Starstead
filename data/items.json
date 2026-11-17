@@ -70,5 +70,19 @@
   "stack": 99,
   "buy": true,
   "buy_price": 20
+ },
+ "rod_bamboo": {
+  "name": "Bamboo Rod",
+  "price": 60,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 250
+ },
+ "rod_carbon": {
+  "name": "Carbon Rod",
+  "price": 200,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 900
  }
 }

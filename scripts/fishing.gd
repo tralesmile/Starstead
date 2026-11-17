@@ -127,3 +127,14 @@ static func pick_bait(bait: Dictionary, inv) -> String:
 			bm = float(bait[id].bite_mult)
 			best = id
 	return best
+
+static func pick_rod(rods: Dictionary, inv) -> String:
+	## Best rod upgrade owned (lowest bite multiplier), or "" for the starter rod.
+	return pick_bait(rods, inv)
+
+static func combine(rod: Dictionary, bait: Dictionary) -> Dictionary:
+	## Rod and bait stack: bite multipliers multiply, bar bonuses add (bar capped by BAR_SIZE+0.3).
+	return {
+		"bite_mult": float(rod.get("bite_mult", 1.0)) * float(bait.get("bite_mult", 1.0)),
+		"bar_bonus": minf(float(rod.get("bar_bonus", 0.0)) + float(bait.get("bar_bonus", 0.0)), 0.3),
+	}

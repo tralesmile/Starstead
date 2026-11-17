@@ -25,6 +25,7 @@ var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
 var bait_table: Dictionary = DataDB.load_json("bait")
+var rod_table: Dictionary = DataDB.load_json("rods")
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -275,7 +276,7 @@ func _rod_pressed() -> void:
 			_say("Too tired")
 		else:
 			var bait_id := Fishing.pick_bait(bait_table, GameState.bag)
-			if not fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season(), bait_table.get(bait_id, {})):
+			if not fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season(), Fishing.combine(rod_table.get(Fishing.pick_rod(rod_table, GameState.bag), {}), bait_table.get(bait_id, {}))):
 				return
 			if bait_id != "":
 				GameState.bag.remove(bait_id, 1)

@@ -1,0 +1,10 @@
+{
+ "rod_bamboo": {
+  "bite_mult": 0.85,
+  "bar_bonus": 0.05
+ },
+ "rod_carbon": {
+  "bite_mult": 0.7,
+  "bar_bonus": 0.1
+ }
+}

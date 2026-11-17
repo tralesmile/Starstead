@@ -85,3 +85,16 @@ func test_pick_bait_prefers_best_owned() -> void:
 	check_eq(Fishing.pick_bait(bait, inv), "worm_bait")
 	inv.add("glow_bait", 1)
 	check_eq(Fishing.pick_bait(bait, inv), "glow_bait")
+
+func test_rod_upgrade_stacks_with_bait() -> void:
+	var rods: Dictionary = DataDB.load_json("rods")
+	var inv := Inventory.new()
+	check_eq(Fishing.pick_rod(rods, inv), "")
+	inv.add("rod_bamboo", 1)
+	check_eq(Fishing.pick_rod(rods, inv), "rod_bamboo")
+	inv.add("rod_carbon", 1)
+	check_eq(Fishing.pick_rod(rods, inv), "rod_carbon")
+	var c := Fishing.combine(rods["rod_carbon"], DataDB.load_json("bait")["glow_bait"])
+	check(absf(c.bite_mult - 0.28) < 0.001)
+	check(absf(c.bar_bonus - 0.18) < 0.001)
+	check_eq(Fishing.combine({}, {}).bite_mult, 1.0)

@@ -53,7 +53,8 @@ Physics / feel:
 - [x] Shop BUY tab: bait (worm/glow, data/bait.json; faster bites, wider reel bar). Tool upgrades still to do
 - [x] Fish journal (count + best size per species, saved, shown on catch)
 - [x] Fishing: bait (consumed per cast)
-- [ ] Fishing: rod upgrades, legendary fish events, journal screen
+- [x] Fishing: rod upgrades (data/rods.json, buy in shop, stacks with bait)
+- [ ] Fishing: legendary fish events, journal screen
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [ ] Grass tufts sway near the player
