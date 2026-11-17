@@ -84,3 +84,27 @@ func serialize() -> Dictionary:
 
 func load_data(d: Dictionary) -> void:
 	best_time = float(d.get("best_time", -1.0))
+
+## n checkpoints on a ring around `center` (px); each is moved to the nearest drivable spot via ok(cell)->bool.
+static func ring_checkpoints(center: Vector2, ring_r: float, n: int, ok: Callable) -> Array:
+	var out: Array = []
+	for i in n:
+		var a := TAU * float(i) / float(n)
+		var want := center + Vector2(cos(a), sin(a)) * ring_r
+		var found := want
+		var hit := false
+		for step in range(0, 12):
+			for k in 8:
+				var q := want + Vector2.from_angle(TAU * k / 8.0) * 32.0 * step
+				if ok.call(Vector2i(floori(q.x / 32.0), floori(q.y / 32.0))):
+					found = (Vector2(floori(q.x / 32.0), floori(q.y / 32.0)) + Vector2(0.5, 0.5)) * 32.0
+					hit = true
+					break
+			if hit:
+				break
+		out.append(found)
+	return out
+
+## Rival AI: drives straight at its next checkpoint at `spd` px/s; returns the new position.
+static func ai_step(pos: Vector2, target: Vector2, spd: float, dt: float) -> Vector2:
+	return pos.move_toward(target, spd * dt)

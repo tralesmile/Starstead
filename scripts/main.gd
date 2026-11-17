@@ -19,6 +19,7 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var jobs: JobView
+var race: RaceView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -106,6 +107,10 @@ func _ready() -> void:
 	robbery.setup(town, world, police, player)
 	robbery.message.connect(_say)
 	add_child(robbery)
+	race = RaceView.new()
+	race.setup(car, world, world.gen, self)
+	race.message.connect(_say)
+	add_child(race)
 	jobs = JobView.new()
 	jobs.setup(player, town.buildings, world.stall_cell())
 	jobs.message.connect(_say)
@@ -145,6 +150,8 @@ func _ready() -> void:
 		car.enter()
 		Input.action_press("move_up")
 		Input.action_press("move_right")
+		if "--race-demo" in OS.get_cmdline_user_args():
+			race.start()
 	if "--hut-demo" in OS.get_cmdline_user_args():  # screenshot helper: stamp a hut via the blueprint key path
 		GameState.bag.add("wood", 99)
 		player.position += Vector2(160, 0)

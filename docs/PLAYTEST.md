@@ -8,3 +8,4 @@
 
 2026-11-17 | Drove the car from the spawn onto the dirt path: drift leaves skid marks and smoke, trees block it, repairs only near the workshop. Town buildings are solid; doors are locked (no interiors yet). Bait is bought at the stall BUY tab.
 2026-11-17 | Screenshot --wanted: cops spawn around the player, WANTED stars show top-right; robbery/sprint covered by unit tests only | Cops at 1 star slower than walking, 4+ stars need sprint | Needs hands-on feel check.
+2026-11-17 | Screenshots: chickens near the stall, held hoe mid-swing, race HUD with car-demo | Chickens read well; checkpoint markers are faint squares; held tool sits near the hand | Combat/taming/shift feel covered by unit tests only (no input in unattended run); needs hands-on check of flee distances and club cooldown.

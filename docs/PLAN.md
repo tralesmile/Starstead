@@ -116,7 +116,9 @@ Physics / feel:
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
 - [ ] Animal gear UI (saddle/coat/armour) and more species (cow, sheep) with a pen
 - [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)
-- [ ] Jobs in play: shift prompt at workplace; race checkpoints with the car
+- [x] Jobs in play: J key shift at barn/market stall/workshop (JobView: pay, xp ranks, rep, clock; saved xp)
+- [x] Race in play: R while driving starts a checkpoint lap vs a rival driver, prize by place, best time (RaceView)
+- [ ] Races: lap count/menu, other drivers, race track on the roads, sports venues
 - [ ] Gate: trailer-ready + Steam page text/screens
 
 ## Phase 3: Earth alpha (months 7-15)
@@ -137,6 +139,9 @@ Physics / feel:
 - [ ] Endgame (Act 5), carry house to ship module
 
 ## Backlog (ideas found by research; promote into phases)
+- Melee juice: hitbox/hurtbox + i-frames, hit flash, knockback, hit-stop (done: flash/knockback/stop); add i-frames + enemy attack telegraphs next | https://www.gdquest.com/library/juicy_attack , https://dev.to/saltmire/godot-4-hitbox-and-hurtbox-the-easy-way-damage-teams-i-frames-knockback-1ccj | 2026-11-17
+- Weakest vs comparables (2026-11-17): Palworld/Core Keeper have creature variety + base building loops; we have 2 species and no pen/barn use. Next: cow/sheep in a fenced pen at the barn, gear UI, dogs for robbery defence.
+- Cops cannot fight back yet (no player health): add player HP/knock-out + hospital fee | 2026-11-17
 (runner appends here: idea, source link, date)
 - Town layout generators (house footprints along roads, plaza first) | https://forum.godotengine.org/t/procedural-environment-generation-in-godot-a-whole-city/5296 | 2026-11-17
 - Weakest vs comparables (2026-11-17): town is buildings with locked doors and no interiors; next: enterable house/shop interiors, then robbery slice.
