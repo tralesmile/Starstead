@@ -31,7 +31,7 @@ Graphics:
 - [x] Held tool sprites sweep during the swing (hoe, can, axe, pickaxe, rod, club; tools/gen_tools.py, HitMath.swing_angle). Per-tool body poses still to do
 - [x] Sun glints on water (twinkling single pixels in ground shader)
 - [x] Foam rings at dock posts (DockFoam)
-- [ ] Light rays on water
+- [x] Light rays on water
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [x] Rain waters crops at day end (FarmModel.rain_water)
@@ -76,22 +76,22 @@ Controls + camera (1, 9)
 - [x] Tab/I opens the inventory screen
 - [ ] Context action: when nothing is selected, E/click does the obvious thing (talk, open door, pick up, harvest); on-screen key hints shown in a small bottom-right legend, rebindable later
 - [x] Camera zoom 1-3 (Ctrl+wheel, +/-) with a quick glide; look-ahead, pixel snap, shake and edge limits kept
-- [ ] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
+- [x] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
 - [x] Camera zooms out one step while driving the car or riding the horse
 Items, pickup, inventory (2, 3, 4)
 - [x] Dropped items in the world (DropMath/DropsView; trees, rocks and crop harvests now drop pickups that pop, bob and magnet to you; fish/loot still go straight to the bag): chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
 - [x] Item icons (tools/gen_items.py -> assets/sprites/items.png + data/item_icons.json; used by drops, still to wire into hotbar/inventory/shop): 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops
 - [x] Hotbar UI: icon slots with counts, selected highlight, selected-tool name, keys 1-9/0 (durability/quality tint still to do)
 - [x] Inventory screen (Tab): 30-slot icon grid, hover tooltip (name, sell price), click-to-move/merge/swap, S sort, X trash, money + energy (item descriptions and tabs later)
-- [ ] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
+- [x] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
 Farming + working the land (7)
 - [x] Tilled soil autotile (connected furrows, darker wet soil), 5-stage turnip + generic crop sprites (tools/gen_farm.py, FarmModel.stage), dirt puff on tilling; harvest pops as pickups
 - [ ] (dirt particles done) Hoe dig animation; scythe/hand cuts grass for fibre/hay; weeds appear and can be cleared
 - [x] Watering can holds 20 water (refill by using it on water, bar on the hotbar slot, saved; WaterCan). [ ] 3x1 line upgrade, scarecrow + sprinkler placeable
-- [ ] Seed packets by season, crop quality by fertiliser, farming skill xp and levels
+- [x] Skill xp + levels (SkillModel: farming/foraging/mining/fishing, +5%/level bonus harvest, shown in bag, saved). [ ] Seed packets by season, crop quality by fertiliser
 Wood chopping (8)
 - [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (sap/seed drops and saplings still to do)
-- [ ] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
+- [x] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
 Fishing (6)
 - [x] Fishing visuals: line from the rod tip, bobber that bobs/dips, splash rings, "!" alert, framed reel bar with the fish icon (BobberMath, FishingWorldView). Hold-to-cast done (power bar, 2-7 tiles, CastMath; farther = deeper water)
 - [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
@@ -103,7 +103,13 @@ Houses, buildings, graphics (5, 10)
 
 - [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
 - [ ] Graphics: seasonal ground/tree colours, grass-to-path tile transitions, porches and fences art
+- [ ] Physics: camera look-ahead tuned for dead zone at car speeds
 - [ ] Physics: stamina-based sprint inertia, dust on hard direction changes, mount stamina
+
+## Backlog additions (2026-11-17 research)
+- Stardew-like satisfaction comes from small visible progress each day (skill levels, quality stars, tool upgrades) plus low-stress loops: https://www.popsci.com/health/stardew-valley-psychology-farming/ and https://mechanicsofmagic.com/?p=1915 . Weakest part of Starstead vs Stardew: progression feedback (no levels/upgrades before today) -> added skills + axe upgrades; next: pickaxe/hoe/can upgrades, level-up fanfare, crop quality stars.
+- [ ] Pickaxe/hoe/watering-can upgrades via data/*.json like axes; skill-based perks (level 5 choices)
+- [ ] Level-up fanfare (sparkle + toast sound-ready), skill bars in bag
 
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math

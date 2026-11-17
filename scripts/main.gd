@@ -456,6 +456,18 @@ func _unhandled_input(e: InputEvent) -> void:
 			elif msg == "Hit":
 				ChopFx.wobble(tspr, tspr)
 				ChopFx.leaves(world, (world.props[cell] as Node2D).position + Vector2(0, -34), 5)
+		var sk := ""
+		if msg.begins_with("Harvested"):
+			sk = "farming"
+			if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
+				drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
+				msg += " +1 bonus"
+		elif msg.begins_with("Got") and hotbar.current() == "axe":
+			sk = "foraging"
+		elif msg.begins_with("Got") and hotbar.current() == "pickaxe":
+			sk = "mining"
+		if sk != "" and SkillModel.gain(GameState.skill_xp, sk):
+			msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
 		world.sync_props(GameState.nodes)
 		if msg == "Tilled":
 			_dirt_puff(cell)
@@ -546,6 +558,7 @@ func _update_fishing(delta: float) -> void:
 		GameState.bag.add(fishing.fish_id, 1)
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
+		SkillModel.gain(GameState.skill_xp, "fishing")
 		_say("Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:

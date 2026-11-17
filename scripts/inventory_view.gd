@@ -71,11 +71,15 @@ func _draw_all() -> void:
 	var bag := GameState.bag
 	var w := COLS * CELL + 20.0
 	var rows := ceili(float(bag.slots.size()) / COLS)
-	var h := rows * CELL + 70.0
+	var h := rows * CELL + 84.0
 	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(w, h))
 	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
 	canvas.draw_rect(panel, Color(0.36, 0.24, 0.14, 0.97))
 	canvas.draw_string(font, ORIGIN + Vector2(0, -16), "Bag   $%d   Energy %d" % [GameState.money, int(GameState.energy.value)], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
+	var sk_line := ""
+	for sk in SkillModel.SKILLS:
+		sk_line += "%s %d   " % [String(sk).capitalize(), SkillModel.level(int(GameState.skill_xp.get(sk, 0)))]
+	canvas.draw_string(font, ORIGIN + Vector2(0, rows * CELL + 22), sk_line, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.7, 1.0, 0.7))
 	var hover := _slot_under_mouse()
 	for i in bag.slots.size():
 		var r := Rect2(ORIGIN + Vector2((i % COLS) * CELL, (i / COLS) * CELL), Vector2(CELL - 2, CELL - 2))
