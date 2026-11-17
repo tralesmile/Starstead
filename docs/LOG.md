@@ -51,3 +51,4 @@
 2026-11-17 | Run 3 (cont.) | Animal pens: stay/follow toggle + fences block animals (tested). 294 tests green.
 2026-11-17 | Run 3 (cont.) | Animal gear on G + shop entries. 295 tests green.
 2026-11-17 | Run 3 (cont.) | Stall theft crime (T). 298 tests green.
+2026-11-17 | Run 3 (cont.) | Garage menu at the workshop bench (repair/fuel/paint). Fuel can finally be refilled. 301 tests green, screenshot checked.

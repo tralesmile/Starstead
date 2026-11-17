@@ -30,6 +30,7 @@ var inv_view: InventoryView
 var journal_view: JournalView
 var chest_view: ChestView
 var cook_view: CookView
+var garage_view: GarageView
 var drops_view: DropsView
 var float_fx: FloatFx
 var mouse_aim := false
@@ -174,9 +175,19 @@ func _ready() -> void:
 	cook_view.closed.connect(func(): player.set_physics_process(true))
 	cook_view.cooked.connect(func(n): _say("Cooked " + n))
 	add_child(cook_view)
+	garage_view = GarageView.new()
+	garage_view.car = car
+	garage_view.closed.connect(func(): player.set_physics_process(true))
+	add_child(garage_view)
+	car.sprite.modulate = GarageModel.PAINTS[GameState.car_paint]["color"]
 	interior = InteriorView.new()
 	interior.setup(world, player, self)
 	interior.sleep_requested.connect(_sleep)
+	interior.garage_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		garage_view.open())
 	interior.cook_requested.connect(func():
 		player.velocity = Vector2.ZERO
 		player.move_v = Vector2.ZERO
@@ -325,6 +336,10 @@ func _process(delta: float) -> void:
 		GameState.chest.add("egg", 6)
 		GameState.bag.add("stone", 12)
 		chest_view.open()
+	if "--garage-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		car.health = 60.0
+		car.fuel = 12.0
+		garage_view.open()
 	if "--cook-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["potato", "egg", "turnip", "tomato", "pumpkin", "milk"]:
 			GameState.bag.add(id, 2)
@@ -456,6 +471,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.velocity = Vector2.ZERO
 			player.move_v = Vector2.ZERO
 			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
+	if garage_view.visible:
+		garage_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if cook_view.visible:

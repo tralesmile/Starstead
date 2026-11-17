@@ -139,7 +139,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)
 - [x] Shop UI: buy seeds (tools: still to add to the BUY tab)
-- [ ] Car: enterable garage/workshop interior with real repair menu
+- [x] Car: workshop workbench opens a garage menu (repair, refuel, repaint for money; GarageModel tested, paint saved)
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
 
 ## Phase 2: Vertical slice (months 4-6)
