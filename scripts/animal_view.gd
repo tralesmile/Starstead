@@ -5,6 +5,12 @@ extends Node2D
 
 signal message(msg: String)
 
+const LOOK := {
+	"chicken": {"y": 8, "shadow": 14},
+	"horse": {"y": 14, "shadow": 28},
+	"cow": {"y": 11, "shadow": 24},
+	"sheep": {"y": 9, "shadow": 18},
+}
 const FEED_ITEM := "turnip"
 var world: Node2D
 var player: Player
@@ -26,7 +32,7 @@ func setup(w: Node2D, p: Player, g: WorldGen) -> void:
 	rng.seed = 77
 	for st in GameState.animals:
 		_spawn(String(st["id"]), _free_spot(rng, 2, 5), st)
-	for id in ["chicken", "chicken", "chicken", "horse"]:
+	for id in ["chicken", "chicken", "chicken", "horse", "cow", "sheep", "sheep"]:
 		_spawn(id, _free_spot(rng, 4, 12), null)
 
 func _land(c: Vector2i) -> bool:
@@ -43,13 +49,13 @@ func _free_spot(rng: RandomNumberGenerator, rmin: int, rmax: int) -> Vector2:
 func _spawn(id: String, pos: Vector2, st) -> void:
 	var node := Node2D.new()
 	var s := Sprite2D.new()
-	var horse := id == "horse"
-	s.texture = load("res://assets/sprites/%s.png" % ("horse" if horse else "chicken"))
+	var look: Dictionary = LOOK.get(id, LOOK["chicken"])
+	s.texture = load("res://assets/sprites/%s.png" % (id if LOOK.has(id) else "chicken"))
 	s.hframes = 2
-	s.offset = Vector2(0, -(14.0 if horse else 8.0))
+	s.offset = Vector2(0, -float(look.y))
 	node.add_child(s)
-	var sh := World.make_shadow(28 if horse else 14)
-	sh.scale = Vector2(0.9 if horse else 0.45, 0.7)
+	var sh := World.make_shadow(float(look.shadow))
+	sh.scale = Vector2(float(look.shadow) / 32.0, 0.7)
 	node.add_child(sh)
 	node.position = pos
 	world.add_child(node)
@@ -154,7 +160,7 @@ func _process(delta: float) -> void:
 			_update_stamina(c, dv.length(), delta)
 			s.frame = int(c["step"]) % 2
 			continue
-		s.offset.y = -(14.0 if c["id"] == "horse" else 8.0)
+		s.offset.y = -float((LOOK.get(c["id"], LOOK["chicken"]) as Dictionary).y)
 		var spd := float(model.animals[c["id"]]["wild_speed"])
 		var move := Vector2.ZERO
 		if c["wild"]:
