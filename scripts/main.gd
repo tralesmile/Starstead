@@ -242,7 +242,10 @@ func _ready() -> void:
 				if dy == 2 and dx > 0 and dx < 3:
 					pid = "floor"
 				bm.place(c, pid, 9.0, false, GameState.bag)
-		bm.place(o + Vector2i(5, 1), "fence", 9.0, false, GameState.bag)
+		for fx in range(5, 10):   # a connected fence run with a corner turning south
+			bm.place(o + Vector2i(fx, 1), "fence", 9.0, false, GameState.bag)
+		for fy in range(2, 5):
+			bm.place(o + Vector2i(9, fy), "fence", 9.0, false, GameState.bag)
 		build_view.setup(world, world.gen, player)
 	$HUD.queue_free()
 

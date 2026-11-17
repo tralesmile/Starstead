@@ -102,7 +102,7 @@ Houses, buildings, graphics (5, 10)
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 
 - [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
-- [x] Graphics: grass-to-path transition in the ground shader (dark fringe, lit blade tips, grass creeping onto the dirt rim). [x] seasonal ground/tree colours (SeasonMath: warm summer, orange autumn leaves/grass, frosted pale winter, flowers hidden; ground shader season_mul/frost; --season=N demo flag). [ ] porches and fences art
+- [x] Graphics: grass-to-path transition in the ground shader (dark fringe, lit blade tips, grass creeping onto the dirt rim). [x] seasonal ground/tree colours (SeasonMath: warm summer, orange autumn leaves/grass, frosted pale winter, flowers hidden; ground shader season_mul/frost; --season=N demo flag). [x] fences autotile (build_fence_auto.png 16 frames, BuildView refreshes neighbours). [ ] porches art
 - [x] Physics: camera look-ahead grows to 56px and the dead zone shrinks to 2x1 at car speeds (CameraMath.look_for_speed/box_for_speed, Player.ext_velocity, tested)
 - [x] Physics: sprint inertia (PlayerMath.sprint_ease) and skid dust on hard reversals (is_skid). [ ] mount stamina
 
@@ -159,7 +159,7 @@ Houses, buildings, graphics (5, 10)
 - [ ] More crime triggers (theft from stalls, car theft) and combat on animals/dogs
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
-- [ ] Animal gear UI (saddle/coat/armour) and more species (cow, sheep) with a pen
+- [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [ ] Animal gear UI (saddle/coat/armour) and a pen
 - [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)
 - [x] Jobs in play: J key shift at barn/market stall/workshop (JobView: pay, xp ranks, rep, clock; saved xp)
 - [x] Race in play: R while driving starts a checkpoint lap vs a rival driver, prize by place, best time (RaceView)

@@ -169,6 +169,42 @@ def fence():
     save(im, "build_fence.png")
 
 
+def fence_auto():
+    """16-frame fence sheet (512x32): frame index = neighbour mask N1|E2|S4|W8. Rails only run toward connected sides."""
+    sheet = Image.new("RGBA", (512, 32), (0, 0, 0, 0))
+    rng = random.Random(52)
+    for m in range(16):
+        im, d = new(32, 32)
+        sh = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); sd = ImageDraw.Draw(sh)
+        sd.ellipse([8, 25, 25, 31], fill=(30, 20, 12, 70))
+        if m & 1: sd.rectangle([13, 6, 19, 14], fill=(30, 20, 12, 55))
+        if m & 4: sd.rectangle([13, 24, 19, 32], fill=(30, 20, 12, 55))
+        im.alpha_composite(sh)
+        for ry in (11, 20):
+            x0 = 0 if m & 8 else 12
+            x1 = 31 if m & 2 else 19
+            if (m & 2) or (m & 8):
+                d.rectangle([x0, ry, x1, ry + 3], fill=WOOD[2])
+                d.line([x0, ry, x1, ry], fill=OUT); d.line([x0, ry + 3, x1, ry + 3], fill=OUT)
+                d.line([x0, ry + 1, x1, ry + 1], fill=WOOD[3])
+                d.line([x0, ry + 2, x1, ry + 2], fill=shade(WOOD[1], 0.95))
+        if m & 1:   # rail going up (away from the viewer): short thick beam above the post
+            d.rectangle([13, 0, 18, 8], fill=WOOD[2], outline=OUT)
+            d.line([14, 1, 14, 8], fill=WOOD[3]); d.line([17, 1, 17, 8], fill=WOOD[0])
+        if m & 4:   # rail coming toward the viewer: beam in front of the post
+            d.rectangle([13, 22, 18, 31], fill=WOOD[2], outline=OUT)
+            d.line([14, 23, 14, 30], fill=WOOD[3]); d.line([17, 23, 17, 30], fill=WOOD[0])
+        d.rectangle([12, 5, 19, 29], fill=WOOD[1], outline=OUT)
+        d.rectangle([13, 6, 15, 28], fill=WOOD[2])
+        d.line([13, 6, 13, 28], fill=WOOD[3])
+        d.line([18, 7, 18, 28], fill=WOOD[0])
+        d.rectangle([11, 3, 20, 6], fill=WOOD[3], outline=OUT)
+        d.line([12, 4, 18, 4], fill=(214, 156, 96))
+        d.line([11, 29, 20, 29], fill=OUT)
+        sheet.alpha_composite(im, (m * 32, 0))
+    save(sheet, "build_fence_auto.png")
+
+
 def roof():
     rng = random.Random(67)
     im, d = new(32, 32)
@@ -196,4 +232,4 @@ def roof():
 
 if __name__ == "__main__":
     os.makedirs(SPR, exist_ok=True)
-    floor(); wall(); door(); fence(); roof()
+    floor(); wall(); door(); fence(); fence_auto(); roof()
