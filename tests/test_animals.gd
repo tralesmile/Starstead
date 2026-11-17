@@ -100,3 +100,9 @@ func test_serialize_roundtrip() -> void:
 	check_eq(b[0]["hunger"], a["hunger"])
 	check_eq(m.ride_speed(b[0]), m.ride_speed(a))
 	check_eq(m.deserialize("garbage").size(), 0)
+
+func test_pen_target_stays_in_radius() -> void:
+	var home := Vector2(100, 100)
+	for i in 20:
+		var t := AnimalModel.pen_target(home, home + Vector2(50, 0), float(i), 40.0)
+		check(t.distance_to(home) <= AnimalModel.PEN_RADIUS + 0.01)

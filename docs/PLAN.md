@@ -159,7 +159,7 @@ Houses, buildings, graphics (5, 10)
 - [ ] More crime triggers (theft from stalls, car theft) and combat on animals/dogs
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
-- [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [ ] Animal gear UI (saddle/coat/armour) and a pen
+- [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [x] pen: E on a fed tame animal toggles stay/follow, stayers wander within 56px of their spot and fences/walls block animals (AnimalModel.pen_target). [ ] Animal gear UI (saddle/coat/armour)
 - [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)
 - [x] Jobs in play: J key shift at barn/market stall/workshop (JobView: pay, xp ranks, rep, clock; saved xp)
 - [x] Race in play: R while driving starts a checkpoint lap vs a rival driver, prize by place, best time (RaceView)

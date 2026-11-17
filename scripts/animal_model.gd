@@ -138,3 +138,13 @@ static func follow_step(pos: Vector2, owner: Vector2, spd: float, dt: float, gap
 	if d.length() <= gap:
 		return Vector2.ZERO
 	return d.normalized() * minf(spd * dt, d.length() - gap)
+
+const PEN_RADIUS := 56.0
+
+## Where a parked (staying) animal wanders next: a short hop that never leaves PEN_RADIUS around its home spot.
+static func pen_target(home: Vector2, pos: Vector2, angle: float, dist: float) -> Vector2:
+	var t := pos + Vector2(cos(angle), sin(angle)) * dist
+	var off := t - home
+	if off.length() > PEN_RADIUS:
+		t = home + off.normalized() * PEN_RADIUS
+	return t

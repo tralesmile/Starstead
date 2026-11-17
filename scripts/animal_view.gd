@@ -36,6 +36,8 @@ func setup(w: Node2D, p: Player, g: WorldGen) -> void:
 		_spawn(id, _free_spot(rng, 4, 12), null)
 
 func _land(c: Vector2i) -> bool:
+	if GameState.build.placed.has(c) and GameState.build.defs[GameState.build.placed[c]].solid:
+		return false  # fences and walls pen animals in
 	return gen.sdf_at(c.x, c.y) >= 2.0 and not (c in gen.trees) and not (c in gen.rocks) and not (c in gen.bushes) and not GameState.nodes.is_solid(c)
 
 func _free_spot(rng: RandomNumberGenerator, rmin: int, rmax: int) -> Vector2:
@@ -83,7 +85,7 @@ func prompt_for(c: Dictionary) -> String:
 		return "E: Feed %s (%s) trust %d%%" % [nm, FEED_ITEM, int(100.0 * float(c["prog"]["trust"]) / model.trust_max())]
 	if model.is_rideable(c["st"]):
 		return "E: Ride %s" % nm
-	return "E: Feed %s" % nm
+	return "E: Stay/follow %s" % nm if model.is_fed(c["st"]) else "E: Feed %s" % nm
 
 func interact(c: Dictionary) -> void:
 	if c.is_empty():
@@ -109,6 +111,13 @@ func interact(c: Dictionary) -> void:
 		GameState.bag.remove(FEED_ITEM, 1)
 		_pop_heart(c["node"])
 		message.emit("%s is fed" % nm)
+	else:
+		var st: Dictionary = c["st"]
+		var stay := not bool(st.get("stay", false))
+		st["stay"] = stay
+		st["hx"] = (c["node"] as Node2D).position.x
+		st["hy"] = (c["node"] as Node2D).position.y
+		message.emit("%s stays here (fence them in for a pen)" % nm if stay else "%s follows you again" % nm)
 
 func _mount(c: Dictionary) -> void:
 	riding = c
@@ -178,6 +187,15 @@ func _process(delta: float) -> void:
 				var d: Vector2 = c["target"] - node.position
 				if d.length() > 2.0:
 					move = d.normalized() * spd * 0.25 * delta
+		elif bool(c["st"].get("stay", false)):
+			var home := Vector2(float(c["st"].get("hx", node.position.x)), float(c["st"].get("hy", node.position.y)))
+			c["t"] -= delta
+			if c["t"] <= 0.0:
+				c["t"] = randf_range(1.5, 4.0)
+				c["target"] = AnimalModel.pen_target(home, node.position, randf() * TAU, randf_range(10.0, 40.0))
+			var dd2: Vector2 = c["target"] - node.position
+			if dd2.length() > 2.0:
+				move = dd2.normalized() * spd * 0.25 * delta
 		else:
 			move = AnimalModel.follow_step(node.position, player.position, spd * 0.9, delta, 44.0 + 14.0 * critters.find(c))
 		if move.length() > 0.0:
