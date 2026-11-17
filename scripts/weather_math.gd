@@ -32,3 +32,18 @@ static func drop_pos(i: int, t: float, speed: float = 260.0) -> Vector2:
 	var x := fposmod(float(i) * 37.7 + t * 40.0 * 0.0, 360.0)
 	var y := fposmod(float(i) * 61.3 + t * speed, 280.0)
 	return Vector2(fposmod(x - y * 0.18, 360.0), y)
+
+static func ripple(i: int, t: float, period: float = 1.1) -> Dictionary:
+	## Rain ripple i: {pos (in the 360x280 box), age 0..1}. Respawns at a new spot every cycle.
+	var u := t / period + float(i) * 0.37
+	var cycle := floori(u)
+	var h := hash(Vector2i(i, cycle))
+	var x := float(h & 0xFFF) / 4095.0 * 360.0
+	var y := float((h >> 12) & 0xFFF) / 4095.0 * 280.0
+	return {"pos": Vector2(x, y), "age": u - float(cycle)}
+
+static func ripple_radius(age: float, max_r: float = 7.0) -> float:
+	return 1.0 + (max_r - 1.0) * clampf(age, 0.0, 1.0)
+
+static func ripple_alpha(age: float) -> float:
+	return 0.6 * (1.0 - clampf(age, 0.0, 1.0))

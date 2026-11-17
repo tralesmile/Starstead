@@ -3,6 +3,7 @@ extends Node2D
 ## Rain streaks around the player (whole-pixel lines) in world space; main darkens the tint.
 
 var player: Player
+var gen: WorldGen
 var intensity := 0.0   # today's rain strength (0 = clear)
 var now := 0.0         # current rain after fade window
 var t := 0.0
@@ -24,6 +25,23 @@ func _draw() -> void:
 	for i in n:
 		var p := (origin + WeatherMath.drop_pos(i, t)).round()
 		draw_line(p, p + Vector2(-2, 5), Color(0.75, 0.85, 1.0, 0.55), 1.0)
+		if i % 6 == 0 and gen != null and _is_water(p):  # ring ripple on the pond instead of a land splash
+			continue
 		if i % 6 == 0:  # splash
 			var sp := (origin + WeatherMath.drop_pos(i + 500, t * 0.5)).round()
 			draw_rect(Rect2(sp, Vector2(3, 1)), Color(0.85, 0.92, 1.0, 0.4))
+
+	if gen != null:
+		for i in int(46.0 * now):
+			var r := WeatherMath.ripple(i, t)
+			var rp: Vector2 = (origin + r.pos).round()
+			if not _is_water(rp):
+				continue
+			var rad := WeatherMath.ripple_radius(r.age)
+			var col := Color(0.88, 0.95, 1.0, WeatherMath.ripple_alpha(r.age))
+			draw_set_transform(rp, 0.0, Vector2(1.0, 0.5))
+			draw_arc(Vector2.ZERO, rad, 0.0, TAU, 14, col, 1.0)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+func _is_water(p: Vector2) -> bool:
+	return gen.sdf_at(floori(p.x / 32.0), floori(p.y / 32.0)) < -0.3

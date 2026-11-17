@@ -9,3 +9,4 @@
 - Canvas shaders: in fragment(), COLOR already includes the texture; multiplying by texture again kills outlines. Pass modulate via a varying from vertex(). `return` is not allowed in fragment().
 - Nested y-sort did not merge here: put the player under the same y-sorted parent (World) as the props.
 - New class_name scripts need `--import` before tests, else the test file 'cannot load'. GDScript: float % float is invalid, use fposmod. Night glow under CanvasModulate: divide colour by DayNight.tint to cancel it.
+- CharacterBody2D defaults to GROUNDED motion mode: vehicles need MOTION_MODE_FLOATING; a car that carries the player must add_collision_exception_with(player) both ways or it jitters/flies off.

@@ -34,7 +34,8 @@ Graphics:
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [x] Rain waters crops at day end (FarmModel.rain_water)
 - [x] Weather: rain (drops + splashes, overcast darkening, seeded per day; WeatherMath)
-- [ ] Weather: fog, storm lightning, rain ripples on water
+- [x] Weather: rain ripples on water (WeatherMath.ripple, elliptical rings)
+- [ ] Weather: fog, storm lightning
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -86,6 +87,7 @@ Physics / feel:
 - [x] Shop logic: sell/buy functions with tests (scripts/shop.gd)
 - [x] Shop UI: sell items to shop for money (market stall + ShopView)
 - [x] Shop UI: buy seeds (tools: still to add to the BUY tab)
+- [ ] Car: enterable garage/workshop interior with real repair menu
 - [ ] Gate: fun in the first 10 minutes (log self-playtest in docs/PLAYTEST.md)
 
 ## Phase 2: Vertical slice (months 4-6)
@@ -95,7 +97,7 @@ Physics / feel:
 - [x] NPC dialogue box with per-NPC lines (data/npcs.json)
 - [x] Town layout model (TownModel) + barn/workshop/houses placed near NPC places with collision and door prompts (art tools/gen_town.py)
 - [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
-- [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; repair stub still to do)
+- [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)
 - [ ] Police/wanted-level basics, basic combat
 - [ ] One animal to catch, tame and ride; clothes slot on animals
@@ -121,6 +123,8 @@ Physics / feel:
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- Town layout generators (house footprints along roads, plaza first) | https://forum.godotengine.org/t/procedural-environment-generation-in-godot-a-whole-city/5296 | 2026-11-17
+- Weakest vs comparables (2026-11-17): town is buildings with locked doors and no interiors; next: enterable house/shop interiors, then robbery slice.
 - Rain puddle ripples + reflections floor shader, 4-frame pixel rain/reflection animation | https://godotshaders.com/?p=11585 , https://budgetpixel.com/blog/how-to-animate-pixel-art-rain-and-reflections-in-4-frames | 2026-11-17
 - Thunder/lightning flash for storms | https://jacobjustice.itch.io/feed/devlog/759034/basic-2d-rain-thunder-and-lightning-in-godot | 2026-11-17
 - Weakest vs comparables (2026-11-17): towns still have no buildings (NPCs wander an empty plaza); next: small town layout with house blueprints, then drivable car.

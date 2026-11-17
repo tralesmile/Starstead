@@ -76,3 +76,15 @@ func test_wheel_points_behind() -> void:
 	var w := VehicleMath.wheel_points(Vector2(100, 100), 0.0)
 	check(w[0].x < 100.0 and w[1].x < 100.0)
 	check(not is_equal_approx(w[0].y, w[1].y))
+
+func test_crash_damage_and_cap() -> void:
+	check_eq(VehicleMath.crash_damage(60.0), 0.0)
+	check(VehicleMath.crash_damage(200.0) > 20.0)
+	check_eq(VehicleMath.crash_damage(9999.0), 60.0)
+	check_eq(VehicleMath.speed_cap(100.0), VehicleMath.MAX_SPEED)
+	check(VehicleMath.speed_cap(0.0) >= VehicleMath.MAX_SPEED * 0.45 - 0.01)
+
+func test_repair_cost() -> void:
+	check_eq(VehicleMath.repair_cost(100.0), 0)
+	check_eq(VehicleMath.repair_cost(80.0), 2)
+	check_eq(VehicleMath.repair_cost(10.0), 8)

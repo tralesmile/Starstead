@@ -30,3 +30,15 @@ func test_footprints() -> void:
 	check(a.y != b.y and a.x == b.x)
 	check(FootprintMath.alpha(0.0) > FootprintMath.alpha(6.0))
 	check(FootprintMath.alpha(99.0) == 0.0)
+
+func test_ripple_grows_and_fades() -> void:
+	check(WeatherMath.ripple_radius(0.9) > WeatherMath.ripple_radius(0.1))
+	check(WeatherMath.ripple_alpha(0.9) < WeatherMath.ripple_alpha(0.1))
+	check_eq(WeatherMath.ripple_alpha(1.0), 0.0)
+
+func test_ripple_in_box_and_respawns() -> void:
+	for i in 20:
+		var r := WeatherMath.ripple(i, 3.3)
+		check(r.pos.x >= 0.0 and r.pos.x <= 360.0 and r.pos.y >= 0.0 and r.pos.y <= 280.0)
+		check(r.age >= 0.0 and r.age < 1.0)
+	check(WeatherMath.ripple(3, 0.1).pos != WeatherMath.ripple(3, 0.1 + 1.1).pos)

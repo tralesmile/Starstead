@@ -14,6 +14,7 @@ var ambient: AmbientView
 var npcs: NpcView
 var dialogue: DialogueView
 var car: CarView
+var town: TownView
 var weather: WeatherView
 var rain_today := 0.0
 var rain_day := -1
@@ -28,7 +29,7 @@ func _ready() -> void:
 	add_child(world)
 	world.build(1)
 	add_child(FarmView.new())
-	var town := TownView.new()
+	town = TownView.new()
 	town.setup(world, world.gen, world.stall_cell())
 	world.add_child(town)
 	for c in world.gen.trees:
@@ -63,6 +64,7 @@ func _ready() -> void:
 	world.add_child(fp)
 	weather = WeatherView.new()
 	weather.player = player
+	weather.gen = world.gen
 	world.add_child(weather)
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
@@ -165,7 +167,10 @@ func _unhandled_input(e: InputEvent) -> void:
 	if build_view.handle_key(e):
 		return
 	if e.is_action_pressed("interact") and car.driving:
-		car.leave()
+		if car.leave() and _near_workshop(car.position):
+			var m := car.repair(GameState.bag)
+			if m != "":
+				_say(m)
 		return
 	if e.is_action_pressed("interact") and car.can_enter():
 		car.enter()
@@ -314,3 +319,9 @@ func _car_spot() -> Vector2:
 				if clear:
 					return (Vector2(c) + Vector2(0.5, 0.6)) * 32.0
 	return player.position + Vector2(64, 0)
+
+func _near_workshop(p: Vector2) -> bool:
+	for b in town.buildings:
+		if b["id"] == "workshop" and p.distance_to(TownModel.sprite_bottom_center(b)) < 160.0:
+			return true
+	return false

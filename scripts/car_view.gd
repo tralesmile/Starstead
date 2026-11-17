@@ -10,6 +10,7 @@ var heading := 0.0
 var vel := Vector2.ZERO
 var driving := false
 var fuel := VehicleMath.FUEL_MAX
+var health := VehicleMath.HEALTH_MAX
 var _skid_t := 0.0
 var _smoke: CPUParticles2D
 signal toast(msg: String)
@@ -75,13 +76,17 @@ func _physics_process(delta: float) -> void:
 		th = VehicleMath.throttle_with_fuel(th, fuel)
 		fuel = VehicleMath.fuel_after(fuel, th, delta)
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta)
-		vel = r["vel"]
+		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health))
 		heading = r["heading"]
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)
 	velocity = vel
 	move_and_slide()
 	if get_slide_collision_count() > 0:
+		var dmg := VehicleMath.crash_damage(vel.length())
+		if dmg > 0.0:
+			health = maxf(0.0, health - dmg)
+			toast.emit("Crash! Car health %d%%" % int(health))
 		vel *= 0.4  # bump
 	rotation = heading
 	sprite.rotation = 0.0
@@ -104,3 +109,13 @@ func _physics_process(delta: float) -> void:
 				var tw := m.create_tween()
 				tw.tween_property(m, "modulate:a", 0.0, 6.0)
 				tw.tween_callback(m.queue_free)
+
+func repair(bag: Inventory) -> String:
+	## Spend wood to restore health (all-or-nothing). Returns a message or "".
+	var cost := VehicleMath.repair_cost(health)
+	if cost == 0:
+		return ""
+	if not bag.remove("wood", cost):
+		return "Car needs %d wood to repair" % cost
+	health = VehicleMath.HEALTH_MAX
+	return "Car repaired (-%d wood)" % cost

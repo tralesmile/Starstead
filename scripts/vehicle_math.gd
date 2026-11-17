@@ -67,3 +67,18 @@ static func wheel_points(pos: Vector2, heading: float) -> Array[Vector2]:
 	var s := f.orthogonal()
 	var back := pos - f * 9.0
 	return [back + s * 5.0, back - s * 5.0]
+
+const HEALTH_MAX := 100.0
+const REPAIR_WOOD_PER_25 := 2
+
+static func crash_damage(impact_speed: float) -> float:
+	## Bumps under 90 px/s are free; harder hits hurt, capped at 60.
+	return clampf((impact_speed - 90.0) * 0.25, 0.0, 60.0)
+
+static func speed_cap(health: float) -> float:
+	## Battered cars top out lower (never below 45%).
+	return MAX_SPEED * lerpf(0.45, 1.0, clampf(health / HEALTH_MAX, 0.0, 1.0))
+
+static func repair_cost(health: float) -> int:
+	## Wood needed to restore full health (2 per started 25 hp).
+	return int(ceil((HEALTH_MAX - health) / 25.0)) * REPAIR_WOOD_PER_25

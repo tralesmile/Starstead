@@ -11,3 +11,4 @@
 2026-11-16 | Camera 'soft limits' | Used hard Camera2D limits; soft clamp math kept in CameraMath for later.
 2026-11-17 | Run ended with 4 model-level slices and no in-game wiring for NPCs/autotile/blueprint; no screenshot-visible change besides squash | Split the PLAN items into model (done) and view (unchecked) so next run wires them.
 2026-11-17 | roof sprite name in build.json clashed with build_floor | Pointed roof at new build_roof.png. NPCs reuse tinted player sheet and walk straight lines (no pathing yet); logged in Backlog.
+2026-11-17 | Farmhouse (home 9,8) not placed: no free dry land within search radius; shop test needed cursor fix after adding bait items | Layout skips unplaceable buildings; test now selects turnip_seed explicitly. Car had no motion until MOTION_MODE_FLOATING + collision exception with the player (lesson logged).
