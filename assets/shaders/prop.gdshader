@@ -6,6 +6,7 @@ uniform vec4 outline_color : source_color = vec4(1.0, 0.85, 0.1, 1.0);
 uniform float sway = 0.0;
 uniform float phase = 0.0;
 uniform float speed = 1.3;
+uniform float push = 0.0;   // extra whole-pixel bend (walker parting reeds)
 varying vec4 tint;  // node modulate (used for see-through fade)
 
 void vertex() {
@@ -13,7 +14,7 @@ void vertex() {
 	float h = 1.0 - UV.y;                       // 0 at the base, 1 at the top
 	float gust = 0.6 + 0.4 * sin(TIME * 0.37 + phase * 0.5);
 	float w = sin(TIME * speed + phase) * sway * gust * h * h;
-	VERTEX.x += floor(w + 0.5);                 // whole pixels only: stays crisp
+	VERTEX.x += floor(w + push * h * h + 0.5);                 // whole pixels only: stays crisp
 }
 
 void fragment() {

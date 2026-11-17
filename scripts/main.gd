@@ -101,6 +101,7 @@ func _process(delta: float) -> void:
 	modulate_node.color = DayNight.tint(GameState.clock.minutes)
 
 	_update_fishing(delta)
+	world.part_reeds(player.position, delta)
 	var near := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))

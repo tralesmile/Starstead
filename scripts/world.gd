@@ -15,6 +15,8 @@ var layer: TileMapLayer
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
+var reed_sprites: Array[Sprite2D] = []
+var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
 
 func build(seed_value: int = 1) -> void:
@@ -127,6 +129,7 @@ func _build_water_decor() -> void:
 		s.position = Vector2(c) * 32.0 + Vector2(16 + r.randi_range(-6, 6), 12)
 		Outline.set_sway(s, 2.0, c.x * 1.3 + c.y)
 		add_child(s)
+		reed_sprites.append(s)
 	if gen.dock.size() > 0:
 		var a: Vector2i = gen.dock[0]
 		var b: Vector2i = gen.dock[gen.dock.size() - 1]
@@ -150,6 +153,20 @@ func _build_water_decor() -> void:
 		f.setup(fish_tex, gen, spots[r.randi() % spots.size()], r.randi())
 		add_child(f)
 		fish.append(f)
+
+func part_reeds(walker: Vector2, dt: float) -> void:
+	## Reeds near the walker bend away and spring back (ReedMath), only those within range are touched.
+	for s in reed_sprites:
+		var cur: float = _reed_push.get(s, 0.0)
+		var d := s.position - walker
+		var tgt := 0.0
+		if absf(d.x) < 24.0 and absf(d.y) < 24.0:
+			tgt = ReedMath.bend(s.position, walker)
+		if tgt == 0.0 and cur == 0.0:
+			continue
+		cur = ReedMath.ease_to(cur, tgt, dt)
+		_reed_push[s] = cur
+		(s.material as ShaderMaterial).set_shader_parameter("push", cur)
 
 func sync_props(nodes: ResourceNodes) -> void:
 	## Shows/hides prop sprites and collision to match ResourceNodes state.
