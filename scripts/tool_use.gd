@@ -8,20 +8,20 @@ static func held_frame(tool: String) -> int:
 	## Frame in assets/sprites/held_tools.png, -1 = nothing in hand (seeds, bare hands).
 	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5}.get(tool, -1)
 
-static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null, drops = null) -> String:
+static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null, drops = null, axes: Dictionary = {}) -> String:
 	if energy != null and not energy.can_use(tool):
 		return "Too tired"
-	var msg := _apply(tool, cell, farm, inv, season, gen, nodes, drops)
+	var msg := _apply(tool, cell, farm, inv, season, gen, nodes, drops, axes)
 	if msg != "" and energy != null:
 		energy.spend(tool)
 	return msg
 
-static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen, nodes: ResourceNodes, drops = null) -> String:
+static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen, nodes: ResourceNodes, drops = null, axes: Dictionary = {}) -> String:
 	match tool:
 		"axe", "pickaxe":
 			if nodes == null:
 				return ""
-			var r := nodes.hit(cell, tool)
+			var r := nodes.hit(cell, tool, axe_power(inv, axes) if tool == "axe" else 1)
 			if r.is_empty():
 				return ""
 			if r.has("id"):
@@ -55,3 +55,11 @@ static func _give(inv: Inventory, drops, id: String, n: int) -> void:
 		inv.add(id, n)
 	else:
 		drops.append({"id": id, "n": n})
+
+static func axe_power(inv: Inventory, axes: Dictionary) -> int:
+	## Best axe upgrade in the bag decides chop power (1 = starter axe).
+	var best := 1
+	for id in axes:
+		if inv.count(id) > 0:
+			best = maxi(best, int(axes[id].power))
+	return best

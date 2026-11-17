@@ -85,6 +85,10 @@ func _draw_all() -> void:
 			canvas.draw_texture_rect_region(item_tex, Rect2(r.position + Vector2(5, 3), Vector2(16, 16)), Rect2(int(icons.get(s.id, 0)) * 16, 0, 16, 16))
 			if int(s.n) > 1:
 				canvas.draw_string(font, r.position + Vector2(0, CELL - 5), str(s.n), HORIZONTAL_ALIGNMENT_RIGHT, CELL - 4, 9, Color(1, 1, 1))
+		if s != null:
+			var rar := String(items.get(s.id, {}).get("rarity", ""))
+			if ItemInfo.has_border(rar):
+				canvas.draw_rect(r.grow(-1), ItemInfo.border_color(rar), false, 1.0)
 		if i == picked:
 			canvas.draw_rect(r.grow(1), Color(1.0, 0.85, 0.2), false, 2.0)
 		elif i == hover:
@@ -94,7 +98,7 @@ func _draw_all() -> void:
 	if hover >= 0 and bag.slots[hover] != null:
 		var id: String = bag.slots[hover].id
 		var def: Dictionary = items.get(id, {})
-		var line := "%s  (sells $%d)" % [String(def.get("name", id)), int(def.get("price", 0))]
+		var line := "%s  (sells $%d)" % [ItemInfo.display_name(def, int(bag.slots[hover].n)), int(def.get("price", 0))]
 		var m := canvas.get_local_mouse_position() + Vector2(10, 12)
 		canvas.draw_rect(Rect2(m, Vector2(font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x + 8, 16)), Color(0.05, 0.03, 0.02, 0.95))
 		canvas.draw_string(font, m + Vector2(4, 12), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1))

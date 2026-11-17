@@ -17,5 +17,7 @@
  "wool": 15,
  "saddle": 16,
  "fur_coat": 17,
- "armour": 18
+ "armour": 18,
+ "axe_copper": 19,
+ "axe_iron": 20
 }

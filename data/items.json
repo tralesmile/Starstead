@@ -45,17 +45,20 @@
  "carp": {
   "name": "Carp",
   "price": 45,
-  "stack": 99
+  "stack": 99,
+  "rarity": "silver"
  },
  "pike": {
   "name": "Pike",
   "price": 90,
-  "stack": 99
+  "stack": 99,
+  "rarity": "silver"
  },
  "golden_koi": {
   "name": "Golden Koi",
   "price": 400,
-  "stack": 99
+  "stack": 99,
+  "rarity": "gold"
  },
  "worm_bait": {
   "name": "Worm Bait",
@@ -76,14 +79,16 @@
   "price": 60,
   "stack": 1,
   "buy": true,
-  "buy_price": 250
+  "buy_price": 250,
+  "rarity": "bronze"
  },
  "rod_carbon": {
   "name": "Carbon Rod",
   "price": 200,
   "stack": 1,
   "buy": true,
-  "buy_price": 900
+  "buy_price": 900,
+  "rarity": "silver"
  },
  "wool": {
   "name": "Wool",
@@ -93,16 +98,35 @@
  "saddle": {
   "name": "Saddle",
   "price": 150,
-  "stack": 1
+  "stack": 1,
+  "rarity": "silver"
  },
  "fur_coat": {
   "name": "Fur Coat",
   "price": 120,
-  "stack": 1
+  "stack": 1,
+  "rarity": "silver"
  },
  "armour": {
   "name": "Animal Armour",
   "price": 260,
-  "stack": 1
+  "stack": 1,
+  "rarity": "silver"
+ },
+ "axe_copper": {
+  "name": "Copper Axe",
+  "price": 50,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 300,
+  "rarity": "bronze"
+ },
+ "axe_iron": {
+  "name": "Iron Axe",
+  "price": 150,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 800,
+  "rarity": "silver"
  }
 }

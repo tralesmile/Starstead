@@ -41,6 +41,7 @@ var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
 var bait_table: Dictionary = DataDB.load_json("bait")
 var rod_table: Dictionary = DataDB.load_json("rods")
+var axe_table: Dictionary = DataDB.load_json("axes")
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -259,7 +260,7 @@ func _process(delta: float) -> void:
 				GameState.farm.soil[c].crop = "turnip" if dy < 2 else ""
 				GameState.farm.soil[c].age = dx
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
-		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait"]:
+		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)
 		inv_view.toggle()
 		inv_view.picked = 2
@@ -445,7 +446,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			if GameState.can.is_empty():
 				_say("The can is empty - face the water and use it to refill")
 				return
-		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl)
+		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
