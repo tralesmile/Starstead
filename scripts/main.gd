@@ -13,6 +13,9 @@ var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
 var dialogue: DialogueView
+var weather: WeatherView
+var rain_today := 0.0
+var rain_day := -1
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
@@ -49,6 +52,13 @@ func _ready() -> void:
 	ambient.player = player
 	world.add_child(ambient)
 	player.footstep.connect(func(): ambient.puff(player.position))
+	var fp := FootprintView.new()
+	fp.player = player
+	fp.gen = world.gen
+	world.add_child(fp)
+	weather = WeatherView.new()
+	weather.player = player
+	world.add_child(weather)
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
 	world.add_child(npcs)
@@ -101,7 +111,13 @@ func _process(delta: float) -> void:
 		GameState.energy.new_day(false)
 		world.sync_props(GameState.nodes)
 		GameState.save_game()  # bedtime / pass-out: next day, autosave
-	modulate_node.color = DayNight.tint(GameState.clock.minutes)
+	if rain_day != GameState.clock.day:
+		rain_day = GameState.clock.day
+		rain_today = WeatherMath.rain_for_day(1, rain_day, GameState.clock.season())
+		if "--rain" in OS.get_cmdline_user_args():
+			rain_today = 1.0
+		weather.intensity = rain_today
+	modulate_node.color = DayNight.tint(GameState.clock.minutes) * WeatherMath.darken(weather.now)
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))

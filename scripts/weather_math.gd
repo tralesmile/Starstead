@@ -1,0 +1,34 @@
+class_name WeatherMath
+extends RefCounted
+## Pure weather helpers. Deterministic per (seed, day): same day always gives the same sky.
+
+static func rain_chance(season: int) -> float:
+	## 0 spring,1 summer,2 autumn,3 winter (rain stays rain for now).
+	return [0.30, 0.15, 0.35, 0.20][clampi(season, 0, 3)]
+
+static func rain_for_day(world_seed: int, day: int, season: int) -> float:
+	## 0 = clear, else rain intensity 0.3..1.0
+	var h := hash(Vector2i(world_seed, day)) & 0xFFFF
+	var r := float(h) / 65535.0
+	if r >= rain_chance(season):
+		return 0.0
+	return 0.3 + 0.7 * (r / rain_chance(season))
+
+static func rain_now(intensity: float, minutes: float) -> float:
+	## Rain fades in/out over 40 game minutes at start/end of a window 09:00-18:00 (minutes since 06:00: 180..720).
+	if intensity <= 0.0:
+		return 0.0
+	var a := clampf((minutes - 180.0) / 40.0, 0.0, 1.0)
+	var b := clampf((720.0 - minutes) / 40.0, 0.0, 1.0)
+	return intensity * minf(a, b)
+
+static func darken(rain: float) -> Color:
+	## Multiply onto the day tint: overcast greys the world.
+	var k := 1.0 - 0.28 * rain
+	return Color(k, k, 1.0 - 0.18 * rain)
+
+static func drop_pos(i: int, t: float, speed: float = 260.0) -> Vector2:
+	## Raindrop i position in a 360x280 box (origin top-left), wraps vertically; slanted.
+	var x := fposmod(float(i) * 37.7 + t * 40.0 * 0.0, 360.0)
+	var y := fposmod(float(i) * 61.3 + t * speed, 280.0)
+	return Vector2(fposmod(x - y * 0.18, 360.0), y)

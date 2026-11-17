@@ -32,7 +32,8 @@ Graphics:
 - [ ] Light rays / sun specular glints on water; foam where water meets dock posts
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
-- [ ] Weather: rain (drops + ripples), fog, storm darkening
+- [x] Weather: rain (drops + splashes, overcast darkening, seeded per day; WeatherMath)
+- [ ] Weather: fog, storm lightning, rain ripples on water, rain waters crops
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -47,7 +48,8 @@ Physics / feel:
 - [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
 - [ ] Fishing: rod/bait upgrades, fish journal, legendary fish events
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
-- [ ] Grass tufts sway near the player; footprints on dirt paths
+- [x] Footprints on dirt paths (FootprintMath/View, fade)
+- [ ] Grass tufts sway near the player
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
 - [ ] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
 - [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)
