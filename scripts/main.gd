@@ -11,6 +11,7 @@ var highlighted: Sprite2D = null
 var shop: ShopView
 var build_view: BuildView
 var ambient: AmbientView
+var npcs: NpcView
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
@@ -47,6 +48,9 @@ func _ready() -> void:
 	ambient.player = player
 	world.add_child(ambient)
 	player.footstep.connect(func(): ambient.puff(player.position))
+	npcs = NpcView.new()
+	npcs.setup(world, world.gen)
+	world.add_child(npcs)
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -93,7 +97,10 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	var near := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+	var npc_near := npcs.near(player.position + Vector2(0, -8))
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
+	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
+		prompt.text = "E: Talk to " + String(npc_near["name"])
 	_update_highlight()
 	_update_fade(delta)
 	toast_t -= delta
@@ -107,6 +114,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if e.is_action_pressed("interact"):
 		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
+		var nn := npcs.near(player.position + Vector2(0, -8))
+		if it.is_empty() and not nn.is_empty():
+			_say("%s: I'm busy - %s." % [nn["name"], nn["activity"]])
+			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO
 			player.move_v = Vector2.ZERO

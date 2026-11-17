@@ -169,6 +169,31 @@ def fence():
     save(im, "build_fence.png")
 
 
+def roof():
+    rng = random.Random(67)
+    im, d = new(32, 32)
+    rows = 4  # 8px shingle rows, staggered, fully opaque
+    for r in range(rows):
+        y0 = r * 8
+        off = 0 if r % 2 == 0 else 4
+        x = -off
+        while x < 32:
+            w = 8
+            base = shade(WOOD[1], rng.uniform(0.9, 1.1))
+            x0, x1 = max(0, x), min(31, x + w - 1)
+            d.rectangle([x0, y0, x1, y0 + 7], fill=base)
+            d.line([x0, y0, x1, y0], fill=shade(base, 1.18))              # lit top edge
+            if x >= 0:
+                d.line([x0, y0, x0, y0 + 7], fill=shade(base, 1.1))       # lit left edge
+            d.line([x0, y0 + 7, x1, y0 + 7], fill=shade(WOOD[0], 0.8))    # shadow under row
+            if x + w - 1 <= 31:
+                d.line([x1, y0 + 1, x1, y0 + 7], fill=shade(WOOD[0], 0.9))
+            d.point([min(31, x0 + 3), y0 + 3], fill=shade(base, rng.choice((0.85, 1.12))))
+            x += w
+    d.rectangle([0, 0, 31, 31], outline=OUT)
+    save(im, "build_roof.png")
+
+
 if __name__ == "__main__":
     os.makedirs(SPR, exist_ok=True)
-    floor(); wall(); door(); fence()
+    floor(); wall(); door(); fence(); roof()

@@ -37,7 +37,7 @@
       "wood": 3
     },
     "solid": false,
-    "sprite": "build_floor",
+    "sprite": "build_roof",
     "roof": true
   }
 }
