@@ -92,7 +92,8 @@ Physics / feel:
 - [x] NpcView: spawn NPC sprites, walk their schedule in the world, talk prompt
 - [x] NPC A* pathing around trees/rocks/water (NpcPath, AStarGrid2D)
 - [x] NPC dialogue box with per-NPC lines (data/npcs.json)
-- [ ] Small town + farm layout
+- [x] Town layout model (TownModel) + barn/workshop/houses placed near NPC places with collision and door prompts (art tools/gen_town.py)
+- [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
 - [ ] One drivable car (top-down physics), fuel/repair stub
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)
 - [ ] Police/wanted-level basics, basic combat

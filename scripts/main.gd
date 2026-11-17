@@ -26,6 +26,9 @@ func _ready() -> void:
 	add_child(world)
 	world.build(1)
 	add_child(FarmView.new())
+	var town := TownView.new()
+	town.setup(world, world.gen, world.stall_cell())
+	world.add_child(town)
 	for c in world.gen.trees:
 		GameState.nodes.add("tree", c)
 	for c in world.gen.rocks:

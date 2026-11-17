@@ -187,6 +187,9 @@ static func make_shadow(width: float) -> Sprite2D:
 	sh.z_index = -3
 	return sh
 
+func stall_cell() -> Vector2i:
+	return _stall_cell()
+
 func _stall_cell() -> Vector2i:
 	## Nearest dry, empty 2-wide spot 4-9 tiles from the spawn dock.
 	var from := Vector2i(32, 32)
