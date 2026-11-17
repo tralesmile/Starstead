@@ -96,5 +96,5 @@ func near(pos: Vector2, radius: float = 40.0) -> Dictionary:
 		if d < bd:
 			bd = d
 			var e := NpcSchedule.current_entry(a["npc"], h)
-			best = {"name": a["npc"]["name"], "activity": str(e.get("activity", "idle")), "id": a["npc"]["id"]}
+			best = {"npc": a["npc"], "name": a["npc"]["name"], "activity": str(e.get("activity", "idle")), "id": a["npc"]["id"]}
 	return best

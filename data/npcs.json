@@ -1,44 +1,273 @@
 {
-  "places": {
-    "farm_field": [12, 10],
-    "barn": [8, 7],
-    "market": [20, 14],
-    "shop": [22, 12],
-    "pier": [30, 20],
-    "fish_hut": [28, 18],
-    "workshop": [16, 22],
-    "scrapyard": [12, 25],
-    "plaza": [18, 16]
-  },
-  "npcs": [
-    {"id": "farmer", "name": "Odalys", "home": [9, 8], "schedule": [
-      {"from_hour": 21.0, "to_hour": 5.5, "place": "home", "activity": "sleep"},
-      {"from_hour": 5.5, "to_hour": 7.0, "place": "barn", "activity": "feed animals"},
-      {"from_hour": 7.0, "to_hour": 12.0, "place": "farm_field", "activity": "tend crops"},
-      {"from_hour": 12.0, "to_hour": 13.0, "place": "plaza", "activity": "lunch"},
-      {"from_hour": 13.0, "to_hour": 18.0, "place": "farm_field", "activity": "harvest"},
-      {"from_hour": 18.0, "to_hour": 21.0, "place": "market", "activity": "sell produce"}
-    ]},
-    {"id": "shopkeeper", "name": "Brannoch", "home": [23, 12], "schedule": [
-      {"from_hour": 22.5, "to_hour": 7.0, "place": "home", "activity": "sleep"},
-      {"from_hour": 7.0, "to_hour": 8.0, "place": "market", "activity": "buy stock"},
-      {"from_hour": 8.0, "to_hour": 17.0, "place": "shop", "activity": "run the counter"},
-      {"from_hour": 17.0, "to_hour": 19.0, "place": "plaza", "activity": "stroll"},
-      {"from_hour": 19.0, "to_hour": 22.5, "place": "shop", "activity": "count coins"}
-    ]},
-    {"id": "fisher", "name": "Tessaly", "home": [29, 17], "schedule": [
-      {"from_hour": 20.0, "to_hour": 4.0, "place": "home", "activity": "sleep"},
-      {"from_hour": 4.0, "to_hour": 11.0, "place": "pier", "activity": "fish"},
-      {"from_hour": 11.0, "to_hour": 13.0, "place": "fish_hut", "activity": "mend nets"},
-      {"from_hour": 13.0, "to_hour": 17.0, "place": "pier", "activity": "fish"},
-      {"from_hour": 17.0, "to_hour": 20.0, "place": "market", "activity": "sell catch"}
-    ]},
-    {"id": "mechanic", "name": "Ivo", "home": [15, 23], "schedule": [
-      {"from_hour": 23.0, "to_hour": 8.0, "place": "home", "activity": "sleep"},
-      {"from_hour": 8.0, "to_hour": 12.0, "place": "workshop", "activity": "repair machines"},
-      {"from_hour": 12.0, "to_hour": 13.0, "place": "plaza", "activity": "lunch"},
-      {"from_hour": 13.0, "to_hour": 18.0, "place": "scrapyard", "activity": "salvage parts"},
-      {"from_hour": 18.0, "to_hour": 23.0, "place": "workshop", "activity": "tinker"}
-    ]}
+ "places": {
+  "farm_field": [
+   12,
+   10
+  ],
+  "barn": [
+   8,
+   7
+  ],
+  "market": [
+   20,
+   14
+  ],
+  "shop": [
+   22,
+   12
+  ],
+  "pier": [
+   30,
+   20
+  ],
+  "fish_hut": [
+   28,
+   18
+  ],
+  "workshop": [
+   16,
+   22
+  ],
+  "scrapyard": [
+   12,
+   25
+  ],
+  "plaza": [
+   18,
+   16
   ]
+ },
+ "npcs": [
+  {
+   "id": "farmer",
+   "name": "Odalys",
+   "home": [
+    9,
+    8
+   ],
+   "schedule": [
+    {
+     "from_hour": 21.0,
+     "to_hour": 5.5,
+     "place": "home",
+     "activity": "sleep"
+    },
+    {
+     "from_hour": 5.5,
+     "to_hour": 7.0,
+     "place": "barn",
+     "activity": "feed animals"
+    },
+    {
+     "from_hour": 7.0,
+     "to_hour": 12.0,
+     "place": "farm_field",
+     "activity": "tend crops"
+    },
+    {
+     "from_hour": 12.0,
+     "to_hour": 13.0,
+     "place": "plaza",
+     "activity": "lunch"
+    },
+    {
+     "from_hour": 13.0,
+     "to_hour": 18.0,
+     "place": "farm_field",
+     "activity": "harvest"
+    },
+    {
+     "from_hour": 18.0,
+     "to_hour": 21.0,
+     "place": "market",
+     "activity": "sell produce"
+    }
+   ],
+   "lines": {
+    "default": [
+     "Soil does not weed itself, neighbour.",
+     "Rain tomorrow, my knees say so."
+    ],
+    "tend crops": [
+     "Turnips love a steady hand and water.",
+     "Mind the rows, please!"
+    ],
+    "sell produce": [
+     "Fresh from the field, best price at the stall."
+    ],
+    "feed animals": [
+     "Quiet now, they are still waking up."
+    ],
+    "sleep": [
+     "Zzz..."
+    ]
+   }
+  },
+  {
+   "id": "shopkeeper",
+   "name": "Brannoch",
+   "home": [
+    23,
+    12
+   ],
+   "schedule": [
+    {
+     "from_hour": 22.5,
+     "to_hour": 7.0,
+     "place": "home",
+     "activity": "sleep"
+    },
+    {
+     "from_hour": 7.0,
+     "to_hour": 8.0,
+     "place": "market",
+     "activity": "buy stock"
+    },
+    {
+     "from_hour": 8.0,
+     "to_hour": 17.0,
+     "place": "shop",
+     "activity": "run the counter"
+    },
+    {
+     "from_hour": 17.0,
+     "to_hour": 19.0,
+     "place": "plaza",
+     "activity": "stroll"
+    },
+    {
+     "from_hour": 19.0,
+     "to_hour": 22.5,
+     "place": "shop",
+     "activity": "count coins"
+    }
+   ],
+   "lines": {
+    "default": [
+     "Sell me anything with value; I buy it all.",
+     "Coins keep the town spinning."
+    ],
+    "run the counter": [
+     "Step up to the stall, plenty in stock."
+    ],
+    "count coins": [
+     "Closing soon, count twice, trust once."
+    ],
+    "sleep": [
+     "Zzz..."
+    ]
+   }
+  },
+  {
+   "id": "fisher",
+   "name": "Tessaly",
+   "home": [
+    29,
+    17
+   ],
+   "schedule": [
+    {
+     "from_hour": 20.0,
+     "to_hour": 4.0,
+     "place": "home",
+     "activity": "sleep"
+    },
+    {
+     "from_hour": 4.0,
+     "to_hour": 11.0,
+     "place": "pier",
+     "activity": "fish"
+    },
+    {
+     "from_hour": 11.0,
+     "to_hour": 13.0,
+     "place": "fish_hut",
+     "activity": "mend nets"
+    },
+    {
+     "from_hour": 13.0,
+     "to_hour": 17.0,
+     "place": "pier",
+     "activity": "fish"
+    },
+    {
+     "from_hour": 17.0,
+     "to_hour": 20.0,
+     "place": "market",
+     "activity": "sell catch"
+    }
+   ],
+   "lines": {
+    "default": [
+     "Fish bite best when you stop trying.",
+     "The pond keeps its secrets."
+    ],
+    "fish": [
+     "Shh, you will scare them off.",
+     "Try the dock at dawn."
+    ],
+    "mend nets": [
+     "Holes everywhere, like my budget."
+    ],
+    "sleep": [
+     "Zzz..."
+    ]
+   }
+  },
+  {
+   "id": "mechanic",
+   "name": "Ivo",
+   "home": [
+    15,
+    23
+   ],
+   "schedule": [
+    {
+     "from_hour": 23.0,
+     "to_hour": 8.0,
+     "place": "home",
+     "activity": "sleep"
+    },
+    {
+     "from_hour": 8.0,
+     "to_hour": 12.0,
+     "place": "workshop",
+     "activity": "repair machines"
+    },
+    {
+     "from_hour": 12.0,
+     "to_hour": 13.0,
+     "place": "plaza",
+     "activity": "lunch"
+    },
+    {
+     "from_hour": 13.0,
+     "to_hour": 18.0,
+     "place": "scrapyard",
+     "activity": "salvage parts"
+    },
+    {
+     "from_hour": 18.0,
+     "to_hour": 23.0,
+     "place": "workshop",
+     "activity": "tinker"
+    }
+   ],
+   "lines": {
+    "default": [
+     "Everything runs if you hit it right.",
+     "Got a car? I will make it growl."
+    ],
+    "repair machines": [
+     "Hand me that wrench, will you?"
+    ],
+    "salvage parts": [
+     "One scrapyard, a thousand treasures."
+    ],
+    "sleep": [
+     "Zzz..."
+    ]
+   }
+  }
+ ]
 }

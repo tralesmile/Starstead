@@ -12,6 +12,7 @@ var shop: ShopView
 var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
+var dialogue: DialogueView
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
@@ -59,6 +60,8 @@ func _ready() -> void:
 	shop = ShopView.new()
 	shop.closed.connect(func(): player.set_physics_process(true))
 	add_child(shop)
+	dialogue = DialogueView.new()
+	add_child(dialogue)
 	prompt = Label.new()
 	prompt.position = Vector2(260, 300)
 	add_child(prompt)
@@ -115,6 +118,9 @@ func _process(delta: float) -> void:
 		toast.text = ""
 
 func _unhandled_input(e: InputEvent) -> void:
+	if dialogue.handle(e):
+		get_viewport().set_input_as_handled()
+		return
 	if shop.visible:
 		return
 	if build_view.handle_key(e):
@@ -123,7 +129,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
 		var nn := npcs.near(player.position + Vector2(0, -8))
 		if it.is_empty() and not nn.is_empty():
-			_say("%s: I'm busy - %s." % [nn["name"], nn["activity"]])
+			dialogue.open(nn["npc"], nn["activity"])
 			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO
