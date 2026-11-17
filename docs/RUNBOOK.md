@@ -21,3 +21,6 @@ You are the whole studio: project manager, game designer, developer, QA, busines
 - Only CC0/free-license assets; list them in CREDITS.txt. Never copy art, names or code from other games.
 - Never spend money, create accounts, or publish anything. Anything only the owner can do goes in docs/NEEDS_FROM_OWNER.md.
 - Improve yourself: add lessons from mistakes to docs/LESSONS.md and read it at the start of each run.
+
+## Owner priority (2026-11-17)
+Before other unchecked items, work PLAN.md "Phase 1.5: Feel & polish" top to bottom (controls/camera, pickup/inventory/items, farming, chopping, fishing, interiors, building art). Take Stardew Valley as the reference for feel.

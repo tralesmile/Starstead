@@ -69,6 +69,36 @@ Physics / feel:
 - [x] Car hits knock pedestrians/cops over (CombatModel.car_hit + HitMath knockback, hit-and-run heat)
 - [x] Collision polish: shoreline collision follows the painted shore (ShoreMath, bilinear sdf, 8px runs; --show-collision debug)
 
+## Phase 1.5: Feel & polish (OWNER PRIORITY 2026-11-17, do these BEFORE new Phase 2/3 items; order chosen by owner: feel first)
+Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.
+Controls + camera (1, 9)
+- [ ] Mouse support: tile cursor under the mouse (yellow outline), left-click = use current tool on that tile (within reach), right-click = interact/talk/enter, scroll wheel + 1-0/-/= change hotbar slot, Tab = inventory
+- [ ] Context action: when nothing is selected, E/click does the obvious thing (talk, open door, pick up, harvest); on-screen key hints shown in a small bottom-right legend, rebindable later
+- [ ] Camera: smooth follow with dead-zone, zoom in/out (mouse wheel + Ctrl or +/- keys, integer steps 1-3), look-ahead kept, snap to pixels, shake kept; camera clamps at map edges
+- [ ] Camera: zoom out automatically while driving the car and riding the horse
+Items, pickup, inventory (2, 3, 4)
+- [ ] Dropped items in the world: chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
+- [ ] Item icons: 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops
+- [ ] Hotbar UI: 10 slots with icons, counts, selected highlight, tool durability/quality tint (replace the text hotbar)
+- [ ] Inventory screen (Tab): 30-slot grid, tooltip (name, description, sell price), drag to swap, trash/sort button, money + energy shown, tabs for items/tools/skills later
+- [ ] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
+Farming + working the land (7)
+- [ ] Tilled soil autotile (connected dark/wet soil edges), wet soil darker, crop growth stage sprites (4-5 stages) + harvest pop animation
+- [ ] Hoe on grass makes soil with a dig animation + dirt particles; scythe/hand cuts grass for fibre/hay; weeds appear and can be cleared
+- [ ] Watering can holds water (refill at water, bar in hotbar), waters a 1x1 tile now and 3x1 line with upgrade; scarecrow + sprinkler placeable
+- [ ] Seed packets by season, crop quality by fertiliser, farming skill xp and levels
+Wood chopping (8)
+- [ ] Trees take 3-5 axe hits (hit shake, leaves fall, chips), fall with an animation in the facing direction, leave a stump, drop wood + sap + seeds as pickups; tree saplings regrow
+- [ ] Axe upgrades (copper/iron) cut faster; logs and big stumps need a better axe; wood goes to build mode
+Fishing (6)
+- [ ] Hold-to-cast power bar (distance), bobber sprite + splash, nibble animation and "!" alert, hook window, reel bar mini-game with fish sprite moving (keep current logic, new visuals)
+- [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
+Houses, buildings, graphics (5, 10)
+- [ ] Interior scene system: walk through a door tile -> fade -> interior room (TileMap/shader floor + walls), exit door back to the exact outside spot (InteriorModel pure + InteriorView)
+- [ ] Your farmhouse interior: bed (sleep = next day save), storage chest, kitchen; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
+- [ ] Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
+- [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
+
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
 - [x] Camera2D follow with integer pixel snap
