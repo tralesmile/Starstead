@@ -1,0 +1,21 @@
+{
+ "wood": 0,
+ "stone": 1,
+ "turnip_seed": 2,
+ "turnip": 3,
+ "egg": 4,
+ "milk": 5,
+ "minnow": 6,
+ "perch": 7,
+ "carp": 8,
+ "pike": 9,
+ "golden_koi": 10,
+ "worm_bait": 11,
+ "glow_bait": 12,
+ "rod_bamboo": 13,
+ "rod_carbon": 14,
+ "wool": 15,
+ "saddle": 16,
+ "fur_coat": 17,
+ "armour": 18
+}

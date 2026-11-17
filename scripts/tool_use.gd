@@ -8,15 +8,15 @@ static func held_frame(tool: String) -> int:
 	## Frame in assets/sprites/held_tools.png, -1 = nothing in hand (seeds, bare hands).
 	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5}.get(tool, -1)
 
-static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null) -> String:
+static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null, drops = null) -> String:
 	if energy != null and not energy.can_use(tool):
 		return "Too tired"
-	var msg := _apply(tool, cell, farm, inv, season, gen, nodes)
+	var msg := _apply(tool, cell, farm, inv, season, gen, nodes, drops)
 	if msg != "" and energy != null:
 		energy.spend(tool)
 	return msg
 
-static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen, nodes: ResourceNodes) -> String:
+static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen, nodes: ResourceNodes, drops = null) -> String:
 	match tool:
 		"axe", "pickaxe":
 			if nodes == null:
@@ -25,7 +25,7 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 			if r.is_empty():
 				return ""
 			if r.has("id"):
-				inv.add(r.id, r.n)
+				_give(inv, drops, r.id, r.n)
 				return "Got %d %s" % [r.n, r.id]
 			return "Hit"
 		"hoe":
@@ -38,7 +38,7 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 			var h := farm.harvest(cell)
 			if h.is_empty():
 				return ""
-			inv.add(h.id, h.n)
+			_give(inv, drops, h.id, h.n)
 			return "Harvested " + h.id
 		_:
 			if tool.ends_with("_seed"):
@@ -48,3 +48,10 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 					inv.remove(tool, 1)
 					return "Planted"
 	return ""
+
+## Items go to the bag directly, or into `drops` ([{id, n}]) when the caller wants them lying in the world.
+static func _give(inv: Inventory, drops, id: String, n: int) -> void:
+	if drops == null:
+		inv.add(id, n)
+	else:
+		drops.append({"id": id, "n": n})

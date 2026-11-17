@@ -19,6 +19,7 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var cursor: CursorView
+var drops_view: DropsView
 var mouse_aim := false
 var legend: Label
 var jobs: JobView
@@ -139,6 +140,10 @@ func _ready() -> void:
 	add_child(shop)
 	dialogue = DialogueView.new()
 	add_child(dialogue)
+	drops_view = DropsView.new()
+	drops_view.setup(world, player)
+	drops_view.picked.connect(func(id, n): _say("+%d %s" % [n, String(DataDB.load_json("items").get(id, {}).get("name", id))]))
+	add_child(drops_view)
 	cursor = CursorView.new()
 	cursor.z_index = 30
 	world.add_child(cursor)
@@ -191,6 +196,10 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--drops-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:
+		var ids := ["wood", "stone", "turnip", "egg", "minnow", "milk", "golden_koi", "wool"]
+		for i in ids.size():
+			drops_view.spawn(ids[i], 1, player.position + Vector2(70 + (i % 4) * 26, -20 + (i / 4) * 26))
 	if "--mouse-demo" in OS.get_cmdline_user_args():  # screenshot helper: mouse hovering 2 tiles right of the player
 		mouse_aim = true
 		get_viewport().warp_mouse(Vector2(320 + 2 * 64 + 20, 180 - 10))
@@ -334,7 +343,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.held_tool = hotbar.current()
 		player.swing()
 		var cell := _target_cell()
-		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
+		var dl: Array = []
+		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl)
+		for d in dl:
+			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		world.sync_props(GameState.nodes)
 		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
 			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))

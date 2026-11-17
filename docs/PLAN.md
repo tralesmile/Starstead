@@ -79,8 +79,8 @@ Controls + camera (1, 9)
 - [ ] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
 - [x] Camera zooms out one step while driving the car or riding the horse
 Items, pickup, inventory (2, 3, 4)
-- [ ] Dropped items in the world: chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
-- [ ] Item icons: 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops
+- [x] Dropped items in the world (DropMath/DropsView; trees, rocks and crop harvests now drop pickups that pop, bob and magnet to you; fish/loot still go straight to the bag): chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
+- [x] Item icons (tools/gen_items.py -> assets/sprites/items.png + data/item_icons.json; used by drops, still to wire into hotbar/inventory/shop): 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops
 - [ ] Hotbar UI: 10 slots with icons, counts, selected highlight, tool durability/quality tint (replace the text hotbar)
 - [ ] Inventory screen (Tab): 30-slot grid, tooltip (name, description, sell price), drag to swap, trash/sort button, money + energy shown, tabs for items/tools/skills later
 - [ ] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
