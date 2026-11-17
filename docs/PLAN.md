@@ -36,7 +36,7 @@ Graphics:
 - [x] Weather: rain (drops + splashes, overcast darkening, seeded per day; WeatherMath)
 - [x] Weather: rain ripples on water (WeatherMath.ripple, elliptical rings)
 - [x] Weather: morning fog (WeatherMath.fog_for_day/fog_now, overlay)
-- [ ] Weather: storm lightning
+- [x] Weather: storm lightning (WeatherMath.lightning_flash, full-screen flash on storms >=0.8 rain; thunder_delay for audio later)
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:

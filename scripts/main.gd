@@ -16,6 +16,8 @@ var dialogue: DialogueView
 var car: CarView
 var town: TownView
 var fog_rect: ColorRect
+var flash_rect: ColorRect
+var storm_t := 0.0
 var weather: WeatherView
 var rain_today := 0.0
 var rain_day := -1
@@ -56,6 +58,11 @@ func _ready() -> void:
 	fog_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fog_rect.color = Color(0.82, 0.86, 0.9, 0.0)
 	fog_layer.add_child(fog_rect)
+	flash_rect = ColorRect.new()
+	flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash_rect.color = Color(0.85, 0.9, 1.0, 0.0)
+	fog_layer.add_child(flash_rect)
 	add_child(fog_layer)
 	add_child(Hud.new())
 	hotbar = Hotbar.new()
@@ -151,6 +158,13 @@ func _process(delta: float) -> void:
 	if "--fog" in OS.get_cmdline_user_args():
 		fog = 0.6
 	fog_rect.color = Color(0.82, 0.86, 0.9, fog * 0.75)
+	storm_t += delta
+	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
+	flash_rect.size = fog_rect.size
+	var fl := WeatherMath.lightning_flash(1, rain_day, storm_t, weather.now)
+	if "--storm" in OS.get_cmdline_user_args():
+		fl = 0.8
+	flash_rect.color = Color(0.85, 0.9, 1.0, fl * 0.55)
 	modulate_node.color = DayNight.tint(GameState.clock.minutes) * WeatherMath.darken(weather.now)
 
 	_update_fishing(delta)

@@ -11,3 +11,4 @@
 - New class_name scripts need `--import` before tests, else the test file 'cannot load'. GDScript: float % float is invalid, use fposmod. Night glow under CanvasModulate: divide colour by DayNight.tint to cancel it.
 - CharacterBody2D defaults to GROUNDED motion mode: vehicles need MOTION_MODE_FLOATING; a car that carries the player must add_collision_exception_with(player) both ways or it jitters/flies off.
 - The test runner prints SCRIPT ERROR / parse errors yet still says 0 failed: ALWAYS run `... 2>&1 | grep -E "ERROR|FAIL|TESTS"` and fix every ERROR line. Typed `var x := [..][i]` on array literals fails to infer: annotate `var x: float`.
+- ColorRect under a CanvasLayer has size 0 (anchors need a Control parent): set .size = get_viewport_rect().size, and verify overlays by pixel diff (python PIL getpixel) not by eye; pastel overlays look like 'no change'.
