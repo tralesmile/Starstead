@@ -25,6 +25,7 @@ var rod_charge_t := 0.0
 var interior: InteriorView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
+var journal_view: JournalView
 var drops_view: DropsView
 var float_fx: FloatFx
 var mouse_aim := false
@@ -155,6 +156,9 @@ func _ready() -> void:
 	inv_view = InventoryView.new()
 	inv_view.closed.connect(func(): player.set_physics_process(true))
 	add_child(inv_view)
+	journal_view = JournalView.new()
+	journal_view.closed.connect(func(): player.set_physics_process(true))
+	add_child(journal_view)
 	interior = InteriorView.new()
 	interior.setup(world, player, self)
 	interior.sleep_requested.connect(_sleep)
@@ -173,7 +177,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: fish journal   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	add_child(leg_layer)
@@ -272,6 +276,11 @@ func _process(delta: float) -> void:
 			float_fx.pickup(player.position, "stone", 1)
 		if fr == 10:
 			float_fx.pickup(player.position, "turnip", 3)
+	if "--journal-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		GameState.journal.record("minnow", 14)
+		GameState.journal.record("carp", 38)
+		GameState.journal.record("carp", 44)
+		journal_view.toggle()
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)
@@ -382,6 +391,13 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if not shop.visible and not car.driving and not dialogue.visible and not inv_view.visible and journal_view.handle(e):
+		if journal_view.visible:
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
 	if not shop.visible and not car.driving and not dialogue.visible and inv_view.handle(e):
 		if inv_view.visible:
 			player.velocity = Vector2.ZERO

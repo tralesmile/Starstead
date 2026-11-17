@@ -30,3 +30,24 @@ func from_dict(d: Dictionary) -> void:
 	entries = {}
 	for k in d:
 		entries[k] = {"count": int(d[k].get("count", 0)), "best": int(d[k].get("best", 0))}
+
+static func rows(table: Dictionary, entries: Dictionary) -> Array:
+	## One row per species for the journal screen, cheapest first: {id, name, caught, count, best, depth, seasons}.
+	## Uncaught species keep their name hidden ("???") but still show where to look (depth + seasons).
+	var out: Array = []
+	for id in table:
+		var e: Dictionary = entries.get(id, {})
+		var caught := int(e.get("count", 0)) > 0
+		out.append({"id": id, "name": String(table[id].name) if caught else "???", "caught": caught, "count": int(e.get("count", 0)),
+			"best": int(e.get("best", 0)), "depth": String(table[id].depth), "seasons": season_text(table[id].seasons), "price": int(table[id].price)})
+	out.sort_custom(func(a, b): return a["price"] < b["price"])
+	return out
+
+static func season_text(seasons: Array) -> String:
+	var names := ["Spr", "Sum", "Aut", "Win"]
+	if seasons.size() >= 4:
+		return "all year"
+	var parts: Array = []
+	for s in seasons:
+		parts.append(names[int(s) % 4])
+	return "/".join(parts)

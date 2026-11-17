@@ -56,7 +56,7 @@ Physics / feel:
 - [x] Fish journal (count + best size per species, saved, shown on catch)
 - [x] Fishing: bait (consumed per cast)
 - [x] Fishing: rod upgrades (data/rods.json, buy in shop, stacks with bait)
-- [ ] Fishing: legendary fish events, journal screen
+- [x] Fishing: journal screen (J: silhouettes until caught, count, best size, depth/season hints; FishJournal.rows tested). [ ] legendary fish events
 - [x] Water: reflections of trees/rocks/bushes/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [x] Grass tufts sway near the player (gen_tufts.py sprite, WorldGen.tufts, ReedMath push, wind sway)
