@@ -47,3 +47,16 @@ static func ripple_radius(age: float, max_r: float = 7.0) -> float:
 
 static func ripple_alpha(age: float) -> float:
 	return 0.6 * (1.0 - clampf(age, 0.0, 1.0))
+
+static func fog_for_day(world_seed: int, day: int, season: int, rain: float) -> float:
+	## Morning fog 0..0.7 on some clear autumn/spring days; never on rainy days.
+	if rain > 0.0:
+		return 0.0
+	var h := hash(Vector2i(world_seed + 77, day)) & 0xFFFF
+	var r := float(h) / 65535.0
+	var chance: float = [0.15, 0.05, 0.3, 0.2][clampi(season, 0, 3)]
+	return 0.0 if r >= chance else 0.3 + 0.4 * (r / chance)
+
+static func fog_now(strength: float, minutes: float) -> float:
+	## Thickest at dawn (minutes since 06:00 = 0), burns off by 10:00 (240).
+	return strength * clampf(1.0 - minutes / 240.0, 0.0, 1.0)

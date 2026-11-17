@@ -42,3 +42,15 @@ func test_ripple_in_box_and_respawns() -> void:
 		check(r.pos.x >= 0.0 and r.pos.x <= 360.0 and r.pos.y >= 0.0 and r.pos.y <= 280.0)
 		check(r.age >= 0.0 and r.age < 1.0)
 	check(WeatherMath.ripple(3, 0.1).pos != WeatherMath.ripple(3, 0.1 + 1.1).pos)
+
+func test_fog_rules() -> void:
+	check_eq(WeatherMath.fog_for_day(1, 5, 2, 0.5), 0.0)
+	check_eq(WeatherMath.fog_now(0.6, 0.0), 0.6)
+	check_eq(WeatherMath.fog_now(0.6, 240.0), 0.0)
+	var any := false
+	for d in 60:
+		var f := WeatherMath.fog_for_day(1, d, 2, 0.0)
+		check(f >= 0.0 and f <= 0.7)
+		if f > 0.0:
+			any = true
+	check(any, "autumn should have some fog days")

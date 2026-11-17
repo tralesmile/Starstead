@@ -15,6 +15,7 @@ var npcs: NpcView
 var dialogue: DialogueView
 var car: CarView
 var town: TownView
+var fog_rect: ColorRect
 var weather: WeatherView
 var rain_today := 0.0
 var rain_day := -1
@@ -48,6 +49,14 @@ func _ready() -> void:
 	world.add_child(player)  # same y-sorted parent as props so it can walk behind trees
 	modulate_node = CanvasModulate.new()
 	add_child(modulate_node)
+	var fog_layer := CanvasLayer.new()
+	fog_layer.layer = 5
+	fog_rect = ColorRect.new()
+	fog_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fog_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fog_rect.color = Color(0.82, 0.86, 0.9, 0.0)
+	fog_layer.add_child(fog_rect)
+	add_child(fog_layer)
 	add_child(Hud.new())
 	hotbar = Hotbar.new()
 	add_child(hotbar)
@@ -138,6 +147,10 @@ func _process(delta: float) -> void:
 		if "--rain" in OS.get_cmdline_user_args():
 			rain_today = 1.0
 		weather.intensity = rain_today
+	var fog := WeatherMath.fog_now(WeatherMath.fog_for_day(1, rain_day, GameState.clock.season(), rain_today), GameState.clock.minutes)
+	if "--fog" in OS.get_cmdline_user_args():
+		fog = 0.6
+	fog_rect.color = Color(0.82, 0.86, 0.9, fog * 0.75)
 	modulate_node.color = DayNight.tint(GameState.clock.minutes) * WeatherMath.darken(weather.now)
 
 	_update_fishing(delta)
