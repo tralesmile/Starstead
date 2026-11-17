@@ -32,10 +32,10 @@ static func facing_tile(pos: Vector2, facing: int, tile: int = 32) -> Vector2i:
 	var dir: Vector2i = [Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1), Vector2i(1, 0)][facing]
 	return Vector2i(floori(pos.x / tile), floori(pos.y / tile)) + dir
 
-static func accelerate(v: Vector2, input: Vector2, delta: float, speed: float = SPEED) -> Vector2:
-	## Smooth start/stop: move toward the target velocity with ACCEL, brake with FRICTION.
+static func accelerate(v: Vector2, input: Vector2, delta: float, speed: float = SPEED, grip: float = 1.0) -> Vector2:
+	## Smooth start/stop: move toward the target velocity with ACCEL, brake with FRICTION. grip < 1 = slippery.
 	var target := velocity(input, speed)
-	var rate := ACCEL if target.length() > 0.01 else FRICTION
+	var rate := (ACCEL if target.length() > 0.01 else FRICTION) * grip
 	return v.move_toward(target, rate * delta)
 
 static func walk_frame_hd(t: float, moving: bool) -> int:
@@ -60,3 +60,12 @@ static func terrain_factor(sdf: float, on_path: bool) -> float:
 static func footstep_due(prev_frame: int, frame: int) -> bool:
 	## A footfall lands when the walk cycle enters frame 2 or 5 (feet pass the body) from another frame.
 	return frame != prev_frame and (frame == 2 or frame == 5)
+
+static func wet_grip(rain: float, on_path: bool) -> float:
+	## Rain turns dirt paths to mud: slower to start and slower to stop (a little slide). Grass keeps more grip.
+	var k := 0.45 if on_path else 0.25
+	return 1.0 - k * clampf(rain, 0.0, 1.0)
+
+static func wet_speed(rain: float, on_path: bool) -> float:
+	## Mud also drags: paths lose their speed bonus in heavy rain.
+	return 1.0 - (0.12 if on_path else 0.04) * clampf(rain, 0.0, 1.0)

@@ -160,6 +160,7 @@ func _process(delta: float) -> void:
 		fog = 0.6
 	fog_rect.color = Color(0.82, 0.86, 0.9, fog * 0.75)
 	storm_t += delta
+	player.rain = weather.now
 	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
 	flash_rect.size = fog_rect.size
 	var fl := WeatherMath.lightning_flash(1, rain_day, storm_t, weather.now)

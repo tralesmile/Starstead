@@ -3,6 +3,7 @@ extends CharacterBody2D
 ## Top-down 8-way player with 4-direction facing, placeholder walk cycle and follow camera.
 
 var facing: int = PlayerMath.Facing.DOWN
+var rain := 0.0   # current rain 0..1 (set by main): muddy ground
 var sprite: Sprite2D
 var camera: Camera2D
 var _t := 0.0
@@ -53,10 +54,13 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var mult := 1.0
+	var grip := 1.0
 	if gen != null:
 		var c := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
-		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), gen.tile_at(c.x, c.y) >= WorldGen.PATH and gen.tile_at(c.x, c.y) < WorldGen.PATH + 3)
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult)
+		var on_path := gen.tile_at(c.x, c.y) >= WorldGen.PATH and gen.tile_at(c.x, c.y) < WorldGen.PATH + 3
+		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
+		grip = PlayerMath.wet_grip(rain, on_path)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult, grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking

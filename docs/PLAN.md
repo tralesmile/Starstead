@@ -62,6 +62,7 @@ Physics / feel:
 - [x] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
 - [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)
 - [x] Day/night: warm lanterns that light the ground (Lantern + PointLight2D, DayNight.lamp_strength)
+- [x] Physics: rain makes paths muddy (PlayerMath.wet_grip/wet_speed: slower start, longer slide)
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)
