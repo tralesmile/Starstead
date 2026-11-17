@@ -85,6 +85,8 @@ Physics / feel:
 ## Phase 2: Vertical slice (months 4-6)
 - [x] NPC schedule model + data/npcs.json (NpcSchedule, tested)
 - [x] NpcView: spawn NPC sprites, walk their schedule in the world, talk prompt
+- [x] NPC A* pathing around trees/rocks/water (NpcPath, AStarGrid2D)
+- [ ] NPC dialogue box with per-NPC lines (data/npcs.json)
 - [ ] Small town + farm layout
 - [ ] One drivable car (top-down physics), fuel/repair stub
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)

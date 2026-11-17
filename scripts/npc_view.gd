@@ -15,12 +15,14 @@ const TINTS := {
 var gen: WorldGen
 var world: Node2D
 var data: Dictionary
-var actors: Array = []  # {npc, node, sprite, face, t, pos}
+var actors: Array = []  # {npc, node, sprite, face, t, goal, path}
+var grid: AStarGrid2D
 
 func setup(w: Node2D, g: WorldGen) -> void:
 	world = w
 	gen = g
 	data = DataDB.load_json("npcs")
+	grid = NpcPath.build(WorldGen.SIZE, _land_cell)
 	for n in data["npcs"]:
 		_spawn(n)
 
@@ -56,14 +58,26 @@ func _spawn(npc: Dictionary) -> void:
 	var start := (Vector2(cell_for(npc, h)) + Vector2(0.5, 0.6)) * 32.0
 	body.position = start
 	world.add_child(body)
-	actors.append({"npc": npc, "node": body, "sprite": s, "face": 0, "t": 0.0})
+	actors.append({"npc": npc, "node": body, "sprite": s, "face": 0, "t": 0.0, "goal": Vector2i(-1, -1), "path": [] as Array[Vector2]})
 
 func _process(delta: float) -> void:
 	var h := NpcSchedule.hour_of(GameState.clock.minutes)
 	for a in actors:
 		var body: Node2D = a["node"]
-		var target := (Vector2(cell_for(a["npc"], h)) + Vector2(0.5, 0.6)) * 32.0
+		var goal := cell_for(a["npc"], h)
 		var before := body.position
+		if goal != a["goal"]:  # new destination: plan a route around trees/rocks/water
+			a["goal"] = goal
+			var here := Vector2i(floori(before.x / 32.0), floori(before.y / 32.0))
+			a["path"] = NpcPath.route(grid, here, goal)
+		var target := (Vector2(goal) + Vector2(0.5, 0.6)) * 32.0
+		var path: Array = a["path"]
+		while path.size() > 1 and before.distance_to(path[0]) < 3.0:
+			path.pop_front()
+		if path.size() > 0:
+			target = path[0]
+			if path.size() == 1 and before.distance_to(target) < 1.0:
+				path.clear()
 		body.position = NpcSchedule.safe_step(before, target, SPEED, delta, _land_point)
 		var d: Vector2 = body.position - before
 		var moving := d.length() > 0.01
