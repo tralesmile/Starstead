@@ -417,7 +417,20 @@ icons['turnip_stew'] = dish("#b87aa8", "#e8d8e8", lambda i: (i.px(7, 6, "#5ab04a
 icons['tomato_salad'] = dish("#78b848", "#a0d868", lambda i: (i.px(6, 7, "#e04a3a"), i.px(9, 7, "#e04a3a"), i.px(8, 8, "#e04a3a")))
 icons['pumpkin_pie'] = dish("#e8902c", "#f8c060", lambda i: (i.px(6, 7, "#c86a10"), i.px(10, 8, "#c86a10"), i.px(8, 6, "#fff0c8")))
 
-GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
+def river_king():
+    i = Ic()
+    i.ell(8, 8, 7, 3.6, "#2a5a6a"); i.ell(8, 8, 6, 2.6, "#3f8a9a")
+    i.rect(3, 9, 12, 10, "#c8e0c0")        # belly
+    i.rect(13, 6, 15, 10, "#e8a838")       # tail
+    i.rect(1, 6, 2, 9, "#e8a838")
+    i.px(3, 7, "#ffffff"); i.px(3, 7, "#101820")   # eye
+    for x in (6, 8, 10):
+        i.px(x, 5, "#e8c850")              # crest
+    i.rect(5, 6, 11, 6, "#8ad0b8")
+    return i
+icons['river_king'] = river_king
+
+GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

@@ -616,6 +616,13 @@ func _water_cell_ahead(want: int = 4) -> Vector2i:
 		return Vector2i(-1, -1)
 	return pc + dir * (i + 1)
 
+func _fish_ctx() -> Dictionary:
+	var caught: Array = []
+	for id in GameState.journal.entries:
+		if int(GameState.journal.entries[id].count) > 0:
+			caught.append(id)
+	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught}
+
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:
 		rod_charging = true
@@ -638,8 +645,10 @@ func _rod_released() -> void:
 			_say("Too tired")
 		else:
 			var bait_id := Fishing.pick_bait(bait_table, GameState.bag)
-			if not fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season(), Fishing.combine(rod_table.get(Fishing.pick_rod(rod_table, GameState.bag), {}), bait_table.get(bait_id, {}))):
+			if not fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season(), Fishing.combine(rod_table.get(Fishing.pick_rod(rod_table, GameState.bag), {}), bait_table.get(bait_id, {})), _fish_ctx()):
 				return
+			if fishing.fish_id != "" and bool(fish_table[fishing.fish_id].get("legendary", false)):
+				_say("Something huge stirs below...")
 			if bait_id != "":
 				GameState.bag.remove(bait_id, 1)
 				_say("Used " + bait_id.replace("_", " "))
@@ -655,7 +664,7 @@ func _update_fishing(delta: float) -> void:
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
 		_skill_gain("fishing")
-		_say("Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
+		_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:
 		_say("It got away")

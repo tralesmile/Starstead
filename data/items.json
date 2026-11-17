@@ -267,5 +267,11 @@
   "stack": 20,
   "energy": 90,
   "rarity": "silver"
+ },
+ "river_king": {
+  "name": "River King",
+  "price": 1500,
+  "stack": 1,
+  "rarity": "gold"
  }
 }

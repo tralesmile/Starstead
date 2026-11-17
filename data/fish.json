@@ -1,7 +1,83 @@
 {
-  "minnow":     {"name": "Minnow",     "depth": "shallow", "seasons": [0,1,2,3], "weight": 50, "difficulty": 0.15, "price": 12},
-  "perch":      {"name": "Perch",      "depth": "shallow", "seasons": [0,1,2],   "weight": 30, "difficulty": 0.25, "price": 28},
-  "carp":       {"name": "Carp",       "depth": "deep",    "seasons": [0,1,2,3], "weight": 35, "difficulty": 0.40, "price": 45},
-  "pike":       {"name": "Pike",       "depth": "deep",    "seasons": [1,2,3],   "weight": 15, "difficulty": 0.60, "price": 90},
-  "golden_koi": {"name": "Golden Koi", "depth": "deep",    "seasons": [0,2],     "weight": 3,  "difficulty": 0.85, "price": 400}
+ "minnow": {
+  "name": "Minnow",
+  "depth": "shallow",
+  "seasons": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "weight": 50,
+  "difficulty": 0.15,
+  "price": 12
+ },
+ "perch": {
+  "name": "Perch",
+  "depth": "shallow",
+  "seasons": [
+   0,
+   1,
+   2
+  ],
+  "weight": 30,
+  "difficulty": 0.25,
+  "price": 28
+ },
+ "carp": {
+  "name": "Carp",
+  "depth": "deep",
+  "seasons": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "weight": 35,
+  "difficulty": 0.4,
+  "price": 45
+ },
+ "pike": {
+  "name": "Pike",
+  "depth": "deep",
+  "seasons": [
+   1,
+   2,
+   3
+  ],
+  "weight": 15,
+  "difficulty": 0.6,
+  "price": 90
+ },
+ "golden_koi": {
+  "name": "Golden Koi",
+  "depth": "deep",
+  "seasons": [
+   0,
+   2
+  ],
+  "weight": 3,
+  "difficulty": 0.85,
+  "price": 400
+ },
+ "river_king": {
+  "name": "River King",
+  "depth": "deep",
+  "seasons": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "weight": 0,
+  "difficulty": 0.95,
+  "price": 1500,
+  "legendary": true,
+  "min_rain": 0.3,
+  "hours": [
+   17,
+   24
+  ],
+  "chance": 0.12
+ }
 }
