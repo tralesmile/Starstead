@@ -20,6 +20,7 @@ var rain_day := -1
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
+var bait_table: Dictionary = DataDB.load_json("bait")
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -240,7 +241,13 @@ func _rod_pressed() -> void:
 			_say("Face the water to cast")
 		elif not GameState.energy.can_use("rod"):
 			_say("Too tired")
-		elif fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season()):
+		else:
+			var bait_id := Fishing.pick_bait(bait_table, GameState.bag)
+			if not fishing.cast(world.gen.sdf_at(c.x, c.y), fish_table, GameState.clock.season(), bait_table.get(bait_id, {})):
+				return
+			if bait_id != "":
+				GameState.bag.remove(bait_id, 1)
+				_say("Used " + bait_id.replace("_", " "))
 			GameState.energy.spend("rod")
 			player.swing()
 	elif fishing.state == Fishing.State.WAITING:

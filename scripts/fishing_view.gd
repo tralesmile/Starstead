@@ -33,7 +33,7 @@ func _on_draw() -> void:
 		var top := 80.0
 		var h := 200.0
 		_draw.draw_rect(Rect2(x, top, 18, h), Color(0.05, 0.15, 0.25, 0.8))
-		var bh := h * Fishing.BAR_SIZE
+		var bh := h * fishing.bar_size
 		var by := top + (1.0 - fishing.bar) * h - bh / 2.0
 		_draw.draw_rect(Rect2(x + 1, by, 16, bh), Color(0.4, 0.9, 0.4, 0.8))
 		_draw.draw_rect(Rect2(x + 5, top + (1.0 - fishing.fish_pos) * h - 4, 8, 8), Color(1, 0.6, 0.2))

@@ -47,9 +47,10 @@ Physics / feel:
 - [x] Squash/stretch on tool swing (HitMath.squash, tested, wired to player sprite)
 - [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
 - [x] Planet price multipliers (data/planets.json, Shop/ShopMenu world-aware, tested)
-- [ ] Shop BUY tab: tools
+- [x] Shop BUY tab: bait (worm/glow, data/bait.json; faster bites, wider reel bar). Tool upgrades still to do
 - [x] Fish journal (count + best size per species, saved, shown on catch)
-- [ ] Fishing: rod/bait upgrades, legendary fish events, journal screen
+- [x] Fishing: bait (consumed per cast)
+- [ ] Fishing: rod upgrades, legendary fish events, journal screen
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [ ] Grass tufts sway near the player

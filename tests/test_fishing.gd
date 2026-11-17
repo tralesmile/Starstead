@@ -66,3 +66,22 @@ func test_bar_clamped() -> void:
 		check(f.bar >= Fishing.BAR_SIZE / 2.0 - 0.001 and f.bar <= 1.0 - Fishing.BAR_SIZE / 2.0 + 0.001)
 		if f.state != Fishing.State.REELING:
 			break
+
+func test_bait_speeds_bite_and_widens_bar() -> void:
+	var bait := {"bite_mult": 0.5, "bar_bonus": 0.1}
+	var a := Fishing.new(11)
+	var b := Fishing.new(11)
+	a.cast(-1.0, _table(), 0)
+	b.cast(-1.0, _table(), 0, bait)
+	check(is_equal_approx(b.timer, a.timer * 0.5))
+	check(is_equal_approx(b.bar_size, Fishing.BAR_SIZE + 0.1))
+	check(is_equal_approx(a.bar_size, Fishing.BAR_SIZE))
+
+func test_pick_bait_prefers_best_owned() -> void:
+	var bait: Dictionary = DataDB.load_json("bait")
+	var inv := Inventory.new()
+	check_eq(Fishing.pick_bait(bait, inv), "")
+	inv.add("worm_bait", 2)
+	check_eq(Fishing.pick_bait(bait, inv), "worm_bait")
+	inv.add("glow_bait", 1)
+	check_eq(Fishing.pick_bait(bait, inv), "glow_bait")

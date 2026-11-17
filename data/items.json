@@ -1,60 +1,74 @@
 {
-  "wood": {
-    "name": "Wood",
-    "price": 5,
-    "stack": 99,
-    "buy": true,
-    "buy_price": 12
-  },
-  "stone": {
-    "name": "Stone",
-    "price": 4,
-    "stack": 99
-  },
-  "turnip_seed": {
-    "name": "Turnip Seeds",
-    "price": 10,
-    "stack": 99,
-    "buy": true
-  },
-  "turnip": {
-    "name": "Turnip",
-    "price": 24,
-    "stack": 99
-  },
-  "egg": {
-    "name": "Egg",
-    "price": 20,
-    "stack": 99
-  },
-  "milk": {
-    "name": "Milk",
-    "price": 45,
-    "stack": 99
-  },
-  "minnow": {
-    "name": "Minnow",
-    "price": 12,
-    "stack": 99
-  },
-  "perch": {
-    "name": "Perch",
-    "price": 28,
-    "stack": 99
-  },
-  "carp": {
-    "name": "Carp",
-    "price": 45,
-    "stack": 99
-  },
-  "pike": {
-    "name": "Pike",
-    "price": 90,
-    "stack": 99
-  },
-  "golden_koi": {
-    "name": "Golden Koi",
-    "price": 400,
-    "stack": 99
-  }
+ "wood": {
+  "name": "Wood",
+  "price": 5,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 12
+ },
+ "stone": {
+  "name": "Stone",
+  "price": 4,
+  "stack": 99
+ },
+ "turnip_seed": {
+  "name": "Turnip Seeds",
+  "price": 10,
+  "stack": 99,
+  "buy": true
+ },
+ "turnip": {
+  "name": "Turnip",
+  "price": 24,
+  "stack": 99
+ },
+ "egg": {
+  "name": "Egg",
+  "price": 20,
+  "stack": 99
+ },
+ "milk": {
+  "name": "Milk",
+  "price": 45,
+  "stack": 99
+ },
+ "minnow": {
+  "name": "Minnow",
+  "price": 12,
+  "stack": 99
+ },
+ "perch": {
+  "name": "Perch",
+  "price": 28,
+  "stack": 99
+ },
+ "carp": {
+  "name": "Carp",
+  "price": 45,
+  "stack": 99
+ },
+ "pike": {
+  "name": "Pike",
+  "price": 90,
+  "stack": 99
+ },
+ "golden_koi": {
+  "name": "Golden Koi",
+  "price": 400,
+  "stack": 99
+ },
+ "worm_bait": {
+  "name": "Worm Bait",
+  "price": 2,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 6
+ },
+ "glow_bait": {
+  "name": "Glow Bait",
+  "price": 5,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 20
+ }
 }

@@ -1,0 +1,10 @@
+{
+ "worm_bait": {
+  "bite_mult": 0.6,
+  "bar_bonus": 0.0
+ },
+ "glow_bait": {
+  "bite_mult": 0.4,
+  "bar_bonus": 0.08
+ }
+}

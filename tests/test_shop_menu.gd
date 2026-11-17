@@ -25,6 +25,9 @@ func test_buy_tab_seeds_only() -> void:
 	check(e.size() >= 1)
 	for x in e:
 		check(bool(items[x.id].get("buy", false)))
+	for i in e.size():
+		if e[i].id == "turnip_seed":
+			m.cursor = i
 	var r := m.confirm(inv, 100)
 	check_eq(r.money, 90)
 	check_eq(inv.count("turnip_seed"), 1)
