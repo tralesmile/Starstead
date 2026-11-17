@@ -9,6 +9,7 @@ var money: int = 500
 var inventory: Dictionary = {}  # item_id -> count
 var farm := FarmModel.new(DataDB.load_json("crops"))
 var bag := Inventory.new(30, _limits())
+var chest := Inventory.new(30, _limits())
 var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var build := BuildModel.new(DataDB.load_json("build"))
@@ -41,7 +42,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "bag": bag.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -67,6 +68,8 @@ func from_dict(d: Dictionary) -> bool:
 	job_xp = {}
 	for k in d.get("job_xp", {}):
 		job_xp[k] = int(d["job_xp"][k])
+	if d.has("chest"):
+		chest.from_array(d["chest"])
 	if d.has("bag"):
 		bag.from_array(d["bag"])
 	return true

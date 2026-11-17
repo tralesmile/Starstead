@@ -97,7 +97,7 @@ Fishing (6)
 - [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
 Houses, buildings, graphics (5, 10)
 - [x] Interior system: E at a door -> fade -> room (InteriorModel layouts, InteriorView, 16 interior sprites via tools/gen_interior.py), walk out through the door gap to return to the exact outside spot; barn, workshop, farmhouse walk-in, other houses after picking the lock
-- [x] Farmhouse placed near the start with a bed (E sleeps: next day, crops grow, autosave). [ ] storage chest, kitchen/cooking, NPC home furniture; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
+- [x] Farmhouse placed near the start with a bed (E sleeps: next day, crops grow, autosave). [x] storage chest in the farmhouse (E near it: ChestView, click/shift-click moves stacks, saved; ChestModel tested). [ ] kitchen/cooking, NPC home furniture; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
 - [x] (chimney smoke + window lights at night done; existing sprites already have shingles/windows) Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 
@@ -211,5 +211,5 @@ Houses, buildings, graphics (5, 10)
 
 ## Backlog additions (2026-11-17 run 3, research)
 - Interaction clarity and low-friction chores are what keep Stardew sticky: https://medium.com/super-jump/what-makes-a-game-about-mundane-chores-hopelessly-addictive and UI notes https://neverendingbacklog.substack.com/p/interfacing-with-the-player . Weakest part of Starstead vs Stardew/Core Keeper now: storage and crafting UI (no chest, no kitchen) -> promote: farmhouse storage chest, then cooking. Also tool-line upgrades done this run (hoe/can) to match Core Keeper-style tool tiers.
-- [ ] Storage chest (placeable + farmhouse) with the bag-style grid, shift-click to move stacks
-- [ ] Weeds and scythe (fibre) so the farm needs upkeep
+- [x] Storage chest with the bag-style grid, shift-click (farmhouse; placeable chest still to do)
+- [x] Weeds and scythe (fibre) so the farm needs upkeep

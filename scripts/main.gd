@@ -26,6 +26,7 @@ var interior: InteriorView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
+var chest_view: ChestView
 var drops_view: DropsView
 var float_fx: FloatFx
 var mouse_aim := false
@@ -159,9 +160,17 @@ func _ready() -> void:
 	journal_view = JournalView.new()
 	journal_view.closed.connect(func(): player.set_physics_process(true))
 	add_child(journal_view)
+	chest_view = ChestView.new()
+	chest_view.closed.connect(func(): player.set_physics_process(true))
+	add_child(chest_view)
 	interior = InteriorView.new()
 	interior.setup(world, player, self)
 	interior.sleep_requested.connect(_sleep)
+	interior.chest_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		chest_view.open())
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
 	add_child(interior)
 	drops_view = DropsView.new()
@@ -283,6 +292,11 @@ func _process(delta: float) -> void:
 		GameState.journal.record("carp", 38)
 		GameState.journal.record("carp", 44)
 		journal_view.toggle()
+	if "--chest-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		GameState.chest.add("wood", 30)
+		GameState.chest.add("egg", 6)
+		GameState.bag.add("stone", 12)
+		chest_view.open()
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)
@@ -405,6 +419,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.velocity = Vector2.ZERO
 			player.move_v = Vector2.ZERO
 			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
+	if chest_view.visible:
+		chest_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if interior.active:

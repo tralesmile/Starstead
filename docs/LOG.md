@@ -40,3 +40,4 @@
 2026-11-17 | Run (cont.) | Graphics: grass-to-path transition (ground shader fringe + blade tips + creeping grass), before/after at the dock path: edge now reads as grass overhanging dirt instead of a flat cut. Closer to ART_TARGET (painterly grass/orange path edge). 253 tests green.
 2026-11-17 | Run 2 (owner: finish everything possible) | Weeds + scythe + fibre item/icon (tested, farm-demo screenshot shows weeds and the 9th hotbar slot). 258 tests green.
 2026-11-17 | Run 2 (cont.) | Physics: mount stamina (MountMath, winded hysteresis, trot cap, stamina bar). 261 tests green.
+2026-11-17 | Run 2 (cont.) | Farmhouse storage chest (ChestView/ChestModel, saved in GameState.chest, screenshot checked). 264 tests green.
