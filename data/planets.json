@@ -1,0 +1,6 @@
+{
+  "earth": {"name": "Earth", "sell_mult": {"default": 1.0}, "buy_mult": {"default": 1.0}},
+  "moon":  {"name": "Moon",  "sell_mult": {"default": 1.2, "turnip": 3.0, "egg": 4.0, "milk": 4.0, "wood": 6.0, "stone": 0.6}, "buy_mult": {"default": 1.5}},
+  "jungle": {"name": "Jungle Planet", "sell_mult": {"default": 1.1, "stone": 2.0, "carp": 0.5}, "buy_mult": {"default": 1.2}},
+  "ice": {"name": "Ice Planet", "sell_mult": {"default": 1.2, "wood": 5.0, "turnip": 2.5}, "buy_mult": {"default": 1.4}}
+}

@@ -7,6 +7,8 @@ enum Tab { SELL, BUY }
 var tab: int = Tab.SELL
 var cursor := 0
 var items: Dictionary
+var planets: Dictionary = {}
+var world := "earth"
 
 func _init(items_db: Dictionary) -> void:
 	items = items_db
@@ -19,9 +21,9 @@ func entries(inv: Inventory) -> Array:
 	for id in ids:
 		var n := inv.count(id)
 		if tab == Tab.SELL and n > 0:
-			out.append({"id": id, "name": items[id].name, "price": int(items[id].price), "count": n})
+			out.append({"id": id, "name": items[id].name, "price": Shop.sell_price(items, id, planets, world), "count": n})
 		elif tab == Tab.BUY and bool(items[id].get("buy", false)):
-			out.append({"id": id, "name": items[id].name, "price": Shop.buy_price(items, id), "count": n})
+			out.append({"id": id, "name": items[id].name, "price": Shop.buy_price(items, id, planets, world), "count": n})
 	return out
 
 func switch_tab() -> void:
@@ -39,7 +41,7 @@ func confirm(inv: Inventory, money: int) -> Dictionary:
 		return {"money": money, "msg": "Nothing here"}
 	cursor = clampi(cursor, 0, e.size() - 1)
 	var id: String = e[cursor].id
-	var m := Shop.sell(inv, items, id, 1, money) if tab == Tab.SELL else Shop.buy(inv, items, id, 1, money)
+	var m := Shop.sell(inv, items, id, 1, money, planets, world) if tab == Tab.SELL else Shop.buy(inv, items, id, 1, money, planets, world)
 	if m < 0:
 		return {"money": money, "msg": "Cannot afford" if tab == Tab.BUY else "Cannot sell"}
 	cursor = clampi(cursor, 0, maxi(entries(inv).size() - 1, 0))

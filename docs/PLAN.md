@@ -46,7 +46,8 @@ Physics / feel:
 - [x] Reeds part when the player walks through (ReedMath + prop shader push)
 - [x] Squash/stretch on tool swing (HitMath.squash, tested, wired to player sprite)
 - [x] Shop BUY tab data-driven (items.json buy/buy_price; wood for building)
-- [ ] Shop BUY tab: tools; sell-price display by planet (trade hook)
+- [x] Planet price multipliers (data/planets.json, Shop/ShopMenu world-aware, tested)
+- [ ] Shop BUY tab: tools
 - [x] Fish journal (count + best size per species, saved, shown on catch)
 - [ ] Fishing: rod/bait upgrades, legendary fish events, journal screen
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
@@ -118,6 +119,9 @@ Physics / feel:
 
 ## Backlog (ideas found by research; promote into phases)
 (runner appends here: idea, source link, date)
+- Rain puddle ripples + reflections floor shader, 4-frame pixel rain/reflection animation | https://godotshaders.com/?p=11585 , https://budgetpixel.com/blog/how-to-animate-pixel-art-rain-and-reflections-in-4-frames | 2026-11-17
+- Thunder/lightning flash for storms | https://jacobjustice.itch.io/feed/devlog/759034/basic-2d-rain-thunder-and-lightning-in-godot | 2026-11-17
+- Weakest vs comparables (2026-11-17): towns still have no buildings (NPCs wander an empty plaza); next: small town layout with house blueprints, then drivable car.
 - NPCs currently walk straight lines and slide along water; replace with AStarGrid2D over land cells for routes around trees/buildings | https://papierkorp.github.io/blog/posts/godot-4-2d-pathing | 2026-11-17
 - NPC art is a tinted copy of the player sheet: needs distinct NPC sprites + dialogue box + houses at the schedule places | 2026-11-17
 - Roof piece only fades over enclosed floors; hut blueprint has a single interior cell, add a bigger house blueprint with roof cells | 2026-11-17

@@ -11,6 +11,7 @@ var msg := ""
 func _init() -> void:
 	layer = 8
 	menu = ShopMenu.new(DataDB.load_json("items"))
+	menu.planets = DataDB.load_json("planets")
 	panel = ColorRect.new()
 	panel.color = Color(0.08, 0.06, 0.04, 0.88)
 	panel.position = Vector2(150, 50)
@@ -22,6 +23,7 @@ func _init() -> void:
 	visible = false
 
 func open() -> void:
+	menu.world = GameState.world
 	menu.tab = ShopMenu.Tab.SELL
 	menu.cursor = 0
 	msg = ""
