@@ -12,6 +12,7 @@ var bag := Inventory.new(30, _limits())
 var chest := Inventory.new(30, _limits())
 var pots := CrabPots.new()
 var car_paint := 0
+var race_best: Dictionary = {}   # laps (as text) -> best time
 var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var build := BuildModel.new(DataDB.load_json("build"))
@@ -44,7 +45,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -63,6 +64,9 @@ func from_dict(d: Dictionary) -> bool:
 	farm.sprinklers_from_array(d.get("sprinklers", []))
 	pots.from_array(d.get("pots", []))
 	car_paint = int(d.get("car_paint", 0))
+	race_best = {}
+	for k in d.get("race_best", {}):
+		race_best[str(k)] = float(d["race_best"][k])
 	build.from_dict(d.get("build", {}))
 	journal.from_dict(d.get("journal", {}))
 	animals = AnimalModel.new(DataDB.load_json("animals")).deserialize(JSON.stringify(d.get("animals", [])))

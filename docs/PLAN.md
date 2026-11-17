@@ -163,7 +163,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)
 - [x] Jobs in play: J key shift at barn/market stall/workshop (JobView: pay, xp ranks, rep, clock; saved xp)
 - [x] Race in play: R while driving starts a checkpoint lap vs a rival driver, prize by place, best time (RaceView)
-- [ ] Races: lap count/menu, other drivers, race track on the roads, sports venues
+- [x] Races: L picks 1-3 laps, two visible rival cars, prize x laps, best time per lap count saved (also fixed: rivals no longer overwrite your best). [ ] race track on the roads, sports venues
 - [ ] Gate: trailer-ready + Steam page text/screens
 
 ## Phase 3: Earth alpha (months 7-15)

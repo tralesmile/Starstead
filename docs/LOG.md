@@ -52,3 +52,4 @@
 2026-11-17 | Run 3 (cont.) | Animal gear on G + shop entries. 295 tests green.
 2026-11-17 | Run 3 (cont.) | Stall theft crime (T). 298 tests green.
 2026-11-17 | Run 3 (cont.) | Garage menu at the workshop bench (repair/fuel/paint). Fuel can finally be refilled. 301 tests green, screenshot checked.
+2026-11-17 | Run 3 (cont.) | Races: lap choice, 2 rival cars with sprites, per-lap best times saved. Fixed bug where a rival finishing set your best time. 301 tests green, race screenshot checked.
