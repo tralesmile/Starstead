@@ -110,6 +110,7 @@ Houses, buildings, graphics (5, 10)
 - Stardew-like satisfaction comes from small visible progress each day (skill levels, quality stars, tool upgrades) plus low-stress loops: https://www.popsci.com/health/stardew-valley-psychology-farming/ and https://mechanicsofmagic.com/?p=1915 . Weakest part of Starstead vs Stardew: progression feedback (no levels/upgrades before today) -> added skills + axe upgrades; next: pickaxe/hoe/can upgrades, level-up fanfare, crop quality stars.
 - [x] Pickaxe upgrades (pickaxes.json, copper/iron, shop). [x] Hoe/watering-can upgrades (copper/iron: till/water 2-3 tiles in a line, can 40/60 water; LineMath, hoes.json, cans.json, icons, shop). [ ] skill-based perks (level 5 choices)
 - [x] Level-up fanfare (LevelFx sparkle ring + rising banner, skill-coloured, fishing too) and coloured skill bars in the bag (LevelFxMath, tested)
+- [x] Floating \"+2 Wood\" pickup labels with item icons (FloatFx/FloatMath, tested)
 
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math

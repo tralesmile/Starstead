@@ -25,6 +25,7 @@ var interior: InteriorView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var drops_view: DropsView
+var float_fx: FloatFx
 var mouse_aim := false
 var legend: Label
 var jobs: JobView
@@ -159,7 +160,9 @@ func _ready() -> void:
 	add_child(interior)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
-	drops_view.picked.connect(func(id, n): _say("+%d %s" % [n, String(DataDB.load_json("items").get(id, {}).get("name", id))]))
+	float_fx = FloatFx.new()
+	world.add_child(float_fx)
+	drops_view.picked.connect(func(id, n): float_fx.pickup(player.position, id, n))
 	add_child(drops_view)
 	cursor = CursorView.new()
 	cursor.z_index = 30
@@ -259,6 +262,14 @@ func _process(delta: float) -> void:
 				GameState.farm.soil[c].watered = (dx + dy) % 2 == 0
 				GameState.farm.soil[c].crop = "turnip" if dy < 2 else ""
 				GameState.farm.soil[c].age = dx
+	if "--fx-demo" in OS.get_cmdline_user_args():  # screenshot helper: pickup floaters + level-up burst
+		var fr := Engine.get_process_frames()
+		if fr == 5:
+			float_fx.pickup(player.position, "wood", 2)
+		if fr == 8:
+			float_fx.pickup(player.position, "stone", 1)
+		if fr == 10:
+			float_fx.pickup(player.position, "turnip", 3)
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)
