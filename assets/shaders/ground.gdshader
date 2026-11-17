@@ -96,6 +96,11 @@ void fragment() {
 		vec2 rp = floor(vec2(px.x / 6.0 + TIME * 0.6 * (hash(vec2(floor(px.y / 5.0))) - 0.3), px.y / 5.0));
 		float r = step(0.985, hash(rp)) * step(mod(px.y, 5.0), 1.0);
 		col = mix(col, vec3(0.55, 0.78, 0.80), r * 0.55 * smoothstep(0.2, 1.0, depth));
+		// sun glints: sparse single bright pixels that twinkle on and off
+		vec2 gp = floor(px / 3.0);
+		float gph = hash(gp + 31.0);
+		float twinkle = step(0.97, hash(gp + floor(TIME * 1.5 + gph * 8.0)));
+		col = mix(col, vec3(0.92, 0.98, 0.95), twinkle * 0.6 * smoothstep(0.15, 0.6, depth) * step(0.5, gph));
 		col = floor(col * 24.0) / 24.0;
 	} else if (sdf < 0.42) {
 		// ---- shoreline: mossy rounded stones

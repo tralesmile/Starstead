@@ -11,12 +11,14 @@ const ACTIONS := {
 	"use_tool": [KEY_F],
 	"inventory": [KEY_TAB, KEY_I],
 	"pause": [KEY_ESCAPE],
+	"sprint": [KEY_SHIFT],
 }
 const PAD := {
 	"interact": JOY_BUTTON_A,
 	"use_tool": JOY_BUTTON_X,
 	"inventory": JOY_BUTTON_Y,
 	"pause": JOY_BUTTON_START,
+	"sprint": JOY_BUTTON_B,
 }
 
 func _ready() -> void:

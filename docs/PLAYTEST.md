@@ -7,3 +7,4 @@
 2026-11-17 | Screenshot at dock in rain (--rain) | Rain reads as mood without hiding the scene | Drops faint; add ripples on water and thunder later.
 
 2026-11-17 | Drove the car from the spawn onto the dirt path: drift leaves skid marks and smoke, trees block it, repairs only near the workshop. Town buildings are solid; doors are locked (no interiors yet). Bait is bought at the stall BUY tab.
+2026-11-17 | Screenshot --wanted: cops spawn around the player, WANTED stars show top-right; robbery/sprint covered by unit tests only | Cops at 1 star slower than walking, 4+ stars need sprint | Needs hands-on feel check.

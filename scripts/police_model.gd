@@ -2,8 +2,8 @@ class_name PoliceModel
 extends RefCounted
 ## Pure police logic: chase steering, arrest check, spawn ring, witness test. Heat itself lives in WantedMath.
 
-const CHASE_SPEED := 52.0       # slightly below player run speed so escape is possible on foot
-const STAR_SPEED := 6.0         # extra speed per star
+const CHASE_SPEED := 70.0       # below walking speed (90) at 1 star; 4+ stars outrun walking, so sprint (130, costs energy) is needed
+const STAR_SPEED := 8.0         # extra speed per star
 const ARREST_RADIUS := 14.0
 const SIGHT := 220.0
 const SPAWN_RING := 260.0

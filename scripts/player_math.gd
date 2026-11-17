@@ -69,3 +69,13 @@ static func wet_grip(rain: float, on_path: bool) -> float:
 static func wet_speed(rain: float, on_path: bool) -> float:
 	## Mud also drags: paths lose their speed bonus in heavy rain.
 	return 1.0 - (0.12 if on_path else 0.04) * clampf(rain, 0.0, 1.0)
+
+const SPRINT_MULT := 1.45
+const SPRINT_DRAIN := 3.0   # energy per second
+
+static func sprint_mult(wants: bool, moving: bool, energy: float) -> float:
+	## Sprint only while moving with at least 1 energy left.
+	return SPRINT_MULT if (wants and moving and energy >= 1.0) else 1.0
+
+static func sprint_cost(dt: float) -> float:
+	return SPRINT_DRAIN * dt

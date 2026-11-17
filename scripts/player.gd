@@ -60,7 +60,10 @@ func _physics_process(delta: float) -> void:
 		var on_path := gen.tile_at(c.x, c.y) >= WorldGen.PATH and gen.tile_at(c.x, c.y) < WorldGen.PATH + 3
 		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
 		grip = PlayerMath.wet_grip(rain, on_path)
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult, grip)
+	var sp := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
+	if sp > 1.0:
+		GameState.energy.value = maxf(GameState.energy.value - PlayerMath.sprint_cost(delta), 0.0)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp, grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
