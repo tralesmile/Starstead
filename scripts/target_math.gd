@@ -33,3 +33,11 @@ static func effective_zoom(step: int, bias: int) -> int:
 
 static func zoom_step(step: int, dir: int) -> int:
 	return clampi(step + dir, 1, 3)
+
+## Number key -> hotbar slot (1..9 -> 0..8, 0 -> 9), -1 if not a number key.
+static func key_slot(keycode: int) -> int:
+	if keycode >= KEY_1 and keycode <= KEY_9:
+		return keycode - KEY_1
+	if keycode == KEY_0:
+		return 9
+	return -1

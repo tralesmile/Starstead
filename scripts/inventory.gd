@@ -61,3 +61,59 @@ func from_array(a: Array) -> void:
 	for i in slots.size():
 		if slots[i] != null:
 			slots[i] = {"id": str(slots[i].id), "n": int(slots[i].n)}
+
+## Move/merge slot i onto slot j: same item merges up to the stack limit, otherwise the two swap.
+func swap(i: int, j: int) -> void:
+	if i == j or i < 0 or j < 0 or i >= slots.size() or j >= slots.size():
+		return
+	var a = slots[i]
+	var b = slots[j]
+	if a != null and b != null and a.id == b.id:
+		var put := mini(int(a.n), limit(a.id) - int(b.n))
+		if put > 0:
+			b.n += put
+			a.n -= put
+			if a.n <= 0:
+				slots[i] = null
+			return
+	slots[i] = b
+	slots[j] = a
+
+## Throw away a whole slot (returns what was removed or null).
+func trash(i: int):
+	if i < 0 or i >= slots.size():
+		return null
+	var s = slots[i]
+	slots[i] = null
+	return s
+
+## Merge stacks and order by item id; empty slots go to the end.
+func sort() -> void:
+	var totals := {}
+	for s in slots:
+		if s != null:
+			totals[s.id] = int(totals.get(s.id, 0)) + int(s.n)
+	var ids := totals.keys()
+	ids.sort()
+	for i in slots.size():
+		slots[i] = null
+	var k := 0
+	for id in ids:
+		var left: int = totals[id]
+		while left > 0 and k < slots.size():
+			var put := mini(left, limit(id))
+			slots[k] = {"id": id, "n": put}
+			k += 1
+			left -= put
+
+## Grid slot under point p (origin = top-left of slot 0, cell = slot pitch), or -1.
+static func slot_at(p: Vector2, origin: Vector2, cell: float, cols: int, n: int) -> int:
+	var d := (p - origin) / cell
+	if d.x < 0.0 or d.y < 0.0:
+		return -1
+	var cx := floori(d.x)
+	var cy := floori(d.y)
+	if cx >= cols:
+		return -1
+	var i := cy * cols + cx
+	return i if i < n else -1

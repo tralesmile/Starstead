@@ -19,6 +19,7 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var cursor: CursorView
+var inv_view: InventoryView
 var drops_view: DropsView
 var mouse_aim := false
 var legend: Label
@@ -140,6 +141,9 @@ func _ready() -> void:
 	add_child(shop)
 	dialogue = DialogueView.new()
 	add_child(dialogue)
+	inv_view = InventoryView.new()
+	inv_view.closed.connect(func(): player.set_physics_process(true))
+	add_child(inv_view)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
 	drops_view.picked.connect(func(id, n): _say("+%d %s" % [n, String(DataDB.load_json("items").get(id, {}).get("name", id))]))
@@ -148,7 +152,7 @@ func _ready() -> void:
 	cursor.z_index = 30
 	world.add_child(cursor)
 	legend = Label.new()
-	legend.position = Vector2(8, 322)
+	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
 	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag   Shift: sprint"
@@ -196,6 +200,13 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait"]:
+			GameState.bag.add(id, 7)
+		inv_view.toggle()
+		inv_view.picked = 2
+	if "--bag-demo" in OS.get_cmdline_user_args():
+		get_viewport().warp_mouse(Vector2(140 + 28 * 3 + 10, 96 + 28 + 8))
 	if "--drops-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:
 		var ids := ["wood", "stone", "turnip", "egg", "minnow", "milk", "golden_koi", "wool"]
 		for i in ids.size():
@@ -289,6 +300,13 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if not shop.visible and not car.driving and not dialogue.visible and inv_view.handle(e):
+		if inv_view.visible:
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
 	if dialogue.handle(e):
 		get_viewport().set_input_as_handled()
 		return

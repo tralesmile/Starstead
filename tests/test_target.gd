@@ -22,3 +22,9 @@ func test_cycle_and_zoom() -> void:
 	check_eq(TargetMath.effective_zoom(3, 0), 3)
 	check_eq(TargetMath.zoom_step(3, 1), 3)
 	check_eq(TargetMath.zoom_step(1, -1), 1)
+
+func test_hotbar_number_keys() -> void:
+	check_eq(TargetMath.key_slot(KEY_1), 0)
+	check_eq(TargetMath.key_slot(KEY_9), 8)
+	check_eq(TargetMath.key_slot(KEY_0), 9)
+	check_eq(TargetMath.key_slot(KEY_A), -1)

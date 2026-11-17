@@ -73,7 +73,7 @@ Physics / feel:
 Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.
 Controls + camera (1, 9)
 - [x] Mouse support: tile cursor (yellow in reach), left-click uses the tool on that tile, right-click interacts, wheel changes slot, Ctrl+wheel or +/- zoom (TargetMath, CursorView, legend line)
-- [ ] Tab opens the inventory screen (see inventory items below)
+- [x] Tab/I opens the inventory screen
 - [ ] Context action: when nothing is selected, E/click does the obvious thing (talk, open door, pick up, harvest); on-screen key hints shown in a small bottom-right legend, rebindable later
 - [x] Camera zoom 1-3 (Ctrl+wheel, +/-) with a quick glide; look-ahead, pixel snap, shake and edge limits kept
 - [ ] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
@@ -81,8 +81,8 @@ Controls + camera (1, 9)
 Items, pickup, inventory (2, 3, 4)
 - [x] Dropped items in the world (DropMath/DropsView; trees, rocks and crop harvests now drop pickups that pop, bob and magnet to you; fish/loot still go straight to the bag): chopped wood, stone, crops, loot, fish scraps drop as small bobbing sprites that magnet to the player within ~48px and are picked up (ItemDrop node + pure DropMath, tested; stack merges when full)
 - [x] Item icons (tools/gen_items.py -> assets/sprites/items.png + data/item_icons.json; used by drops, still to wire into hotbar/inventory/shop): 16x16 icon per item in data/items.json (wood, stone, turnip, egg, milk, fish, seeds, bait...) via tools/gen_items.py; icons used in hotbar, inventory, shop, drops
-- [ ] Hotbar UI: 10 slots with icons, counts, selected highlight, tool durability/quality tint (replace the text hotbar)
-- [ ] Inventory screen (Tab): 30-slot grid, tooltip (name, description, sell price), drag to swap, trash/sort button, money + energy shown, tabs for items/tools/skills later
+- [x] Hotbar UI: icon slots with counts, selected highlight, selected-tool name, keys 1-9/0 (durability/quality tint still to do)
+- [x] Inventory screen (Tab): 30-slot icon grid, hover tooltip (name, sell price), click-to-move/merge/swap, S sort, X trash, money + energy (item descriptions and tabs later)
 - [ ] Item rarity/quality border colours (normal/silver/gold like Stardew) and item names with plurals
 Farming + working the land (7)
 - [ ] Tilled soil autotile (connected dark/wet soil edges), wet soil darker, crop growth stage sprites (4-5 stages) + harvest pop animation
