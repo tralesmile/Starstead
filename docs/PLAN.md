@@ -93,7 +93,7 @@ Wood chopping (8)
 - [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (sap/seed drops and saplings still to do)
 - [ ] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
 Fishing (6)
-- [ ] Hold-to-cast power bar (distance), bobber sprite + splash, nibble animation and "!" alert, hook window, reel bar mini-game with fish sprite moving (keep current logic, new visuals)
+- [x] Fishing visuals: line from the rod tip, bobber that bobs/dips, splash rings, "!" alert, framed reel bar with the fish icon (BobberMath, FishingWorldView). Hold-to-cast power still to do
 - [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
 Houses, buildings, graphics (5, 10)
 - [ ] Interior scene system: walk through a door tile -> fade -> interior room (TileMap/shader floor + walls), exit door back to the exact outside spot (InteriorModel pure + InteriorView)

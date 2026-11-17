@@ -19,6 +19,7 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var cursor: CursorView
+var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var drops_view: DropsView
 var mouse_aim := false
@@ -132,6 +133,9 @@ func _ready() -> void:
 	npcs.combat = combat
 	add_child(combat)
 	add_child(FishingView.new(fishing))
+	fish_fx = FishingWorldView.new()
+	fish_fx.setup(fishing, player)
+	world.add_child(fish_fx)
 	build_view = BuildView.new()
 	add_child(build_view)
 	build_view.setup(world, world.gen, player)
@@ -200,6 +204,20 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--fish-demo" in OS.get_cmdline_user_args():
+		var f := Engine.get_process_frames()
+		hotbar.selected = 6
+		player.facing = PlayerMath.Facing.DOWN
+		if f == 3:
+			var ev := InputEventAction.new()
+			ev.action = "use_tool"
+			ev.pressed = true
+			_unhandled_input(ev)
+		if f == 14:
+			fishing.timer = 0.0
+		if f == 24 and fishing.state == Fishing.State.BITE:
+			fishing.fish_id = "perch"
+			fishing.hook()
 	if "--chop-demo" in OS.get_cmdline_user_args():
 		var f := Engine.get_process_frames()
 		hotbar.selected = 4
@@ -451,6 +469,7 @@ func _rod_pressed() -> void:
 				GameState.bag.remove(bait_id, 1)
 				_say("Used " + bait_id.replace("_", " "))
 			GameState.energy.spend("rod")
+			fish_fx.start_cast(TargetMath.center_of(c))
 			player.held_tool = "rod"
 			player.swing()
 	elif fishing.state == Fishing.State.WAITING:

@@ -54,3 +54,15 @@ func test_swing_angle_and_held_frames() -> void:
 	check_eq(ToolUse.held_frame("turnip_seed"), -1)
 	for t in ["hoe", "watering_can", "axe", "pickaxe", "rod", "club"]:
 		check(ToolUse.held_frame(t) >= 0, t)
+
+func test_bobber_math() -> void:
+	check(BobberMath.bob(0.5, true) >= 0.0)         # dips below rest when biting
+	check(absf(BobberMath.bob(1.3, false)) <= 1.0)
+	var a := Vector2(0, 0)
+	var b := Vector2(100, 0)
+	check_eq(BobberMath.line_point(a, b, 0.0, 8.0), a)
+	check_eq(BobberMath.line_point(a, b, 1.0, 8.0), b)
+	check(BobberMath.line_point(a, b, 0.5, 8.0).y > 3.0)   # sags in the middle
+	check(BobberMath.splash(0.1).y > 0.0)
+	check_eq(BobberMath.splash(0.7), Vector2.ZERO)
+	check(BobberMath.splash(0.5).x > BobberMath.splash(0.1).x)
