@@ -18,6 +18,8 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	var ok := func(c: Vector2i) -> bool:
 		return c.x > 1 and c.y > 1 and c.x < WorldGen.SIZE - 2 and c.y < WorldGen.SIZE - 2 and gen.sdf_at(c.x, c.y) >= 2.0 and gen.tile_at(c.x, c.y) < WorldGen.PATH and not (c in gen.trees) and not (c in gen.rocks) and not (c in gen.bushes)
 	var home: Vector2i = Vector2i(int(npcs["npcs"][0]["home"][0]), int(npcs["npcs"][0]["home"][1]))
+	if stall.x >= 0:
+		home = stall + Vector2i(4, -3)  # your farmhouse settles near the start
 	buildings = TownModel.layout(npcs["places"], home, ok, blocked)
 	for b in buildings:
 		_make(world, gen, b)

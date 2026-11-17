@@ -5,6 +5,7 @@ extends CharacterBody2D
 var facing: int = PlayerMath.Facing.DOWN
 var speed_mult := 1.0  # >1 while riding
 var zoom_step := 2     # user zoom 1..3 (integer: crisp pixels)
+var focus: Variant = null   # Vector2: room centre while indoors (camera leans toward it)
 var zoom_bias := 0     # -1 while driving/riding
 var rain := 0.0   # current rain 0..1 (set by main): muddy ground
 var sprite: Sprite2D
@@ -116,7 +117,10 @@ func _physics_process(delta: float) -> void:
 	if shake_left > 0.0:
 		shake_left -= delta
 		sh = HitMath.shake_offset(shake_left, shake_total, shake_amp, _t + shake_left)
-	camera.offset = CameraMath.snap(look) + sh
+	var pull := Vector2.ZERO
+	if focus != null:
+		pull = ((focus as Vector2) - position) * 0.75
+	camera.offset = CameraMath.snap(look + pull) + sh
 	var zt := float(TargetMath.effective_zoom(zoom_step, zoom_bias))
 	if absf(camera.zoom.x - zt) > 0.01:
 		camera.zoom = Vector2.ONE * move_toward(camera.zoom.x, zt, delta * 8.0)  # quick glide between integer zooms

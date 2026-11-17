@@ -19,6 +19,7 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var cursor: CursorView
+var interior: InteriorView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var drops_view: DropsView
@@ -148,6 +149,11 @@ func _ready() -> void:
 	inv_view = InventoryView.new()
 	inv_view.closed.connect(func(): player.set_physics_process(true))
 	add_child(inv_view)
+	interior = InteriorView.new()
+	interior.setup(world, player, self)
+	interior.sleep_requested.connect(_sleep)
+	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
+	add_child(interior)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
 	drops_view.picked.connect(func(id, n): _say("+%d %s" % [n, String(DataDB.load_json("items").get(id, {}).get("name", id))]))
@@ -204,6 +210,15 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if _arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
+		var kind := "farmhouse"
+		for a in OS.get_cmdline_user_args():
+			if a.begins_with("--enter-demo="):
+				kind = a.substr(13)
+		for b in town.buildings:
+			if b["id"] == kind:
+				player.position = TownModel.sprite_bottom_center(b) + Vector2(0, 40)
+				interior.enter(b)
 	if "--fish-demo" in OS.get_cmdline_user_args():
 		var f := Engine.get_process_frames()
 		hotbar.selected = 6
@@ -255,15 +270,7 @@ func _process(delta: float) -> void:
 		player.facing = PlayerMath.Facing.RIGHT
 		player.tool_t = 0.14
 	if GameState.clock.advance(delta):
-		if rain_today > 0.0:
-			GameState.farm.rain_water()  # it rained today: crops are watered
-			_say("Rain watered the crops")
-		GameState.farm.next_day()
-		GameState.nodes.next_day()
-		animals.day_tick()
-		GameState.energy.new_day(false)
-		world.sync_props(GameState.nodes)
-		GameState.save_game()  # bedtime / pass-out: next day, autosave
+		_end_day()
 	if rain_day != GameState.clock.day:
 		rain_day = GameState.clock.day
 		rain_today = WeatherMath.rain_for_day(1, rain_day, GameState.clock.season())
@@ -283,6 +290,8 @@ func _process(delta: float) -> void:
 		fl = 0.8
 	flash_rect.color = Color(0.85, 0.9, 1.0, fl * 0.55)
 	modulate_node.color = DayNight.tint(GameState.clock.minutes) * WeatherMath.darken(weather.now)
+	if interior.active:
+		modulate_node.color = Color(1.0, 0.95, 0.86)  # warm lamp-lit room
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
@@ -292,7 +301,9 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
-	if prompt.text == "" and not shop.visible:
+	if interior.active:
+		prompt.text = interior.prompt()
+	elif prompt.text == "" and not shop.visible:
 		prompt.text = jobs.prompt()
 	var an_near := animals.near(player.position)
 	if prompt.text == "" and not shop.visible and not an_near.is_empty():
@@ -303,7 +314,11 @@ func _process(delta: float) -> void:
 		prompt.text = "E: Drive"
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
-	player.zoom_bias = -1 if (car.driving or animals.riding != null) else 0
+	player.zoom_bias = (0 if interior.active else -1 if (car.driving or animals.riding != null) else 0)
+	weather.visible = not interior.active
+	ambient.visible = not interior.active
+	fog_rect.visible = not interior.active
+	flash_rect.visible = not interior.active
 	_update_cursor()
 	_update_highlight()
 	_update_fade(delta)
@@ -343,6 +358,14 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.set_physics_process(false)
 		get_viewport().set_input_as_handled()
 		return
+	if interior.active:
+		if interior.busy:
+			return
+		if e.is_action_pressed("interact"):
+			interior.interact()
+		elif e.is_action_pressed("pause"):
+			interior.leave()
+		return
 	if dialogue.handle(e):
 		get_viewport().set_input_as_handled()
 		return
@@ -377,7 +400,12 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.get("kind", "") == "door":
 			var fc := _target_cell()
 			var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
-			robbery.interact(fc if not robbery.building_at(fc).is_empty() else pc)
+			var dcell := fc if not robbery.building_at(fc).is_empty() else pc
+			var bb := robbery.building_at(dcell)
+			if not bb.is_empty() and (String(bb["id"]) in InteriorModel.PUBLIC or not robbery.model.house(String(bb["id"]))["locked"]):
+				interior.enter(bb)
+			else:
+				robbery.interact(dcell)
 			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO
@@ -577,3 +605,26 @@ func _dirt_puff(cell: Vector2i) -> void:
 	p.color = Color(0.45, 0.3, 0.18)
 	world.add_child(p)
 	get_tree().create_timer(0.8).timeout.connect(p.queue_free)
+
+func _end_day() -> void:
+	## Bedtime / pass-out / sleeping in a bed: crops grow, rain waters, energy refills, autosave.
+	if rain_today > 0.0:
+		GameState.farm.rain_water()  # it rained today: crops are watered
+		_say("Rain watered the crops")
+	GameState.farm.next_day()
+	GameState.nodes.next_day()
+	animals.day_tick()
+	GameState.energy.new_day(false)
+	world.sync_props(GameState.nodes)
+	GameState.save_game()
+
+func _sleep() -> void:
+	GameState.clock.new_day()
+	_end_day()
+	_say("Slept well. A new day begins (saved)")
+
+func _arg_prefix(prefix: String) -> bool:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with(prefix):
+			return true
+	return false

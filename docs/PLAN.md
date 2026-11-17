@@ -96,8 +96,8 @@ Fishing (6)
 - [x] Fishing visuals: line from the rod tip, bobber that bobs/dips, splash rings, "!" alert, framed reel bar with the fish icon (BobberMath, FishingWorldView). Hold-to-cast power still to do
 - [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
 Houses, buildings, graphics (5, 10)
-- [ ] Interior scene system: walk through a door tile -> fade -> interior room (TileMap/shader floor + walls), exit door back to the exact outside spot (InteriorModel pure + InteriorView)
-- [ ] Your farmhouse interior: bed (sleep = next day save), storage chest, kitchen; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
+- [x] Interior system: E at a door -> fade -> room (InteriorModel layouts, InteriorView, 16 interior sprites via tools/gen_interior.py), walk out through the door gap to return to the exact outside spot; barn, workshop, farmhouse walk-in, other houses after picking the lock
+- [x] Farmhouse placed near the start with a bed (E sleeps: next day, crops grow, autosave). [ ] storage chest, kitchen/cooking, NPC home furniture; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
 - [ ] Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 

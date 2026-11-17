@@ -44,9 +44,13 @@ func _process(delta: float) -> void:
 		world.interactables.cells[b["door"]]["prompt"] = _prompt(b)
 
 func _prompt(b: Dictionary) -> String:
+	if String(b["id"]) in InteriorModel.PUBLIC:
+		return "E: Enter %s" % b["name"]
 	var h := model.house(str(b["id"]))
 	if h["locked"]:
 		return "E: Pick lock %s (%d%%)" % [b["name"], int(100.0 * model.pick_chance(int(h["lock_level"]), GameState.rep_street / 10))]
+	if not h["locked"] and not (String(b["id"]) in InteriorModel.PUBLIC) and not (h["looted"] or h["loot"].is_empty()):
+		return "E: Enter %s (unlocked)" % b["name"]
 	if h["looted"] or h["loot"].is_empty():
 		return "%s: nothing left" % b["name"]
 	return "E: Loot %s (%d left)  noise %d" % [b["name"], h["loot"].size(), int(model.noise)]
