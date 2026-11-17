@@ -3,6 +3,14 @@ extends Node2D
 ## Builds the houses/barn/workshop from TownModel as y-sorted blocking props with door prompts.
 
 var buildings: Array = []
+var lights: Array = []   # PointLight2D at the windows, glow at night
+const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(23, 68), Vector2(105, 68)], "workshop": [Vector2(16, 57), Vector2(89, 57)]}
+const CHIMNEYS := {"house": Vector2(70, 4), "workshop": Vector2(82, 3)}
+
+func set_night(k: float) -> void:
+	for l in lights:
+		(l as PointLight2D).energy = 0.9 * k
+		(l as PointLight2D).visible = k > 0.01
 
 func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	var npcs: Dictionary = DataDB.load_json("npcs")
@@ -38,5 +46,35 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	cs.shape = rs
 	cs.position = Vector2(0, -20)
 	body.add_child(cs)
+	var tex_size := s.texture.get_size()
+	var origin := Vector2(-tex_size.x / 2.0, -tex_size.y)   # sprite top-left relative to the body
+	for wp in WINDOWS.get(b["sprite"], []):
+		var l := PointLight2D.new()
+		l.texture = Lantern.light_texture()
+		l.texture_scale = 1.1
+		l.color = Color(1.0, 0.8, 0.5)
+		l.position = origin + wp + Vector2(0, 8)
+		l.energy = 0.0
+		l.visible = false
+		body.add_child(l)
+		lights.append(l)
+	if CHIMNEYS.has(b["sprite"]):
+		var sm := CPUParticles2D.new()
+		sm.position = origin + CHIMNEYS[b["sprite"]]
+		sm.amount = 7
+		sm.lifetime = 2.6
+		sm.direction = Vector2(0.3, -1)
+		sm.spread = 12.0
+		sm.initial_velocity_min = 8.0
+		sm.initial_velocity_max = 16.0
+		sm.gravity = Vector2(7, -6)
+		sm.scale_amount_min = 2.0
+		sm.scale_amount_max = 4.0
+		var g := Gradient.new()
+		g.set_color(0, Color(0.9, 0.9, 0.92, 0.55))
+		g.set_color(1, Color(0.9, 0.9, 0.92, 0.0))
+		sm.color_ramp = g
+		sm.z_index = 3
+		body.add_child(sm)
 	world.add_child(body)
 	world.interactables.add(b["door"], "door", "E: %s (locked)" % b["name"])

@@ -98,7 +98,7 @@ Fishing (6)
 Houses, buildings, graphics (5, 10)
 - [x] Interior system: E at a door -> fade -> room (InteriorModel layouts, InteriorView, 16 interior sprites via tools/gen_interior.py), walk out through the door gap to return to the exact outside spot; barn, workshop, farmhouse walk-in, other houses after picking the lock
 - [x] Farmhouse placed near the start with a bed (E sleeps: next day, crops grow, autosave). [ ] storage chest, kitchen/cooking, NPC home furniture; NPC houses and the market/workshop interiors with counters; robbery loot inside rooms (dogs, noise) reusing RobberyModel
-- [ ] Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
+- [x] (chimney smoke + window lights at night done; existing sprites already have shingles/windows) Building art pass: roofs with shingle detail and chimney smoke, windows that glow at night, porches, painted wood trim, fences/gates, paths; new building sprites via tools/gen_town.py
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 
 ## Phase 1: Prototype (months 2-3)

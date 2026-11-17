@@ -295,6 +295,7 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
+	town.set_night(0.0 if interior.active else DayNight.lamp_strength(GameState.clock.minutes))
 	world.part_reeds(player.position, delta)
 	var near := world.interactables.near(player.position, _target_cell())
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
