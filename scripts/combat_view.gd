@@ -10,6 +10,8 @@ var player: Player
 var npcs: NpcView
 var police: PoliceView
 var cd := 0.0
+var car: CarView
+var car_cd := {}  # node -> seconds before the car can hit it again
 var foes := {}  # Node2D -> {hp, down, kv, bar, sprite}
 
 func setup(w: Node2D, p: Player, n: NpcView, pol: PoliceView) -> void:
@@ -54,25 +56,56 @@ func attack(weapon_id: String) -> int:
 		if not CombatModel.in_swing(origin, face, node.position + Vector2(0, -8), float(w["range"])):
 			continue
 		hits += 1
-		s["hp"] = CombatModel.hit(float(s["hp"]), float(w["dmg"]))
-		s["kv"] = HitMath.knockback(player.position, node.position, float(w["force"]))
-		s["flash"] = 0.12
-		(s["bar"] as ColorRect).visible = true
-		(s["bar"] as ColorRect).size.x = 16.0 * float(s["hp"]) / CombatModel.MAX_HP
-		if CombatModel.is_down(float(s["hp"])):
-			s["down"] = CombatModel.DOWN_SECONDS
-			(s["sprite"] as Sprite2D).rotation = PI * 0.5
-			message.emit("Knocked out!")
-		police.commit(CombatModel.crime_for("npc"), node.position)
-		GameState.rep_honest = maxi(0, GameState.rep_honest - 1)
+		_hurt(node, s, float(w["dmg"]), float(w["force"]), player.position)
 	if hits > 0:
 		player.shake(1.0, 0.1)
 		Engine.time_scale = 0.1
 		get_tree().create_timer(HitMath.hitstop(float(w["force"])), true, false, true).timeout.connect(func(): Engine.time_scale = 1.0)
 	return hits
 
+func _hurt(node: Node2D, s: Dictionary, dmg: float, force: float, from: Vector2) -> void:
+	s["hp"] = CombatModel.hit(float(s["hp"]), dmg)
+	s["kv"] = HitMath.knockback(from, node.position, force)
+	s["flash"] = 0.12
+	(s["bar"] as ColorRect).visible = true
+	(s["bar"] as ColorRect).size.x = 16.0 * float(s["hp"]) / CombatModel.MAX_HP
+	if CombatModel.is_down(float(s["hp"])) and float(s["down"]) <= 0.0:
+		s["down"] = CombatModel.DOWN_SECONDS
+		(s["sprite"] as Sprite2D).rotation = PI * 0.5
+		message.emit("Knocked out!")
+	police.commit("assault", node.position)
+	GameState.rep_honest = maxi(0, GameState.rep_honest - 1)
+
+func _car_hits(delta: float) -> void:
+	if car == null or not car.driving:
+		return
+	var h := CombatModel.car_hit(car.vel.length())
+	if float(h["dmg"]) <= 0.0:
+		return
+	var targets: Array = []
+	for a in npcs.actors:
+		targets.append([a["node"], a["sprite"]])
+	for c in police.cops:
+		targets.append([c, (c as Node2D).get_child(0)])
+	for t in targets:
+		var node: Node2D = t[0]
+		if not is_instance_valid(node) or node.position.distance_to(car.position) > 26.0:
+			continue
+		var cd2 := float(car_cd.get(node, 0.0))
+		if cd2 > 0.0:
+			continue
+		var s := _state(node, t[1])
+		if float(s["down"]) > 0.0:
+			continue
+		car_cd[node] = 0.8
+		_hurt(node, s, float(h["dmg"]), float(h["force"]), car.position)
+		player.shake(2.0, 0.15)
+
 func _process(delta: float) -> void:
 	cd = maxf(0.0, cd - delta)
+	for k in car_cd.keys():
+		car_cd[k] = float(car_cd[k]) - delta
+	_car_hits(delta)
 	for node in foes.keys():
 		if not is_instance_valid(node):
 			foes.erase(node)

@@ -36,3 +36,10 @@ static func squash(t_left: float, total: float, strength: float = 0.25) -> Vecto
 	var k := 1.0 - t_left / total
 	var a := strength * (1.0 - k) * cos(k * PI * 1.5)
 	return Vector2(1.0 + a, 1.0 - a)
+
+static func swing_angle(t_left: float, total: float) -> float:
+	## Held-tool sweep in radians: from raised (-1.0) through the strike (+0.9) as the swing ends; 0 when idle.
+	if t_left <= 0.0 or total <= 0.0:
+		return 0.0
+	var k := 1.0 - t_left / total
+	return lerpf(-1.0, 0.9, k * k)

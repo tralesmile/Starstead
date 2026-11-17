@@ -36,3 +36,12 @@ func test_recover() -> void:
 func test_knockback_pushes_away() -> void:
 	var v := HitMath.knockback(Vector2(0, 0), Vector2(10, 0), float(CombatModel.weapon("club")["force"]))
 	check(v.x > 0.0 and absf(v.y) < 0.001)
+
+func test_car_hit_scales_with_speed() -> void:
+	check_eq(CombatModel.car_hit(30.0)["dmg"], 0.0)
+	var slow := CombatModel.car_hit(80.0)
+	var fast := CombatModel.car_hit(240.0)
+	check(float(fast["dmg"]) > float(slow["dmg"]))
+	check(float(fast["force"]) > float(slow["force"]))
+	check(float(fast["dmg"]) >= CombatModel.MAX_HP * 0.99 or float(fast["dmg"]) > 20.0)
+	check(float(CombatModel.car_hit(9999.0)["force"]) <= 2.5)

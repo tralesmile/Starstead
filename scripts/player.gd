@@ -17,6 +17,9 @@ var shake_left := 0.0
 var shake_total := 0.2
 var shake_amp := 1.0
 var _last_frame := 0
+var held: Sprite2D
+var held_tool := ""   # set by main when a tool is used
+var swing_total := 0.18
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
 signal footstep
 
@@ -30,6 +33,12 @@ func _ready() -> void:
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
 	add_child(sh)
+	held = Sprite2D.new()
+	held.texture = load("res://assets/sprites/held_tools.png")
+	held.hframes = 7
+	held.visible = false
+	held.centered = true
+	add_child(held)
 	var cs := CollisionShape2D.new()
 	var r := CapsuleShape2D.new()  # rounded feet collider: slides around tree trunks instead of snagging
 	r.radius = 5.0
@@ -81,6 +90,7 @@ func _physics_process(delta: float) -> void:
 		if PlayerMath.footstep_due(_last_frame, col):
 			footstep.emit()
 	_last_frame = col
+	_update_held()
 	look = CameraMath.ease_offset(look, CameraMath.look_target(move_v, PlayerMath.SPEED), delta)
 	var sh := Vector2.ZERO
 	if shake_left > 0.0:
@@ -101,3 +111,17 @@ func swing() -> void:
 	## Show the tool pose briefly (called by main when a tool is used).
 	tool_t = 0.18
 	squash_left = 0.22
+
+func _update_held() -> void:
+	var f := ToolUse.held_frame(held_tool)
+	if tool_t <= 0.0 or f < 0:
+		held.visible = false
+		return
+	held.visible = true
+	held.frame = f
+	var dir := {PlayerMath.Facing.DOWN: Vector2(7, -12), PlayerMath.Facing.UP: Vector2(-7, -26), PlayerMath.Facing.LEFT: Vector2(-10, -17), PlayerMath.Facing.RIGHT: Vector2(10, -17)}
+	held.position = dir[facing]
+	held.flip_h = facing == PlayerMath.Facing.LEFT
+	held.z_index = -1 if facing == PlayerMath.Facing.UP else 1
+	var a := HitMath.swing_angle(tool_t, swing_total)
+	held.rotation = -a if held.flip_h else a

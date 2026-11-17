@@ -45,3 +45,12 @@ func test_mud_slows_and_slides() -> void:
 	check(wet.x > dry.x, "slides further")
 	check(wet.x < v.x, "still brakes")
 	check_eq(PlayerMath.accelerate(Vector2.ZERO, Vector2.RIGHT, 1.0).x, PlayerMath.SPEED)
+
+func test_swing_angle_and_held_frames() -> void:
+	check_eq(HitMath.swing_angle(0.0, 0.18), 0.0)
+	check(HitMath.swing_angle(0.179, 0.18) < -0.9)   # starts raised
+	check(HitMath.swing_angle(0.01, 0.18) > 0.5)     # ends in the strike
+	check_eq(ToolUse.held_frame("axe"), 2)
+	check_eq(ToolUse.held_frame("turnip_seed"), -1)
+	for t in ["hoe", "watering_can", "axe", "pickaxe", "rod", "club"]:
+		check(ToolUse.held_frame(t) >= 0, t)

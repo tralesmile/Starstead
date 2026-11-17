@@ -11,6 +11,7 @@ var cops: Array = []   # Node2D
 var stars_label: Label
 var home := Vector2.ZERO
 var gen: WorldGen
+var combat: CombatView
 
 func setup(w: Node2D, p: Node2D, hud_parent: Node, g: WorldGen) -> void:
 	world = w
@@ -74,6 +75,8 @@ func _process(delta: float) -> void:
 		_sync_cops()
 	for c in cops:
 		var cn := c as Node2D
+		if combat != null and combat.is_down(cn):
+			continue  # knocked out
 		cn.position = PoliceModel.step(cn.position, player.position, n, delta)
 		if PoliceModel.arrests(cn.position, player.position):
 			_arrest()

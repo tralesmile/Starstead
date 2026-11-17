@@ -28,7 +28,7 @@ Graphics:
 - [x] Lily pads bob/drift and part around the player (reeds parting still to do)
 - [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
 - [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
-- [ ] Tool-specific poses and held tool sprites (hoe, axe, can, rod)
+- [x] Held tool sprites sweep during the swing (hoe, can, axe, pickaxe, rod, club; tools/gen_tools.py, HitMath.swing_angle). Per-tool body poses still to do
 - [x] Sun glints on water (twinkling single pixels in ground shader)
 - [ ] Light rays on water; foam where water meets dock posts
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
@@ -65,6 +65,7 @@ Physics / feel:
 - [x] Day/night: warm lanterns that light the ground (Lantern + PointLight2D, DayNight.lamp_strength)
 - [x] Physics: rain makes paths muddy (PlayerMath.wet_grip/wet_speed: slower start, longer slide)
 - [x] Sprint (Shift/B): PlayerMath.sprint_mult/cost, drains energy; cops outrun walking at 4+ stars so sprint is the escape
+- [x] Car hits knock pedestrians/cops over (CombatModel.car_hit + HitMath knockback, hit-and-run heat)
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
 
 ## Phase 1: Prototype (months 2-3)

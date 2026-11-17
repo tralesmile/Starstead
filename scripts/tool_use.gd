@@ -4,6 +4,10 @@ extends RefCounted
 
 const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", "rod", "club"]
 
+static func held_frame(tool: String) -> int:
+	## Frame in assets/sprites/held_tools.png, -1 = nothing in hand (seeds, bare hands).
+	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5}.get(tool, -1)
+
 static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null) -> String:
 	if energy != null and not energy.can_use(tool):
 		return "Too tired"

@@ -52,3 +52,11 @@ static func crime_for(target_kind: String) -> String:
 
 static func cooldown(id: String) -> float:
 	return float(weapon(id)["cooldown"])
+
+const CAR_MIN_SPEED := 60.0
+
+## Damage + knockback force when a moving car hits someone; zero below walking-pace bumps.
+static func car_hit(speed: float) -> Dictionary:
+	if speed < CAR_MIN_SPEED:
+		return {"dmg": 0.0, "force": 0.0}
+	return {"dmg": minf(MAX_HP, speed * 0.25), "force": clampf(speed / 150.0, 0.5, 2.5)}

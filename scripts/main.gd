@@ -117,6 +117,8 @@ func _ready() -> void:
 	combat = CombatView.new()
 	combat.setup(world, player, npcs, police)
 	combat.message.connect(_say)
+	combat.car = car
+	police.combat = combat
 	npcs.combat = combat
 	add_child(combat)
 	add_child(FishingView.new(fishing))
@@ -168,6 +170,10 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--swing-demo" in OS.get_cmdline_user_args():  # screenshot helper: hold the axe mid-swing
+		player.held_tool = "axe"
+		player.facing = PlayerMath.Facing.RIGHT
+		player.tool_t = 0.14
 	if GameState.clock.advance(delta):
 		if rain_today > 0.0:
 			GameState.farm.rain_water()  # it rained today: crops are watered
@@ -271,9 +277,11 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
 		if GameState.energy.can_use("club") and combat.cd <= 0.0:
 			GameState.energy.spend("club")
+			player.held_tool = "club"
 			player.swing()
 			combat.attack("club")
 	elif e.is_action_pressed("use_tool"):
+		player.held_tool = hotbar.current()
 		player.swing()
 		var cell := PlayerMath.facing_tile(player.position, player.facing)
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy)
@@ -336,6 +344,7 @@ func _rod_pressed() -> void:
 				GameState.bag.remove(bait_id, 1)
 				_say("Used " + bait_id.replace("_", " "))
 			GameState.energy.spend("rod")
+			player.held_tool = "rod"
 			player.swing()
 	elif fishing.state == Fishing.State.WAITING:
 		fishing.hook()
