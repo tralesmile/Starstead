@@ -19,6 +19,8 @@ var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
 var cursor: CursorView
+var rod_charging := false
+var rod_charge_t := 0.0
 var interior: InteriorView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
@@ -210,6 +212,9 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if rod_charging:
+		rod_charge_t += delta
+	fish_fx.charge = CastMath.power(rod_charge_t) if rod_charging else -1.0
 	if _arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
 		var kind := "farmhouse"
 		for a in OS.get_cmdline_user_args():
@@ -228,6 +233,8 @@ func _process(delta: float) -> void:
 			ev.action = "use_tool"
 			ev.pressed = true
 			_unhandled_input(ev)
+		if f == 9:
+			_rod_released()
 		if f == 14:
 			fishing.timer = 0.0
 		if f == 24 and fishing.state == Fishing.State.BITE:
@@ -328,6 +335,8 @@ func _process(delta: float) -> void:
 		toast.text = ""
 
 func _unhandled_input(e: InputEvent) -> void:
+	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
+		_rod_released()
 	if e is InputEventMouseMotion:
 		mouse_aim = true
 	elif e is InputEventKey and e.pressed and not e.echo and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down") or e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
@@ -427,6 +436,15 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.swing()
 		var cell := _target_cell()
 		var dl: Array = []
+		if hotbar.current() == "watering_can":
+			if world.gen.sdf_at(cell.x, cell.y) < 0.0:
+				var added := GameState.can.refill()
+				_say("Refilled the can" if added > 0 else "The can is full")
+				_splash_fx(cell)
+				return
+			if GameState.can.is_empty():
+				_say("The can is empty - face the water and use it to refill")
+				return
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl)
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
@@ -440,6 +458,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		world.sync_props(GameState.nodes)
 		if msg == "Tilled":
 			_dirt_puff(cell)
+		if msg == "Watered":
+			GameState.can.use()
+			_splash_fx(cell, true)
 		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
 			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))
 		if msg != "":
@@ -473,19 +494,35 @@ func _update_fade(delta: float) -> void:
 			var target := 0.5 if behind else 1.0
 			s.modulate.a = move_toward(s.modulate.a, target, delta * 4.0)
 
-func _water_cell_ahead() -> Vector2i:
-	## First water cell 1-4 tiles in front of the player (cast distance), or (-1,-1).
-	var base := _target_cell()
-	var dir := base - Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
-	for k in 4:
-		var c := base + dir * k
-		if world.gen.sdf_at(c.x, c.y) < 0.0:
-			return c
-	return Vector2i(-1, -1)
+func _water_cell_ahead(want: int = 4) -> Vector2i:
+	## Water cell along the facing line: the farthest within `want` tiles, else the nearest within 7, or (-1,-1).
+	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	var dir := PlayerMath.facing_tile(player.position, player.facing) - pc
+	var line: Array = []
+	for k in range(1, CastMath.MAX_TILES + 1):
+		var c := pc + dir * k
+		line.append(world.gen.sdf_at(c.x, c.y) < 0.0)
+	var i := CastMath.choose(line, want)
+	if i < 0:
+		return Vector2i(-1, -1)
+	return pc + dir * (i + 1)
 
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:
-		var c := _water_cell_ahead()
+		rod_charging = true
+		rod_charge_t = 0.0
+	elif fishing.state == Fishing.State.WAITING:
+		fishing.hook()
+		_say("Too early!")
+	elif fishing.state == Fishing.State.BITE:
+		fishing.hook()
+
+func _rod_released() -> void:
+	if not rod_charging:
+		return
+	rod_charging = false
+	if fishing.state == Fishing.State.IDLE:
+		var c := _water_cell_ahead(CastMath.distance_tiles(CastMath.power(rod_charge_t)))
 		if c.x < 0:
 			_say("Face the water to cast")
 		elif not GameState.energy.can_use("rod"):
@@ -501,11 +538,6 @@ func _rod_pressed() -> void:
 			fish_fx.start_cast(TargetMath.center_of(c))
 			player.held_tool = "rod"
 			player.swing()
-	elif fishing.state == Fishing.State.WAITING:
-		fishing.hook()
-		_say("Too early!")
-	elif fishing.state == Fishing.State.BITE:
-		fishing.hook()
 
 func _update_fishing(delta: float) -> void:
 	fishing.tick(delta, Input.is_action_pressed("use_tool") or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
@@ -629,3 +661,22 @@ func _arg_prefix(prefix: String) -> bool:
 		if a.begins_with(prefix):
 			return true
 	return false
+
+func _splash_fx(cell: Vector2i, soil_drops := false) -> void:
+	var p := CPUParticles2D.new()
+	p.position = TargetMath.center_of(cell) + Vector2(0, 4)
+	p.emitting = true
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.amount = 8
+	p.lifetime = 0.45
+	p.direction = Vector2(0, -1)
+	p.spread = 70.0
+	p.initial_velocity_min = 20.0
+	p.initial_velocity_max = 50.0
+	p.gravity = Vector2(0, 180)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 1.8
+	p.color = Color(0.6, 0.8, 1.0, 0.9) if not soil_drops else Color(0.5, 0.7, 0.95, 0.8)
+	world.add_child(p)
+	get_tree().create_timer(0.9).timeout.connect(p.queue_free)

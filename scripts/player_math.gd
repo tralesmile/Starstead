@@ -79,3 +79,7 @@ static func sprint_mult(wants: bool, moving: bool, energy: float) -> float:
 
 static func sprint_cost(dt: float) -> float:
 	return SPRINT_DRAIN * dt
+
+## Grip while riding a faster mount: the faster, the more it slides and the wider it turns (1.0 = on foot).
+static func ride_grip(speed_mult: float) -> float:
+	return clampf(1.0 - (speed_mult - 1.0) * 0.6, 0.45, 1.0)

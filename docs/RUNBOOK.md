@@ -24,3 +24,8 @@ You are the whole studio: project manager, game designer, developer, QA, busines
 
 ## Owner priority (2026-11-17)
 Before other unchecked items, work PLAN.md "Phase 1.5: Feel & polish" top to bottom (controls/camera, pickup/inventory/items, farming, chopping, fishing, interiors, building art). Take Stardew Valley as the reference for feel.
+
+## Standing owner priorities (2026-11-17, every run)
+- Graphics + physics: at least one of each per run (already 5b). Keep adding items to the Ongoing list.
+- Research the best similar games (Stardew Valley, Core Keeper, Palworld, Terraria, Starbound, GTA 2, Citizen Life, Cassette Beasts, Littlewood, Moonlighter); name Starstead's weakest part vs them each run and fix one weakness; log ideas with links in the PLAN Backlog.
+- Improve what already exists (feel, readability, particles, balance, performance), not only new features. Use pixel-art subagents (tools/gen_*.py) for art and always look at the screenshot.

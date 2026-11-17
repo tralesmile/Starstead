@@ -6,6 +6,7 @@ var fishing: Fishing
 var player: Node2D
 var target := Vector2.ZERO
 var t := 0.0
+var charge := -1.0   # 0..1 while holding the cast button, -1 otherwise
 var cast_age := 99.0
 var bite_age := 99.0
 var _last_state := Fishing.State.IDLE
@@ -29,6 +30,12 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if charge >= 0.0:
+		var o := player.position + Vector2(-12, 6)
+		draw_rect(Rect2(o + Vector2(-1, -1), Vector2(26, 5)), Color(0.1, 0.06, 0.03, 0.9))
+		draw_rect(Rect2(o, Vector2(24.0 * charge, 3)), Color(1.0, 0.8, 0.2) if charge < 0.85 else Color(0.5, 1.0, 0.4))
+		var d := CastMath.distance_tiles(charge)
+		draw_string(ThemeDB.fallback_font, o + Vector2(2, 14), "%d tiles" % d, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.9))
 	if fishing.state == Fishing.State.IDLE or fishing.state == Fishing.State.CAUGHT:
 		return
 	var tip := player.position + Vector2(11, -26)

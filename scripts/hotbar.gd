@@ -46,6 +46,10 @@ func _draw_bar() -> void:
 		var t: String = ToolUse.TOOLS[i]
 		_icon(t, r)
 		canvas.draw_string(font, r.position + Vector2(3, 10), str((i + 1) % 10), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.75))
+		if t == "watering_can":
+			var f := GameState.can.fraction()
+			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0, 0, 0, 0.7))
+			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2((SLOT - 6) * f, 3)), Color(0.35, 0.7, 1.0))
 		if t.ends_with("_seed"):
 			canvas.draw_string(font, r.position + Vector2(SLOT - 13, SLOT - 3), str(GameState.bag.count(t)), HORIZONTAL_ALIGNMENT_RIGHT, 12, 9, Color(1, 1, 1))
 		if sel:
