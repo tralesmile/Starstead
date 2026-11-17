@@ -5,6 +5,7 @@ extends RefCounted
 
 var soil: Dictionary = {}
 var weeds: Dictionary = {}  # cell -> variant 0..2 (only on fallow tilled soil)
+var sprinklers: Dictionary = {}  # cell -> true; waters the 8 tiles around it each night
 var crops: Dictionary = {}  # crops.json: crop_id -> {seed, grow_days, season, yield}
 
 func _init(crop_data: Dictionary = {}) -> void:
@@ -83,6 +84,38 @@ func spawn_weeds(day: int) -> int:
 			weeds[cell] = int(weed_roll(cell, day + 1000) * 3.0) % 3
 			made += 1
 	return made
+
+func place_sprinkler(cell: Vector2i) -> bool:
+	if sprinklers.has(cell) or soil.has(cell) or weeds.has(cell):
+		return false
+	sprinklers[cell] = true
+	return true
+
+func pick_up_sprinkler(cell: Vector2i) -> bool:
+	return sprinklers.erase(cell)
+
+func sprinkle() -> int:
+	## Night: every sprinkler waters the tilled cells in the 3x3 around it. Returns how many cells got water.
+	var n := 0
+	for c in sprinklers:
+		for dx in range(-1, 2):
+			for dy in range(-1, 2):
+				var t: Vector2i = c + Vector2i(dx, dy)
+				if soil.has(t) and not soil[t].watered:
+					soil[t].watered = true
+					n += 1
+	return n
+
+func sprinklers_to_array() -> Array:
+	var out := []
+	for c in sprinklers:
+		out.append({"x": c.x, "y": c.y})
+	return out
+
+func sprinklers_from_array(a: Array) -> void:
+	sprinklers = {}
+	for e in a:
+		sprinklers[Vector2i(int(e.x), int(e.y))] = true
 
 func cut_weed(cell: Vector2i) -> bool:
 	return weeds.erase(cell)

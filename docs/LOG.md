@@ -41,3 +41,4 @@
 2026-11-17 | Run 2 (owner: finish everything possible) | Weeds + scythe + fibre item/icon (tested, farm-demo screenshot shows weeds and the 9th hotbar slot). 258 tests green.
 2026-11-17 | Run 2 (cont.) | Physics: mount stamina (MountMath, winded hysteresis, trot cap, stamina bar). 261 tests green.
 2026-11-17 | Run 2 (cont.) | Farmhouse storage chest (ChestView/ChestModel, saved in GameState.chest, screenshot checked). 264 tests green.
+2026-11-17 | Run 2 (cont.) | Sprinklers (placeable, 3x3 nightly watering, saved, shop, icon+world sprite; screenshot checked). 268 tests green.

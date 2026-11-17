@@ -42,7 +42,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -58,6 +58,7 @@ func from_dict(d: Dictionary) -> bool:
 	rep_street = int(d.get("rep_street", 0))
 	farm.from_array(d.get("farm", []))
 	farm.weeds_from_array(d.get("weeds", []))
+	farm.sprinklers_from_array(d.get("sprinklers", []))
 	build.from_dict(d.get("build", {}))
 	journal.from_dict(d.get("journal", {}))
 	animals = AnimalModel.new(DataDB.load_json("animals")).deserialize(JSON.stringify(d.get("animals", [])))

@@ -279,6 +279,7 @@ func _process(delta: float) -> void:
 				GameState.farm.soil[c].age = dx
 				if dy == 2 and dx % 2 == 1:
 					GameState.farm.weeds[c] = 0
+		GameState.farm.sprinklers[o + Vector2i(-1, 1)] = true
 	if "--fx-demo" in OS.get_cmdline_user_args():  # screenshot helper: pickup floaters + level-up burst
 		var fr := Engine.get_process_frames()
 		if fr == 5:
@@ -757,6 +758,9 @@ func _end_day() -> void:
 	if rain_today > 0.0:
 		GameState.farm.rain_water()  # it rained today: crops are watered
 		_say("Rain watered the crops")
+	var sprinkled := GameState.farm.sprinkle()
+	if sprinkled > 0:
+		_say("Sprinklers watered %d tiles" % sprinkled)
 	GameState.farm.next_day()
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()

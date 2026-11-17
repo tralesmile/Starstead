@@ -3,7 +3,7 @@ extends RefCounted
 ## Stardew-style limiter: tools cost energy; sleeping restores; passing out restores less.
 
 const MAX := 100
-const COSTS := {"hoe": 2, "watering_can": 1, "axe": 4, "pickaxe": 4, "seed": 0, "hand": 0, "rod": 2, "club": 2, "scythe": 1}
+const COSTS := {"hoe": 2, "watering_can": 1, "axe": 4, "pickaxe": 4, "seed": 0, "hand": 0, "rod": 2, "club": 2, "scythe": 1, "sprinkler": 0}
 var value: float = MAX
 
 func cost_of(tool: String) -> int:

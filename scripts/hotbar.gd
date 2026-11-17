@@ -50,7 +50,7 @@ func _draw_bar() -> void:
 			var f := GameState.can.fraction()
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0, 0, 0, 0.7))
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2((SLOT - 6) * f, 3)), Color(0.35, 0.7, 1.0))
-		if t.ends_with("_seed"):
+		if t.ends_with("_seed") or t == "sprinkler":
 			canvas.draw_string(font, r.position + Vector2(SLOT - 13, SLOT - 3), str(GameState.bag.count(t)), HORIZONTAL_ALIGNMENT_RIGHT, 12, 9, Color(1, 1, 1))
 		if sel:
 			canvas.draw_rect(r.grow(2), Color(1.0, 0.85, 0.2), false, 2.0)

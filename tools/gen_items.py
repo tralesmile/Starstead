@@ -347,6 +347,16 @@ def fibre():
     return i
 icons['fibre'] = fibre
 
+def sprinkler():
+    i = Ic()
+    i.rect(7, 8, 8, 13, "#b8c0cc")      # pipe
+    i.rect(6, 12, 9, 14, "#787c82")     # base
+    i.rect(4, 5, 11, 7, "#d4814a")      # head
+    i.rect(5, 4, 10, 4, "#eeaa6e")
+    i.px(2, 4, "#96d2ff"); i.px(13, 4, "#96d2ff"); i.px(7, 1, "#96d2ff"); i.px(1, 6, "#96d2ff"); i.px(14, 6, "#96d2ff")
+    return i
+icons['sprinkler'] = sprinkler
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
 
 def main():

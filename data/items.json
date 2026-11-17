@@ -181,5 +181,13 @@
   "name": "Fibre",
   "price": 3,
   "stack": 99
+ },
+ "sprinkler": {
+  "name": "Sprinkler",
+  "price": 40,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 120,
+  "rarity": "bronze"
  }
 }

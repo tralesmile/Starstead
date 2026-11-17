@@ -87,7 +87,7 @@ Items, pickup, inventory (2, 3, 4)
 Farming + working the land (7)
 - [x] Tilled soil autotile (connected furrows, darker wet soil), 5-stage turnip + generic crop sprites (tools/gen_farm.py, FarmModel.stage), dirt puff on tilling; harvest pops as pickups
 - [x] Weeds sprout on fallow tilled soil overnight (deterministic, capped at half the fields, block planting) and the new scythe (hotbar 9, frame 7) cuts them for fibre (FarmModel.spawn_weeds/cut_weed, saved). [ ] Hoe dig animation; scythe cuts wild grass for hay
-- [x] Watering can holds 20 water (refill by using it on water, bar on the hotbar slot, saved; WaterCan). [ ] 3x1 line upgrade, scarecrow + sprinkler placeable
+- [x] Watering can holds 20 water (refill by using it on water, bar on the hotbar slot, saved; WaterCan). [x] 3x1 line upgrade (done via hoe/can tiers). [x] Sprinkler (shop 120, hotbar 0, waters 3x3 each night, hand picks it up, saved; gen_sprinkler.py). [ ] scarecrow
 - [x] Skill xp + levels (SkillModel: farming/foraging/mining/fishing, +5%/level bonus harvest, shown in bag, saved). [ ] Seed packets by season, crop quality by fertiliser
 Wood chopping (8)
 - [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (sap/seed drops and saplings still to do)
