@@ -13,6 +13,7 @@ var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var build := BuildModel.new(DataDB.load_json("build"))
 var journal := FishJournal.new()
+var animals: Array = []  # tamed animal states (AnimalModel dicts)
 var world: String = "earth"
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
@@ -37,7 +38,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "bag": bag.to_array(), "build": build.to_dict(), "journal": journal.to_dict(),
+		"farm": farm.to_array(), "bag": bag.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -54,6 +55,7 @@ func from_dict(d: Dictionary) -> bool:
 	farm.from_array(d.get("farm", []))
 	build.from_dict(d.get("build", {}))
 	journal.from_dict(d.get("journal", {}))
+	animals = AnimalModel.new(DataDB.load_json("animals")).deserialize(JSON.stringify(d.get("animals", [])))
 	if d.has("bag"):
 		bag.from_array(d["bag"])
 	return true

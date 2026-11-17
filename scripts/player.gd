@@ -3,6 +3,7 @@ extends CharacterBody2D
 ## Top-down 8-way player with 4-direction facing, placeholder walk cycle and follow camera.
 
 var facing: int = PlayerMath.Facing.DOWN
+var speed_mult := 1.0  # >1 while riding
 var rain := 0.0   # current rain 0..1 (set by main): muddy ground
 var sprite: Sprite2D
 var camera: Camera2D
@@ -63,7 +64,7 @@ func _physics_process(delta: float) -> void:
 	var sp := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
 	if sp > 1.0:
 		GameState.energy.value = maxf(GameState.energy.value - PlayerMath.sprint_cost(delta), 0.0)
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp, grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult, grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking

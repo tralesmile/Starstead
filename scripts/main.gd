@@ -17,6 +17,7 @@ var car: CarView
 var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
+var animals: AnimalView
 var town: TownView
 var fog_rect: ColorRect
 var flash_rect: ColorRect
@@ -104,6 +105,10 @@ func _ready() -> void:
 	robbery.setup(town, world, police, player)
 	robbery.message.connect(_say)
 	add_child(robbery)
+	animals = AnimalView.new()
+	animals.setup(world, player, world.gen)
+	animals.message.connect(_say)
+	world.add_child(animals)
 	combat = CombatView.new()
 	combat.setup(world, player, npcs, police)
 	combat.message.connect(_say)
@@ -124,6 +129,7 @@ func _ready() -> void:
 	add_child(prompt)
 	if GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
+		GameState.bag.add("turnip", 4)  # treats for taming the first animals
 	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
@@ -163,6 +169,7 @@ func _process(delta: float) -> void:
 			_say("Rain watered the crops")
 		GameState.farm.next_day()
 		GameState.nodes.next_day()
+		animals.day_tick()
 		GameState.energy.new_day(false)
 		world.sync_props(GameState.nodes)
 		GameState.save_game()  # bedtime / pass-out: next day, autosave
@@ -194,6 +201,11 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
+	var an_near := animals.near(player.position)
+	if prompt.text == "" and not shop.visible and not an_near.is_empty():
+		prompt.text = animals.prompt_for(an_near)
+	if animals.riding != null:
+		prompt.text = "E: Dismount"
 	if car.can_enter() and prompt.text == "":
 		prompt.text = "E: Drive"
 	elif car.driving:
@@ -223,11 +235,18 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if car.driving:
 		return  # hands on the wheel: no tools
+	if e.is_action_pressed("interact") and animals.riding != null:
+		animals.dismount()
+		return
 	if e.is_action_pressed("interact"):
 		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
 		var nn := npcs.near(player.position + Vector2(0, -8))
 		if it.is_empty() and not nn.is_empty():
 			dialogue.open(nn["npc"], nn["activity"])
+			return
+		var an := animals.near(player.position)
+		if it.is_empty() and not an.is_empty():
+			animals.interact(an)
 			return
 		if it.get("kind", "") == "door":
 			var fc := PlayerMath.facing_tile(player.position, player.facing)

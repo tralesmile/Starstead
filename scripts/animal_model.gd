@@ -116,3 +116,25 @@ func deserialize(s: String) -> Array:
 				st["gear"] = st.get("gear", {})
 				out.append(st)
 	return out
+
+# --- in-play helpers (pure) ---
+const RIDE_REF := 135.0  # px/s: ride speed that equals the player's sprint (90 * 1.5)
+
+## Multiplier applied to the player's speed while riding (0 ride speed = no change).
+static func ride_mult(ride_spd: float) -> float:
+	return 1.0 if ride_spd <= 0.0 else clampf(ride_spd / RIDE_REF, 1.0, 2.5)
+
+## Wild animals bolt when you come close unless they already trust you (trust 0..1).
+static func should_flee(dist: float, trust_frac: float) -> bool:
+	return dist < lerpf(90.0, 30.0, clampf(trust_frac, 0.0, 1.0)) and trust_frac < 0.6
+
+static func flee_dir(animal: Vector2, threat: Vector2) -> Vector2:
+	var d := animal - threat
+	return Vector2.DOWN if d.length() < 0.001 else d.normalized()
+
+## Tamed animals trail the owner at a loose distance; returns the step toward `owner` (zero when close).
+static func follow_step(pos: Vector2, owner: Vector2, spd: float, dt: float, gap: float = 36.0) -> Vector2:
+	var d := owner - pos
+	if d.length() <= gap:
+		return Vector2.ZERO
+	return d.normalized() * minf(spd * dt, d.length() - gap)
