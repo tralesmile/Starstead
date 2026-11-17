@@ -578,6 +578,8 @@ func _unhandled_input(e: InputEvent) -> void:
 					line_cells.append(extra[i])
 					if hotbar.current() == "watering_can":
 						GameState.can.use()
+		if msg.begins_with("Harvested"):
+			_quality_pass(dl)
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
@@ -590,6 +592,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		var sk := ""
 		if msg.begins_with("Harvested"):
 			sk = "farming"
+
 			if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
 				drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
 				msg += " +1 bonus"
@@ -652,6 +655,13 @@ func _water_cell_ahead(want: int = 4) -> Vector2i:
 	if i < 0:
 		return Vector2i(-1, -1)
 	return pc + dir * (i + 1)
+
+func _quality_pass(dl: Array) -> void:
+	## Harvested crops roll silver/gold by farming level (QualityMath).
+	var flvl := SkillModel.level(int(GameState.skill_xp.get("farming", 0)))
+	for d in dl:
+		if GameState.farm.crops.has(d["id"]):
+			d["id"] = QualityMath.variant(String(d["id"]), QualityMath.roll(flvl, randf()))
 
 func _fish_ctx() -> Dictionary:
 	var caught: Array = []
@@ -783,6 +793,8 @@ func _context_harvest(cell: Vector2i) -> void:
 		return
 	player.held_tool = "hand"
 	player.swing()
+	if msg.begins_with("Harvested"):
+		_quality_pass(dl)
 	for d in dl:
 		drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 	if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():

@@ -286,5 +286,53 @@
   "name": "Crab",
   "price": 38,
   "stack": 99
+ },
+ "turnip_silver": {
+  "name": "Silver Turnip",
+  "price": 30,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "turnip_gold": {
+  "name": "Gold Turnip",
+  "price": 36,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "potato_silver": {
+  "name": "Silver Potato",
+  "price": 37,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "potato_gold": {
+  "name": "Gold Potato",
+  "price": 45,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "tomato_silver": {
+  "name": "Silver Tomato",
+  "price": 42,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "tomato_gold": {
+  "name": "Gold Tomato",
+  "price": 51,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "pumpkin_silver": {
+  "name": "Silver Pumpkin",
+  "price": 112,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "pumpkin_gold": {
+  "name": "Gold Pumpkin",
+  "price": 135,
+  "stack": 99,
+  "rarity": "gold"
  }
 }

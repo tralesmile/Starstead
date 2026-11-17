@@ -4,7 +4,7 @@ extends RefCounted
 
 static func can_cook(inv: Inventory, recipe: Dictionary) -> bool:
 	for id in recipe["needs"]:
-		if inv.count(id) < int(recipe["needs"][id]):
+		if QualityMath.count_any(inv, id) < int(recipe["needs"][id]):
 			return false
 	return true
 
@@ -15,7 +15,7 @@ static func cook(inv: Inventory, recipe: Dictionary) -> bool:
 	var probe := Inventory.new(inv.slots.size(), inv.stack_limits)
 	probe.slots = inv.to_array()
 	for id in recipe["needs"]:
-		probe.remove(id, int(recipe["needs"][id]))
+		QualityMath.remove_any(probe, id, int(recipe["needs"][id]))
 	if probe.add(String(recipe["makes"]), 1) > 0:
 		return false
 	inv.slots = probe.slots
@@ -34,5 +34,5 @@ static func eat(inv: Inventory, items: Dictionary, energy: Energy, id: String) -
 static func ingredient_text(inv: Inventory, recipe: Dictionary) -> String:
 	var parts: Array = []
 	for id in recipe["needs"]:
-		parts.append("%d/%d %s" % [mini(inv.count(id), int(recipe["needs"][id])), int(recipe["needs"][id]), id.replace("_", " ")])
+		parts.append("%d/%d %s" % [mini(QualityMath.count_any(inv, id), int(recipe["needs"][id])), int(recipe["needs"][id]), id.replace("_", " ")])
 	return ", ".join(parts)

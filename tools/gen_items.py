@@ -461,12 +461,17 @@ def main():
     OLD = {k: old_img.crop((v * S, 0, v * S + S, S)) for k, v in old_map.items()}
     strip = Image.new("RGBA", (S * len(keys), S), (0, 0, 0, 0))
     mapping = {}
-    for n, k in enumerate(keys):
+    frames = [k for k in keys if not k.endswith(('_silver', '_gold'))]
+    strip = Image.new("RGBA", (S * len(frames), S), (0, 0, 0, 0))
+    for n, k in enumerate(frames):
         if k in icons:
             strip.paste(icons[k]().image(GLOW.get(k)), (n * S, 0))
         elif k in OLD:  # icons made earlier by a one-off script: keep their pixels
             strip.paste(OLD[k], (n * S, 0))
         mapping[k] = n
+    for k in keys:  # quality variants reuse the base icon (the rarity border shows the quality)
+        if k.endswith(("_silver", "_gold")):
+            mapping[k] = mapping[k.rsplit("_", 1)[0]]
     strip.save(os.path.join(ROOT, "assets", "sprites", "items.png"))
     with open(os.path.join(ROOT, "data", "item_icons.json"), "w") as f:
         json.dump(mapping, f, indent=1)

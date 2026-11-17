@@ -42,5 +42,13 @@
  "pumpkin_pie": 40,
  "river_king": 41,
  "crab_pot": 42,
- "crab": 43
+ "crab": 43,
+ "turnip_silver": 3,
+ "turnip_gold": 3,
+ "potato_silver": 32,
+ "potato_gold": 32,
+ "tomato_silver": 33,
+ "tomato_gold": 33,
+ "pumpkin_silver": 34,
+ "pumpkin_gold": 34
 }
