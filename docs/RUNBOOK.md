@@ -29,3 +29,14 @@ Before other unchecked items, work PLAN.md "Phase 1.5: Feel & polish" top to bot
 - Graphics + physics: at least one of each per run (already 5b). Keep adding items to the Ongoing list.
 - Research the best similar games (Stardew Valley, Core Keeper, Palworld, Terraria, Starbound, GTA 2, Citizen Life, Cassette Beasts, Littlewood, Moonlighter); name Starstead's weakest part vs them each run and fix one weakness; log ideas with links in the PLAN Backlog.
 - Improve what already exists (feel, readability, particles, balance, performance), not only new features. Use pixel-art subagents (tools/gen_*.py) for art and always look at the screenshot.
+
+## Faster process (added 2026-11-17, owner asked for all of these)
+1. Setup in one step: `tools/setup.sh` (installs Godot into ~/bin if missing, fixes a detached HEAD, pulls, imports). Do not hand-roll the install.
+2. Fast loop: `tools/run_tests.sh <name>` runs only tests/test_*<name>*.gd. Run the full suite once before each push.
+3. One command before every push: `tools/check.sh` (all tests, ERROR grep, a screenshot of 14 demo screens with a script/shader error scan, prints PASS/FAIL; frames in /tmp/check/*.png, Read the ones you changed). `tools/check.sh quick` = tests only.
+4. Avoid duplicate work when sessions overlap (a manual chat session and the scheduled run can run together): `git pull --rebase` and read `git log -8` BEFORE picking an item, and write `(CLAIMED yyyy-mm-dd)` after the checkbox text in PLAN.md and push that one-line commit first. Skip items that are CLAIMED within the last 6 hours.
+5. Use subagents in parallel for independent work: one for pixel art (tools/gen_*.py), one for data/balance JSON, one for tests of pure math; merge and run `tools/check.sh` after. Do not do these serially.
+6. Keep `scripts/main.gd` small: new screens get their own CanvasLayer class (like ChestView/CookView/GarageView) and only a few wiring lines in main. Demo/QA flags live in `scripts/demo_flags.gd` (DemoFlags): add new `--xyz-demo` flags there, not in main.
+7. Research is capped: 1 search per run, only when choosing a new system. WebSearch often returns titles only; record the idea with its link and move on.
+8. Think in milestones: Phase 3 starts from docs/EARTH_MAP.md (the map spec). Build big chunks (districts, roads, caves) as a few large slices, not many tiny ones.
+9. Every 5th run is a PLAYTEST run: follow the checklist in docs/PLAYTEST.md, write what feels wrong, and let those notes decide the next PLAN items.

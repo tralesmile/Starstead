@@ -12,6 +12,10 @@ func _init() -> void:
 		if f.begins_with("test_") and f.ends_with(".gd"):
 			files.append(f)
 	files.sort()
+	for a in OS.get_cmdline_user_args():  # tools/run_tests.sh chest -> only files whose name contains "chest"
+		if a.begins_with("--only="):
+			var key := a.substr(7)
+			files = files.filter(func(f): return f.contains(key))
 	for f in files:
 		var script = load("res://tests/" + f)
 		if script == null or not script.can_instantiate():
