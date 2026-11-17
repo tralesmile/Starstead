@@ -18,6 +18,7 @@ var shake_total := 0.2
 var shake_amp := 1.0
 var _last_frame := 0
 var held: Sprite2D
+var refl: Sprite2D
 var held_tool := ""   # set by main when a tool is used
 var swing_total := 0.18
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
@@ -33,6 +34,16 @@ func _ready() -> void:
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
 	add_child(sh)
+	refl = Sprite2D.new()
+	refl.texture = sprite.texture
+	refl.hframes = 8
+	refl.vframes = 4
+	refl.flip_v = true
+	refl.offset = Vector2(0, 22 - 2)
+	refl.modulate = Color(0.45, 0.68, 0.74, 0.34)
+	refl.z_index = -6
+	refl.visible = false
+	add_child(refl)
 	held = Sprite2D.new()
 	held.texture = load("res://assets/sprites/held_tools.png")
 	held.hframes = 7
@@ -91,6 +102,11 @@ func _physics_process(delta: float) -> void:
 			footstep.emit()
 	_last_frame = col
 	_update_held()
+	if gen != null:
+		var rc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
+		refl.visible = gen.sdf_at(rc.x, rc.y + 1) < -0.2 or (rc in gen.dock) or gen.sdf_at(rc.x, rc.y) < 0.0
+		refl.frame = sprite.frame
+		refl.scale = sprite.scale
 	look = CameraMath.ease_offset(look, CameraMath.look_target(move_v, PlayerMath.SPEED), delta)
 	var sh := Vector2.ZERO
 	if shake_left > 0.0:

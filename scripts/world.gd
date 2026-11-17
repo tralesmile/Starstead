@@ -36,6 +36,7 @@ func build(seed_value: int = 1) -> void:
 		var bush := _prop(PROP_TEX.bush, p, Vector2(20, 8), Vector2(0, -12))
 		Outline.set_sway(bush.get_child(0), 1.0, p.x + p.y)
 	_build_water_decor()
+	_build_reflections()
 	_build_stall()
 	_build_lanterns()
 
@@ -77,13 +78,32 @@ func _build_collision() -> void:
 	td.set_collision_polygon_points(0, 0, PackedVector2Array([Vector2(-16, -16), Vector2(16, -16), Vector2(16, 16), Vector2(-16, 16)]))
 	layer = TileMapLayer.new()
 	layer.tile_set = ts
-	layer.visible = false  # the shader paints the ground; this layer only collides
+	layer.visible = "--show-collision" in OS.get_cmdline_user_args()
+	layer.modulate = Color(1, 0.2, 0.2, 0.45)  # the shader paints the ground; this layer only collides
 	add_child(layer)
+	# deep water: whole-tile collision; the shore band follows the painted contour (ShoreMath)
 	for y in WorldGen.SIZE:
 		for x in WorldGen.SIZE:
 			var c := Vector2i(x, y)
-			if WorldGen.is_water(gen.tile_at(x, y)) and not (c in gen.dock):
+			if WorldGen.is_water(gen.tile_at(x, y)) and not (c in gen.dock) and gen.sdf_at(x, y) <= -2.5:
 				layer.set_cell(c, 0, Vector2i(WorldGen.WATER_DEEP, 0))
+	var rects := ShoreMath.blocked_rects(func(t: Vector2i) -> float: return gen.sdf_at(clampi(t.x, 0, WorldGen.SIZE - 1), clampi(t.y, 0, WorldGen.SIZE - 1)), WorldGen.SIZE, func(t: Vector2i) -> bool: return t in gen.dock)
+	var shore := StaticBody2D.new()
+	for r in rects:
+		var cs := CollisionShape2D.new()
+		var rs := RectangleShape2D.new()
+		rs.size = r.size
+		cs.shape = rs
+		cs.position = r.position + r.size * 0.5
+		shore.add_child(cs)
+		if "--show-collision" in OS.get_cmdline_user_args():
+			var dr := ColorRect.new()
+			dr.position = r.position
+			dr.size = r.size
+			dr.color = Color(1, 0.1, 0.1, 0.35)
+			dr.z_index = 50
+			add_child(dr)
+	add_child(shore)
 	# world border
 	for i in range(-1, WorldGen.SIZE + 1):
 		for c in [Vector2i(i, -1), Vector2i(i, WorldGen.SIZE), Vector2i(-1, i), Vector2i(WorldGen.SIZE, i)]:
@@ -258,3 +278,46 @@ func _build_lanterns() -> void:
 func set_lamps(k: float) -> void:
 	for l in lanterns:
 		l.strength = k
+
+# --- water reflections + dock foam (graphics pass) ---
+var reflections: Array = []  # {sprite, base_x, phase}
+var foam: Node2D
+
+func _build_reflections() -> void:
+	## Mirrored, tinted, wobbling copies of trees/rocks/bushes that stand on a bank with water to the south.
+	var all := {}
+	for p in gen.trees:
+		all[p] = true
+	for p in gen.rocks:
+		all[p] = true
+	for p in gen.bushes:
+		all[p] = true
+	for p in all:
+		if not props.has(p):
+			continue
+		var src: Sprite2D = prop_sprite(p)
+		if src == null or not (gen.sdf_at(p.x, p.y + 1) < -0.2):
+			continue
+		var r := Sprite2D.new()
+		r.texture = src.texture
+		r.flip_v = true
+		r.offset = Vector2(src.offset.x, -src.offset.y - 2.0)
+		r.position = (props[p] as Node2D).position
+		r.modulate = Color(0.45, 0.68, 0.74, 0.34)
+		r.z_index = -6
+		add_child(r)
+		reflections.append({"s": r, "x": r.position.x, "phase": float(p.x) * 1.7 + float(p.y)})
+	if gen.dock.size() > 0:
+		foam = DockFoam.new()
+		var a: Vector2i = gen.dock[0]
+		var b: Vector2i = gen.dock[gen.dock.size() - 1]
+		var left := mini(a.x, b.x)
+		var into_land := 10 if b.x < a.x else -10
+		foam.position = Vector2(left * 32 + into_land, a.y * 32 - 24)
+		foam.z_index = -3
+		add_child(foam)
+
+func _process(_delta: float) -> void:
+	var t := Time.get_ticks_msec() / 1000.0
+	for r in reflections:
+		(r["s"] as Sprite2D).position.x = float(r["x"]) + roundf(sin(t * 1.6 + float(r["phase"])) * 1.4)
