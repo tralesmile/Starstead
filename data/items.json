@@ -84,5 +84,25 @@
   "stack": 1,
   "buy": true,
   "buy_price": 900
+ },
+ "wool": {
+  "name": "Wool",
+  "price": 30,
+  "stack": 99
+ },
+ "saddle": {
+  "name": "Saddle",
+  "price": 150,
+  "stack": 1
+ },
+ "fur_coat": {
+  "name": "Fur Coat",
+  "price": 120,
+  "stack": 1
+ },
+ "armour": {
+  "name": "Animal Armour",
+  "price": 260,
+  "stack": 1
  }
 }

@@ -102,11 +102,14 @@ Physics / feel:
 - [x] Town layout model (TownModel) + barn/workshop/houses placed near NPC places with collision and door prompts (art tools/gen_town.py)
 - [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
 - [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
-- [ ] One house to rob (enter, loot, noise, police response, NPC memory)
+- [x] Robbery model (RobberyModel, data/loot.json: locks, lockpick, noise, loot, NPC memory/dog; tested)
+- [ ] One house to rob in play: wire RobberyModel to a town house (E to pick, loot prompt, noise bar)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [ ] Wanted HUD stars + police NPC spawn + arrest, basic combat
-- [ ] One animal to catch, tame and ride; clothes slot on animals
-- [ ] First jobs (3) and first sport (racing)
+- [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
+- [ ] Animal in play: spawn wild chicken/horse, feed to tame, ride, gear UI
+- [x] Job + race models (JobModel/RaceModel, data/jobs.json; tested)
+- [ ] Jobs in play: shift prompt at workplace; race checkpoints with the car
 - [ ] Gate: trailer-ready + Steam page text/screens
 
 ## Phase 3: Earth alpha (months 7-15)
