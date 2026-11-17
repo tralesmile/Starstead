@@ -30,7 +30,8 @@ Graphics:
 - [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
 - [x] Held tool sprites sweep during the swing (hoe, can, axe, pickaxe, rod, club; tools/gen_tools.py, HitMath.swing_angle). Per-tool body poses still to do
 - [x] Sun glints on water (twinkling single pixels in ground shader)
-- [ ] Light rays on water; foam where water meets dock posts
+- [x] Foam rings at dock posts (DockFoam)
+- [ ] Light rays on water
 - [x] Ambient particles: drifting leaves, fireflies at night, dust when running (AmbientView/AmbientMath)
 - [ ] Day/night: warm point lights at night (lanterns, windows), long evening shadows
 - [x] Rain waters crops at day end (FarmModel.rain_water)
@@ -56,7 +57,7 @@ Physics / feel:
 - [x] Fishing: bait (consumed per cast)
 - [x] Fishing: rod upgrades (data/rods.json, buy in shop, stacks with bait)
 - [ ] Fishing: legendary fish events, journal screen
-- [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
+- [x] Water: reflections of trees/rocks/bushes/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [x] Grass tufts sway near the player (gen_tufts.py sprite, WorldGen.tufts, ReedMath push, wind sway)
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
@@ -66,7 +67,7 @@ Physics / feel:
 - [x] Physics: rain makes paths muddy (PlayerMath.wet_grip/wet_speed: slower start, longer slide)
 - [x] Sprint (Shift/B): PlayerMath.sprint_mult/cost, drains energy; cops outrun walking at 4+ stars so sprint is the escape
 - [x] Car hits knock pedestrians/cops over (CombatModel.car_hit + HitMath knockback, hit-and-run heat)
-- [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
+- [x] Collision polish: shoreline collision follows the painted shore (ShoreMath, bilinear sdf, 8px runs; --show-collision debug)
 
 ## Phase 1: Prototype (months 2-3)
 - [x] Player scene: CharacterBody2D, 8-way move from input map, test movement vector math
