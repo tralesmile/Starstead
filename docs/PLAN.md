@@ -57,7 +57,7 @@ Physics / feel:
 - [ ] Fishing: legendary fish events, journal screen
 - [ ] Water: reflections of trees/player on the surface (flipped, tinted, wobbling)
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
-- [ ] Grass tufts sway near the player
+- [x] Grass tufts sway near the player (gen_tufts.py sprite, WorldGen.tufts, ReedMath push, wind sway)
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
 - [x] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
 - [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)

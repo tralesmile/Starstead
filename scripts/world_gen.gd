@@ -17,6 +17,7 @@ var tree_kinds: Dictionary = {}   # cell -> "pine" | "oak"
 var bushes: Array[Vector2i] = []
 var lilies: Array[Vector2i] = []
 var reeds: Array[Vector2i] = []
+var tufts: Array[Vector2i] = []   # grass tuft cells (separate RNG so the layout above never shifts)
 var dock: Array[Vector2i] = []    # walkable dock cells over water, nearest the spawn
 var sdf := PackedFloat32Array()   # signed distance to shore in tiles (water < 0)
 
@@ -39,6 +40,7 @@ func generate() -> void:
 	bushes.clear()
 	lilies.clear()
 	reeds.clear()
+	tufts.clear()
 	tree_kinds.clear()
 	var forest := FastNoiseLite.new()
 	forest.seed = seed_value + 31
@@ -95,6 +97,14 @@ func generate() -> void:
 				reeds.append(c)
 			elif d >= 1.0 and d < 3.5 and roll2 < 0.12:
 				lilies.append(c)
+	var tr := RandomNumberGenerator.new()
+	tr.seed = seed_value + 211
+	for y in SIZE:
+		for x in SIZE:
+			var c := Vector2i(x, y)
+			var roll := tr.randf()
+			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not (c in trees) and not (c in rocks) and not (c in bushes):
+				tufts.append(c)
 
 static func is_water(t: int) -> bool:
 	return t == WATER_SHALLOW or t == WATER_DEEP

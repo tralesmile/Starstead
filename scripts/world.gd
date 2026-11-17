@@ -17,6 +17,7 @@ var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
 var lanterns: Array[Lantern] = []
 var reed_sprites: Array[Sprite2D] = []
+var tuft_sprites: Array[Sprite2D] = []
 var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
 
@@ -132,6 +133,17 @@ func _build_water_decor() -> void:
 		Outline.set_sway(s, 2.0, c.x * 1.3 + c.y)
 		add_child(s)
 		reed_sprites.append(s)
+	var tuft := load("res://assets/sprites/grass_tuft.png")
+	for c in gen.tufts:
+		var s := Sprite2D.new()
+		s.texture = tuft
+		s.flip_h = r.randf() < 0.5
+		s.position = Vector2(c) * 32.0 + Vector2(r.randi_range(6, 26), r.randi_range(14, 28))
+		Outline.set_sway(s, 1.5, c.x * 0.9 + c.y)
+		s.z_index = -3
+		add_child(s)
+		tuft_sprites.append(s)
+		reed_sprites.append(s)  # tufts part around the walker too (ReedMath)
 	if gen.dock.size() > 0:
 		var a: Vector2i = gen.dock[0]
 		var b: Vector2i = gen.dock[gen.dock.size() - 1]

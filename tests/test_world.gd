@@ -56,3 +56,10 @@ func test_fade_behind_tree() -> void:
 	check(WorldFade.is_behind(Vector2(100, 80), base, size, off), "behind canopy")
 	check(not WorldFade.is_behind(Vector2(100, 110), base, size, off), "in front")
 	check(not WorldFade.is_behind(Vector2(200, 80), base, size, off), "beside")
+
+func test_tufts_on_free_grass() -> void:
+	var g := WorldGen.new(1)
+	check(g.tufts.size() > 50, "has tufts")
+	for c in g.tufts:
+		check(g.tile_at(c.x, c.y) <= 2 and not (c in g.trees) and not (c in g.rocks), "tuft on free grass")
+	check(g.tufts == WorldGen.new(1).tufts, "deterministic")
