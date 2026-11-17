@@ -311,15 +311,47 @@ def armour():
     return i
 icons['armour'] = armour
 
+def hoe(metal, shade):
+    i = Ic()
+    i.line(3, 13, 11, 4, "#8a5a2c")      # handle
+    i.line(4, 13, 12, 4, "#a87a40")
+    i.rect(9, 2, 13, 3, metal)           # blade head
+    i.rect(12, 3, 13, 6, metal)
+    i.px(13, 6, shade); i.px(12, 6, shade); i.px(9, 3, shade)
+    i.px(10, 2, "#ffffff")
+    return i
+icons['hoe_copper'] = lambda: hoe("#d4814a", "#a85a2a")
+icons['hoe_iron'] = lambda: hoe("#b8c0cc", "#7a8494")
+
+def can(body, shade):
+    i = Ic()
+    i.rect(3, 6, 10, 12, body)           # tank
+    i.rect(3, 6, 4, 12, shade)
+    i.rect(4, 5, 9, 5, shade)            # rim
+    i.line(10, 8, 14, 5, body)           # spout
+    i.line(10, 9, 14, 6, body)
+    i.rect(14, 3, 14, 6, shade)          # rose
+    i.line(4, 4, 9, 4, shade)            # handle arc
+    i.px(4, 5, shade); i.px(9, 5, shade)
+    i.px(5, 8, "#ffffff"); i.px(5, 9, "#ffffff")
+    return i
+icons['watering_can_copper'] = lambda: can("#d4814a", "#a85a2a")
+icons['watering_can_iron'] = lambda: can("#b8c0cc", "#7a8494")
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())
+    old_map = json.load(open(os.path.join(ROOT, "data", "item_icons.json")))
+    old_img = Image.open(os.path.join(ROOT, "assets", "sprites", "items.png")).convert("RGBA")
+    OLD = {k: old_img.crop((v * S, 0, v * S + S, S)) for k, v in old_map.items()}
     strip = Image.new("RGBA", (S * len(keys), S), (0, 0, 0, 0))
     mapping = {}
     for n, k in enumerate(keys):
-        icon = icons[k]()
-        strip.paste(icon.image(GLOW.get(k)), (n * S, 0))
+        if k in icons:
+            strip.paste(icons[k]().image(GLOW.get(k)), (n * S, 0))
+        elif k in OLD:  # icons made earlier by a one-off script: keep their pixels
+            strip.paste(OLD[k], (n * S, 0))
         mapping[k] = n
     strip.save(os.path.join(ROOT, "assets", "sprites", "items.png"))
     with open(os.path.join(ROOT, "data", "item_icons.json"), "w") as f:

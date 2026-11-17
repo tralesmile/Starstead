@@ -1,0 +1,4 @@
+{
+ "watering_can_copper": {"power": 2, "capacity": 40},
+ "watering_can_iron": {"power": 3, "capacity": 60}
+}

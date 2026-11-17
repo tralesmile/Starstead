@@ -144,5 +144,37 @@
   "buy": true,
   "buy_price": 800,
   "rarity": "silver"
+ },
+ "hoe_copper": {
+  "name": "Copper Hoe",
+  "price": 50,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 300,
+  "rarity": "bronze"
+ },
+ "hoe_iron": {
+  "name": "Iron Hoe",
+  "price": 150,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 800,
+  "rarity": "silver"
+ },
+ "watering_can_copper": {
+  "name": "Copper Watering Can",
+  "price": 50,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 300,
+  "rarity": "bronze"
+ },
+ "watering_can_iron": {
+  "name": "Iron Watering Can",
+  "price": 150,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 800,
+  "rarity": "silver"
  }
 }

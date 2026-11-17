@@ -24,6 +24,14 @@ func refill() -> int:
 	level = capacity
 	return added
 
+func set_capacity(cap: int) -> void:
+	## Bigger can from a bag upgrade: the extra room starts filled (like a fresh purchase), never shrinks the level.
+	cap = maxi(cap, 1)
+	if cap > capacity:
+		level += cap - capacity
+	capacity = cap
+	level = mini(level, capacity)
+
 func upgrade(extra: int) -> void:
 	capacity += extra
 	level = capacity

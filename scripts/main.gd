@@ -41,7 +41,7 @@ var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
 var bait_table: Dictionary = DataDB.load_json("bait")
 var rod_table: Dictionary = DataDB.load_json("rods")
-var axe_table: Dictionary = _merge(DataDB.load_json("axes"), DataDB.load_json("pickaxes"))
+var axe_table: Dictionary = _merge(_merge(DataDB.load_json("axes"), DataDB.load_json("pickaxes")), _merge(DataDB.load_json("hoes"), DataDB.load_json("cans")))
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -438,6 +438,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		var cell := _target_cell()
 		var dl: Array = []
 		if hotbar.current() == "watering_can":
+			GameState.can.set_capacity(LineMath.capacity_for(20, GameState.bag, axe_table))
 			if world.gen.sdf_at(cell.x, cell.y) < 0.0:
 				var added := GameState.can.refill()
 				_say("Refilled the can" if added > 0 else "The can is full")
@@ -447,6 +448,17 @@ func _unhandled_input(e: InputEvent) -> void:
 				_say("The can is empty - face the water and use it to refill")
 				return
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
+		var line_cells: Array = [cell]
+		if msg != "" and (hotbar.current() == "hoe" or hotbar.current() == "watering_can"):
+			var extra: Array = LineMath.cells(cell, player.facing, ToolUse.axe_power(GameState.bag, axe_table, hotbar.current()))
+			for i in range(1, extra.size()):
+				if hotbar.current() == "watering_can" and GameState.can.level <= 1:
+					break  # keep a unit for the first tile's use below
+				var m2 := ToolUse.apply(hotbar.current(), extra[i], GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, null, dl, axe_table)
+				if m2 != "":
+					line_cells.append(extra[i])
+					if hotbar.current() == "watering_can":
+						GameState.can.use()
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
@@ -470,10 +482,12 @@ func _unhandled_input(e: InputEvent) -> void:
 			msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
 		world.sync_props(GameState.nodes)
 		if msg == "Tilled":
-			_dirt_puff(cell)
+			for lc in line_cells:
+				_dirt_puff(lc)
 		if msg == "Watered":
 			GameState.can.use()
-			_splash_fx(cell, true)
+			for lc in line_cells:
+				_splash_fx(lc, true)
 		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
 			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))
 		if msg != "":
