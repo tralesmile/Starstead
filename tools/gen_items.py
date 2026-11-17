@@ -357,6 +357,48 @@ def sprinkler():
     return i
 icons['sprinkler'] = sprinkler
 
+def packet(band, band_l, pic):
+    def f():
+        i = Ic()
+        i.rect(3, 2, 12, 14, "#e8d4a0")
+        i.rect(3, 2, 12, 4, band)
+        i.rect(3, 13, 12, 14, "#c8b480")
+        i.rect(4, 3, 5, 3, band_l)
+        pic(i)
+        return i
+    return f
+
+def pic_potato(i):
+    i.ell(8, 9, 3, 2.2, "#c89a58"); i.px(7, 8, "#e8c888"); i.px(9, 10, "#8a5a2c")
+def pic_tomato(i):
+    i.ell(8, 9, 2.8, 2.6, "#e04a3a"); i.px(7, 8, "#ff9a8a"); i.px(8, 6, "#4a9a3a"); i.px(7, 6, "#4a9a3a"); i.px(9, 6, "#4a9a3a")
+def pic_pumpkin(i):
+    i.ell(8, 9, 3.2, 2.6, "#f08a20"); i.px(8, 7, "#a85a10"); i.px(8, 6, "#4a9a3a"); i.px(6, 9, "#c86a10"); i.px(10, 9, "#c86a10")
+icons['potato_seed'] = packet("#8a6a3a", "#b08a54", pic_potato)
+icons['tomato_seed'] = packet("#b8342a", "#e05a4a", pic_tomato)
+icons['pumpkin_seed'] = packet("#c86a10", "#f0922a", pic_pumpkin)
+
+def potato():
+    i = Ic()
+    i.ell(8, 9, 5.5, 4, "#c89a58"); i.rect(4, 11, 12, 12, "#a87a40")
+    i.px(6, 7, "#e8c888"); i.px(7, 7, "#e8c888"); i.px(10, 10, "#7a5028"); i.px(5, 10, "#7a5028"); i.px(9, 6, "#7a5028")
+    return i
+def tomato():
+    i = Ic()
+    i.ell(8, 9, 5, 4.5, "#e04a3a"); i.rect(4, 11, 12, 12, "#b8342a")
+    i.px(6, 6, "#ffb0a0"); i.px(7, 6, "#ffb0a0"); i.px(6, 7, "#ffb0a0")
+    for x, y in [(8, 4), (7, 4), (9, 4), (8, 3), (6, 5), (10, 5)]:
+        i.px(x, y, "#4a9a3a")
+    return i
+def pumpkin():
+    i = Ic()
+    i.ell(8, 10, 6, 4.5, "#f08a20"); i.ell(5.5, 10, 2, 4.2, "#d66a12"); i.ell(10.5, 10, 2, 4.2, "#d66a12")
+    i.rect(7, 5, 9, 6, "#5a8a2a"); i.px(9, 4, "#5a8a2a"); i.px(6, 8, "#ffc060"); i.px(7, 8, "#ffc060")
+    return i
+icons['potato'] = potato
+icons['tomato'] = tomato
+icons['pumpkin'] = pumpkin
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
 
 def main():

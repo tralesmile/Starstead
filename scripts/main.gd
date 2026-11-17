@@ -87,6 +87,8 @@ func _ready() -> void:
 	add_child(fog_layer)
 	add_child(Hud.new())
 	hotbar = Hotbar.new()
+	for cid in GameState.farm.crops:
+		hotbar.seed_ids.append(GameState.farm.crops[cid].seed)
 	add_child(hotbar)
 	toast = Label.new()
 	toast.position = Vector2(8, 24)
@@ -275,7 +277,7 @@ func _process(delta: float) -> void:
 				var c := o + Vector2i(dx, dy)
 				GameState.farm.till(c)
 				GameState.farm.soil[c].watered = (dx + dy) % 2 == 0
-				GameState.farm.soil[c].crop = "turnip" if dy < 2 else ""
+				GameState.farm.soil[c].crop = ("pumpkin" if dx == 4 else "tomato" if dx == 3 else "turnip") if dy < 2 else ""
 				GameState.farm.soil[c].age = dx
 				if dy == 2 and dx % 2 == 1:
 					GameState.farm.weeds[c] = 0

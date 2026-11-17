@@ -42,3 +42,4 @@
 2026-11-17 | Run 2 (cont.) | Physics: mount stamina (MountMath, winded hysteresis, trot cap, stamina bar). 261 tests green.
 2026-11-17 | Run 2 (cont.) | Farmhouse storage chest (ChestView/ChestModel, saved in GameState.chest, screenshot checked). 264 tests green.
 2026-11-17 | Run 2 (cont.) | Sprinklers (placeable, 3x3 nightly watering, saved, shop, icon+world sprite; screenshot checked). 268 tests green.
+2026-11-17 | Run 2 (cont.) | Three seasonal crops + seed cycling on the seed slot (FarmModel.in_season, Hotbar.cycle_seed). 272 tests green.

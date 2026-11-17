@@ -27,5 +27,11 @@
  "watering_can_copper": 25,
  "watering_can_iron": 26,
  "fibre": 27,
- "sprinkler": 28
+ "sprinkler": 28,
+ "potato_seed": 29,
+ "tomato_seed": 30,
+ "pumpkin_seed": 31,
+ "potato": 32,
+ "tomato": 33,
+ "pumpkin": 34
 }

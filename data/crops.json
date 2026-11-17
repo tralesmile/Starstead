@@ -1,3 +1,40 @@
 {
-  "turnip": {"seed": "turnip_seed", "grow_days": 4, "season": [0, 1, 2, 3], "yield": 1}
+ "turnip": {
+  "seed": "turnip_seed",
+  "grow_days": 4,
+  "season": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "yield": 1
+ },
+ "potato": {
+  "seed": "potato_seed",
+  "grow_days": 5,
+  "season": [
+   0
+  ],
+  "yield": 2,
+  "tint": "#d9b36a"
+ },
+ "tomato": {
+  "seed": "tomato_seed",
+  "grow_days": 6,
+  "season": [
+   1
+  ],
+  "yield": 2,
+  "tint": "#e04a3a"
+ },
+ "pumpkin": {
+  "seed": "pumpkin_seed",
+  "grow_days": 8,
+  "season": [
+   2
+  ],
+  "yield": 1,
+  "tint": "#f08a20"
+ }
 }

@@ -23,17 +23,19 @@ func crop_for_seed(seed_id: String) -> String:
 			return id
 	return ""
 
+func in_season(crop_id: String, season: int) -> bool:
+	for x in crops[crop_id].season:  # JSON numbers are floats; compare as int
+		if int(x) == season:
+			return true
+	return false
+
 func plant(cell: Vector2i, seed_id: String, season: int) -> bool:
 	if weeds.has(cell):
 		return false  # clear the weed first
 	var id := crop_for_seed(seed_id)
 	if id == "" or not soil.has(cell) or soil[cell].crop != "":
 		return false
-	var ok := false
-	for x in crops[id].season:  # JSON numbers are floats; compare as int
-		if int(x) == season:
-			ok = true
-	if not ok:
+	if not in_season(id, season):
 		return false
 	soil[cell].crop = id
 	soil[cell].age = 0

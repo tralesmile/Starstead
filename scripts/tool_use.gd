@@ -61,6 +61,9 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 			if tool.ends_with("_seed"):
 				if inv.count(tool) < 1:
 					return "No seeds"
+				var cid := farm.crop_for_seed(tool)
+				if cid != "" and farm.soil.has(cell) and farm.soil[cell].crop == "" and not farm.weeds.has(cell) and not farm.in_season(cid, season):
+					return "Wrong season for " + cid
 				if farm.plant(cell, tool, season):
 					inv.remove(tool, 1)
 					return "Planted"

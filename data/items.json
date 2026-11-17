@@ -189,5 +189,41 @@
   "buy": true,
   "buy_price": 120,
   "rarity": "bronze"
+ },
+ "potato_seed": {
+  "name": "Potato Seeds",
+  "price": 10,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 20
+ },
+ "tomato_seed": {
+  "name": "Tomato Seeds",
+  "price": 12,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 25
+ },
+ "pumpkin_seed": {
+  "name": "Pumpkin Seeds",
+  "price": 20,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 40
+ },
+ "potato": {
+  "name": "Potato",
+  "price": 30,
+  "stack": 99
+ },
+ "tomato": {
+  "name": "Tomato",
+  "price": 34,
+  "stack": 99
+ },
+ "pumpkin": {
+  "name": "Pumpkin",
+  "price": 90,
+  "stack": 99
  }
 }

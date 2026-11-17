@@ -32,7 +32,10 @@ func _draw() -> void:
 		var s = farm.soil[cell]
 		var f := FarmModel.stage(int(s.age), int(farm.crops[s.crop].grow_days))
 		var ct: Texture2D = turnip if s.crop == "turnip" else generic
-		draw_texture_rect_region(ct, Rect2(Vector2(cell) * 32.0 + Vector2(0, 2), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32))
+		var mod := Color.WHITE
+		if s.crop != "turnip" and f == 4 and farm.crops[s.crop].has("tint"):
+			mod = Color(String(farm.crops[s.crop].tint)).lerp(Color.WHITE, 0.25)  # ripe fruit takes the crop's colour
+		draw_texture_rect_region(ct, Rect2(Vector2(cell) * 32.0 + Vector2(0, 2), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
 	for cell in farm.weeds:
 		draw_texture_rect_region(weed_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))
 	for cell in farm.sprinklers:
