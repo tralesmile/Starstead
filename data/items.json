@@ -176,5 +176,10 @@
   "buy": true,
   "buy_price": 800,
   "rarity": "silver"
+ },
+ "fibre": {
+  "name": "Fibre",
+  "price": 3,
+  "stack": 99
  }
 }

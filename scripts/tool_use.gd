@@ -2,11 +2,11 @@ class_name ToolUse
 extends RefCounted
 ## Pure tool application on a target cell. Returns a short message (empty = nothing happened).
 
-const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", "rod", "club"]
+const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", "rod", "club", "scythe"]
 
 static func held_frame(tool: String) -> int:
 	## Frame in assets/sprites/held_tools.png, -1 = nothing in hand (seeds, bare hands).
-	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5}.get(tool, -1)
+	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5, "scythe": 7}.get(tool, -1)
 
 static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null, drops = null, axes: Dictionary = {}) -> String:
 	if energy != null and not energy.can_use(tool):
@@ -32,6 +32,11 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 			if gen != null and gen.tile_at(cell.x, cell.y) >= WorldGen.PATH:
 				return ""  # cannot till paths or water
 			return "Tilled" if farm.till(cell) else ""
+		"scythe":
+			if farm.cut_weed(cell):
+				_give(inv, drops, "fibre", 1 + (1 if FarmModel.weed_roll(cell, 7) > 0.6 else 0))
+				return "Cut weeds"
+			return ""
 		"watering_can":
 			return "Watered" if farm.water(cell) else ""
 		"hand":

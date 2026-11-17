@@ -4,6 +4,7 @@ extends RefCounted
 ## soil[cell] = {"watered": bool, "crop": String or "", "age": int}
 
 var soil: Dictionary = {}
+var weeds: Dictionary = {}  # cell -> variant 0..2 (only on fallow tilled soil)
 var crops: Dictionary = {}  # crops.json: crop_id -> {seed, grow_days, season, yield}
 
 func _init(crop_data: Dictionary = {}) -> void:
@@ -22,6 +23,8 @@ func crop_for_seed(seed_id: String) -> String:
 	return ""
 
 func plant(cell: Vector2i, seed_id: String, season: int) -> bool:
+	if weeds.has(cell):
+		return false  # clear the weed first
 	var id := crop_for_seed(seed_id)
 	if id == "" or not soil.has(cell) or soil[cell].crop != "":
 		return false
@@ -60,6 +63,30 @@ func harvest(cell: Vector2i) -> Dictionary:
 	soil[cell].age = 0
 	return {"id": id, "n": int(crops[id].yield)}
 
+const WEED_CHANCE := 0.18
+const WEED_CAP_FRACTION := 0.5   # never more than half the fields at once
+
+static func weed_roll(cell: Vector2i, day: int) -> float:
+	## Deterministic 0..1 per (cell, day): same save, same weeds.
+	var h := (cell.x * 73856093) ^ (cell.y * 19349663) ^ (day * 83492791)
+	return float(absi(h) % 10000) / 10000.0
+
+func spawn_weeds(day: int) -> int:
+	## Fallow tilled soil (no crop) may sprout a weed overnight. Returns how many appeared.
+	var made := 0
+	for cell in soil:
+		if soil[cell].crop != "" or weeds.has(cell):
+			continue
+		if weeds.size() >= int(ceil(float(soil.size()) * WEED_CAP_FRACTION)):
+			break
+		if weed_roll(cell, day) < WEED_CHANCE:
+			weeds[cell] = int(weed_roll(cell, day + 1000) * 3.0) % 3
+			made += 1
+	return made
+
+func cut_weed(cell: Vector2i) -> bool:
+	return weeds.erase(cell)
+
 func next_day() -> void:
 	## Watered crops grow one day; everything dries out.
 	for cell in soil:
@@ -74,8 +101,20 @@ func to_array() -> Array:
 		out.append({"x": c.x, "y": c.y, "watered": soil[c].watered, "crop": soil[c].crop, "age": soil[c].age})
 	return out
 
+func weeds_to_array() -> Array:
+	var out := []
+	for c in weeds:
+		out.append({"x": c.x, "y": c.y, "v": weeds[c]})
+	return out
+
+func weeds_from_array(a: Array) -> void:
+	weeds = {}
+	for e in a:
+		weeds[Vector2i(int(e.x), int(e.y))] = int(e.v)
+
 func from_array(a: Array) -> void:
 	soil = {}
+	weeds = {}
 	for e in a:
 		soil[Vector2i(int(e.x), int(e.y))] = {"watered": bool(e.watered), "crop": str(e.crop), "age": int(e.age)}
 

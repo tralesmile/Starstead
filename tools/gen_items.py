@@ -338,6 +338,15 @@ def can(body, shade):
 icons['watering_can_copper'] = lambda: can("#d4814a", "#a85a2a")
 icons['watering_can_iron'] = lambda: can("#b8c0cc", "#7a8494")
 
+def fibre():
+    i = Ic()
+    for k, (x0, y0, x1, y1) in enumerate([(3, 13, 6, 3), (6, 14, 8, 2), (9, 13, 10, 4), (11, 13, 13, 6)]):
+        i.line(x0, y0, x1, y1, "#6aa238" if k % 2 == 0 else "#8cc050")
+    i.rect(4, 11, 11, 12, "#c8a050")   # twine
+    i.px(5, 11, "#e8c878")
+    return i
+icons['fibre'] = fibre
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90)}
 
 def main():

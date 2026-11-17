@@ -5,6 +5,7 @@ extends Node2D
 var dry: Texture2D = load("res://assets/sprites/soil_dry.png")
 var wet: Texture2D = load("res://assets/sprites/soil_wet.png")
 var turnip: Texture2D = load("res://assets/sprites/crop_turnip.png")
+var weed_tex: Texture2D = load("res://assets/sprites/weed.png")
 var generic: Texture2D = load("res://assets/sprites/crop_generic.png")
 
 func _ready() -> void:
@@ -31,3 +32,5 @@ func _draw() -> void:
 		var f := FarmModel.stage(int(s.age), int(farm.crops[s.crop].grow_days))
 		var ct: Texture2D = turnip if s.crop == "turnip" else generic
 		draw_texture_rect_region(ct, Rect2(Vector2(cell) * 32.0 + Vector2(0, 2), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32))
+	for cell in farm.weeds:
+		draw_texture_rect_region(weed_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))

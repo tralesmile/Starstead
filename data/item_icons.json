@@ -25,5 +25,6 @@
  "hoe_copper": 23,
  "hoe_iron": 24,
  "watering_can_copper": 25,
- "watering_can_iron": 26
+ "watering_can_iron": 26,
+ "fibre": 27
 }

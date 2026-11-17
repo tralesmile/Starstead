@@ -54,7 +54,7 @@ func _ready() -> void:
 	add_child(refl)
 	held = Sprite2D.new()
 	held.texture = load("res://assets/sprites/held_tools.png")
-	held.hframes = 7
+	held.hframes = 8
 	held.visible = false
 	held.centered = true
 	add_child(held)
