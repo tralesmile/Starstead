@@ -444,6 +444,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.set_physics_process(false)
 			shop.open()
 			return
+		var rc := ContextAction.ripe_cell(GameState.farm, _target_cell(), Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0)))
+		if it.is_empty() and rc != ContextAction.NONE:
+			_context_harvest(rc)  # E on a ripe crop: pick it with any tool in hand
+			return
 	if e.is_action_pressed("use_tool") and hotbar.current() == "rod":
 		_rod_pressed()
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
@@ -667,6 +671,23 @@ func _update_cursor() -> void:
 	cursor.reach = TargetMath.in_reach(player.position, c)
 	if mouse_aim and cursor.reach and not car.driving:
 		player.facing = TargetMath.facing_toward(player.position, c, player.facing)
+
+func _context_harvest(cell: Vector2i) -> void:
+	var dl: Array = []
+	var msg := ToolUse.apply("hand", cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
+	if msg == "":
+		return
+	player.held_tool = "hand"
+	player.swing()
+	for d in dl:
+		drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
+	if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
+		drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
+		msg += " +1 bonus"
+	if _skill_gain("farming"):
+		msg = "Farming level %d!" % SkillModel.level(int(GameState.skill_xp["farming"]))
+	toast.text = msg
+	toast_t = 1.5
 
 func _skill_gain(sk: String) -> bool:
 	## Adds skill xp; on a level-up plays the sparkle + banner fanfare at the player.
