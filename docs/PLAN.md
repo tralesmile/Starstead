@@ -208,3 +208,8 @@ Houses, buildings, graphics (5, 10)
 - Weakest part vs comparables (2026-11-16 run 4): world is empty of life: no NPCs, animals or goals beyond farming/fishing; next priority NPCs + town. Earlier note: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
 - Wanted\/heat system design: heat decays faster out of sight, unwitnessed crimes weigh less | https://bugnet.io/blog/how-to-design-a-wanted-or-heat-system , https://gta.fandom.com/wiki/GTA_2_Wanted_Level | 2026-11-17
 - GTA-style solo Godot 4 systems showcase (police AI, wanted, chase) for reference | https://forum.godotengine.org/t/building-an-gta-inspired-open-world-crime-game-solo-showcasing-the-systems-ive-built-in-godot-4-6/137378 | 2026-11-17
+
+## Backlog additions (2026-11-17 run 3, research)
+- Interaction clarity and low-friction chores are what keep Stardew sticky: https://medium.com/super-jump/what-makes-a-game-about-mundane-chores-hopelessly-addictive and UI notes https://neverendingbacklog.substack.com/p/interfacing-with-the-player . Weakest part of Starstead vs Stardew/Core Keeper now: storage and crafting UI (no chest, no kitchen) -> promote: farmhouse storage chest, then cooking. Also tool-line upgrades done this run (hoe/can) to match Core Keeper-style tool tiers.
+- [ ] Storage chest (placeable + farmhouse) with the bag-style grid, shift-click to move stacks
+- [ ] Weeds and scythe (fibre) so the farm needs upkeep
