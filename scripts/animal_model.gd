@@ -148,3 +148,15 @@ static func pen_target(home: Vector2, pos: Vector2, angle: float, dist: float) -
 	if off.length() > PEN_RADIUS:
 		t = home + off.normalized() * PEN_RADIUS
 	return t
+
+## First gear item the player carries that fits an empty slot of this animal ("" if none). have = {item_id: count}.
+func next_gear(st: Dictionary, have: Dictionary) -> String:
+	var ids := gear_defs.keys()
+	ids.sort()
+	for id in ids:
+		if int(have.get(id, 0)) < 1:
+			continue
+		var slot := String(gear_defs[id]["slot"])
+		if slot in animals.get(st["id"], {}).get("gear_slots", []) and not st["gear"].has(slot):
+			return id
+	return ""

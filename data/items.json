@@ -99,19 +99,25 @@
   "name": "Saddle",
   "price": 150,
   "stack": 1,
-  "rarity": "silver"
+  "rarity": "silver",
+  "buy": true,
+  "buy_price": 400
  },
  "fur_coat": {
   "name": "Fur Coat",
   "price": 120,
   "stack": 1,
-  "rarity": "silver"
+  "rarity": "silver",
+  "buy": true,
+  "buy_price": 300
  },
  "armour": {
   "name": "Animal Armour",
   "price": 260,
   "stack": 1,
-  "rarity": "silver"
+  "rarity": "silver",
+  "buy": true,
+  "buy_price": 600
  },
  "axe_copper": {
   "name": "Copper Axe",

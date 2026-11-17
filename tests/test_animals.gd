@@ -106,3 +106,13 @@ func test_pen_target_stays_in_radius() -> void:
 	for i in 20:
 		var t := AnimalModel.pen_target(home, home + Vector2(50, 0), float(i), 40.0)
 		check(t.distance_to(home) <= AnimalModel.PEN_RADIUS + 0.01)
+
+func test_next_gear_fits_empty_slot_only() -> void:
+	var m := AnimalModel.new(DataDB.load_json("animals"))
+	var st := {"id": "chicken", "gear": {}}
+	check_eq(m.next_gear(st, {"saddle": 1}), "")          # chickens take no saddle
+	check_eq(m.next_gear(st, {"armour": 1}), "armour")
+	st["gear"]["armour"] = "armour"
+	check_eq(m.next_gear(st, {"armour": 1}), "")
+	var h := {"id": "horse", "gear": {}}
+	check_eq(m.next_gear(h, {"saddle": 1, "fur_coat": 1}), "fur_coat")  # sorted ids: fur_coat before saddle

@@ -201,7 +201,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: fish journal   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  G: animal gear   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	add_child(leg_layer)
@@ -477,6 +477,9 @@ func _unhandled_input(e: InputEvent) -> void:
 	if shop.visible:
 		return
 	if build_view.handle_key(e):
+		return
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_G and not car.driving and not shop.visible and not interior.active:
+		animals.gear_action()
 		return
 	if e.is_action_pressed("interact") and car.driving:
 		if car.leave() and _near_workshop(car.position):

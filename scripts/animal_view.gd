@@ -62,6 +62,8 @@ func _spawn(id: String, pos: Vector2, st) -> void:
 	node.position = pos
 	world.add_child(node)
 	var wild: bool = st == null
+	if not wild and not st.has("gear"):
+		st["gear"] = {}
 	critters.append({"st": st if st != null else {}, "id": id, "node": node, "sprite": s, "wild": wild, "prog": model.new_approach(id),
 		"target": pos, "t": randf() * 3.0, "step": 0.0})
 
@@ -240,3 +242,36 @@ func _update_stamina(c: Dictionary, speed: float, delta: float) -> void:
 	stamina_back.visible = mount_stamina < 0.995
 	stamina_bar.size = Vector2(20.0 * mount_stamina, 2)
 	stamina_bar.color = Color(0.9, 0.35, 0.25) if mount_winded else Color(0.4, 0.85, 0.4)
+
+func gear_action() -> void:
+	## G near a tamed animal: put on the next gear piece from the bag, or take everything off when nothing fits.
+	var c := near(player.position)
+	if c.is_empty() or c["wild"]:
+		message.emit("Stand next to a tamed animal (G: gear)")
+		return
+	var st: Dictionary = c["st"]
+	var nm := String(model.animals[c["id"]]["name"])
+	var have := {}
+	for id in model.gear_defs:
+		have[id] = GameState.bag.count(id)
+	var next := model.next_gear(st, have)
+	if next != "":
+		GameState.bag.remove(next, 1)
+		model.equip(st, next)
+		message.emit("%s wears %s" % [nm, next.replace("_", " ")])
+	elif not (st["gear"] as Dictionary).is_empty():
+		for slot in (st["gear"] as Dictionary).keys():
+			GameState.bag.add(model.unequip(st, slot), 1)
+		message.emit("%s's gear is back in your bag" % nm)
+	else:
+		message.emit("No gear to put on %s (saddle, fur coat, armour: buy at the shop)" % nm)
+	_tint(c)
+
+func _tint(c: Dictionary) -> void:
+	var g: Dictionary = c["st"]["gear"]
+	var col := Color.WHITE
+	if g.has("coat"):
+		col = col.lerp(Color(1.0, 0.85, 0.7), 0.5)
+	if g.has("armour"):
+		col = col.lerp(Color(0.8, 0.88, 1.0), 0.6)
+	(c["sprite"] as Sprite2D).modulate = col
