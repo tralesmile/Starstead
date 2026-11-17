@@ -264,8 +264,12 @@ func _process(delta: float) -> void:
 			GameState.bag.add(id, 7)
 		inv_view.toggle()
 		inv_view.picked = 2
+		GameState.skill_xp = {"farming": 190, "mining": 40, "fishing": 700}
 	if "--bag-demo" in OS.get_cmdline_user_args():
 		get_viewport().warp_mouse(Vector2(140 + 28 * 3 + 10, 96 + 28 + 8))
+	if "--levelup-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		GameState.skill_xp["farming"] = 95
+		_skill_gain("farming")
 	if "--drops-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:
 		var ids := ["wood", "stone", "turnip", "egg", "minnow", "milk", "golden_koi", "wool"]
 		for i in ids.size():
@@ -478,7 +482,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			sk = "foraging"
 		elif msg.begins_with("Got") and hotbar.current() == "pickaxe":
 			sk = "mining"
-		if sk != "" and SkillModel.gain(GameState.skill_xp, sk):
+		if sk != "" and _skill_gain(sk):
 			msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
 		world.sync_props(GameState.nodes)
 		if msg == "Tilled":
@@ -572,7 +576,7 @@ func _update_fishing(delta: float) -> void:
 		GameState.bag.add(fishing.fish_id, 1)
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
-		SkillModel.gain(GameState.skill_xp, "fishing")
+		_skill_gain("fishing")
 		_say("Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:
@@ -647,6 +651,14 @@ func _update_cursor() -> void:
 	cursor.reach = TargetMath.in_reach(player.position, c)
 	if mouse_aim and cursor.reach and not car.driving:
 		player.facing = TargetMath.facing_toward(player.position, c, player.facing)
+
+func _skill_gain(sk: String) -> bool:
+	## Adds skill xp; on a level-up plays the sparkle + banner fanfare at the player.
+	var up := SkillModel.gain(GameState.skill_xp, sk)
+	if up:
+		LevelFx.spawn(world, player.position, sk, SkillModel.level(int(GameState.skill_xp[sk])))
+		player.shake(0.6, 0.1)
+	return up
 
 func _dirt_puff(cell: Vector2i) -> void:
 	var p := CPUParticles2D.new()
