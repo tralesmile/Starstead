@@ -37,3 +37,19 @@ static func deadzone(cam: Vector2, target: Vector2, half_box: Vector2) -> Vector
 		elif d[a] < -half_box[a]:
 			out[a] = target[a] + half_box[a]
 	return out
+
+const FAST_LOOK_MAX := 56.0   # px ahead at car top speed
+
+static func look_for_speed(speed: float) -> float:
+	## Look-ahead grows with speed beyond walking so you see the road coming in a car (14 px walking, up to 56 px at 300 px/s).
+	if speed <= PlayerMath.SPEED:
+		return LOOK * clampf(speed / PlayerMath.SPEED, 0.0, 1.0)
+	return minf(LOOK + (speed - PlayerMath.SPEED) / 210.0 * (FAST_LOOK_MAX - LOOK), FAST_LOOK_MAX)
+
+static func box_for_speed(speed: float) -> Vector2:
+	## Dead-zone half box shrinks as you speed up so the camera never lags behind a fast vehicle (10x7 walking -> 2x1).
+	var k := clampf((speed - PlayerMath.SPEED) / 150.0, 0.0, 1.0)
+	return Vector2(lerpf(10.0, 2.0, k), lerpf(7.0, 1.0, k)).round()
+
+static func look_vec(vel: Vector2) -> Vector2:
+	return vel.normalized() * look_for_speed(vel.length()) if vel.length() > 0.01 else Vector2.ZERO

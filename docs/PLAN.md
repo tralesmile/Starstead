@@ -103,7 +103,7 @@ Houses, buildings, graphics (5, 10)
 
 - [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
 - [ ] Graphics: seasonal ground/tree colours, grass-to-path tile transitions, porches and fences art
-- [ ] Physics: camera look-ahead tuned for dead zone at car speeds
+- [x] Physics: camera look-ahead grows to 56px and the dead zone shrinks to 2x1 at car speeds (CameraMath.look_for_speed/box_for_speed, Player.ext_velocity, tested)
 - [x] Physics: sprint inertia (PlayerMath.sprint_ease) and skid dust on hard reversals (is_skid). [ ] mount stamina
 
 ## Backlog additions (2026-11-17 research)

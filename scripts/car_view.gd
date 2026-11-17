@@ -95,6 +95,9 @@ func _physics_process(delta: float) -> void:
 	sprite.rotation = 0.0
 	if driving:
 		player.position = position
+		player.ext_velocity = vel
+	else:
+		player.ext_velocity = Vector2.ZERO
 	var skid := driving and VehicleMath.is_skidding(vel, heading)
 	_smoke.emitting = skid
 	_smoke.position = -VehicleMath.forward(heading).rotated(-heading) * 10.0

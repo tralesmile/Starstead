@@ -25,6 +25,7 @@ var refl: Sprite2D
 var held_tool := ""   # set by main when a tool is used
 var swing_total := 0.18
 var cam_focus := Vector2.ZERO  # dead-zone camera focus (world px)
+var ext_velocity := Vector2.ZERO  # set by the car while driving so the camera can look ahead
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
 signal footstep
 signal skid(amount: int)
@@ -123,7 +124,8 @@ func _physics_process(delta: float) -> void:
 		refl.visible = gen.sdf_at(rc.x, rc.y + 1) < -0.2 or (rc in gen.dock) or gen.sdf_at(rc.x, rc.y) < 0.0
 		refl.frame = sprite.frame
 		refl.scale = sprite.scale
-	look = CameraMath.ease_offset(look, CameraMath.look_target(move_v, PlayerMath.SPEED), delta)
+	var cam_v := move_v + ext_velocity
+	look = CameraMath.ease_offset(look, CameraMath.look_vec(cam_v), delta)
 	var sh := Vector2.ZERO
 	if shake_left > 0.0:
 		shake_left -= delta
@@ -133,7 +135,7 @@ func _physics_process(delta: float) -> void:
 		pull = ((focus as Vector2) - position) * 0.75
 	if cam_focus == Vector2.ZERO or cam_focus.distance_to(position) > 200.0:
 		cam_focus = position  # first frame / teleport (doors, car exit)
-	cam_focus = CameraMath.deadzone(cam_focus, position, Vector2(10, 7))
+	cam_focus = CameraMath.deadzone(cam_focus, position, CameraMath.box_for_speed(cam_v.length()))
 	camera.offset = CameraMath.snap(look + pull + (cam_focus - position)) + sh
 	var zt := float(TargetMath.effective_zoom(zoom_step, zoom_bias))
 	if absf(camera.zoom.x - zt) > 0.01:
