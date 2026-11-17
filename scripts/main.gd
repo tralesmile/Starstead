@@ -9,6 +9,7 @@ var toast: Label
 var toast_t := 0.0
 var _sun_applied := -1.0
 var _season_applied := -1
+var stall_stolen := 0   # grabs from the stall today (resets at day end)
 var highlighted: Sprite2D = null
 var shop: ShopView
 var build_view: BuildView
@@ -201,7 +202,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  G: animal gear   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  G: gear  T: steal   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	add_child(leg_layer)
@@ -393,6 +394,8 @@ func _process(delta: float) -> void:
 		prompt.text = interior.prompt()
 	elif prompt.text == "" and not shop.visible:
 		prompt.text = jobs.prompt()
+	if prompt.text == "" and not interior.active and not car.driving and player.position.distance_to(_stall_pos()) < StallTheft.REACH:
+		prompt.text = "T: Swipe something (risky)"
 	var an_near := animals.near(player.position)
 	if prompt.text == "" and not shop.visible and not an_near.is_empty():
 		prompt.text = animals.prompt_for(an_near)
@@ -480,6 +483,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_G and not car.driving and not shop.visible and not interior.active:
 		animals.gear_action()
+		return
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_T and not car.driving and not shop.visible and not interior.active:
+		_steal_from_stall()
 		return
 	if e.is_action_pressed("interact") and car.driving:
 		if car.leave() and _near_workshop(car.position):
@@ -658,6 +664,32 @@ func _water_cell_ahead(want: int = 4) -> Vector2i:
 	if i < 0:
 		return Vector2i(-1, -1)
 	return pc + dir * (i + 1)
+
+func _stall_pos() -> Vector2:
+	return (Vector2(world.stall_cell()) + Vector2(1.0, 0.5)) * 32.0
+
+func _steal_from_stall() -> void:
+	var d := player.position.distance_to(_stall_pos())
+	if d > 96.0:
+		return
+	if not StallTheft.can_steal(stall_stolen, d):
+		_say("Too far from the goods" if d > StallTheft.REACH else "The stall is picked clean today")
+		return
+	var id := StallTheft.loot_for(randf())
+	stall_stolen += 1
+	drops_view.spawn(id, 1, _stall_pos() + Vector2(0, 28))
+	GameState.rep_street += 1
+	GameState.rep_honest = maxi(0, GameState.rep_honest - 1)
+	var hour := fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0)
+	var crowd := 0
+	for n in npcs.actors:
+		if (n["node"] as Node2D).position.distance_to(_stall_pos()) < 140.0:
+			crowd += 1
+	if StallTheft.vendor_sees(crowd, hour, randf()):
+		police.commit("theft", player.position)
+		_say("The vendor shouts: thief!")
+	else:
+		_say("You swipe a %s unseen" % id)
 
 func _quality_pass(dl: Array) -> void:
 	## Harvested crops roll silver/gold by farming level (QualityMath).
@@ -844,6 +876,7 @@ func _end_day() -> void:
 	if sprinkled > 0:
 		_say("Sprinklers watered %d tiles" % sprinkled)
 	GameState.farm.next_day()
+	stall_stolen = 0
 	var rngp := RandomNumberGenerator.new()
 	rngp.seed = GameState.clock.day * 31 + 5
 	var caught := GameState.pots.day_tick(rngp)

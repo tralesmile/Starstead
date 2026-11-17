@@ -156,7 +156,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
 - [x] Basic combat: club tool (key 8), swing cone, NPC/cop health + knock-out + knockback + assault heat (CombatModel/CombatView)
-- [ ] More crime triggers (theft from stalls, car theft) and combat on animals/dogs
+- [x] Stall theft (T at the market stall: 3 grabs/day, vendor may shout and raise heat; StallTheft tested). [ ] car theft and combat on animals/dogs
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
 - [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [x] pen: E on a fed tame animal toggles stay/follow, stayers wander within 56px of their spot and fences/walls block animals (AnimalModel.pen_target). [x] Animal gear (G next to a tamed animal wears/removes saddle, coat, armour from the bag; shop sells them; tint; AnimalModel.next_gear tested)

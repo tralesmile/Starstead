@@ -50,3 +50,4 @@
 2026-11-17 | Run 3 | Crop quality silver/gold by farming level (QualityMath, variants in items.json, cooking accepts them). 293 tests green.
 2026-11-17 | Run 3 (cont.) | Animal pens: stay/follow toggle + fences block animals (tested). 294 tests green.
 2026-11-17 | Run 3 (cont.) | Animal gear on G + shop entries. 295 tests green.
+2026-11-17 | Run 3 (cont.) | Stall theft crime (T). 298 tests green.
