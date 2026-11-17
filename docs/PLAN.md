@@ -107,6 +107,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Physics: sprint inertia (PlayerMath.sprint_ease) and skid dust on hard reversals (is_skid). [ ] mount stamina
 
 ## Backlog additions (2026-11-17 research)
+- Game juice / feel (2026-11-17, run 3): small feedback on every action (screen pop, particles, banner) is what makes Stardew-like tool use satisfying: https://eolt.org/articles/game-feel/ and https://sites.google.com/view/game-dev-guide/home/construct/game-juice . Weakest part of Starstead vs Stardew this run: level/reward feedback (fixed: fanfare + skill bars) and interaction clarity (context action started). Ideas: crop quality stars, tool-use body poses, mount stamina.
 - Stardew-like satisfaction comes from small visible progress each day (skill levels, quality stars, tool upgrades) plus low-stress loops: https://www.popsci.com/health/stardew-valley-psychology-farming/ and https://mechanicsofmagic.com/?p=1915 . Weakest part of Starstead vs Stardew: progression feedback (no levels/upgrades before today) -> added skills + axe upgrades; next: pickaxe/hoe/can upgrades, level-up fanfare, crop quality stars.
 - [x] Pickaxe upgrades (pickaxes.json, copper/iron, shop). [x] Hoe/watering-can upgrades (copper/iron: till/water 2-3 tiles in a line, can 40/60 water; LineMath, hoes.json, cans.json, icons, shop). [ ] skill-based perks (level 5 choices)
 - [x] Level-up fanfare (LevelFx sparkle ring + rising banner, skill-coloured, fishing too) and coloured skill bars in the bag (LevelFxMath, tested)
