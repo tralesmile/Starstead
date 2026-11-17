@@ -103,7 +103,8 @@ Physics / feel:
 - [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
 - [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)
-- [ ] Police/wanted-level basics, basic combat
+- [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
+- [ ] Wanted HUD stars + police NPC spawn + arrest, basic combat
 - [ ] One animal to catch, tame and ride; clothes slot on animals
 - [ ] First jobs (3) and first sport (racing)
 - [ ] Gate: trailer-ready + Steam page text/screens
@@ -145,3 +146,4 @@ Physics / feel:
 - Hit-stop should use real-time timers, trauma-based stacking shake | https://forum.godotengine.org/t/game-feel-effects-that-stack-without-fighting-your-code-trauma-shake-real-time-hit-stop-and-apply-the-difference/146379 | 2026-11-16
 - Fishing minigame tuning: bar size/gravity vs fish darting; consider a bar-size upgrade via rod level | https://stardewvalleywiki.com/Fishing | 2026-11-16
 - Weakest part vs comparables (2026-11-16 run 4): world is empty of life: no NPCs, animals or goals beyond farming/fishing; next priority NPCs + town. Earlier note: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
+- Wanted\/heat system design: heat decays faster out of sight, unwitnessed crimes weigh less | https://bugnet.io/blog/how-to-design-a-wanted-or-heat-system , https://gta.fandom.com/wiki/GTA_2_Wanted_Level | 2026-11-17
