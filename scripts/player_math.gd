@@ -83,3 +83,23 @@ static func sprint_cost(dt: float) -> float:
 ## Grip while riding a faster mount: the faster, the more it slides and the wider it turns (1.0 = on foot).
 static func ride_grip(speed_mult: float) -> float:
 	return clampf(1.0 - (speed_mult - 1.0) * 0.6, 0.45, 1.0)
+
+const SPRINT_RAMP_UP := 2.6    # multiplier units/s: ~0.17 s from walk to full sprint
+const SPRINT_RAMP_DOWN := 3.6  # eases back a little faster than it builds
+
+static func sprint_ease(cur: float, target: float, dt: float) -> float:
+	## Sprint builds up and winds down instead of snapping (inertia of effort).
+	var rate := SPRINT_RAMP_UP if target > cur else SPRINT_RAMP_DOWN
+	return move_toward(cur, target, rate * dt)
+
+const SKID_MIN_SPEED := 55.0
+
+static func is_skid(v: Vector2, input: Vector2) -> bool:
+	## A hard reversal (input roughly opposite to a fast current velocity) kicks up dust.
+	if v.length() < SKID_MIN_SPEED or input.length() < 0.5:
+		return false
+	return v.normalized().dot(input.normalized()) < -0.35
+
+static func skid_dust_amount(speed: float) -> int:
+	## Particle count grows with the speed being shed (3..8).
+	return clampi(2 + int(speed / 30.0), 3, 8)

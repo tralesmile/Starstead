@@ -27,6 +27,9 @@ var swing_total := 0.18
 var cam_focus := Vector2.ZERO  # dead-zone camera focus (world px)
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
 signal footstep
+signal skid(amount: int)
+var _sprint := 1.0
+var _skid_cd := 0.0
 
 func _ready() -> void:
 	sprite = Sprite2D.new()
@@ -88,9 +91,15 @@ func _physics_process(delta: float) -> void:
 		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
 		grip = PlayerMath.wet_grip(rain, on_path)
 	grip *= PlayerMath.ride_grip(speed_mult)
-	var sp := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
-	if sp > 1.0:
+	var sp_t := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
+	if sp_t > 1.0:
 		GameState.energy.value = maxf(GameState.energy.value - PlayerMath.sprint_cost(delta), 0.0)
+	_sprint = PlayerMath.sprint_ease(_sprint, sp_t, delta)
+	var sp := _sprint
+	_skid_cd -= delta
+	if _skid_cd <= 0.0 and PlayerMath.is_skid(move_v, input):
+		skid.emit(PlayerMath.skid_dust_amount(move_v.length()))
+		_skid_cd = 0.25
 	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult, grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock

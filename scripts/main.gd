@@ -92,6 +92,7 @@ func _ready() -> void:
 	ambient.player = player
 	world.add_child(ambient)
 	player.footstep.connect(func(): ambient.puff(player.position))
+	player.skid.connect(func(n: int): ambient.puff(player.position + Vector2(0, 2), n, 120.0))
 	var fp := FootprintView.new()
 	fp.player = player
 	fp.gen = world.gen

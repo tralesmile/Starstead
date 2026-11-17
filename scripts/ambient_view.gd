@@ -10,16 +10,16 @@ var t := 0.0
 func _ready() -> void:
 	z_index = 40
 
-func puff(at: Vector2) -> void:
+func puff(at: Vector2, amount: int = 3, spread: float = 60.0) -> void:
 	var p := CPUParticles2D.new()
 	p.position = at + Vector2(0, -1)
 	p.emitting = true
 	p.one_shot = true
 	p.explosiveness = 1.0
-	p.amount = 3
+	p.amount = amount
 	p.lifetime = 0.35
 	p.direction = Vector2(0, -1)
-	p.spread = 60.0
+	p.spread = spread
 	p.initial_velocity_min = 6.0
 	p.initial_velocity_max = 14.0
 	p.gravity = Vector2(0, -8)
