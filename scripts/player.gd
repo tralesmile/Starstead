@@ -24,6 +24,7 @@ var held: Sprite2D
 var refl: Sprite2D
 var held_tool := ""   # set by main when a tool is used
 var swing_total := 0.18
+var cam_focus := Vector2.ZERO  # dead-zone camera focus (world px)
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
 signal footstep
 
@@ -121,7 +122,10 @@ func _physics_process(delta: float) -> void:
 	var pull := Vector2.ZERO
 	if focus != null:
 		pull = ((focus as Vector2) - position) * 0.75
-	camera.offset = CameraMath.snap(look + pull) + sh
+	if cam_focus == Vector2.ZERO or cam_focus.distance_to(position) > 200.0:
+		cam_focus = position  # first frame / teleport (doors, car exit)
+	cam_focus = CameraMath.deadzone(cam_focus, position, Vector2(10, 7))
+	camera.offset = CameraMath.snap(look + pull + (cam_focus - position)) + sh
 	var zt := float(TargetMath.effective_zoom(zoom_step, zoom_bias))
 	if absf(camera.zoom.x - zt) > 0.01:
 		camera.zoom = Vector2.ONE * move_toward(camera.zoom.x, zt, delta * 8.0)  # quick glide between integer zooms

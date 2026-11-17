@@ -25,3 +25,15 @@ static func clamp_to_world(center: Vector2, half_view: Vector2, world_px: Vector
 		else:
 			out[a] = clampf(center[a], half_view[a], world_px[a] - half_view[a])
 	return out
+
+static func deadzone(cam: Vector2, target: Vector2, half_box: Vector2) -> Vector2:
+	## Camera focus stays put while the target is inside a small box around it; it only moves
+	## by the amount the target pushes past the box edge (Stardew/Terraria-style free zone).
+	var d := target - cam
+	var out := cam
+	for a in 2:
+		if d[a] > half_box[a]:
+			out[a] = target[a] - half_box[a]
+		elif d[a] < -half_box[a]:
+			out[a] = target[a] + half_box[a]
+	return out

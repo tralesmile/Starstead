@@ -101,6 +101,10 @@ void fragment() {
 		float gph = hash(gp + 31.0);
 		float twinkle = step(0.97, hash(gp + floor(TIME * 1.5 + gph * 8.0)));
 		col = mix(col, vec3(0.92, 0.98, 0.95), twinkle * 0.6 * smoothstep(0.15, 0.6, depth) * step(0.5, gph));
+		// light rays: slow diagonal shafts of sunlight drifting across the deeper water
+		float rayc = (px.x + px.y * 0.6) / 22.0 + TIME * 0.05;
+		float ray = smoothstep(0.62, 1.0, sin(rayc * 3.1 + sin(rayc * 1.3) * 1.5) * 0.5 + 0.5);
+		col += vec3(0.07, 0.12, 0.10) * ray * smoothstep(0.2, 0.9, depth);
 		col = floor(col * 24.0) / 24.0;
 	} else if (sdf < 0.42) {
 		// ---- shoreline: mossy rounded stones
