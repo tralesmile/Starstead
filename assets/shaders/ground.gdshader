@@ -23,6 +23,14 @@ const vec3 STONE_D = vec3(0.42, 0.44, 0.42);
 const vec3 STONE_M = vec3(0.68, 0.69, 0.64);
 const vec3 STONE_L = vec3(0.86, 0.86, 0.80);
 const vec3 MOSS = vec3(0.45, 0.60, 0.25);
+uniform vec3 season_mul = vec3(1.0);
+uniform float season_frost = 0.0;
+
+vec3 sg(vec3 c) {
+	vec3 t = c * season_mul;
+	return mix(t, vec3(0.90, 0.95, 1.0) * (0.75 + 0.25 * t.g), season_frost);
+}
+
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 vec2 hash2(vec2 p) { return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453); }
@@ -71,7 +79,7 @@ void fragment() {
 		col = mix(STONE_D * 0.85, STONE_M * 0.95, sh);
 		col = mix(STONE_D * 0.55, col, smoothstep(0.03, 0.1, v.y));
 		col = mix(col, MOSS * 0.8, step(0.6, fbm(tile * 6.0 + 3.0)) * (1.0 - k) * 0.7);
-		col = mix(col, GRASS_D * 0.6, 1.0 - smoothstep(0.0, 0.08, sN - 0.42) );  // grass overhang shadow
+		col = mix(col, sg(GRASS_D) * 0.6, 1.0 - smoothstep(0.0, 0.08, sN - 0.42) );  // grass overhang shadow
 		if (sdf < -0.35) col = mix(col, DEEP, 0.5);   // wet base
 	} else if (sdf < 0.0) {
 		// ---- water: see-through, darkening with depth, submerged stones, ripples
@@ -117,16 +125,16 @@ void fragment() {
 		float moss = step(0.55, fbm(tile * 5.0)) * step(0.15, sdf);
 		col = mix(col, MOSS, moss * 0.85);
 		col = mix(STONE_D * 0.7, col, edge);
-		col = mix(col, GRASS_D, step(0.36, sdf) * 0.6);
+		col = mix(col, sg(GRASS_D), step(0.36, sdf) * 0.6);
 	} else {
 		// ---- land: layered grass with dry patches and blade clusters; dirt/path on top
 		float n = fbm(tile * 0.55);
 		float m = fbm(tile * 2.2 + 5.0);
 		float shade = band(clamp(n * 0.7 + m * 0.5 - 0.1, 0.0, 1.0), 4.0);
-		col = mix(GRASS_D, GRASS_M, smoothstep(0.0, 0.5, shade));
-		col = mix(col, GRASS_L, smoothstep(0.5, 1.0, shade));
+		col = mix(sg(GRASS_D), sg(GRASS_M), smoothstep(0.0, 0.5, shade));
+		col = mix(col, sg(GRASS_L), smoothstep(0.5, 1.0, shade));
 		float dry = smoothstep(0.58, 0.66, fbm(tile * 0.35 + 40.0));
-		col = mix(col, DRY, dry * 0.55);
+		col = mix(col, sg(DRY), dry * 0.55);
 		// blade clusters: small tufts on a 4px grid, lit tip + dark root
 		vec2 cell = floor(px / 6.0);
 		float h = hash(cell);
@@ -134,8 +142,8 @@ void fragment() {
 		if (h > 0.8) {
 			// a little tuft: three blades, lit tips, shadowed base
 			bool blade = (lp.x == 1.5 && lp.y >= 1.5) || (lp.x == 2.5 && lp.y >= 0.5) || (lp.x == 3.5 && lp.y >= 2.5);
-			if (blade) col = mix(col, (lp.y < 2.0 ? GRASS_L * 1.1 : GRASS_M * 1.05), 0.75);
-			if (lp.y > 4.5 && lp.x > 0.5 && lp.x < 4.5) col = mix(col, GRASS_D * 0.8, 0.5);
+			if (blade) col = mix(col, (lp.y < 2.0 ? sg(GRASS_L) * 1.1 : sg(GRASS_M) * 1.05), 0.75);
+			if (lp.y > 4.5 && lp.x > 0.5 && lp.x < 4.5) col = mix(col, sg(GRASS_D) * 0.8, 0.5);
 		}
 		if (hash(cell + 91.0) > 0.994) {  // tiny flower: 4 petals around a yellow centre
 			vec3 petal = mix(vec3(0.96, 0.94, 0.86), vec3(0.93, 0.58, 0.70), step(0.5, hash(cell + 3.0)));
@@ -159,15 +167,15 @@ void fragment() {
 		// grass -> path transition: darker grass fringe hugging the edge, tufts leaning over it, and grass specks creeping into the dirt rim
 		if (pe <= 0.5 && pe > 0.36) {
 			float fr = smoothstep(0.36, 0.5, pe);
-			col = mix(col, GRASS_D * 0.92, fr * 0.7);
-			if (hash(floor(px / 2.0) + 13.0) > 0.72 && pe > 0.43) col = mix(col, GRASS_L, 0.8);  // lit blade tips on the lip
+			col = mix(col, sg(GRASS_D) * 0.92, fr * 0.7);
+			if (hash(floor(px / 2.0) + 13.0) > 0.72 && pe > 0.43) col = mix(col, sg(GRASS_L), 0.8);  // lit blade tips on the lip
 		} else if (pe > 0.5 && pe < 0.6) {
 			float sp = hash(floor(px / 2.0) + 71.0);
-			if (sp > 0.8) col = mix(col, GRASS_M, 0.7);                                          // grass creeping onto the dirt
+			if (sp > 0.8) col = mix(col, sg(GRASS_M), 0.7);                                          // grass creeping onto the dirt
 			else if (pe < 0.53) col = mix(col, DIRT_D, 0.25);
 		}
 		col = mix(col, col * 0.8, (1.0 - smoothstep(0.42, 0.7, sdf)) * 0.5);  // damp grass near shore
-		if (sS < 0.42 && sdf < 0.6) col = mix(col, GRASS_L * 1.05, 0.55);    // sunlit lip above a bank face
+		if (sS < 0.42 && sdf < 0.6) col = mix(col, sg(GRASS_L) * 1.05, 0.55);    // sunlit lip above a bank face
 	}
 	COLOR = vec4(col, 1.0);
 }

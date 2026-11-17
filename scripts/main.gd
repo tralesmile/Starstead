@@ -8,6 +8,7 @@ var hotbar: Hotbar
 var toast: Label
 var toast_t := 0.0
 var _sun_applied := -1.0
+var _season_applied := -1
 var highlighted: Sprite2D = null
 var shop: ShopView
 var build_view: BuildView
@@ -210,6 +211,8 @@ func _ready() -> void:
 		GameState.bag.add("turnip_seed", 10)
 		GameState.bag.add("turnip", 4)  # treats for taming the first animals
 	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
+		if a.begins_with("--season="):
+			GameState.clock.day = int(a.substr(9)) * GameState.clock.DAYS_PER_SEASON + 1
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the car and floor it
@@ -363,6 +366,9 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
+	if GameState.clock.season() != _season_applied:
+		_season_applied = GameState.clock.season()
+		world.set_season(_season_applied)
 	if absf(GameState.clock.minutes - _sun_applied) >= 6.0 or _sun_applied < 0.0:
 		_sun_applied = GameState.clock.minutes
 		World.apply_sun(get_tree(), _sun_applied)

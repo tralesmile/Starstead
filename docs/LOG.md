@@ -44,3 +44,4 @@
 2026-11-17 | Run 2 (cont.) | Sprinklers (placeable, 3x3 nightly watering, saved, shop, icon+world sprite; screenshot checked). 268 tests green.
 2026-11-17 | Run 2 (cont.) | Three seasonal crops + seed cycling on the seed slot (FarmModel.in_season, Hotbar.cycle_seed). 272 tests green.
 2026-11-17 | Run 2 (cont.) | Cooking at the farmhouse stove + eating from the bag (6 dishes, icons, CookModel/CookView, screenshot checked). 276 tests green.
+2026-11-17 | Run 2 (cont.) | Graphics: seasonal palettes (ground shader multiplier + frost, tree/bush tints, flowers hidden in winter), 3-season screenshot compared. Legendary River King (rain + evening, once). 284 tests green.

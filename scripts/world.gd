@@ -11,6 +11,7 @@ const PROP_TEX := {
 }
 
 var gen: WorldGen
+var ground_mat: ShaderMaterial
 var layer: TileMapLayer
 var flower_sprites: Array = []
 var stumps: Dictionary = {}  # cell -> Sprite2D shown while a tree is chopped
@@ -73,6 +74,7 @@ func _build_ground() -> void:
 	m.set_shader_parameter("data", ImageTexture.create_from_image(data_image(gen)))
 	m.set_shader_parameter("chunk_px", float(WorldGen.SIZE * 32))
 	rect.material = m
+	ground_mat = m
 	add_child(rect)
 
 func _build_collision() -> void:
@@ -222,6 +224,23 @@ func sync_props(nodes: ResourceNodes) -> void:
 		b.get_child(2).set_deferred("disabled", not solid)
 		if stumps.has(cell):
 			(stumps[cell] as Sprite2D).visible = not solid and nodes.nodes.has(cell)
+
+func set_season(season: int) -> void:
+	## Seasonal grass colours (shader), leaf colours on trees/bushes, flowers hidden in winter.
+	if ground_mat != null:
+		var m := SeasonMath.ground_mul(season)
+		ground_mat.set_shader_parameter("season_mul", Vector3(m.r, m.g, m.b))
+		ground_mat.set_shader_parameter("season_frost", SeasonMath.ground_frost(season))
+	for ch in get_children():
+		if ch is StaticBody2D and ch.get_child_count() > 0 and ch.get_child(0) is Sprite2D:
+			var spr := ch.get_child(0) as Sprite2D
+			if spr.texture != null:
+				var k := SeasonMath.kind_of(spr.texture.resource_path)
+				if k != "":
+					var c := SeasonMath.tree_tint(season, k)
+					spr.modulate = Color(c.r, c.g, c.b, spr.modulate.a)
+	for f in flower_sprites:
+		(f as Node2D).visible = SeasonMath.flowers_visible(season)
 
 static func make_shadow(width: float) -> Sprite2D:
 	## Soft oval drop shadow under a prop/character (drawn above ground, below sprites).

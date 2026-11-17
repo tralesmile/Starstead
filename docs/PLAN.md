@@ -102,7 +102,7 @@ Houses, buildings, graphics (5, 10)
 - [ ] Graphics pass: tile transitions (grass->path->dirt), seasonal tree/ground colours, flowers, water edge foam, better UI frame art, consistent outlines (see docs/ART_TARGET.md)
 
 - [x] Graphics: clustered meadow flowers in 6 colours that sway and bend away from you (tools/gen_flowers.py)
-- [x] Graphics: grass-to-path transition in the ground shader (dark fringe, lit blade tips, grass creeping onto the dirt rim). [ ] seasonal ground/tree colours, porches and fences art
+- [x] Graphics: grass-to-path transition in the ground shader (dark fringe, lit blade tips, grass creeping onto the dirt rim). [x] seasonal ground/tree colours (SeasonMath: warm summer, orange autumn leaves/grass, frosted pale winter, flowers hidden; ground shader season_mul/frost; --season=N demo flag). [ ] porches and fences art
 - [x] Physics: camera look-ahead grows to 56px and the dead zone shrinks to 2x1 at car speeds (CameraMath.look_for_speed/box_for_speed, Player.ext_velocity, tested)
 - [x] Physics: sprint inertia (PlayerMath.sprint_ease) and skid dust on hard reversals (is_skid). [ ] mount stamina
 
