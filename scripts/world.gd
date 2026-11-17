@@ -12,6 +12,7 @@ const PROP_TEX := {
 
 var gen: WorldGen
 var layer: TileMapLayer
+var stumps: Dictionary = {}  # cell -> Sprite2D shown while a tree is chopped
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
 var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
@@ -29,6 +30,14 @@ func build(seed_value: int = 1) -> void:
 	for p in gen.trees:
 		var tex: String = PROP_TEX[gen.tree_kinds[p]]
 		props[p] = _prop(tex, p, Vector2(12, 8), Vector2(0, -48 + 4))
+		var st := Sprite2D.new()
+		st.texture = load("res://assets/sprites/stump.png")
+		st.offset = Vector2(0, -10)
+		st.visible = false
+		st.name = "Stump"
+		add_child(st)
+		st.position = (props[p] as Node2D).position
+		stumps[p] = st
 		Outline.set_sway(prop_sprite(p), 2.0 if gen.tree_kinds[p] == "oak" else 1.4, p.x * 0.7 + p.y * 0.3)
 	for p in gen.rocks:
 		props[p] = _prop(PROP_TEX.rock, p, Vector2(24, 14), Vector2(0, -12))
@@ -209,6 +218,8 @@ func sync_props(nodes: ResourceNodes) -> void:
 		var solid := nodes.is_solid(cell)
 		b.visible = solid
 		b.get_child(2).set_deferred("disabled", not solid)
+		if stumps.has(cell):
+			(stumps[cell] as Sprite2D).visible = not solid and nodes.nodes.has(cell)
 
 static func make_shadow(width: float) -> Sprite2D:
 	## Soft oval drop shadow under a prop/character (drawn above ground, below sprites).
@@ -306,7 +317,7 @@ func _build_reflections() -> void:
 		r.modulate = Color(0.45, 0.68, 0.74, 0.34)
 		r.z_index = -6
 		add_child(r)
-		reflections.append({"s": r, "x": r.position.x, "phase": float(p.x) * 1.7 + float(p.y)})
+		reflections.append({"s": r, "src": props[p], "x": r.position.x, "phase": float(p.x) * 1.7 + float(p.y)})
 	if gen.dock.size() > 0:
 		foam = DockFoam.new()
 		var a: Vector2i = gen.dock[0]
@@ -321,3 +332,4 @@ func _process(_delta: float) -> void:
 	var t := Time.get_ticks_msec() / 1000.0
 	for r in reflections:
 		(r["s"] as Sprite2D).position.x = float(r["x"]) + roundf(sin(t * 1.6 + float(r["phase"])) * 1.4)
+		(r["s"] as Sprite2D).visible = (r["src"] as Node2D).visible

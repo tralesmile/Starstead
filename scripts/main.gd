@@ -200,6 +200,15 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	if "--chop-demo" in OS.get_cmdline_user_args():
+		var f := Engine.get_process_frames()
+		hotbar.selected = 4
+		player.facing = PlayerMath.Facing.UP
+		if f > 3 and f % 5 == 0 and f <= 28:
+			var ev := InputEventAction.new()
+			ev.action = "use_tool"
+			ev.pressed = true
+			_unhandled_input(ev)
 	if "--farm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:
 		var o := TargetMath.cell_of(player.position) + Vector2i(2, -2)
 		for dx in 5:
@@ -374,6 +383,13 @@ func _unhandled_input(e: InputEvent) -> void:
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl)
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
+		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
+			var tspr := world.prop_sprite(cell)
+			if msg.begins_with("Got"):
+				ChopFx.fall(world, tspr, (world.props[cell] as Node2D).position, ChopFx.fall_dir(player.position.x, (world.props[cell] as Node2D).position.x))
+			elif msg == "Hit":
+				ChopFx.wobble(tspr, tspr)
+				ChopFx.leaves(world, (world.props[cell] as Node2D).position + Vector2(0, -34), 5)
 		world.sync_props(GameState.nodes)
 		if msg == "Tilled":
 			_dirt_puff(cell)

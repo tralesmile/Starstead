@@ -16,14 +16,14 @@ func add(kind: String, cell: Vector2i) -> void:
 func is_solid(cell: Vector2i) -> bool:
 	return nodes.has(cell) and nodes[cell].stump_days == 0
 
-func hit(cell: Vector2i, tool: String) -> Dictionary:
+func hit(cell: Vector2i, tool: String, power: int = 1) -> Dictionary:
 	## Returns {} on no effect, {"hit":true} on damage, {"id","n"} when broken.
 	if not is_solid(cell) or TOOL[nodes[cell].kind] != tool:
 		return {}
 	var n = nodes[cell]
-	n.hp -= 1
+	n.hp -= maxi(power, 1)
 	if n.hp > 0:
-		return {"hit": true}
+		return {"hit": true, "hp": n.hp}
 	var d: Array = DROPS[n.kind]
 	if n.kind == "tree":
 		n.stump_days = REGROW_DAYS

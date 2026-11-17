@@ -33,3 +33,15 @@ func test_rock_breaks_once() -> void:
 	r.hit(Vector2i(0, 0), "pickaxe"); r.hit(Vector2i(0, 0), "pickaxe")
 	check_eq(r.hit(Vector2i(0, 0), "pickaxe").id, "stone")
 	check(not r.nodes.has(Vector2i(0, 0)))
+
+func test_axe_power_and_fall_fx_math() -> void:
+	var n := ResourceNodes.new()
+	n.add("tree", Vector2i(1, 1))
+	var r := n.hit(Vector2i(1, 1), "axe", 2)
+	check_eq(r.get("hp", -1), 3)
+	check_eq(n.hit(Vector2i(1, 1), "axe", 5).get("id", ""), "wood")
+	check(ChopFx.fall_dir(0.0, 10.0) > 0.0)
+	check(ChopFx.fall_dir(10.0, 0.0) < 0.0)
+	check_eq(ChopFx.fall_angle(0.0, 1.0), 0.0)
+	check(ChopFx.fall_angle(1.0, 1.0) > 1.3)
+	check(ChopFx.fall_angle(1.0, -1.0) < -1.3)

@@ -90,8 +90,8 @@ Farming + working the land (7)
 - [ ] Watering can holds water (refill at water, bar in hotbar), waters a 1x1 tile now and 3x1 line with upgrade; scarecrow + sprinkler placeable
 - [ ] Seed packets by season, crop quality by fertiliser, farming skill xp and levels
 Wood chopping (8)
-- [ ] Trees take 3-5 axe hits (hit shake, leaves fall, chips), fall with an animation in the facing direction, leave a stump, drop wood + sap + seeds as pickups; tree saplings regrow
-- [ ] Axe upgrades (copper/iron) cut faster; logs and big stumps need a better axe; wood goes to build mode
+- [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (sap/seed drops and saplings still to do)
+- [ ] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
 Fishing (6)
 - [ ] Hold-to-cast power bar (distance), bobber sprite + splash, nibble animation and "!" alert, hook window, reel bar mini-game with fish sprite moving (keep current logic, new visuals)
 - [ ] Fish icons, fish pop out of the water onto the player, treasure chests in the mini-game, crab pots placeable, legendary fish events and journal screen (existing items kept)
