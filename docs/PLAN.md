@@ -54,7 +54,7 @@ Physics / feel:
 - [x] Footprints on dirt paths (FootprintMath/View, fade)
 - [ ] Grass tufts sway near the player
 - [x] Camera: tiny look-ahead in walk direction (integer-snapped), hard limits at chunk edge (soft clamp math in CameraMath, unused yet)
-- [ ] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
+- [x] Vehicle: wire VehicleMath into a drivable car node (enter/exit, skid marks, tyre smoke on drift)
 - [ ] Build: save/restore verified in-game, door open/close animation, wall autotiling view (mask helper Autotile done and tested; needs wall sprite variants)
 - [x] Day/night: warm lanterns that light the ground (Lantern + PointLight2D, DayNight.lamp_strength)
 - [ ] Collision polish: shoreline collision follows the painted shore (not square tiles)
@@ -94,7 +94,7 @@ Physics / feel:
 - [x] NPC dialogue box with per-NPC lines (data/npcs.json)
 - [x] Town layout model (TownModel) + barn/workshop/houses placed near NPC places with collision and door prompts (art tools/gen_town.py)
 - [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
-- [ ] One drivable car (top-down physics), fuel/repair stub
+- [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; repair stub still to do)
 - [ ] One house to rob (enter, loot, noise, police response, NPC memory)
 - [ ] Police/wanted-level basics, basic combat
 - [ ] One animal to catch, tame and ride; clothes slot on animals

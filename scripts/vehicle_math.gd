@@ -46,3 +46,24 @@ static func step(vel: Vector2, heading: float, throttle: float, steer: float, ha
 		yaw *= 1.5
 	var h := wrapf(heading + yaw * delta, -PI, PI)
 	return {"vel": f * vf + side * vs, "heading": h}
+
+const FUEL_MAX := 40.0
+const FUEL_BURN := 0.35   # units/s at full throttle (idle burns a little)
+const SKID_SLIP := 60.0
+
+static func is_skidding(vel: Vector2, heading: float) -> bool:
+	return absf(slip(vel, heading)) > SKID_SLIP and vel.length() > 50.0
+
+static func fuel_after(fuel: float, throttle: float, delta: float) -> float:
+	return maxf(0.0, fuel - (0.03 + FUEL_BURN * absf(throttle)) * delta)
+
+static func throttle_with_fuel(throttle: float, fuel: float) -> float:
+	## Empty tank: no engine power (braking still works).
+	return throttle if (fuel > 0.0 or throttle < 0.0) else 0.0
+
+static func wheel_points(pos: Vector2, heading: float) -> Array[Vector2]:
+	## Rear wheel contact points for skid marks.
+	var f := forward(heading)
+	var s := f.orthogonal()
+	var back := pos - f * 9.0
+	return [back + s * 5.0, back - s * 5.0]

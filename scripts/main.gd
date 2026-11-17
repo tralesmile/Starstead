@@ -13,6 +13,7 @@ var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
 var dialogue: DialogueView
+var car: CarView
 var weather: WeatherView
 var rain_today := 0.0
 var rain_day := -1
@@ -65,6 +66,12 @@ func _ready() -> void:
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
 	world.add_child(npcs)
+	car = CarView.new()
+	car.player = player
+	car.world = world
+	car.position = _car_spot()
+	car.toast.connect(_say)
+	world.add_child(car)
 	add_child(FishingView.new(fishing))
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -83,6 +90,11 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
+	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the car and floor it
+		player.position = car.position
+		car.enter()
+		Input.action_press("move_up")
+		Input.action_press("move_right")
 	if "--hut-demo" in OS.get_cmdline_user_args():  # screenshot helper: stamp a hut via the blueprint key path
 		GameState.bag.add("wood", 99)
 		player.position += Vector2(160, 0)
@@ -133,6 +145,10 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
+	if car.can_enter() and prompt.text == "":
+		prompt.text = "E: Drive"
+	elif car.driving:
+		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
 	_update_highlight()
 	_update_fade(delta)
 	toast_t -= delta
@@ -147,6 +163,14 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if build_view.handle_key(e):
 		return
+	if e.is_action_pressed("interact") and car.driving:
+		car.leave()
+		return
+	if e.is_action_pressed("interact") and car.can_enter():
+		car.enter()
+		return
+	if car.driving:
+		return  # hands on the wheel: no tools
 	if e.is_action_pressed("interact"):
 		var it := world.interactables.near(player.position, PlayerMath.facing_tile(player.position, player.facing))
 		var nn := npcs.near(player.position + Vector2(0, -8))
@@ -264,3 +288,22 @@ func _hit_feedback(cell: Vector2i, tool: String, broke: bool) -> void:
 	var force := 1.5 if broke else 0.8
 	Engine.time_scale = 0.1
 	get_tree().create_timer(HitMath.hitstop(force), true, false, true).timeout.connect(func(): Engine.time_scale = 1.0)
+
+func _car_spot() -> Vector2:
+	## Dry, empty cell 3-8 tiles from the player start, parked on open ground.
+	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	for r in range(3, 9):
+		for dx in range(-r, r + 1):
+			for dy in range(-r, r + 1):
+				if maxi(absi(dx), absi(dy)) != r:
+					continue
+				var c := pc + Vector2i(dx, dy)
+				var clear := true
+				for ox in range(-1, 2):
+					for oy in range(-1, 2):
+						var q := c + Vector2i(ox, oy)
+						if world.gen.sdf_at(q.x, q.y) < 2.0 or q in world.gen.trees or q in world.gen.rocks or q in world.gen.bushes or world.interactables.at(q).size() > 0:
+							clear = false
+				if clear:
+					return (Vector2(c) + Vector2(0.5, 0.6)) * 32.0
+	return player.position + Vector2(64, 0)

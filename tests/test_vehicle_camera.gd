@@ -58,3 +58,21 @@ func test_ambient_night_and_paths() -> void:
 	for i in 8:
 		var y := AmbientMath.leaf_pos(i, 12.3).y
 		check(y >= -170.0 and y <= 130.0)
+
+func test_skid_detect() -> void:
+	check(VehicleMath.is_skidding(Vector2(0, 120), 0.0))
+	check(not VehicleMath.is_skidding(Vector2(200, 5), 0.0))
+	check(not VehicleMath.is_skidding(Vector2(0, 20), 0.0))
+
+func test_fuel_burn_and_empty() -> void:
+	var f := VehicleMath.fuel_after(10.0, 1.0, 1.0)
+	check(f < 10.0 and f > 9.0)
+	check_eq(VehicleMath.fuel_after(0.0, 1.0, 1.0), 0.0)
+	check_eq(VehicleMath.throttle_with_fuel(1.0, 0.0), 0.0)
+	check_eq(VehicleMath.throttle_with_fuel(-1.0, 0.0), -1.0)
+	check_eq(VehicleMath.throttle_with_fuel(1.0, 5.0), 1.0)
+
+func test_wheel_points_behind() -> void:
+	var w := VehicleMath.wheel_points(Vector2(100, 100), 0.0)
+	check(w[0].x < 100.0 and w[1].x < 100.0)
+	check(not is_equal_approx(w[0].y, w[1].y))
