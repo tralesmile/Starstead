@@ -177,7 +177,7 @@ Houses, buildings, graphics (5, 10)
   - [x] E1 World streaming: 8x8 chunk grid (ChunkGrid/ChunkStream/ChunkView), seamless global noise + padded sdf/data texture, 3x3 chunks around the player built one per frame, choppable trees/rocks in neighbours, data/regions.json biomes + region banner, sea wall around the 512x512 world. [ ] NPC/animal/car awareness outside the homestead, fish shadows + reflections in neighbour chunks, saving streamed node state
   - [x] E2 Roads: RoadNet (A* on a coarse grid over the water noise + string pulling) paints branches from the east-west spine to farmland, highlands, harbour, circuit, Vance and the lumber camp; the spine crosses lakes on causeways; dry-land signposts (E reads direction + steps). [ ] asphalt in the city (E3), bridges over rivers, bus stops
   - [x] E3 Port Halden block (CityModel): land-forced 53x51 city over four chunks, asphalt streets with lane dashes + paved sidewalks + plazas, avenue to the spine, 12 buildings (shop, police, cafe, bank, hospital, garage, town hall, 2 apartments, 3 townhouses), street lamps/benches/fountain, enterable interiors with working counters (shop menu, bank deposit/withdraw + 2%/day interest, hospital treatment, police fine desk clears wanted, cafe coffee, notice board, garage). Apartments/townhouses are lockable robbery targets. [ ] NPC routines in the city, asphalt tile in car sound/skid, shop stock per building, jail cells use
-  - [ ] E4 Caves: cave chunk, ore nodes, torches, enemies, smelting
+  - [ ] E4 Caves: cave chunk, ore nodes, torches, enemies, smelting (CLAIMED 2026-11-18)
   - [ ] E5 Harbour: sea fishing, contest, smuggling crate
   - [ ] E6 Race circuit + sports venues
   - [ ] E7 Story Act 1 beats (data/story.json quest model)
