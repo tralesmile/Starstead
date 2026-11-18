@@ -72,3 +72,10 @@ func test_car_surface_cap() -> void:
 	check(VehicleMath.surface_cap(false, 3.0) < 1.0, "grass slower than road")
 	check(VehicleMath.surface_cap(false, 3.0, 1.0) < VehicleMath.surface_cap(false, 3.0), "rain slows grass")
 	check(VehicleMath.surface_cap(true, 0.3) < VehicleMath.surface_cap(false, 3.0), "wet bank slowest")
+
+func test_car_sidewalk_cap() -> void:
+	check_eq(VehicleMath.surface_cap(true, 3.0, 0.0, true), VehicleMath.SIDEWALK_CAP)
+	check(VehicleMath.SIDEWALK_CAP < VehicleMath.surface_cap(false, 3.0), "slower than grass")
+	check_eq(VehicleMath.surface_cap(true, 3.0, 0.0, false), 1.0)
+	check(CityModel.is_sidewalk(Vector2i(190, 10)), "avenue sidewalk")
+	check(not CityModel.is_asphalt(Vector2i(190, 10)))

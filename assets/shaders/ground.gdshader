@@ -182,12 +182,20 @@ void fragment() {
 					col = mix(vec3(0.23, 0.24, 0.27), vec3(0.30, 0.31, 0.34), step(0.78, sp) * 0.8 + step(0.5, fbm(tile * 3.0)) * 0.12);
 					float dash_h = step(0.5, fract(px.x / 64.0)) * step(abs(fract(tile.y) - 0.5), 0.045) * step(0.25, cc.b) * step(cc.b, 0.75);
 					float dash_v = step(0.5, fract(px.y / 64.0)) * step(abs(fract(tile.x) - 0.5), 0.045) * step(0.75, cc.b);
-					float lane = max(dash_h, dash_v);
+					float zb1 = step(0.04, cc.a) * step(cc.a, 0.12);                 // zebra: bars run north-south
+					float zb2 = step(0.12, cc.a);                                     // zebra: bars run east-west
+					float lane = max(dash_h, dash_v) * (1.0 - max(zb1, zb2));
 					col = mix(col, vec3(0.93, 0.80, 0.30), lane);
+					float bars = max(zb1 * step(0.5, fract(px.x / 16.0)), zb2 * step(0.5, fract(px.y / 16.0)));
+					col = mix(col, vec3(0.88, 0.88, 0.84) * (0.9 + 0.1 * sp), bars * 0.92);
+					vec4 nn = texelFetch(data, tcell + ivec2(0, -1), 0);
+					if (nn.g > 0.5 && nn.a > 0.25 && nn.a < 0.75) col *= mix(0.55, 1.0, smoothstep(0.0, 0.11, fract(tile.y)));  // curb shadow on the street
 				} else {
 					vec2 sl = fract(px / 16.0);
 					col = mix(vec3(0.66, 0.64, 0.60), vec3(0.73, 0.71, 0.66), step(0.7, sp));
 					col = mix(col, vec3(0.50, 0.48, 0.45), max(step(sl.x, 0.07), step(sl.y, 0.07)) * 0.8);
+					vec4 ns = texelFetch(data, tcell + ivec2(0, -1), 0);
+					if (ns.g > 0.5 && ns.a < 0.25 && fract(tile.y) < 0.07) col = mix(col, vec3(0.84, 0.82, 0.77), 0.9);  // sunlit curb lip
 				}
 			}
 		}

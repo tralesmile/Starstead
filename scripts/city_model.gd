@@ -36,6 +36,18 @@ static func is_sidewalk(c: Vector2i) -> bool:
 			return true
 	return false
 
+static func zebra(c: Vector2i) -> int:
+	## Pedestrian crossings on asphalt: 1 = bars running north-south (across the avenue, just north of each street),
+	## 2 = bars running east-west (across a street, beside the avenue). 0 elsewhere.
+	if not is_asphalt(c):
+		return 0
+	for s in STREETS:
+		if AVENUE.has_point(c) and c.y == s.position.y - 1:
+			return 1
+		if s.has_point(c) and not AVENUE.has_point(c) and (c.x in [188, 189, 195, 196]):
+			return 2
+	return 0
+
 static func lane(c: Vector2i) -> int:
 	## Painted centre line: 1 = east-west dashes (street centre rows), 2 = north-south dashes (avenue centre column), 0 none.
 	if not is_asphalt(c):

@@ -1,0 +1,4 @@
+{
+	"copper_bar": {"name": "Copper Bar", "needs": {"copper_ore": 2, "coal": 1}, "makes": "copper_bar"},
+	"iron_bar": {"name": "Iron Bar", "needs": {"iron_ore": 2, "coal": 1}, "makes": "iron_bar"}
+}

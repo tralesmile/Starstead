@@ -30,6 +30,10 @@ func gen_for(ch: Vector2i) -> WorldGen:
 		var g := WorldGen.new(seed_value, ch, region_at(ch).get("biome", {}), roads.road_cells(ch))
 		for sg in roads.signs_in(ch):
 			g.clear_cell(ChunkGrid.local_cell(sg["cell"]))
+		if roads.cave_mouth.x != RoadNet.NO_CELL and ChunkGrid.chunk_of_cell(roads.cave_mouth) == ch:
+			for dx in range(-2, 3):
+				for dy in range(-3, 2):
+					g.clear_cell(ChunkGrid.local_cell(roads.cave_mouth + Vector2i(dx, dy)))
 		gens[ch] = g
 	return gens[ch]
 

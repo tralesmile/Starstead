@@ -83,10 +83,14 @@ static func repair_cost(health: float) -> int:
 	## Wood needed to restore full health (2 per started 25 hp).
 	return int(ceil((HEALTH_MAX - health) / 25.0)) * REPAIR_WOOD_PER_25
 
-static func surface_cap(on_road: bool, sdf: float, rain: float = 0.0) -> float:
-	## Top-speed factor by ground: roads full, grass 0.82 (0.7 in the rain), the wet bank 0.55.
+const SIDEWALK_CAP := 0.5
+
+static func surface_cap(on_road: bool, sdf: float, rain: float = 0.0, sidewalk: bool = false) -> float:
+	## Top-speed factor by ground: roads full, paved sidewalk 0.5 (kerb bumps, pedestrians), grass 0.82 (0.7 in the rain), the wet bank 0.55.
 	if sdf < 0.9:
 		return 0.55
+	if sidewalk:
+		return SIDEWALK_CAP
 	if on_road:
 		return 1.0 - 0.1 * clampf(rain, 0.0, 1.0)
 	return 0.82 - 0.12 * clampf(rain, 0.0, 1.0)

@@ -50,5 +50,11 @@
  "tomato_silver": 33,
  "tomato_gold": 33,
  "pumpkin_silver": 34,
- "pumpkin_gold": 34
+ "pumpkin_gold": 34,
+ "copper_ore": 44,
+ "iron_ore": 45,
+ "coal": 46,
+ "copper_bar": 47,
+ "iron_bar": 48,
+ "bat_wing": 49
 }

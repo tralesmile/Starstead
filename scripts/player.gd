@@ -5,6 +5,7 @@ extends CharacterBody2D
 var facing: int = PlayerMath.Facing.DOWN
 var speed_mult := 1.0  # >1 while riding
 var zoom_step := 2     # user zoom 1..3 (integer: crisp pixels)
+var indoors := false   # inside a room or the mine: no shore slowdown, no water reflection
 var focus: Variant = null   # Vector2: room centre while indoors (camera leans toward it)
 var zoom_bias := 0     # -1 while driving/riding
 var rain := 0.0   # current rain 0..1 (set by main): muddy ground
@@ -86,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var mult := 1.0
 	var grip := 1.0
-	if gen != null:
+	if gen != null and not indoors:
 		var c := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
 		var on_path := WorldGen.is_road(gen.tile_at(c.x, c.y))
 		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
@@ -119,7 +120,8 @@ func _physics_process(delta: float) -> void:
 			footstep.emit()
 	_last_frame = col
 	_update_held()
-	if gen != null:
+	refl.visible = false if indoors else refl.visible
+	if gen != null and not indoors:
 		var rc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
 		refl.visible = gen.sdf_at(rc.x, rc.y + 1) < -0.2 or (rc in gen.dock) or gen.sdf_at(rc.x, rc.y) < 0.0
 		refl.frame = sprite.frame

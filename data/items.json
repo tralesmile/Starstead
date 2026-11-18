@@ -340,5 +340,35 @@
   "price": 135,
   "stack": 99,
   "rarity": "gold"
+ },
+ "copper_ore": {
+  "name": "Copper Ore",
+  "price": 8,
+  "stack": 99
+ },
+ "iron_ore": {
+  "name": "Iron Ore",
+  "price": 14,
+  "stack": 99
+ },
+ "coal": {
+  "name": "Coal",
+  "price": 6,
+  "stack": 99
+ },
+ "copper_bar": {
+  "name": "Copper Bar",
+  "price": 30,
+  "stack": 99
+ },
+ "iron_bar": {
+  "name": "Iron Bar",
+  "price": 55,
+  "stack": 99
+ },
+ "bat_wing": {
+  "name": "Bat Wing",
+  "price": 12,
+  "stack": 99
  }
 }

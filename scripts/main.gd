@@ -25,6 +25,8 @@ var cursor: CursorView
 var rod_charging := false
 var rod_charge_t := 0.0
 var interior: InteriorView
+var cave: CaveView
+var smelt_view: SmeltView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
@@ -212,7 +214,22 @@ func _ready() -> void:
 		chest_view.open())
 	interior.service_requested.connect(func(a): CityActions.run(self, a))
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
+	interior.smelt_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		smelt_view.open())
 	add_child(interior)
+	smelt_view = SmeltView.new()
+	smelt_view.closed.connect(func(): player.set_physics_process(true))
+	smelt_view.cooked.connect(func(n): _say("Smelted " + n))
+	add_child(smelt_view)
+	cave = CaveView.new()
+	cave.setup(world, player, self)
+	cave.ore_broken.connect(_on_ore_broken)
+	cave.bat_down.connect(func(p): drops_view.spawn("bat_wing", 1, p) if randf() < 0.6 else null)
+	cave.bitten.connect(func(a): GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("A bat bites! -%d energy" % int(a)))
+	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
 	float_fx = FloatFx.new()
@@ -259,7 +276,7 @@ func _process(delta: float) -> void:
 		_goal_t = 0.5
 		if CityModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))):
 			city_seen = true
-		goal_label.text = "" if interior.active else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance)
+		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance)
 	if GameState.clock.advance(delta):
 		_end_day()
 	if rain_day != GameState.clock.day:
@@ -283,6 +300,8 @@ func _process(delta: float) -> void:
 	modulate_node.color = DayNight.tint(GameState.clock.minutes) * WeatherMath.darken(weather.now)
 	if interior.active:
 		modulate_node.color = Color(1.0, 0.95, 0.86)  # warm lamp-lit room
+	if cave.active:
+		modulate_node.color = CaveView.DARK  # torches and the miner's lamp do the lighting
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
@@ -292,9 +311,9 @@ func _process(delta: float) -> void:
 	if absf(GameState.clock.minutes - _sun_applied) >= 6.0 or _sun_applied < 0.0:
 		_sun_applied = GameState.clock.minutes
 		World.apply_sun(get_tree(), _sun_applied)
-	town.set_night(0.0 if interior.active else DayNight.lamp_strength(GameState.clock.minutes))
+	town.set_night(0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes))
 	world.part_reeds(player.position, delta)
-	if not interior.active:
+	if not _indoors():
 		world.stream_update(player.position)
 		var reg: Dictionary = world.region_now(player.position)
 		if ChunkGrid.region_changed(world.region_id, String(reg.id)):
@@ -305,11 +324,11 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
-	if interior.active:
-		prompt.text = interior.prompt()
+	if _indoors():
+		prompt.text = interior.prompt() if interior.active else cave.prompt()
 	elif prompt.text == "" and not shop.visible:
 		prompt.text = jobs.prompt()
-	if prompt.text == "" and not interior.active and not car.driving and player.position.distance_to(_stall_pos()) < StallTheft.REACH:
+	if prompt.text == "" and not _indoors() and not car.driving and player.position.distance_to(_stall_pos()) < StallTheft.REACH:
 		prompt.text = "T: Swipe something (risky)"
 	var an_near := animals.near(player.position)
 	if prompt.text == "" and not shop.visible and not an_near.is_empty():
@@ -320,11 +339,12 @@ func _process(delta: float) -> void:
 		prompt.text = "E: Drive"
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
-	player.zoom_bias = (0 if interior.active else -1 if (car.driving or animals.riding != null) else 0)
-	weather.visible = not interior.active
-	ambient.visible = not interior.active
-	fog_rect.visible = not interior.active
-	flash_rect.visible = not interior.active
+	player.indoors = _indoors()
+	player.zoom_bias = (0 if _indoors() else -1 if (car.driving or animals.riding != null) else 0)
+	weather.visible = not _indoors()
+	ambient.visible = not _indoors()
+	fog_rect.visible = not _indoors()
+	flash_rect.visible = not _indoors()
 	_update_cursor()
 	_update_highlight()
 	_update_fade(delta)
@@ -377,6 +397,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		garage_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if smelt_view.visible:
+		smelt_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if cook_view.visible:
 		cook_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -384,6 +408,14 @@ func _unhandled_input(e: InputEvent) -> void:
 	if chest_view.visible:
 		chest_view.handle(e)
 		get_viewport().set_input_as_handled()
+		return
+	if cave.active:
+		if cave.busy:
+			return
+		if e.is_action_pressed("pause"):
+			cave.leave()
+		elif e.is_action_pressed("use_tool"):
+			_cave_tool()
 		return
 	if interior.active:
 		if interior.busy:
@@ -400,10 +432,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if build_view.handle_key(e):
 		return
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_G and not car.driving and not shop.visible and not interior.active:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_G and not car.driving and not shop.visible and not _indoors():
 		animals.gear_action()
 		return
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_T and not car.driving and not shop.visible and not interior.active:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_T and not car.driving and not shop.visible and not _indoors():
 		_steal_from_stall()
 		return
 	if e.is_action_pressed("interact") and car.driving:
@@ -439,6 +471,9 @@ func _unhandled_input(e: InputEvent) -> void:
 				interior.enter(bb)
 			else:
 				robbery.interact(dcell)
+			return
+		if it.get("kind", "") == "cave":
+			cave.enter(GameState.clock.day)
 			return
 		if it.get("kind", "") == "sign":
 			_say(String(it.get("text", "")))
@@ -727,6 +762,40 @@ func _near_workshop(p: Vector2) -> bool:
 		if b["id"] == "workshop" and p.distance_to(TownModel.sprite_bottom_center(b)) < 160.0:
 			return true
 	return false
+
+func _indoors() -> bool:
+	return interior.active or cave.active
+
+func _cave_tool() -> void:
+	var tool := hotbar.current()
+	if tool == "club":
+		if GameState.energy.can_use("club") and combat.cd <= 0.0:
+			GameState.energy.spend("club")
+			player.held_tool = "club"
+			player.swing()
+			combat.cd = CombatModel.cooldown("club")
+			var w := CombatModel.weapon("club")
+			cave.club_swing(float(w["dmg"]), float(w["range"]) + 10.0, float(w["force"]))
+		return
+	if tool != "pickaxe":
+		_say("Use the pickaxe on ore, the club on bats")
+		return
+	if not GameState.energy.can_use("pickaxe"):
+		_say("Too tired to mine")
+		return
+	player.held_tool = tool
+	player.swing()
+	var msg := cave.use_tool(tool, ToolUse.axe_power(GameState.bag, axe_table, "pickaxe"))
+	if msg != "":
+		GameState.energy.spend("pickaxe")
+		_hit_feedback(cave.target_cell() + CaveView.CELL_OFFSET, "pickaxe", msg.begins_with("Got"))
+		_say(msg)
+
+func _on_ore_broken(id: String, n: int, pos: Vector2, _kind: String) -> void:
+	drops_view.spawn(id, n, pos)
+	var sk := "mining"
+	if _skill_gain(sk):
+		_say("Mining level %d!" % SkillModel.level(int(GameState.skill_xp[sk])))
 
 func _target_cell() -> Vector2i:
 	## Mouse tile when aiming with the mouse and in reach, otherwise the tile in front of the player.

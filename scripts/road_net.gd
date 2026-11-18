@@ -21,6 +21,8 @@ const SPINE_X1 := 319
 var seed_value := 1
 var _noise: FastNoiseLite
 var polylines: Array = []              # per branch: Array[Vector2i] world cells (string-pulled waypoints)
+var hubs: Dictionary = {}              # branch id -> end of the road (Vector2i)
+var cave_mouth := Vector2i(NO_CELL, 0)  # base cell of the Highlands cave entrance
 var signs: Array = []                  # {cell, text}
 var cells: Dictionary = {}             # chunk -> {local cell -> true}
 
@@ -94,6 +96,8 @@ func build() -> void:
 	polylines.clear()
 	signs.clear()
 	cells.clear()
+	hubs.clear()
+	cave_mouth = Vector2i(NO_CELL, 0)
 	for br in BRANCHES:
 		var fx := int(br["from_x"])
 		var start := Vector2i(fx, spine_y(fx))
@@ -114,8 +118,24 @@ func build() -> void:
 		if path.is_empty():
 			continue
 		polylines.append(path)
+		hubs[br["id"]] = path[path.size() - 1]
+		if br["id"] == "highlands":
+			cave_mouth = _cave_cell(path[path.size() - 1])
 		_raster(path)
 		signs.append({"cell": _sign_cell(fx), "text": "%s: %s" % [br["name"], direction_text(start, hub)]})
+
+func _cave_cell(hub: Vector2i) -> Vector2i:
+	## A dry spot just north of the road end: the 5x3 patch around it must be land.
+	for o in [Vector2i(0, -2), Vector2i(0, -3), Vector2i(3, -2), Vector2i(-3, -2), Vector2i(0, 2), Vector2i(4, 0), Vector2i(-4, 0)]:
+		var c: Vector2i = hub + o
+		var ok := true
+		for dy in range(-3, 2):
+			for dx in range(-3, 4):
+				if _noise.get_noise_2d(c.x + dx, c.y + dy) < 0.02:
+					ok = false
+		if ok and ChunkGrid.chunk_of_cell(c) != ChunkGrid.HOME and ChunkGrid.chunk_of_cell(c) == ChunkGrid.chunk_of_cell(c + Vector2i(-2, -3)) and ChunkGrid.chunk_of_cell(c) == ChunkGrid.chunk_of_cell(c + Vector2i(2, 1)):
+			return c
+	return hub + Vector2i(0, -2)   # fall back to the road end even if damp
 
 func _sign_cell(fx: int) -> Vector2i:
 	## A dry corner next to the junction (not in or near water).

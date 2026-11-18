@@ -103,3 +103,19 @@ func test_surface_grip() -> void:
 	var on_g := VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1, g)["vel"] as Vector2
 	check(absf(on_a.y) < absf(on_g.y), "less slide on asphalt")
 	check_eq(VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1)["vel"], VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1, 1.0)["vel"], "default grip unchanged")
+
+func test_zebra_crossings() -> void:
+	var n1 := 0
+	var n2 := 0
+	for y in range(-22, 30):
+		for x in range(166, 219):
+			var z := CityModel.zebra(Vector2i(x, y))
+			if z == 1:
+				n1 += 1
+				check(CityModel.is_asphalt(Vector2i(x, y)))
+			if z == 2:
+				n2 += 1
+	check(n1 >= 6, "avenue crossings %d" % n1)
+	check(n2 >= 12, "street crossings %d" % n2)
+	check_eq(CityModel.zebra(Vector2i(180, 0)), 0)
+	check_eq(CityModel.zebra(Vector2i(100, 100)), 0)

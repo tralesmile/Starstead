@@ -45,6 +45,19 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--smelt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the furnace menu with ore in the bag
+		GameState.bag.add("copper_ore", 4)
+		GameState.bag.add("coal", 2)
+		GameState.bag.add("iron_ore", 1)
+		m.smelt_view.open()
+	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: stand inside the mine with a pickaxe
+		GameState.energy.value = 100.0
+		m.cave.enter(GameState.clock.day)
+	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 40 and m.cave.active:
+		var ore: Vector2i = m.cave.model.ores.keys()[0]
+		m.player.position = m.cave.px(ore) + Vector2(16, 70)
+		if "--cave-walls" in OS.get_cmdline_user_args():   # stand beside a torch and a wall edge
+			m.player.position = m.cave.px(m.cave.model.torches[1]) + Vector2(16, 70)
 	if m._arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
 		var kind := "farmhouse"
 		for a in OS.get_cmdline_user_args():

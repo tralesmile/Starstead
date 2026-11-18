@@ -452,6 +452,57 @@ def crab():
     return i
 icons['crab'] = crab
 
+# ---- cave / smelting items
+def ore(rock, a, b, spots):
+    i = Ic()
+    i.ell(8, 9, 6, 4.5, rock)
+    i.rect(4, 12, 12, 12, shade_hex(rock, 0.75))
+    i.ell(7, 7, 3.4, 1.8, shade_hex(rock, 1.2))
+    for (x, y) in spots:
+        i.px(x, y, a); i.px(x + 1, y, b); i.px(x, y + 1, b)
+    return i
+
+def shade_hex(h, k):
+    c = C(h)
+    return tuple(max(0, min(255, int(v * k))) for v in c[:3]) + (255,)
+
+icons['copper_ore'] = lambda: ore("#8a7a6c", "#e87a38", "#7ac098", [(5, 8), (9, 10), (10, 7)])
+icons['iron_ore'] = lambda: ore("#868082", "#e0b898", "#a87c60", [(5, 9), (9, 7), (10, 10)])
+def coal():
+    i = ore("#5a5660", "#26242c", "#14121a", [(5, 8), (9, 10), (10, 7), (7, 11)])
+    i.px(6, 6, "#8a90b0"); i.px(10, 8, "#8a90b0")
+    return i
+icons['coal'] = coal
+
+def bar(top, mid, low, hi):
+    i = Ic()
+    i.rect(3, 6, 12, 11, mid)
+    i.rect(5, 4, 13, 7, top)       # top face
+    i.rect(3, 8, 12, 11, mid)
+    i.rect(3, 10, 12, 11, low)
+    i.rect(12, 6, 13, 10, low)
+    i.px(5, 4, hi); i.px(6, 4, hi); i.px(4, 8, hi); i.px(5, 8, hi)
+    return i
+icons['copper_bar'] = lambda: bar("#f0a068", "#d4814a", "#a85a2a", "#ffe0b8")
+icons['iron_bar'] = lambda: bar("#d8e0ea", "#b8c0cc", "#7a8494", "#ffffff")
+
+def bat_wing():
+    i = Ic()
+    # membrane: fan from the wrist (3,4) with a scalloped lower edge
+    edge = {3: 12, 4: 12, 5: 10, 6: 12, 7: 12, 8: 10, 9: 12, 10: 12, 11: 10, 12: 11, 13: 8}
+    for x, yb in edge.items():
+        top = 4 + max(0, (x - 3)) // 3 if x > 6 else 4
+        top = 4 if x < 8 else 4 + (x - 7)
+        for y in range(top, yb + 1):
+            i.px(x, y, "#5a4670" if y < yb else "#3e2e52")
+    # finger bones
+    i.line(3, 4, 5, 10, "#a890c0"); i.line(3, 4, 8, 10, "#a890c0"); i.line(3, 4, 11, 10, "#a890c0")
+    i.line(2, 3, 13, 5, "#c8b0d8")   # leading arm
+    i.px(2, 4, "#c8b0d8"); i.px(2, 2, "#e8d8f0")
+    i.px(6, 6, "#7a6090"); i.px(9, 6, "#7a6090")
+    return i
+icons['bat_wing'] = bat_wing
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():
@@ -472,6 +523,7 @@ def main():
     for k in keys:  # quality variants reuse the base icon (the rarity border shows the quality)
         if k.endswith(("_silver", "_gold")):
             mapping[k] = mapping[k.rsplit("_", 1)[0]]
+    mapping = {k: mapping[k] for k in keys}  # same order as items.json (new ids append at the end)
     strip.save(os.path.join(ROOT, "assets", "sprites", "items.png"))
     with open(os.path.join(ROOT, "data", "item_icons.json"), "w") as f:
         json.dump(mapping, f, indent=1)

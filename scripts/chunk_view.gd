@@ -25,6 +25,7 @@ func build(world: World, g: WorldGen) -> void:
 	_decor(world)
 	_flowers(world)
 	_signs(world)
+	_cave_mouth(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -175,6 +176,19 @@ func _signs(world: World) -> void:
 		var b := world.make_prop("res://assets/sprites/signpost.png", c, Vector2(10, 6), Vector2(0, -16))
 		nodes.append(b)
 		world.interactables.add(c, "sign", "E: Read sign", {"text": String(sg["text"])})
+		sign_cells.append(c)
+
+func _cave_mouth(world: World) -> void:
+	if world.stream == null:
+		return
+	var mc: Vector2i = world.stream.roads.cave_mouth
+	if mc.x == RoadNet.NO_CELL or ChunkGrid.chunk_of_cell(mc) != chunk:
+		return
+	var b := world.make_prop("res://assets/sprites/cave_mouth.png", mc, Vector2(80, 18), Vector2(0, -40))
+	nodes.append(b)
+	for dx in range(-1, 2):
+		var c := mc + Vector2i(dx, 0)
+		world.interactables.add(c, "cave", "E: Enter the Highlands mine")
 		sign_cells.append(c)
 
 func unload(world: World) -> void:

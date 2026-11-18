@@ -25,7 +25,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
-- [ ] Wet-asphalt shine and puddle reflections in rain; curb shadow line between sidewalk and street; zebra crossings
+- [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [ ] wet-asphalt shine and puddle reflections in rain
 - [x] Wind sway shader on trees, bushes, reeds (top moves, base fixed, whole-pixel steps, gusts)
 - [x] Lily pads bob/drift and part around the player (reeds parting still to do)
 - [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
@@ -45,7 +45,7 @@ Graphics:
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Car tyre grip by surface (VehicleMath.surface_grip: asphalt 1.2, path 0.95, grass 0.7, wet bank 0.5, rain slicks asphalt most), wired into the car step
-- [ ] Car: tyre squeal/skid marks stronger on asphalt, handling feel pass for kerbs and sidewalks (slower on sidewalk)
+- [x] Car is capped to half speed on city sidewalks (VehicleMath.surface_cap sidewalk, tested). [ ] Car: tyre squeal/skid marks stronger on asphalt, kerb bump feel
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
 - [x] Rounded/capsule player collider + corner sliding so you do not snag on trees
 - [x] Trees and bushes fade semi-transparent when the player is behind them (player now y-sorts with props)
@@ -177,7 +177,7 @@ Houses, buildings, graphics (5, 10)
   - [x] E1 World streaming: 8x8 chunk grid (ChunkGrid/ChunkStream/ChunkView), seamless global noise + padded sdf/data texture, 3x3 chunks around the player built one per frame, choppable trees/rocks in neighbours, data/regions.json biomes + region banner, sea wall around the 512x512 world. [ ] NPC/animal/car awareness outside the homestead, fish shadows + reflections in neighbour chunks, saving streamed node state
   - [x] E2 Roads: RoadNet (A* on a coarse grid over the water noise + string pulling) paints branches from the east-west spine to farmland, highlands, harbour, circuit, Vance and the lumber camp; the spine crosses lakes on causeways; dry-land signposts (E reads direction + steps). [ ] asphalt in the city (E3), bridges over rivers, bus stops
   - [x] E3 Port Halden block (CityModel): land-forced 53x51 city over four chunks, asphalt streets with lane dashes + paved sidewalks + plazas, avenue to the spine, 12 buildings (shop, police, cafe, bank, hospital, garage, town hall, 2 apartments, 3 townhouses), street lamps/benches/fountain, enterable interiors with working counters (shop menu, bank deposit/withdraw + 2%/day interest, hospital treatment, police fine desk clears wanted, cafe coffee, notice board, garage). Apartments/townhouses are lockable robbery targets. [ ] NPC routines in the city, asphalt tile in car sound/skid, shop stock per building, jail cells use
-  - [ ] E4 Caves: cave chunk, ore nodes, torches, enemies, smelting (CLAIMED 2026-11-18)
+  - [x] E4 Caves: CaveModel (drunken-walk cavern, copper/coal/iron by depth, daily ore respawn, torches, bats), CaveView (fade in from a cave mouth at the Highlands road end, miner lamp + torch PointLights, pickaxe mines ore with skill xp, club drives off bats that bite energy, bat wings drop), furnace in the workshop (SmeltView, data/smelting.json: copper/iron bars), 6 item icons. [ ] multi-floor mines with ladders, bars for tool upgrades/crafting, more enemies (slimes, rock crabs), minecart/ore-vein variety
   - [ ] E5 Harbour: sea fishing, contest, smuggling crate
   - [ ] E6 Race circuit + sports venues
   - [ ] E7 Story Act 1 beats (data/story.json quest model)
@@ -230,3 +230,7 @@ Houses, buildings, graphics (5, 10)
 - Interaction clarity and low-friction chores are what keep Stardew sticky: https://medium.com/super-jump/what-makes-a-game-about-mundane-chores-hopelessly-addictive and UI notes https://neverendingbacklog.substack.com/p/interfacing-with-the-player . Weakest part of Starstead vs Stardew/Core Keeper now: storage and crafting UI (no chest, no kitchen) -> promote: farmhouse storage chest, then cooking. Also tool-line upgrades done this run (hoe/can) to match Core Keeper-style tool tiers.
 - [x] Storage chest with the bag-style grid, shift-click (farmhouse; placeable chest still to do)
 - [x] Weeds and scythe (fibre) so the farm needs upkeep
+
+## Backlog additions (2026-11-18 run 6, research)
+- Weakest vs Core Keeper/Stardew mines: our mine is one chamber; they reward going deeper (floors, ladders, boss floors, light radius upgrades). Next: multi-floor mine with ladder holes and a lamp upgrade. Sources (titles only): https://www.thegamer.com/core-keeper-and-the-endless-craving-for-digging-holes/ , https://www.gamesradar.com/games/simulation/stardew-valley-creator-wanted-the-mines-to-be-like-terraria-but-it-was-way-too-ambitious-in-the-end-should-have-been-an-entire-game-on-its-own (2026-11-18)
+- Use smelted bars for pickaxe/axe upgrades and car parts so the cave feeds the garage economy (E8).
