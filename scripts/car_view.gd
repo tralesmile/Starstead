@@ -15,6 +15,8 @@ var slip := 1.0          # slipstream factor set by the race (VehicleMath.slipst
 var _skid_t := 0.0
 var _prev_cap := 1.0
 var _skid_a := 0.7
+var _smoke_tile := 0
+var _smoke_sdf := 5.0
 var night := 0.0       # 0..1 from DayNight.lamp_strength, set by main
 var _smoke: CPUParticles2D
 var _head: Array[PointLight2D] = []
@@ -130,6 +132,8 @@ func _physics_process(delta: float) -> void:
 			var tt: int = g.tile_at(cc.x, cc.y)
 			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain, CityModel.is_sidewalk(cc) or HarbourModel.is_quay(cc))
 			grip_m = VehicleMath.surface_grip(tt, g.sdf_at(cc.x, cc.y), player.rain)
+			_smoke_tile = tt
+			_smoke_sdf = g.sdf_at(cc.x, cc.y)
 			_skid_a = VehicleMath.skid_alpha(tt, g.sdf_at(cc.x, cc.y), player.rain)
 			_on_circuit = CircuitModel.on_circuit(cc)
 			if CircuitModel.is_infield(cc):
@@ -183,6 +187,11 @@ func _physics_process(delta: float) -> void:
 		drift.crash()
 	var skid := driving and VehicleMath.is_skidding(vel, heading)
 	_smoke.emitting = skid
+	if skid:
+		var ss := VehicleMath.smoke_style(VehicleMath.slip(vel, heading), _smoke_tile, _smoke_sdf, player.rain)
+		_smoke.amount = int(ss["amount"])
+		_smoke.color = ss["color"]
+		_smoke.scale_amount_max = float(ss["size"])
 	_smoke.position = -VehicleMath.forward(heading).rotated(-heading) * 10.0
 	if skid:
 		_skid_t -= delta

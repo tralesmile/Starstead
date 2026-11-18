@@ -917,6 +917,7 @@ func _end_day() -> void:
 		_say("Your crab pots caught something")
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
+	GameState.market.new_day()
 	animals.day_tick()
 	GameState.bank_balance += CityServices.daily_interest(GameState.bank_balance)
 	GameState.energy.new_day(false)

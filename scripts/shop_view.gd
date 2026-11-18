@@ -24,6 +24,8 @@ func _init() -> void:
 
 func open() -> void:
 	menu.world = GameState.world
+	menu.market = GameState.market
+	menu.day = GameState.clock.day
 	menu.tab = ShopMenu.Tab.SELL
 	menu.cursor = 0
 	msg = ""
@@ -59,7 +61,7 @@ func _process(_d: float) -> void:
 	if e.is_empty():
 		lines.append("(nothing to %s)" % t.to_lower())
 	for i in e.size():
-		lines.append("%s %s  $%d  x%d" % [">" if i == menu.cursor else " ", e[i].name, e[i].price, e[i].count])
+		lines.append("%s %s  $%d%s  x%d" % [">" if i == menu.cursor else " ", e[i].name, e[i].price, str(e[i].get("trend", "")), e[i].count])
 	lines.append("")
 	lines.append(msg)
 	label.text = "\n".join(lines)

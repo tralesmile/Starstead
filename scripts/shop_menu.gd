@@ -9,6 +9,8 @@ var cursor := 0
 var items: Dictionary
 var planets: Dictionary = {}
 var world := "earth"
+var market: MarketModel = null   # optional sell pressure (E8)
+var day := 1
 
 func _init(items_db: Dictionary) -> void:
 	items = items_db
@@ -21,10 +23,14 @@ func entries(inv: Inventory) -> Array:
 	for id in ids:
 		var n := inv.count(id)
 		if tab == Tab.SELL and n > 0:
-			out.append({"id": id, "name": items[id].name, "price": Shop.sell_price(items, id, planets, world), "count": n})
+			out.append({"id": id, "name": items[id].name, "price": _sell_now(id), "count": n, "trend": "" if market == null else market.trend(id, day)})
 		elif tab == Tab.BUY and bool(items[id].get("buy", false)):
 			out.append({"id": id, "name": items[id].name, "price": Shop.buy_price(items, id, planets, world), "count": n})
 	return out
+
+func _sell_now(id: String) -> int:
+	var base := Shop.sell_price(items, id, planets, world)
+	return base if market == null else market.price(base, id, day)
 
 func switch_tab() -> void:
 	tab = Tab.BUY if tab == Tab.SELL else Tab.SELL
@@ -41,7 +47,15 @@ func confirm(inv: Inventory, money: int) -> Dictionary:
 		return {"money": money, "msg": "Nothing here"}
 	cursor = clampi(cursor, 0, e.size() - 1)
 	var id: String = e[cursor].id
-	var m := Shop.sell(inv, items, id, 1, money, planets, world) if tab == Tab.SELL else Shop.buy(inv, items, id, 1, money, planets, world)
+	var m := -1
+	if tab == Tab.SELL:
+		var p := _sell_now(id)
+		if inv.remove(id, 1):
+			m = money + p
+			if market != null:
+				market.record(id, 1)
+	else:
+		m = Shop.buy(inv, items, id, 1, money, planets, world)
 	if m < 0:
 		return {"money": money, "msg": "Cannot afford" if tab == Tab.BUY else "Cannot sell"}
 	cursor = clampi(cursor, 0, maxi(entries(inv).size() - 1, 0))

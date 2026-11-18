@@ -16,7 +16,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Water decor placement (lily pads, reeds, swimming fish shadows) + dock at shore near spawn, camera zoom 2
 - [x] Soft drop shadows under trees, rocks, bushes, player
 - [ ] Tree/reed wind sway (vertex shader) and lily pad bob
-- [ ] Prop reflections/darkening in water; dock shadow on water
+- [x] Prop reflections/darkening in water; dock shadow on water (soft dark silhouette under the planks, 2026-11-18)
 - [ ] Higher-detail player (more frames, tool-use poses) and NPC base
 - [ ] Bank height: raised grass edge over shore stones (3/4 depth illusion)
 - [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
@@ -24,6 +24,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
+- [ ] Next graphics ideas: shadow under bridges/causeways on water, flat grey plazas in Port Halden need paving variation and planters (playtest 10 ugliest), wet footprints on quay
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
 - [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [x] wet-asphalt shine and puddles in rain (ground shader `wet`, World.set_wet)
 - [x] Harbour quay in the paved-slab shader look (grey stone, sunlit curb) instead of orange dirt
@@ -45,6 +46,7 @@ Graphics:
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
+- [x] Drift smoke by surface (VehicleMath.smoke_style: white tyre smoke on asphalt, tan dust on paths, olive dust on grass, thin in rain, puffs scale with slide angle; tested). [ ] tyre squeal audio, drift leaderboard
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
 - [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [x] tyre marks linger 40 s on the circuit (skid_life, tested)
 - [x] Physics: pit-lane/infield speed limit (DriftScore.pit_cap) and drift scoring on the circuit (DriftScore: multiplier by drift time, banks on clean exit, crash loses it, best saved). [ ] drift leaderboard/ghost, tyre squeal audio
@@ -185,7 +187,7 @@ Houses, buildings, graphics (5, 10)
   - [x] E5 Harbour: HarbourModel (forced sea south of the harbour road end, paved quay + T-pier, lighthouse, moored boats, bollards, barrels), 4 sea fish (sardine/mackerel/tuna/swordfish; Fishing.pick_fish sea flag, no lake legend in the sea), weekly contest every 7th day 8:00-18:00 (board: $25 entry, sea catches add cm, ranks vs 3 rivals pay $300/150/75; HarbourState tested), night smuggling crate every 3rd night at the pier head (+20 heat, fence barrel in Port Halden pays $200+, refuses at 3+ stars). Art via tools/gen_harbour.py. [x] contest entry + crate pickup saved (HarbourState.to_dict), stone-slab quay (shader). [ ] ferry, legendary sea fish, fish auction
   - [x] E6 Race circuit + sports venues: CircuitModel (forced-land oval asphalt track at chunk (1,6), kerbs, chequered start line, 12 checkpoints, grid slots, pit office + Sports Hall interiors, football pitch, grandstand/gantry), circuit licence ($150, races pay x3), SportsModel/SportsView (basketball free throws, penalty shootout, boxing bouts), art tools/gen_circuit.py. [ ] bike racing, basketball/football matches with teams, venue jobs
   - [x] E7 Story Act 1 beats: StoryModel + data/story.json (9 beats in 3 quests: grandmother's letter, Vance visit, grandmother's notes), events/polls drive the chain, rewards, K quest log + banner (StoryView), goal line follows the story after day 1, Vance debt $2000 paid in $250 slices at the new Town Hall ledger desk (Shift+E all), saved. [ ] Vance NPC with dialogue, debt deadline consequences, Act 2 beats (honest/street choice, rocket seat)
-  - [ ] E8 Economy + balance pass (CLAIMED 2026-11-18)
+  - [x] E8 Economy + balance pass: MarketModel (first 4 units/day full price, -3% per extra unit down to 55%, quarter of the glut remembered overnight, deterministic +-8% daily demand, shop list shows +/- trend, saved), EconomyAudit + tests/test_economy.gd lock the ladders (crop profit/day within 3x, job pay per energy rises by rank, no buy-sell exploit, tool tiers, smelting gain, fish prices match items.json). [ ] bars as upgrade currency, Vance debt deadline pressure, price boards per town, export/import prices between regions
 - [ ] All jobs (farmer, mechanic, police, doctor, chef, builder, delivery, miner, astronaut), promotions, own business
 - [ ] Sports: car/bike racing, football, basketball, boxing, fishing contests, animal races
 - [ ] Mining caves, ore, smelting; forge/garage/workshop crafting of cars, weapons, equipment
@@ -249,3 +251,6 @@ Houses, buildings, graphics (5, 10)
 ## Backlog additions (2026-11-18 run 9)
 - Weakest vs Stardew Valley: story was invisible (no letters, no named antagonist beat). Fixed with the Act 1 quest log + Vance debt. Next: Vance as an NPC who talks, deadline pressure (interest after day 30), Act 2 honest/street branch. Reference: Stardew's Joja vs Community Center choice as the model for the honest/street fork.
 - Cassette Beasts/Moonlighter: quest log with tracked step on the HUD is the genre norm; ours is the goal line + K log.
+
+## Backlog additions (2026-11-18 run 10, research)
+- Weakest vs Stardew Valley: no price pressure, so one crop could be dumped forever and late-game had no money sinks. Added sell pressure/demand (MarketModel). Next: artisan goods (jam, cheese, bars) as the value-add ladder and money sinks (house upgrades, licences). Sources (titles only): https://gamerant.com/stardew-valley-economy-cost-goods-market-supply-demand/ , https://forums.stardewvalley.net/threads/market-economy-supply-demand-mechanic.2063/latest , https://mechanicsofmagic.com/?p=1915 (Critical Play: Balance, Stardew)

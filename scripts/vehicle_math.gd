@@ -155,3 +155,23 @@ static func skid_life(on_circuit: bool, rain: float) -> float:
 
 static func is_braking(throttle: float, forward_speed: float, handbrake: bool) -> bool:
 	return handbrake or (throttle < 0.0 and forward_speed > 1.0)
+
+static func smoke_style(slip_amount: float, tile: int, sdf: float, rain: float = 0.0) -> Dictionary:
+	## Drift smoke by ground: white tyre smoke on asphalt, tan dust on packed paths, olive grass dust off-road,
+	## thin spray in the wet. Puffs scale with how hard the tail is out (6..22).
+	var hard := clampf((absf(slip_amount) - SKID_SLIP) / 120.0, 0.0, 1.0)
+	var col := Color(0.88, 0.88, 0.9)
+	var a := 0.55
+	if sdf < 0.9:
+		col = Color(0.7, 0.85, 0.9)   # splash on the wet bank
+		a = 0.4
+	elif tile == WorldGen.ASPHALT:
+		pass
+	elif WorldGen.is_road(tile):
+		col = Color(0.82, 0.68, 0.46)
+		a = 0.5
+	else:
+		col = Color(0.58, 0.62, 0.35)
+		a = 0.45
+	a *= 1.0 - 0.45 * clampf(rain, 0.0, 1.0)
+	return {"amount": int(round(lerpf(6.0, 22.0, hard))), "color": Color(col.r, col.g, col.b, a), "size": lerpf(1.5, 3.4, hard)}

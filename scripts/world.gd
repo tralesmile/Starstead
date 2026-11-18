@@ -252,6 +252,15 @@ func _build_water_decor() -> void:
 		d.position = Vector2(left * 32 + into_land, a.y * 32 - 24)
 		d.z_index = -4
 		add_child(d)
+		# soft shadow of the planks cast on the water below (dark silhouette, offset south)
+		var ds := Sprite2D.new()
+		ds.texture = d.texture
+		ds.centered = false
+		ds.position = d.position + Vector2(4, 14)
+		ds.modulate = Color(0.0, 0.12, 0.18, 0.38)
+		ds.z_index = -5
+		ds.add_to_group("sun_shadows_off")
+		add_child(ds)
 	# fish shadows swimming in deeper water
 	var fish_tex := load("res://assets/sprites/fish.png")
 	var spots: Array[Vector2i] = []

@@ -27,6 +27,7 @@ var skill_xp: Dictionary = {}  # skill id -> xp (SkillModel)
 var world: String = "earth"
 var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var story := StoryModel.new(DataDB.load_json("story"))
+var market := MarketModel.new()  # sell pressure (E8)
 var debt_paid: int = 0       # Vance debt repaid at the Town Hall ledger
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
@@ -51,7 +52,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "market": market.to_dict(), "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -91,6 +92,7 @@ func from_dict(d: Dictionary) -> bool:
 		job_xp[k] = int(d["job_xp"][k])
 	story.from_array(d.get("story", []))
 	debt_paid = int(d.get("debt_paid", 0))
+	market.from_dict(d.get("market", {}))
 	if d.has("chest"):
 		chest.from_array(d["chest"])
 	if d.has("bag"):

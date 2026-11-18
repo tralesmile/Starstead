@@ -50,6 +50,11 @@ func on_process() -> void:
 		GameState.debt_paid = 500
 		m.story_view.poll(2)
 		m.story_view.toggle_log()
+	if "--shop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the stall with a glut of turnips already sold
+		GameState.bag.add("turnip", 12)
+		GameState.bag.add("carp", 2)
+		GameState.market.record("turnip", 10)
+		m.shop.open()
 	if "--smelt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the furnace menu with ore in the bag
 		GameState.bag.add("copper_ore", 4)
 		GameState.bag.add("coal", 2)

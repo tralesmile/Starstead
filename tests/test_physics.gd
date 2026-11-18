@@ -122,3 +122,13 @@ func test_car_lights() -> void:
 func test_skid_life() -> void:
 	check(VehicleMath.skid_life(true, 0.0) > 5.0 * VehicleMath.skid_life(false, 0.0), "rubber builds on the circuit")
 	check(VehicleMath.skid_life(true, 1.0) < VehicleMath.skid_life(true, 0.0), "rain washes marks")
+
+func test_smoke_style_by_surface() -> void:
+	var asph := VehicleMath.smoke_style(200.0, WorldGen.ASPHALT, 5.0)
+	var path := VehicleMath.smoke_style(200.0, WorldGen.PATH, 5.0)
+	var grass := VehicleMath.smoke_style(200.0, WorldGen.GRASS, 5.0)
+	check(asph["color"].a > path["color"].a and path["color"].a > grass["color"].a, "asphalt smoke densest")
+	check(asph["color"].r > path["color"].r, "path dust is tan, not white")
+	check(int(VehicleMath.smoke_style(200.0, WorldGen.ASPHALT, 5.0)["amount"]) > int(VehicleMath.smoke_style(65.0, WorldGen.ASPHALT, 5.0)["amount"]), "harder slide, more puffs")
+	check(VehicleMath.smoke_style(200.0, WorldGen.ASPHALT, 5.0, 1.0)["color"].a < asph["color"].a, "rain thins it")
+	check(int(VehicleMath.smoke_style(1000.0, WorldGen.ASPHALT, 5.0)["amount"]) <= 22, "bounded")
