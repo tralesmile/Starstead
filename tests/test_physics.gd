@@ -66,3 +66,9 @@ func test_bobber_math() -> void:
 	check(BobberMath.splash(0.1).y > 0.0)
 	check_eq(BobberMath.splash(0.7), Vector2.ZERO)
 	check(BobberMath.splash(0.5).x > BobberMath.splash(0.1).x)
+
+func test_car_surface_cap() -> void:
+	check_eq(VehicleMath.surface_cap(true, 3.0), 1.0)
+	check(VehicleMath.surface_cap(false, 3.0) < 1.0, "grass slower than road")
+	check(VehicleMath.surface_cap(false, 3.0, 1.0) < VehicleMath.surface_cap(false, 3.0), "rain slows grass")
+	check(VehicleMath.surface_cap(true, 0.3) < VehicleMath.surface_cap(false, 3.0), "wet bank slowest")

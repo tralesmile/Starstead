@@ -77,7 +77,13 @@ func _physics_process(delta: float) -> void:
 		th = VehicleMath.throttle_with_fuel(th, fuel)
 		fuel = VehicleMath.fuel_after(fuel, th, delta)
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta)
-		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health))
+		var surf := 1.0
+		var g = world.gen if world != null and "gen" in world else null
+		if g != null:
+			var cc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
+			var tt: int = g.tile_at(cc.x, cc.y)
+			surf = VehicleMath.surface_cap(tt >= WorldGen.PATH and tt < WorldGen.PATH + 3, g.sdf_at(cc.x, cc.y), player.rain)
+		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf)
 		heading = r["heading"]
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)

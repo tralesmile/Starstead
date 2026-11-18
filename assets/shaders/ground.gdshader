@@ -116,6 +116,10 @@ void fragment() {
 		float rayc = (px.x + px.y * 0.6) / 22.0 + TIME * 0.05;
 		float ray = smoothstep(0.62, 1.0, sin(rayc * 3.1 + sin(rayc * 1.3) * 1.5) * 0.5 + 0.5);
 		col += vec3(0.07, 0.12, 0.10) * ray * smoothstep(0.2, 0.9, depth);
+		// lapping shore foam: a ragged white pixel line that creeps in and out with the swell
+		float lap = 0.22 + 0.16 * sin(TIME * 0.9 + fbm(tile * 1.7) * 6.0);
+		float fz = smoothstep(0.1, 0.0, abs(depth - lap)) * step(0.45, fbm(tile * 4.0 + TIME * 0.1));
+		col = mix(col, vec3(0.90, 0.97, 0.94), fz * 0.8 * (1.0 - smoothstep(0.2, 0.5, depth)));
 		col = floor(col * 24.0) / 24.0;
 	} else if (sdf < 0.42) {
 		// ---- shoreline: mossy rounded stones
