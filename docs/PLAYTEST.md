@@ -20,3 +20,5 @@ Start a new game with no flags and play ~10 minutes with only the key legend vis
 6. Is energy/money pacing fair (never stuck, never trivial) over one in-game day?
 7. What would I show in a trailer? What is the ugliest thing on screen?
 (Note: the playtest is done by the agent through the demo flags and screenshots; a human playtest by the owner is still the real test.)
+
+2026-11-18 | PLAYTEST run 5 (checklist, demos + screenshots; no live input) | 1 NO: no goal visible at start (fixed: GoalText line under the HUD). 2 yes by unit tests/screens: till/plant/water/harvest with pickups. 3 yes: road east to Port Halden now exists with signposts, bank, hospital, shop. 4 car now slides more on grass and grips on asphalt (needs hands-on check). 5 yes in screenshots (bank/hospital interiors fit; region banner overlaps the back wall in interiors: cosmetic). 6 unchecked by hand; bank interest capped $200/day. 7 trailer: Port Halden street at night with lit windows; ugliest: big flat grey plazas and the hospital window glow wash.

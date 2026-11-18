@@ -4,7 +4,11 @@ extends Node2D
 
 var buildings: Array = []
 var lights: Array = []   # PointLight2D at the windows, glow at night
-const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(23, 68), Vector2(105, 68)], "workshop": [Vector2(16, 57), Vector2(89, 57)]}
+const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(23, 68), Vector2(105, 68)], "workshop": [Vector2(16, 57), Vector2(89, 57)],
+	"shop_building": [Vector2(30, 82), Vector2(108, 82)], "bank_building": [Vector2(25, 70), Vector2(133, 70)],
+	"police_building": [Vector2(20, 66), Vector2(52, 66), Vector2(112, 70)], "hospital_building": [Vector2(18, 60), Vector2(46, 60), Vector2(112, 60), Vector2(142, 60), Vector2(18, 96), Vector2(142, 96)],
+	"apartment_a": [Vector2(20, 40), Vector2(70, 40), Vector2(20, 84), Vector2(70, 84)], "apartment_b": [Vector2(20, 40), Vector2(70, 40), Vector2(20, 84), Vector2(70, 84)],
+	"town_hall": [Vector2(36, 92), Vector2(124, 92)], "cafe_building": [Vector2(20, 70), Vector2(76, 70)], "garage_building": [Vector2(14, 70)]}
 const CHIMNEYS := {"house": Vector2(70, 4), "workshop": Vector2(82, 3)}
 
 func set_night(k: float) -> void:

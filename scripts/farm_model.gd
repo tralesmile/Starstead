@@ -11,6 +11,13 @@ var crops: Dictionary = {}  # crops.json: crop_id -> {seed, grow_days, season, y
 func _init(crop_data: Dictionary = {}) -> void:
 	crops = crop_data
 
+func crops_planted() -> int:
+	var n := 0
+	for c in soil:
+		if String(soil[c]["crop"]) != "":
+			n += 1
+	return n
+
 func till(cell: Vector2i) -> bool:
 	if soil.has(cell):
 		return false

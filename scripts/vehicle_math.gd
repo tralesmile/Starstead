@@ -18,7 +18,7 @@ static func slip(vel: Vector2, heading: float) -> float:
 	## Sideways speed (px/s); > ~60 reads as a drift.
 	return vel.dot(forward(heading).orthogonal())
 
-static func step(vel: Vector2, heading: float, throttle: float, steer: float, handbrake: bool, delta: float) -> Dictionary:
+static func step(vel: Vector2, heading: float, throttle: float, steer: float, handbrake: bool, delta: float, grip_mul: float = 1.0) -> Dictionary:
 	## throttle in [-1,1] (negative = brake/reverse), steer in [-1,1]. Returns {vel, heading}.
 	var f := forward(heading)
 	var side := f.orthogonal()
@@ -38,7 +38,7 @@ static func step(vel: Vector2, heading: float, throttle: float, steer: float, ha
 		vf = move_toward(vf, 0.0, BRAKE * 0.5 * delta)
 	# lateral grip
 	var g := GRIP_HANDBRAKE if handbrake else GRIP
-	vs *= exp(-g * delta)
+	vs *= exp(-g * grip_mul * delta)
 	# steering needs speed; reverses when rolling backwards; handbrake adds yaw
 	var speed_factor := clampf(absf(vf) / 80.0, 0.0, 1.0)
 	var yaw := steer * STEER_RATE * speed_factor * (1.0 if vf >= 0.0 else -1.0)
@@ -90,3 +90,15 @@ static func surface_cap(on_road: bool, sdf: float, rain: float = 0.0) -> float:
 	if on_road:
 		return 1.0 - 0.1 * clampf(rain, 0.0, 1.0)
 	return 0.82 - 0.12 * clampf(rain, 0.0, 1.0)
+
+static func surface_grip(tile: int, sdf: float, rain: float = 0.0) -> float:
+	## Tyre grip by ground: dry asphalt best (1.2), packed paths/sidewalk 0.95, grass loose (0.7), wet bank 0.5.
+	## Rain takes up to 35% off asphalt (puddled, slick) and 15% off everything else.
+	var r := clampf(rain, 0.0, 1.0)
+	if sdf < 0.9:
+		return 0.5
+	if tile == WorldGen.ASPHALT:
+		return 1.2 * (1.0 - 0.35 * r)
+	if WorldGen.is_road(tile):
+		return 0.95 * (1.0 - 0.15 * r)
+	return 0.7 * (1.0 - 0.15 * r)

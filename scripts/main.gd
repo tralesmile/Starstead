@@ -35,6 +35,9 @@ var drops_view: DropsView
 var float_fx: FloatFx
 var mouse_aim := false
 var legend: Label
+var goal_label: Label
+var city_seen := false
+var _goal_t := 0.0
 var jobs: JobView
 var race: RaceView
 var town: TownView
@@ -226,6 +229,11 @@ func _ready() -> void:
 	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  G: gear  T: steal   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
+	goal_label = Label.new()
+	goal_label.position = Vector2(8, 24)
+	goal_label.add_theme_font_size_override("font_size", 11)
+	goal_label.modulate = Color(1.0, 0.92, 0.55, 0.9)
+	leg_layer.add_child(goal_label)
 	add_child(leg_layer)
 	prompt = Label.new()
 	prompt.position = Vector2(260, 300)
@@ -246,6 +254,12 @@ func _process(delta: float) -> void:
 		rod_charge_t += delta
 	fish_fx.charge = CastMath.power(rod_charge_t) if rod_charging else -1.0
 	demos.on_process()
+	_goal_t -= delta
+	if _goal_t <= 0.0:
+		_goal_t = 0.5
+		if CityModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))):
+			city_seen = true
+		goal_label.text = "" if interior.active else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance)
 	if GameState.clock.advance(delta):
 		_end_day()
 	if rain_day != GameState.clock.day:

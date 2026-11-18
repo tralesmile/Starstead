@@ -89,3 +89,17 @@ func test_props_not_on_avenue() -> void:
 	for p in CityModel.props():
 		if p["kind"] == "lamp":
 			check(not CityModel.is_asphalt(p["cell"]), "lamp off the road")
+
+func test_surface_grip() -> void:
+	var a := VehicleMath.surface_grip(WorldGen.ASPHALT, 5.0)
+	var p := VehicleMath.surface_grip(WorldGen.PATH, 5.0)
+	var g := VehicleMath.surface_grip(WorldGen.GRASS, 5.0)
+	check(a > p and p > g, "asphalt > path > grass")
+	check(VehicleMath.surface_grip(WorldGen.ASPHALT, 5.0, 1.0) < a, "rain slicks asphalt")
+	check(VehicleMath.surface_grip(WorldGen.ASPHALT, 0.2) < g, "wet bank is the worst")
+	# lateral speed dies faster on asphalt than on grass over the same time
+	var v := Vector2(0, 100)  # heading 0 = +x, so +y is sideways
+	var on_a := VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1, a)["vel"] as Vector2
+	var on_g := VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1, g)["vel"] as Vector2
+	check(absf(on_a.y) < absf(on_g.y), "less slide on asphalt")
+	check_eq(VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1)["vel"], VehicleMath.step(v, 0.0, 0.0, 0.0, false, 0.1, 1.0)["vel"], "default grip unchanged")

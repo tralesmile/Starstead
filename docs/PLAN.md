@@ -24,6 +24,8 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
+- [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
+- [ ] Wet-asphalt shine and puddle reflections in rain; curb shadow line between sidewalk and street; zebra crossings
 - [x] Wind sway shader on trees, bushes, reeds (top moves, base fixed, whole-pixel steps, gusts)
 - [x] Lily pads bob/drift and part around the player (reeds parting still to do)
 - [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
@@ -42,6 +44,8 @@ Graphics:
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
+- [x] Car tyre grip by surface (VehicleMath.surface_grip: asphalt 1.2, path 0.95, grass 0.7, wet bank 0.5, rain slicks asphalt most), wired into the car step
+- [ ] Car: tyre squeal/skid marks stronger on asphalt, handling feel pass for kerbs and sidewalks (slower on sidewalk)
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
 - [x] Rounded/capsule player collider + corner sliding so you do not snag on trees
 - [x] Trees and bushes fade semi-transparent when the player is behind them (player now y-sorts with props)
@@ -218,6 +222,9 @@ Houses, buildings, graphics (5, 10)
 - Weakest part vs comparables (2026-11-16 run 4): world is empty of life: no NPCs, animals or goals beyond farming/fishing; next priority NPCs + town. Earlier note: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
 - Wanted\/heat system design: heat decays faster out of sight, unwitnessed crimes weigh less | https://bugnet.io/blog/how-to-design-a-wanted-or-heat-system , https://gta.fandom.com/wiki/GTA_2_Wanted_Level | 2026-11-17
 - GTA-style solo Godot 4 systems showcase (police AI, wanted, chase) for reference | https://forum.godotengine.org/t/building-an-gta-inspired-open-world-crime-game-solo-showcasing-the-systems-ive-built-in-godot-4-6/137378 | 2026-11-17
+
+## Backlog additions (2026-11-18 run 5, research)
+- Onboarding: Stardew-style first-days guidance (what to do first, a gentle quest log). Weakest part vs Stardew was no visible goal; GoalText hint added. Next: a real quest log screen (J tab) fed by data/story.json. Source: https://gamerant.com/stardew-valley-first-things-to-do/ , https://www.thegamer.com/stardew-valley-common-mistakes-new/ (2026-11-18, titles only)
 
 ## Backlog additions (2026-11-17 run 3, research)
 - Interaction clarity and low-friction chores are what keep Stardew sticky: https://medium.com/super-jump/what-makes-a-game-about-mundane-chores-hopelessly-addictive and UI notes https://neverendingbacklog.substack.com/p/interfacing-with-the-player . Weakest part of Starstead vs Stardew/Core Keeper now: storage and crafting UI (no chest, no kitchen) -> promote: farmhouse storage chest, then cooking. Also tool-line upgrades done this run (hoe/can) to match Core Keeper-style tool tiers.
