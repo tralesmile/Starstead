@@ -16,3 +16,4 @@
 - World (and anything a test compiles) must not reference autoloads: pass things in (World.nodes_ref). A strong reference cycle between RefCounted objects (WorldGen <-> ChunkStream) prints "resources still in use at exit" and fails check.sh: use weakref on the back-pointer.
 - Seams between ground-shader chunks: pad the data texture with the neighbours' edge cells (World.data_image pad=1); clamped edges show a visible line.
 - A GDScript subclass that defines its own _init() must call super._init() first, or the parent never builds its nodes (SmeltView: canvas was null). Rooms/mines far from the map need Player.indoors, else the out-of-world sdf reads as deep water (shore slowdown, reflection ghost).
+- A screenshot far from the feature looks like 'nothing rendered': when --at shows plain meadow, check the distance in cells (zoom 1 = 20x11 cells) before debugging; screenshot several spots around a new area.

@@ -8,7 +8,7 @@ const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(
 	"shop_building": [Vector2(30, 82), Vector2(108, 82)], "bank_building": [Vector2(25, 70), Vector2(133, 70)],
 	"police_building": [Vector2(20, 66), Vector2(52, 66), Vector2(112, 70)], "hospital_building": [Vector2(18, 60), Vector2(46, 60), Vector2(112, 60), Vector2(142, 60), Vector2(18, 96), Vector2(142, 96)],
 	"apartment_a": [Vector2(20, 40), Vector2(70, 40), Vector2(20, 84), Vector2(70, 84)], "apartment_b": [Vector2(20, 40), Vector2(70, 40), Vector2(20, 84), Vector2(70, 84)],
-	"town_hall": [Vector2(36, 92), Vector2(124, 92)], "cafe_building": [Vector2(20, 70), Vector2(76, 70)], "garage_building": [Vector2(14, 70)]}
+	"town_hall": [Vector2(36, 92), Vector2(124, 92)], "cafe_building": [Vector2(20, 70), Vector2(76, 70)], "garage_building": [Vector2(14, 70)], "pit_building": [Vector2(14, 72)], "sports_hall": [Vector2(30, 70), Vector2(126, 70)]}
 const CHIMNEYS := {"house": Vector2(70, 4), "workshop": Vector2(82, 3)}
 
 func set_night(k: float) -> void:
@@ -36,6 +36,9 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	for b in buildings:
 		_make(world, gen, b)
 	for b in CityModel.buildings():   # Port Halden (far east of the homestead chunk)
+		buildings.append(b)
+		_make(world, gen, b)
+	for b in CircuitModel.buildings():   # Halden circuit pit office + Sports Hall (far west)
 		buildings.append(b)
 		_make(world, gen, b)
 	CityView.build(world, lights)

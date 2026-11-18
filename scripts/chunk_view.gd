@@ -27,6 +27,7 @@ func build(world: World, g: WorldGen) -> void:
 	_signs(world)
 	_cave_mouth(world)
 	_harbour(world)
+	_circuit(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -46,6 +47,7 @@ func _ground(world: World) -> void:
 	m.set_shader_parameter("data_pad", 1.0)
 	m.set_shader_parameter("chunk_px", float(WorldGen.SIZE * 32))
 	m.set_shader_parameter("origin_tiles", Vector2(origin))
+	m.set_shader_parameter("wet", world.wet)
 	rect.material = m
 	world.chunk_mats.append(m)
 	_add(world, rect)
@@ -226,6 +228,40 @@ func _harbour(world: World) -> void:
 			b = world.make_prop("res://assets/sprites/%s.png" % d[0], c, d[1], d[2])
 			if kind == "board":
 				world.interactables.add(c, "board", "E: Fishing contest board")
+		nodes.append(b)
+		sign_cells.append(c)
+
+const CIRCUIT_SPRITES := {
+	"grandstand": ["grandstand", Vector2(150, 10), 72],
+	"gantry": ["start_gantry", Vector2(6, 6), 56],
+	"tyres": ["tyre_stack", Vector2(18, 10), 24],
+	"flag": ["pit_flag", Vector2(6, 6), 40],
+	"goal": ["goal_post", Vector2(30, 8), 40],
+}
+
+func _circuit(world: World) -> void:
+	## Halden circuit: kerbs, start line, props, the football pitch and its penalty spot (CircuitModel).
+	if not CircuitModel.RECT.intersects(Rect2i(origin, Vector2i(WorldGen.SIZE, WorldGen.SIZE))):
+		return
+	var deco := CircuitDecals.new()
+	deco.z_index = -9
+	_add(world, deco)
+	if ChunkGrid.chunk_of_cell(CircuitModel.PITCH_CELL) == chunk:
+		var pit := Sprite2D.new()
+		pit.texture = load("res://assets/sprites/football_pitch.png")
+		pit.centered = false
+		pit.position = Vector2(CircuitModel.PITCH_CELL) * 32.0
+		pit.z_index = -9
+		_add(world, pit)
+	for p in CircuitModel.props():
+		var c: Vector2i = p["cell"]
+		if ChunkGrid.chunk_of_cell(c) != chunk:
+			continue
+		var d: Array = CIRCUIT_SPRITES[String(p["kind"])]
+		var tex: String = "res://assets/sprites/%s.png" % d[0]
+		var b := world.make_prop(tex, c, d[1], Vector2(0, -float(d[2]) / 2.0))
+		if String(p["kind"]) == "goal" and c == CircuitModel.GOAL_CELL:
+			world.interactables.add(c, "pitch", "E: Penalty shootout (5 kicks)")
 		nodes.append(b)
 		sign_cells.append(c)
 

@@ -12,6 +12,8 @@ var bag := Inventory.new(30, _limits())
 var chest := Inventory.new(30, _limits())
 var pots := CrabPots.new()
 var car_paint := 0
+var licence := false              # Halden circuit licence (CircuitModel)
+var sport_best: Dictionary = {}   # hoops / penalty best scores, bouts_won (SportsModel)
 var race_best: Dictionary = {}   # laps (as text) -> best time
 var energy := Energy.new()
 var nodes := ResourceNodes.new()
@@ -47,7 +49,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -67,6 +69,10 @@ func from_dict(d: Dictionary) -> bool:
 	farm.sprinklers_from_array(d.get("sprinklers", []))
 	pots.from_array(d.get("pots", []))
 	car_paint = int(d.get("car_paint", 0))
+	licence = bool(d.get("licence", false))
+	sport_best = {}
+	for k in d.get("sport_best", {}):
+		sport_best[str(k)] = int(d["sport_best"][k])
 	race_best = {}
 	for k in d.get("race_best", {}):
 		race_best[str(k)] = float(d["race_best"][k])

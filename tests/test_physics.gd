@@ -92,3 +92,18 @@ func test_kerb_bump_and_skid_alpha() -> void:
 	check(VehicleMath.skid_alpha(WorldGen.PATH, 5.0) > VehicleMath.skid_alpha(WorldGen.GRASS, 5.0), "grass faintest")
 	check(VehicleMath.skid_alpha(WorldGen.ASPHALT, 5.0, 1.0) < VehicleMath.skid_alpha(WorldGen.ASPHALT, 5.0), "rain washes marks")
 	check_eq(VehicleMath.skid_alpha(WorldGen.ASPHALT, 0.0), 0.0, "none on the wet bank")
+
+func test_kerb_rumble() -> void:
+	check(VehicleMath.rumble(300.0, false)["shake"] == 0.0, "off kerb quiet")
+	check(VehicleMath.rumble(40.0, true)["shake"] == 0.0, "slow kerb quiet")
+	var r := VehicleMath.rumble(260.0, true)
+	check(r["grip"] < 1.0 and r["grip"] >= 0.92 and r["shake"] > 0.5, "fast kerb rattles")
+	check(VehicleMath.rumble(260.0, true)["shake"] > VehicleMath.rumble(120.0, true)["shake"], "faster, stronger")
+
+func test_slipstream() -> void:
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 0), 0.0) > 1.03, "close behind a car")
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 0), 0.0) > VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(120, 0), 0.0), "closer is better")
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(200, 0), 0.0) == 1.0, "too far")
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(-60, 0), 0.0) == 1.0, "car behind you")
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 0), PI) == 1.0, "oncoming")
+	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 60), 0.0) == 1.0, "beside, not behind")

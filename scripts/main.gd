@@ -32,6 +32,7 @@ var inv_view: InventoryView
 var journal_view: JournalView
 var chest_view: ChestView
 var cook_view: CookView
+var sports: SportsView
 var garage_view: GarageView
 var drops_view: DropsView
 var float_fx: FloatFx
@@ -189,6 +190,10 @@ func _ready() -> void:
 	cook_view.closed.connect(func(): player.set_physics_process(true))
 	cook_view.cooked.connect(func(n): _say("Cooked " + n))
 	add_child(cook_view)
+	sports = SportsView.new()
+	sports.closed.connect(func(): player.set_physics_process(true))
+	sports.message.connect(_say)
+	add_child(sports)
 	garage_view = GarageView.new()
 	garage_view.car = car
 	garage_view.closed.connect(func(): player.set_physics_process(true))
@@ -291,6 +296,7 @@ func _process(delta: float) -> void:
 	fog_rect.color = Color(0.82, 0.86, 0.9, fog * 0.75)
 	storm_t += delta
 	player.rain = weather.now
+	world.set_wet(weather.now)
 	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
 	flash_rect.size = fog_rect.size
 	var fl := WeatherMath.lightning_flash(1, rain_day, storm_t, weather.now)
@@ -402,6 +408,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		smelt_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if sports.visible:
+		sports.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if cook_view.visible:
 		cook_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -475,6 +485,9 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 		if it.get("kind", "") == "cave":
 			cave.enter(GameState.clock.day)
+			return
+		if it.get("kind", "") == "pitch":
+			CityActions.run(self, "pitch")
 			return
 		if it.get("kind", "") in ["board", "crate", "fence"]:
 			HarbourActions.run(self, String(it["kind"]))

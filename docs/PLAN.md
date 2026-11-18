@@ -25,7 +25,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
-- [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [ ] wet-asphalt shine and puddle reflections in rain
+- [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [x] wet-asphalt shine and puddles in rain (ground shader `wet`, World.set_wet)
 - [x] Harbour quay in the paved-slab shader look (grey stone, sunlit curb) instead of orange dirt
 - [x] Wind sway shader on trees, bushes, reeds (top moves, base fixed, whole-pixel steps, gusts)
 - [x] Lily pads bob/drift and part around the player (reeds parting still to do)
@@ -45,6 +45,9 @@ Graphics:
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
+- [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
+- [ ] Graphics: car headlights + tail lights at night; track-side tyre marks accumulating on the circuit
+- [ ] Physics: pit-lane speed limit, drift scoring on the circuit
 - [x] Car tyre grip by surface (VehicleMath.surface_grip: asphalt 1.2, path 0.95, grass 0.7, wet bank 0.5, rain slicks asphalt most), wired into the car step
 - [x] Car is capped to half speed on city sidewalks (VehicleMath.surface_cap sidewalk, tested). [x] skid mark opacity by surface (VehicleMath.skid_alpha: asphalt strongest, rain washes out) and kerb bump (VehicleMath.kerb_bump: fast drop onto a sidewalk/quay loses up to 25% speed + camera jolt, tested). [ ] tyre squeal audio
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -180,7 +183,7 @@ Houses, buildings, graphics (5, 10)
   - [x] E3 Port Halden block (CityModel): land-forced 53x51 city over four chunks, asphalt streets with lane dashes + paved sidewalks + plazas, avenue to the spine, 12 buildings (shop, police, cafe, bank, hospital, garage, town hall, 2 apartments, 3 townhouses), street lamps/benches/fountain, enterable interiors with working counters (shop menu, bank deposit/withdraw + 2%/day interest, hospital treatment, police fine desk clears wanted, cafe coffee, notice board, garage). Apartments/townhouses are lockable robbery targets. [ ] NPC routines in the city, asphalt tile in car sound/skid, shop stock per building, jail cells use
   - [x] E4 Caves: CaveModel (drunken-walk cavern, copper/coal/iron by depth, daily ore respawn, torches, bats), CaveView (fade in from a cave mouth at the Highlands road end, miner lamp + torch PointLights, pickaxe mines ore with skill xp, club drives off bats that bite energy, bat wings drop), furnace in the workshop (SmeltView, data/smelting.json: copper/iron bars), 6 item icons. [ ] multi-floor mines with ladders, bars for tool upgrades/crafting, more enemies (slimes, rock crabs), minecart/ore-vein variety
   - [x] E5 Harbour: HarbourModel (forced sea south of the harbour road end, paved quay + T-pier, lighthouse, moored boats, bollards, barrels), 4 sea fish (sardine/mackerel/tuna/swordfish; Fishing.pick_fish sea flag, no lake legend in the sea), weekly contest every 7th day 8:00-18:00 (board: $25 entry, sea catches add cm, ranks vs 3 rivals pay $300/150/75; HarbourState tested), night smuggling crate every 3rd night at the pier head (+20 heat, fence barrel in Port Halden pays $200+, refuses at 3+ stars). Art via tools/gen_harbour.py. [x] contest entry + crate pickup saved (HarbourState.to_dict), stone-slab quay (shader). [ ] ferry, legendary sea fish, fish auction
-  - [ ] E6 Race circuit + sports venues (CLAIMED 2026-11-18)
+  - [x] E6 Race circuit + sports venues: CircuitModel (forced-land oval asphalt track at chunk (1,6), kerbs, chequered start line, 12 checkpoints, grid slots, pit office + Sports Hall interiors, football pitch, grandstand/gantry), circuit licence ($150, races pay x3), SportsModel/SportsView (basketball free throws, penalty shootout, boxing bouts), art tools/gen_circuit.py. [ ] bike racing, basketball/football matches with teams, venue jobs
   - [ ] E7 Story Act 1 beats (data/story.json quest model)
   - [ ] E8 Economy + balance pass
 - [ ] All jobs (farmer, mechanic, police, doctor, chef, builder, delivery, miner, astronaut), promotions, own business
@@ -239,3 +242,6 @@ Houses, buildings, graphics (5, 10)
 ## Backlog additions (2026-11-18 run 7, research)
 - Weakest part vs Stardew Valley this run: fishing starts too hard for newcomers (Eric Barone admits it: https://www.pcgamer.com/games/life-sim/a-lot-of-people-hate-it-but-i-think-its-fun-eric-barone-backs-stardew-valleys-fishing-minigame-but-does-admit-that-it-starts-too-hard). Idea: wider reel bar for the first 5 catches (beginner assist) and a harbour fish auction / deep-sea fishing (community idea https://forums.stardewvalley.net/threads/%F0%9F%8E%A3-late-game-suggestion-deep-sea-fishing-pelican-town-fish-auction.53459/latest). Aquarium-style fish collection display (https://gamesradar.com/the-best-thing-about-animal-crossing-new-horizons-is-its-aquarium-so-this-indie-dev-is-bringing-it-to-their-stardew-valley-like-in-a-way-thats-as-fun-to-explore). Festival ideas: https://forums.stardewvalley.net/threads/new-festivals-at-zuzu-city-and-other-festival-suggestions.339/latest
 - [x] Beginner fishing assist: bar +0.12 for the first 5 catches (Fishing.BEGINNER_BONUS, tested)
+
+## Backlog additions (2026-11-18 run 8, research)
+- Weakest part vs Stardew/Moonlighter: the new circuit and sports hall have one minigame each and no progression ladder; next: tournaments (bracket of 3 bouts, league table) and ranked circuit licences (B/A) tied to E8 economy.

@@ -28,6 +28,7 @@ const vec3 STONE_L = vec3(0.86, 0.86, 0.80);
 const vec3 MOSS = vec3(0.45, 0.60, 0.25);
 uniform vec3 season_mul = vec3(1.0);
 uniform float season_frost = 0.0;
+uniform float wet = 0.0;             // rain on city asphalt: darker surface, sky-coloured puddles with sparkles
 
 vec3 sg(vec3 c) {
 	vec3 t = c * season_mul;
@@ -188,12 +189,18 @@ void fragment() {
 					col = mix(col, vec3(0.93, 0.80, 0.30), lane);
 					float bars = max(zb1 * step(0.5, fract(px.x / 16.0)), zb2 * step(0.5, fract(px.y / 16.0)));
 					col = mix(col, vec3(0.88, 0.88, 0.84) * (0.9 + 0.1 * sp), bars * 0.92);
+					float pud = smoothstep(0.6, 0.68, fbm(tile * 1.6 + 7.0)) * wet;
+					col *= 1.0 - 0.3 * wet;
+					col = mix(col, vec3(0.40, 0.50, 0.62) * (0.85 + 0.3 * fbm(tile * 5.0 + TIME * 0.2)), pud * 0.6);
+					col += vec3(0.5) * step(0.965, hash(floor(px / 2.0) + floor(TIME * 3.0))) * pud;
 					vec4 nn = texelFetch(data, tcell + ivec2(0, -1), 0);
 					if (nn.g > 0.5 && nn.a > 0.25 && nn.a < 0.75) col *= mix(0.55, 1.0, smoothstep(0.0, 0.11, fract(tile.y)));  // curb shadow on the street
 				} else {
 					vec2 sl = fract(px / 16.0);
+					float wsw = wet;
 					col = mix(vec3(0.66, 0.64, 0.60), vec3(0.73, 0.71, 0.66), step(0.7, sp));
 					col = mix(col, vec3(0.50, 0.48, 0.45), max(step(sl.x, 0.07), step(sl.y, 0.07)) * 0.8);
+					col *= 1.0 - 0.15 * wsw;
 					vec4 ns = texelFetch(data, tcell + ivec2(0, -1), 0);
 					if (ns.g > 0.5 && ns.a < 0.25 && fract(tile.y) < 0.07) col = mix(col, vec3(0.84, 0.82, 0.77), 0.9);  // sunlit curb lip
 				}

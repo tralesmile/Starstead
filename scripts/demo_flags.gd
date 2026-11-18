@@ -1,7 +1,7 @@
 class_name DemoFlags
 extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
-## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --build-demo --enter-demo=KIND --fish-demo --chop-demo
+## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
 ## --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
@@ -58,6 +58,16 @@ func on_process() -> void:
 		m.player.position = m.cave.px(ore) + Vector2(16, 70)
 		if "--cave-walls" in OS.get_cmdline_user_args():   # stand beside a torch and a wall edge
 			m.player.position = m.cave.px(m.cave.model.torches[1]) + Vector2(16, 70)
+	if m._arg_prefix("--sports-demo") and Engine.get_process_frames() == 3:   # screenshot helper: --sports-demo=hoops|penalty|boxing
+		var mode := "hoops"
+		for a in OS.get_cmdline_user_args():
+			if a.begins_with("--sports-demo="):
+				mode = a.substr(14)
+		GameState.money = maxi(GameState.money, 100)
+		m.sports.open(mode)
+		if mode == "boxing":
+			m.sports.tele = 1
+			m.sports.tele_t = 0.2
 	if m._arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
 		var kind := "farmhouse"
 		for a in OS.get_cmdline_user_args():

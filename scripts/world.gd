@@ -289,6 +289,19 @@ func sync_props(nodes: ResourceNodes) -> void:
 		if stumps.has(cell):
 			(stumps[cell] as Sprite2D).visible = not solid and nodes.nodes.has(cell)
 
+var wet := 0.0
+
+func set_wet(w: float) -> void:
+	## Rain on the city asphalt (ground shader "wet"): only pushes to the materials when it changes noticeably.
+	if absf(w - wet) < 0.02:
+		return
+	wet = w
+	var mats: Array = chunk_mats.duplicate()
+	if ground_mat != null:
+		mats.append(ground_mat)
+	for gm in mats:
+		gm.set_shader_parameter("wet", wet)
+
 func set_season(season: int) -> void:
 	## Seasonal grass colours (shader), leaf colours on trees/bushes, flowers hidden in winter.
 	self.season = season

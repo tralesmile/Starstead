@@ -3,13 +3,16 @@ extends RefCounted
 ## Pure interior room layouts. Cells are 32px; floor cells (0,0)..(w-1,h-1), the back wall is drawn above row 0.
 ## Furniture: {id, sprite, cell, size (cells), solid, action}. Door gap is the bottom-row cell door_x.
 
-const PUBLIC := ["farmhouse", "barn", "workshop", "city_shop", "city_police", "city_cafe", "city_bank", "city_hospital", "city_garage", "city_hall"]   # walk straight in; other houses need their lock picked
+const PUBLIC := ["farmhouse", "barn", "workshop", "city_shop", "city_police", "city_cafe", "city_bank", "city_hospital", "city_garage", "city_hall", "circ_pit", "circ_hall"]   # walk straight in; other houses need their lock picked
 
 static func kind_for(building_id: String) -> String:
 	match building_id:
 		"farmhouse": return "farmhouse"
 		"barn": return "barn"
 		"workshop": return "workshop"
+	match CircuitModel.kind_of(building_id):
+		"pit": return "circ_pit"
+		"sports": return "circ_sports"
 	var ck := CityModel.kind_of(building_id)
 	if ck in ["shop", "police", "cafe", "bank", "hospital", "garage", "hall"]:
 		return "city_" + ck
@@ -89,6 +92,23 @@ static func layout(kind: String) -> Dictionary:
 				_f("table1", "int_table", 1, 1, 2, 1), _f("table2", "int_table", 4, 3, 2, 1),
 				_f("stove", "int_stove", 6, 0, 1, 1),
 				_f("mat", "int_mat", 1, 4, 1, 1, false)]}
+		"circ_pit":
+			return {"w": 7, "h": 5, "door_x": 1, "window_x": [3, 5], "furniture": [
+				_f("pitdesk", "int_pitdesk", 3, 0, 2, 1, true, "licence"),
+				_f("tyres", "int_tyres", 0, 0, 1, 1), _f("tyres2", "int_tyres", 6, 3, 1, 1),
+				_f("toolrack", "int_toolrack", 6, 0, 1, 1),
+				_f("bench", "int_bench", 4, 3, 2, 1),
+				_f("mat", "int_mat", 1, 4, 1, 1, false)]}
+		"circ_sports":
+			return {"w": 10, "h": 7, "door_x": 4, "window_x": [2, 7], "furniture": [
+				_f("scoreboard", "int_scoreboard", 4, 0, 2, 1),
+				_f("hoop", "int_hoop", 1, 0, 1, 1, true, "hoops"),
+				_f("hoop2", "int_hoop", 8, 0, 1, 1, true, "hoops"),
+				_f("ring", "int_ring", 6, 2, 3, 3, true, "ring"),
+				_f("bag", "int_punchbag", 3, 1, 1, 1),
+				_f("locker", "int_locker", 0, 3, 1, 1), _f("locker2", "int_locker", 0, 4, 1, 1),
+				_f("bench", "int_bench", 2, 5, 2, 1),
+				_f("mat", "int_mat", 4, 6, 1, 1, false)]}
 		"city_hall":
 			return {"w": 9, "h": 6, "door_x": 4, "window_x": [2, 6], "furniture": [
 				_f("desk", "int_desk", 3, 1, 2, 1, true, "notice"),

@@ -10,6 +10,10 @@ static func prompt(action: String) -> String:
 		"fine": return "E: Pay off the police (wanted)"
 		"coffee": return "E: Buy a coffee ($%d)" % CityServices.COFFEE_PRICE
 		"notice": return "E: Read the notice board"
+		"hoops": return "E: Free throws (10 shots)"
+		"ring": return "E: Box a bout ($%d entry)" % SportsModel.BOUT_FEE
+		"licence": return "E: Circuit licence is owned" if GameState.licence else "E: Buy the circuit licence ($%d)" % CircuitModel.LICENCE_PRICE
+		"pitch": return "E: Penalty shootout (5 kicks)"
 	return ""
 
 static func run(m, action: String) -> void:
@@ -54,5 +58,19 @@ static func run(m, action: String) -> void:
 				m._say("Hot coffee. Energy %d" % int(GameState.energy.value))
 			else:
 				m._say("Not now (full energy or no change)")
+		"hoops", "ring", "pitch":
+			m.player.velocity = Vector2.ZERO
+			m.player.move_v = Vector2.ZERO
+			m.player.set_physics_process(false)
+			if not m.sports.open({"hoops": "hoops", "ring": "boxing", "pitch": "penalty"}[action]):
+				m.player.set_physics_process(true)
+		"licence":
+			var r := CircuitModel.licence_ok(GameState.licence, GameState.money)
+			if r["ok"]:
+				GameState.money = r["cash"]
+				GameState.licence = true
+				m._say("Circuit licence bought. Circuit races pay x%d" % CircuitModel.PRIZE_MULT)
+			else:
+				m._say("You already hold the licence" if r["why"] == "owned" else "The licence costs $%d" % CircuitModel.LICENCE_PRICE)
 		"notice":
 			m._say("Notice board: Vance Aerospace is hiring. Halden Bank pays %d%% a day." % CityServices.INTEREST_PCT)

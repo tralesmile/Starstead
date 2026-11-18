@@ -14,6 +14,7 @@ var model: RaceModel
 var laps := 1                       # L cycles 1-3 before the start
 var rivals := {"rival": {"pos": Vector2.ZERO, "speed": 125.0}, "rival2": {"pos": Vector2.ZERO, "speed": 108.0}}
 var running := false
+var circuit := false                # racing on the Halden circuit (licence needed, prize x3)
 var t := 0.0
 var label: Label
 var markers: Array = []
@@ -37,13 +38,25 @@ func _drivable(c: Vector2i) -> bool:
 
 func start() -> void:
 	_clear_markers()
-	var cps := RaceModel.ring_checkpoints(car.position, RING, N_CP, _drivable)
+	var cell := Vector2i(floori(car.position.x / 32.0), floori(car.position.y / 32.0))
+	circuit = CircuitModel.on_circuit(cell)
+	if circuit and not GameState.licence:
+		message.emit("Buy the circuit licence ($%d) at the pit office first" % CircuitModel.LICENCE_PRICE)
+		return
+	var cps: Array
+	if circuit:
+		cps = CircuitModel.checkpoints()
+		car.position = CircuitModel.grid_slots(0)
+		car.heading = PI
+		car.vel = Vector2.ZERO
+	else:
+		cps = RaceModel.ring_checkpoints(car.position, RING, N_CP, _drivable)
 	model = RaceModel.new(cps, laps, 34.0)
 	model.add_racer("you")
 	var k := 0
 	for id in rivals:
 		model.add_racer(id)
-		rivals[id]["pos"] = car.position + Vector2(0, 28 + 26 * k)
+		rivals[id]["pos"] = CircuitModel.grid_slots(k + 1) if circuit else car.position + Vector2(0, 28 + 26 * k)
 		var rn := Sprite2D.new()
 		rn.texture = load("res://assets/sprites/car.png")
 		rn.offset = Vector2(0, -6)
@@ -95,19 +108,25 @@ func _process(delta: float) -> void:
 		if dv.length() > 0.1:
 			rn2.rotation = dv.angle()
 		rn2.position = rivals[id]["pos"]
+	var best_slip := 1.0
+	for id2 in rivals:
+		var rn3: Sprite2D = rival_nodes[id2]
+		best_slip = maxf(best_slip, VehicleMath.slipstream(car.position, car.heading, rn3.position, rn3.rotation))
+	car.slip = best_slip
 	for i in markers.size():
 		var next: int = model.racers["you"]["cp"]
 		(markers[i] as ColorRect).color = Color(1, 0.9, 0.2, 0.9) if i == next else Color(1, 1, 1, 0.4)
-	label.text = "RACE lap %d/%d cp %d/%d  %.1fs  place %d/%d" % [mini(int(model.racers["you"]["lap"]) + 1, laps), laps, int(model.racers["you"]["cp"]) + 1, N_CP, t, model.place("you"), model.racers.size()]
+	label.text = "RACE lap %d/%d cp %d/%d  %.1fs  place %d/%d" % [mini(int(model.racers["you"]["lap"]) + 1, laps), laps, int(model.racers["you"]["cp"]) + 1, model.checkpoints.size(), t, model.place("you"), model.racers.size()]
 	if model.is_finished("you") or t > 60.0 + 60.0 * laps:
 		_finish()
 
 func _finish() -> void:
 	running = false
+	car.slip = 1.0
 	var place := model.place("you") if model.is_finished("you") else 0
-	var prize := model.payout_for_place(place) * laps
+	var prize := model.payout_for_place(place) * laps * (CircuitModel.PRIZE_MULT if circuit else 1)
 	GameState.money += prize
-	var key := str(laps)
+	var key := ("c" if circuit else "") + str(laps)
 	var best_prev := float(GameState.race_best.get(key, -1.0))
 	var best := model.is_finished("you") and (best_prev < 0.0 or t < best_prev)
 	if best:

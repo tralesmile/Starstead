@@ -115,6 +115,25 @@ static func kerb_bump(speed: float, cap_before: float, cap_after: float) -> Dict
 	var t := clampf((speed - 60.0) / 200.0, 0.0, 1.0)
 	return {"factor": 1.0 - 0.25 * t, "shake": 0.5 + 1.5 * t}
 
+static func rumble(speed: float, on_kerb: bool) -> Dictionary:
+	## Red/white circuit kerbs: a rattling camera jolt and 8% less grip, stronger when fast. Slow rolls feel nothing.
+	if not on_kerb or speed < 80.0:
+		return {"grip": 1.0, "shake": 0.0}
+	var t := clampf((speed - 80.0) / 160.0, 0.0, 1.0)
+	return {"grip": 1.0 - 0.08 * t, "shake": 0.3 + 0.9 * t}
+
+static func slipstream(pos: Vector2, heading: float, other: Vector2, other_heading: float) -> float:
+	## Drafting: within 140px directly behind another car heading the same way gives up to +8% top speed (1.0 .. 1.08).
+	var to := other - pos
+	var d := to.length()
+	if d < 1.0 or d > 140.0:
+		return 1.0
+	var ahead := forward(heading).dot(to / d)
+	var same := forward(heading).dot(forward(other_heading))
+	if ahead < 0.9 or same < 0.8:
+		return 1.0
+	return 1.0 + 0.08 * (1.0 - d / 140.0)
+
 static func skid_alpha(tile: int, sdf: float, rain: float = 0.0) -> float:
 	## Tyre marks show best on dry asphalt, fainter on packed paths, barely on grass; rain washes them out.
 	if sdf < 0.9:

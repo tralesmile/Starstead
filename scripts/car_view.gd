@@ -11,6 +11,7 @@ var vel := Vector2.ZERO
 var driving := false
 var fuel := VehicleMath.FUEL_MAX
 var health := VehicleMath.HEALTH_MAX
+var slip := 1.0          # slipstream factor set by the race (VehicleMath.slipstream)
 var _skid_t := 0.0
 var _prev_cap := 1.0
 var _skid_a := 0.7
@@ -92,8 +93,12 @@ func _physics_process(delta: float) -> void:
 				vel *= float(kb["factor"])
 				player.shake(float(kb["shake"]), 0.15)
 			_prev_cap = surf
+			var rb := VehicleMath.rumble(vel.length(), CircuitModel.is_kerb(cc))
+			if float(rb["shake"]) > 0.0:
+				grip_m *= float(rb["grip"])
+				player.shake(float(rb["shake"]), 0.1)
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m)
-		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf)
+		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf * slip)
 		heading = r["heading"]
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)
