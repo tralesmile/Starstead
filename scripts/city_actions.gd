@@ -10,6 +10,7 @@ static func prompt(action: String) -> String:
 		"fine": return "E: Pay off the police (wanted)"
 		"coffee": return "E: Buy a coffee ($%d)" % CityServices.COFFEE_PRICE
 		"notice": return "E: Read the notice board"
+		"debt": return "E: Pay the Vance debt ($%d left; Shift+E pays all you can)" % GameState.story.debt_left(GameState.debt_paid) if GameState.story.debt_left(GameState.debt_paid) > 0 else "The Vance ledger is closed: debt cleared"
 		"hoops": return "E: Free throws (10 shots)"
 		"ring": return "E: Box a bout ($%d entry)" % SportsModel.BOUT_FEE
 		"licence": return "E: Circuit licence is owned" if GameState.licence else "E: Buy the circuit licence ($%d)" % CircuitModel.LICENCE_PRICE
@@ -72,5 +73,20 @@ static func run(m, action: String) -> void:
 				m._say("Circuit licence bought. Circuit races pay x%d" % CircuitModel.PRIZE_MULT)
 			else:
 				m._say("You already hold the licence" if r["why"] == "owned" else "The licence costs $%d" % CircuitModel.LICENCE_PRICE)
+		"debt":
+			m.story_view.event("ledger")
+			var left := GameState.story.debt_left(GameState.debt_paid)
+			if left == 0:
+				m._say("Debt cleared. The clerk tips his hat")
+			else:
+				var r := GameState.story.pay_debt(GameState.money, GameState.debt_paid, Input.is_key_pressed(KEY_SHIFT))
+				GameState.money = r["cash"]
+				GameState.debt_paid = r["paid"]
+				if int(r["moved"]) == 0:
+					m._say("No cash for the ledger. $%d still owed" % left)
+				else:
+					m._say("Paid $%d to Vance. $%d still owed" % [r["moved"], GameState.story.debt_left(GameState.debt_paid)])
+					m.story_view.poll(GameState.farm.crops_planted())
 		"notice":
+			m.story_view.event("notice")
 			m._say("Notice board: Vance Aerospace is hiring. Halden Bank pays %d%% a day." % CityServices.INTEREST_PCT)

@@ -107,3 +107,14 @@ func test_slipstream() -> void:
 	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(-60, 0), 0.0) == 1.0, "car behind you")
 	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 0), PI) == 1.0, "oncoming")
 	check(VehicleMath.slipstream(Vector2.ZERO, 0.0, Vector2(60, 60), 0.0) == 1.0, "beside, not behind")
+
+func test_car_lights() -> void:
+	var day := VehicleMath.light_levels(0.0, false)
+	check_eq(day["head"], 0.0); check_eq(day["tail"], 0.0)
+	var night := VehicleMath.light_levels(1.0, false)
+	check_eq(night["head"], 1.0); check(night["tail"] > 0.0 and night["tail"] < 0.6, "dim tails at night")
+	check(VehicleMath.light_levels(0.0, true)["tail"] > 0.9, "brake lights by day")
+	check(VehicleMath.light_levels(1.0, true)["tail"] > night["tail"], "brighter when braking")
+	check(VehicleMath.is_braking(-1.0, 50.0, false), "reverse key while rolling forward brakes")
+	check(not VehicleMath.is_braking(-1.0, -5.0, false), "reversing is not braking")
+	check(VehicleMath.is_braking(0.0, 0.0, true), "handbrake")

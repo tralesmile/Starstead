@@ -45,6 +45,11 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--story-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: quest log with a few beats done
+		GameState.story.notify("enter_farmhouse")
+		GameState.debt_paid = 500
+		m.story_view.poll(2)
+		m.story_view.toggle_log()
 	if "--smelt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the furnace menu with ore in the bag
 		GameState.bag.add("copper_ore", 4)
 		GameState.bag.add("coal", 2)

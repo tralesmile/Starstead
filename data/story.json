@@ -1,0 +1,31 @@
+{
+ "debt_total": 2000,
+ "debt_step": 250,
+ "act": "Act 1: Earth Homestead",
+ "quests": [
+  {"id": "letter", "title": "Grandmother's Letter", "steps": [
+   {"id": "read_letter", "text": "Step into your farmhouse and read grandmother's letter", "trigger": {"event": "enter_farmhouse"},
+    "say": "Grandma's letter: the farm is yours, and so is my $2000 debt to the Vance family. I'm sorry, dear.", "reward": {}},
+   {"id": "first_crop", "text": "Plant your first crop", "trigger": {"planted_min": 1},
+    "say": "The first seed is in. Grandma would be proud.", "reward": {"money": 50}},
+   {"id": "first_profit", "text": "Earn some cash: sell crops or fish ($700 on hand)", "trigger": {"money_min": 700},
+    "say": "Cash in hand. Time to see what the Vances want.", "reward": {}}
+  ]},
+  {"id": "vance", "title": "The Vance Visit", "steps": [
+   {"id": "vance_car", "text": "Wait for the visitor (day 3)", "trigger": {"day_min": 3},
+    "say": "A black car idles at your gate. Mr. Vance leaves a card: 'Town Hall ledger, Port Halden. $2000.'", "reward": {}},
+   {"id": "see_ledger", "text": "Ask at the Town Hall ledger in Port Halden", "trigger": {"event": "ledger"},
+    "say": "Clerk: 'The Vance debt is $2000. Pay what you can, in $250 slices.'", "reward": {}},
+   {"id": "first_instalment", "text": "Pay the first $500 of the debt at the Town Hall ledger", "trigger": {"debt_paid_min": 500},
+    "say": "First instalment paid. Vance's clerk nods, almost kindly.", "reward": {}}
+  ]},
+  {"id": "notes", "title": "Grandmother's Notes", "steps": [
+   {"id": "cave_note", "text": "Look for grandmother's old claim: the Highlands cave", "trigger": {"event": "enter_cave"},
+    "say": "Scratched on the rock: 'I reached the Moon first. Vance never knew.'", "reward": {}},
+   {"id": "read_notice", "text": "Read the Town Hall notice board: Vance Aerospace is hiring", "trigger": {"event": "notice"},
+    "say": "Vance Aerospace wants workers. Their rocket yard is closed to the public.", "reward": {}},
+   {"id": "debt_free", "text": "Clear the whole Vance debt at the Town Hall ledger", "trigger": {"debt_paid_min": 2000},
+    "say": "DEBT CLEARED. Act 1 complete. Vance Aerospace has noticed you: Act 2 (Earth City) is next.", "reward": {"money": 200}}
+  ]}
+ ]
+}

@@ -140,3 +140,14 @@ static func skid_alpha(tile: int, sdf: float, rain: float = 0.0) -> float:
 		return 0.0
 	var base := 0.9 if tile == WorldGen.ASPHALT else (0.6 if WorldGen.is_road(tile) else 0.3)
 	return base * (1.0 - 0.4 * clampf(rain, 0.0, 1.0))
+
+static func light_levels(night: float, braking: bool, reversing: bool = false) -> Dictionary:
+	## Car lamps: headlights follow the night (0..1); tail lights glow dim at night and flare when braking (also by day).
+	var head := clampf(night, 0.0, 1.0)
+	var tail := 0.45 * head
+	if braking:
+		tail = maxf(tail, 0.95)
+	return {"head": head, "tail": tail, "reverse": 0.7 if reversing else 0.0}
+
+static func is_braking(throttle: float, forward_speed: float, handbrake: bool) -> bool:
+	return handbrake or (throttle < 0.0 and forward_speed > 1.0)

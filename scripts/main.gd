@@ -30,6 +30,7 @@ var smelt_view: SmeltView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
+var story_view: StoryView
 var chest_view: ChestView
 var cook_view: CookView
 var sports: SportsView
@@ -134,6 +135,10 @@ func _ready() -> void:
 	car.world = world
 	car.position = _car_spot()
 	car.toast.connect(_say)
+	car.drift_banked.connect(func(p):
+		var best: int = int(GameState.sport_best.get("drift", 0))
+		GameState.sport_best["drift"] = maxi(best, p)
+		_say("Drift +%d%s" % [p, "  NEW BEST!" if p > best else "  (best %d)" % best]))
 	world.add_child(car)
 	police = PoliceView.new()
 	police.setup(world, player, self, world.gen)
@@ -180,6 +185,10 @@ func _ready() -> void:
 	inv_view.closed.connect(func(): player.set_physics_process(true))
 	inv_view.ate.connect(func(n, g): _say("Ate %s (+%d energy)" % [n, g]))
 	add_child(inv_view)
+	story_view = StoryView.new()
+	story_view.said.connect(func(t): _say(t); toast_t = 5.0)
+	story_view.closed.connect(func(): player.set_physics_process(true))
+	add_child(story_view)
 	journal_view = JournalView.new()
 	journal_view.closed.connect(func(): player.set_physics_process(true))
 	add_child(journal_view)
@@ -248,7 +257,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  G: gear  T: steal   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	goal_label = Label.new()
@@ -281,7 +290,8 @@ func _process(delta: float) -> void:
 		_goal_t = 0.5
 		if CityModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))):
 			city_seen = true
-		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance)
+		story_view.poll(GameState.farm.crops_planted())
+		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text())
 	if GameState.clock.advance(delta):
 		_end_day()
 	if rain_day != GameState.clock.day:
@@ -311,6 +321,7 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
+	car.night = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	if GameState.clock.season() != _season_applied:
 		_season_applied = GameState.clock.season()
 		world.set_season(_season_applied)
@@ -386,6 +397,13 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if not shop.visible and not car.driving and not dialogue.visible and not inv_view.visible and not journal_view.visible and story_view.handle(e):
+		if story_view.log_open():
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+		get_viewport().set_input_as_handled()
+		return
 	if not shop.visible and not car.driving and not dialogue.visible and not inv_view.visible and journal_view.handle(e):
 		if journal_view.visible:
 			player.velocity = Vector2.ZERO
@@ -480,11 +498,13 @@ func _unhandled_input(e: InputEvent) -> void:
 			var bb := robbery.building_at(dcell)
 			if not bb.is_empty() and (String(bb["id"]) in InteriorModel.PUBLIC or not robbery.model.house(String(bb["id"]))["locked"]):
 				interior.enter(bb)
+				story_view.event("enter_" + String(bb["id"]))
 			else:
 				robbery.interact(dcell)
 			return
 		if it.get("kind", "") == "cave":
 			cave.enter(GameState.clock.day)
+			story_view.event("enter_cave")
 			return
 		if it.get("kind", "") == "pitch":
 			CityActions.run(self, "pitch")

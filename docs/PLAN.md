@@ -46,8 +46,8 @@ Graphics:
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
-- [ ] Graphics: car headlights + tail lights at night; track-side tyre marks accumulating on the circuit
-- [ ] Physics: pit-lane speed limit, drift scoring on the circuit
+- [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [ ] track-side tyre marks accumulating on the circuit
+- [x] Physics: pit-lane/infield speed limit (DriftScore.pit_cap) and drift scoring on the circuit (DriftScore: multiplier by drift time, banks on clean exit, crash loses it, best saved). [ ] drift leaderboard/ghost, tyre squeal audio
 - [x] Car tyre grip by surface (VehicleMath.surface_grip: asphalt 1.2, path 0.95, grass 0.7, wet bank 0.5, rain slicks asphalt most), wired into the car step
 - [x] Car is capped to half speed on city sidewalks (VehicleMath.surface_cap sidewalk, tested). [x] skid mark opacity by surface (VehicleMath.skid_alpha: asphalt strongest, rain washes out) and kerb bump (VehicleMath.kerb_bump: fast drop onto a sidewalk/quay loses up to 25% speed + camera jolt, tested). [ ] tyre squeal audio
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -184,7 +184,7 @@ Houses, buildings, graphics (5, 10)
   - [x] E4 Caves: CaveModel (drunken-walk cavern, copper/coal/iron by depth, daily ore respawn, torches, bats), CaveView (fade in from a cave mouth at the Highlands road end, miner lamp + torch PointLights, pickaxe mines ore with skill xp, club drives off bats that bite energy, bat wings drop), furnace in the workshop (SmeltView, data/smelting.json: copper/iron bars), 6 item icons. [ ] multi-floor mines with ladders, bars for tool upgrades/crafting, more enemies (slimes, rock crabs), minecart/ore-vein variety
   - [x] E5 Harbour: HarbourModel (forced sea south of the harbour road end, paved quay + T-pier, lighthouse, moored boats, bollards, barrels), 4 sea fish (sardine/mackerel/tuna/swordfish; Fishing.pick_fish sea flag, no lake legend in the sea), weekly contest every 7th day 8:00-18:00 (board: $25 entry, sea catches add cm, ranks vs 3 rivals pay $300/150/75; HarbourState tested), night smuggling crate every 3rd night at the pier head (+20 heat, fence barrel in Port Halden pays $200+, refuses at 3+ stars). Art via tools/gen_harbour.py. [x] contest entry + crate pickup saved (HarbourState.to_dict), stone-slab quay (shader). [ ] ferry, legendary sea fish, fish auction
   - [x] E6 Race circuit + sports venues: CircuitModel (forced-land oval asphalt track at chunk (1,6), kerbs, chequered start line, 12 checkpoints, grid slots, pit office + Sports Hall interiors, football pitch, grandstand/gantry), circuit licence ($150, races pay x3), SportsModel/SportsView (basketball free throws, penalty shootout, boxing bouts), art tools/gen_circuit.py. [ ] bike racing, basketball/football matches with teams, venue jobs
-  - [ ] E7 Story Act 1 beats (data/story.json quest model) (CLAIMED 2026-11-18)
+  - [x] E7 Story Act 1 beats: StoryModel + data/story.json (9 beats in 3 quests: grandmother's letter, Vance visit, grandmother's notes), events/polls drive the chain, rewards, K quest log + banner (StoryView), goal line follows the story after day 1, Vance debt $2000 paid in $250 slices at the new Town Hall ledger desk (Shift+E all), saved. [ ] Vance NPC with dialogue, debt deadline consequences, Act 2 beats (honest/street choice, rocket seat)
   - [ ] E8 Economy + balance pass
 - [ ] All jobs (farmer, mechanic, police, doctor, chef, builder, delivery, miner, astronaut), promotions, own business
 - [ ] Sports: car/bike racing, football, basketball, boxing, fishing contests, animal races
@@ -245,3 +245,7 @@ Houses, buildings, graphics (5, 10)
 
 ## Backlog additions (2026-11-18 run 8, research)
 - Weakest part vs Stardew/Moonlighter: the new circuit and sports hall have one minigame each and no progression ladder; next: tournaments (bracket of 3 bouts, league table) and ranked circuit licences (B/A) tied to E8 economy.
+
+## Backlog additions (2026-11-18 run 9)
+- Weakest vs Stardew Valley: story was invisible (no letters, no named antagonist beat). Fixed with the Act 1 quest log + Vance debt. Next: Vance as an NPC who talks, deadline pressure (interest after day 30), Act 2 honest/street branch. Reference: Stardew's Joja vs Community Center choice as the model for the honest/street fork.
+- Cassette Beasts/Moonlighter: quest log with tracked step on the HUD is the genre norm; ours is the goal line + K log.

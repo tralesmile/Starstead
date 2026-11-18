@@ -15,9 +15,34 @@ var slip := 1.0          # slipstream factor set by the race (VehicleMath.slipst
 var _skid_t := 0.0
 var _prev_cap := 1.0
 var _skid_a := 0.7
+var night := 0.0       # 0..1 from DayNight.lamp_strength, set by main
 var _smoke: CPUParticles2D
+var _head: Array[PointLight2D] = []
+var _tail: Array[PointLight2D] = []
+var _tail_glow: Array[Sprite2D] = []
+var _braking := false
+static var _cone: Texture2D = null
+
+static func cone_texture() -> Texture2D:
+	## Headlight beam: a cone that widens and fades with distance, starting at the left edge of the image.
+	if _cone == null:
+		var w := 192
+		var h := 128
+		var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+		for x in w:
+			var u := float(x) / w
+			var half := 0.22 + 0.78 * u
+			for y in h:
+				var vv := absf((y - h * 0.5) / (h * 0.5))
+				var a := clampf(1.0 - vv / half, 0.0, 1.0) * pow(1.0 - u, 1.3)
+				img.set_pixel(x, y, Color(1, 1, 1, a))
+		_cone = ImageTexture.create_from_image(img)
+	return _cone
 signal toast(msg: String)
 signal crime(kind: String, pos: Vector2)
+signal drift_banked(points: int)
+var drift := DriftScore.new()
+var _on_circuit := false
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -44,6 +69,24 @@ func _ready() -> void:
 	_smoke.scale_amount_max = 3.0
 	_smoke.color = Color(0.85, 0.85, 0.85, 0.5)
 	add_child(_smoke)
+	for sy in [-4.0, 4.0]:
+		var hl := PointLight2D.new()
+		hl.texture = cone_texture()
+		hl.offset = Vector2(96, 0)
+		hl.position = Vector2(12, sy)
+		hl.color = Color(1.0, 0.94, 0.75)
+		hl.energy = 0.0
+		hl.texture_scale = 0.6
+		add_child(hl)
+		_head.append(hl)
+		var tl := PointLight2D.new()
+		tl.texture = Lantern.light_texture()
+		tl.position = Vector2(-13, sy * 1.4)
+		tl.color = Color(1.0, 0.15, 0.1)
+		tl.energy = 0.0
+		tl.texture_scale = 0.35
+		add_child(tl)
+		_tail.append(tl)
 
 func can_enter() -> bool:
 	return not driving and player != null and player.position.distance_to(position) < 34.0
@@ -88,6 +131,9 @@ func _physics_process(delta: float) -> void:
 			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain, CityModel.is_sidewalk(cc) or HarbourModel.is_quay(cc))
 			grip_m = VehicleMath.surface_grip(tt, g.sdf_at(cc.x, cc.y), player.rain)
 			_skid_a = VehicleMath.skid_alpha(tt, g.sdf_at(cc.x, cc.y), player.rain)
+			_on_circuit = CircuitModel.on_circuit(cc)
+			if CircuitModel.is_infield(cc):
+				surf = minf(surf, DriftScore.pit_cap(true))   # pit lane / infield speed limit
 			var kb := VehicleMath.kerb_bump(vel.length(), _prev_cap, surf)
 			if float(kb["factor"]) < 1.0:
 				vel *= float(kb["factor"])
@@ -108,17 +154,33 @@ func _physics_process(delta: float) -> void:
 		var dmg := VehicleMath.crash_damage(vel.length())
 		if dmg > 0.0:
 			health = maxf(0.0, health - dmg)
+			drift.crash()
 			toast.emit("Crash! Car health %d%%" % int(health))
 			if dmg >= 8.0 and driving:
 				crime.emit("hit_and_run", position)
 		vel *= 0.4  # bump
 	rotation = heading
 	sprite.rotation = 0.0
+	var fwd_speed := vel.dot(VehicleMath.forward(heading))
+	_braking = driving and VehicleMath.is_braking(-Input.get_axis("move_up", "move_down"), fwd_speed, Input.is_action_pressed("use_tool"))
+	var lv := VehicleMath.light_levels(night if driving or vel.length() > 5.0 else night * 0.0, _braking)
+	for hl in _head:
+		hl.energy = 1.7 * float(lv["head"])
+		hl.visible = hl.energy > 0.01
+	for tl in _tail:
+		tl.energy = 1.2 * float(lv["tail"])
+		tl.visible = tl.energy > 0.01
 	if driving:
 		player.position = position
 		player.ext_velocity = vel
 	else:
 		player.ext_velocity = Vector2.ZERO
+	if driving and _on_circuit:
+		var pts := drift.step(VehicleMath.slip(vel, heading), vel.length(), delta)
+		if pts > 0:
+			drift_banked.emit(pts)
+	else:
+		drift.crash()
 	var skid := driving and VehicleMath.is_skidding(vel, heading)
 	_smoke.emitting = skid
 	_smoke.position = -VehicleMath.forward(heading).rotated(-heading) * 10.0
