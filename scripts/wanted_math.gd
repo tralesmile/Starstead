@@ -9,7 +9,7 @@ const DECAY_HIDDEN := 4.0      # heat/s when no cop sees you
 const DECAY_SEEN := 0.5
 
 static func crime_heat(kind: String) -> float:
-	return {"trespass": 12.0, "theft": 25.0, "assault": 35.0, "car_theft": 30.0, "robbery": 45.0, "hit_and_run": 40.0}.get(kind, 10.0)
+	return {"trespass": 12.0, "theft": 25.0, "assault": 35.0, "car_theft": 30.0, "robbery": 45.0, "hit_and_run": 40.0, "smuggling": 20.0}.get(kind, 10.0)
 
 static func add(heat: float, kind: String, witnessed: bool) -> float:
 	## Unwitnessed crimes only add a quarter of the heat (noise/NPC memory handled elsewhere).

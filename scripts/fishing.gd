@@ -33,13 +33,13 @@ static func depth_for(sdf: float) -> String:
 	## sdf < 0 is water; deeper (more negative) water holds deep fish.
 	return "deep" if sdf < -3.0 else "shallow"
 
-static func pick_fish(table: Dictionary, depth: String, season: int, roll: float) -> String:
+static func pick_fish(table: Dictionary, depth: String, season: int, roll: float, sea: bool = false) -> String:
 	## Weighted pick among fish that live at this depth in this season. roll in 0..1. "" if none.
 	var ids := []
 	var total := 0.0
 	for id in table:
 		var f = table[id]
-		if f.depth != depth or bool(f.get("legendary", false)):
+		if f.depth != depth or bool(f.get("legendary", false)) or bool(f.get("sea", false)) != sea:
 			continue
 		var ok := false
 		for s in f.seasons:
@@ -61,7 +61,7 @@ static func legendary_for(table: Dictionary, depth: String, ctx: Dictionary, rol
 	## ctx = {rain: 0..1, hour: 0..24, caught: [ids]}. roll in 0..1 against the fish's chance.
 	for id in table:
 		var f: Dictionary = table[id]
-		if not bool(f.get("legendary", false)) or f.depth != depth or id in ctx.get("caught", []):
+		if not bool(f.get("legendary", false)) or f.depth != depth or id in ctx.get("caught", []) or bool(f.get("sea", false)) != bool(ctx.get("sea", false)):
 			continue
 		var hrs: Array = f.get("hours", [0, 24])
 		var h: float = float(ctx.get("hour", 12.0))
@@ -73,7 +73,7 @@ func cast(sdf: float, table: Dictionary, season: int, bait: Dictionary = {}, ctx
 	## Only on water. Picks the fish now so bite time and difficulty are fixed per cast.
 	if state != State.IDLE or sdf >= 0.0:
 		return false
-	fish_id = pick_fish(table, depth_for(sdf), season, rng.randf())
+	fish_id = pick_fish(table, depth_for(sdf), season, rng.randf(), bool(ctx.get("sea", false)))
 	var lg := legendary_for(table, depth_for(sdf), ctx, rng.randf())
 	if lg != "":
 		fish_id = lg

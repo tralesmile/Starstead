@@ -56,5 +56,10 @@
  "coal": 46,
  "copper_bar": 47,
  "iron_bar": 48,
- "bat_wing": 49
+ "bat_wing": 49,
+ "sardine": 50,
+ "mackerel": 51,
+ "tuna": 52,
+ "swordfish": 53,
+ "smuggle_crate": 54
 }

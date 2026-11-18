@@ -79,5 +79,58 @@
    24
   ],
   "chance": 0.12
+ },
+ "sardine": {
+  "name": "Sardine",
+  "depth": "shallow",
+  "seasons": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "weight": 50,
+  "difficulty": 0.2,
+  "price": 16,
+  "sea": true
+ },
+ "mackerel": {
+  "name": "Mackerel",
+  "depth": "shallow",
+  "seasons": [
+   1,
+   2,
+   3
+  ],
+  "weight": 30,
+  "difficulty": 0.35,
+  "price": 34,
+  "sea": true
+ },
+ "tuna": {
+  "name": "Tuna",
+  "depth": "deep",
+  "seasons": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "weight": 30,
+  "difficulty": 0.55,
+  "price": 130,
+  "sea": true
+ },
+ "swordfish": {
+  "name": "Swordfish",
+  "depth": "deep",
+  "seasons": [
+   1,
+   2
+  ],
+  "weight": 8,
+  "difficulty": 0.8,
+  "price": 260,
+  "sea": true
  }
 }

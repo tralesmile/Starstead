@@ -26,6 +26,7 @@ func build(world: World, g: WorldGen) -> void:
 	_flowers(world)
 	_signs(world)
 	_cave_mouth(world)
+	_harbour(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -189,6 +190,43 @@ func _cave_mouth(world: World) -> void:
 	for dx in range(-1, 2):
 		var c := mc + Vector2i(dx, 0)
 		world.interactables.add(c, "cave", "E: Enter the Highlands mine")
+		sign_cells.append(c)
+
+const HARBOUR_SPRITES := {
+	"board": ["contest_board", Vector2(24, 8), Vector2(0, -16)],
+	"lighthouse": ["lighthouse", Vector2(28, 10), Vector2(0, -48)],
+	"boat": ["moored_boat", Vector2(72, 14), Vector2(0, -20)],
+	"barrel": ["barrel", Vector2(18, 8), Vector2(0, -10)],
+	"fish_crate": ["fish_crate", Vector2(26, 8), Vector2(0, -8)],
+	"net_pile": ["net_pile", Vector2(26, 8), Vector2(0, -6)],
+	"bollard": ["bollard", Vector2(10, 6), Vector2(0, -8)],
+}
+
+func _harbour(world: World) -> void:
+	## Halden Harbour props (HarbourModel), the contest board, the night crate and the fence barrel in Port Halden.
+	var items: Array = HarbourModel.props()
+	items.append({"kind": "crate", "cell": HarbourModel.CRATE_CELL})
+	items.append({"kind": "fence", "cell": HarbourModel.FENCE_CELL})
+	for p in items:
+		var c: Vector2i = p["cell"]
+		if ChunkGrid.chunk_of_cell(c) != chunk:
+			continue
+		var kind := String(p["kind"])
+		var b: StaticBody2D
+		if kind == "crate":
+			b = world.make_prop("res://assets/sprites/smuggle_crate.png", c, Vector2(20, 8), Vector2(0, -12))
+			b.add_to_group("harbour_crate")
+			b.visible = false
+			world.interactables.add(c, "crate", "E: Open the sealed crate")
+		elif kind == "fence":
+			b = world.make_prop("res://assets/sprites/barrel.png", c, Vector2(18, 8), Vector2(0, -10))
+			world.interactables.add(c, "fence", "E: Talk to the buyer")
+		else:
+			var d: Array = HARBOUR_SPRITES[kind]
+			b = world.make_prop("res://assets/sprites/%s.png" % d[0], c, d[1], d[2])
+			if kind == "board":
+				world.interactables.add(c, "board", "E: Fishing contest board")
+		nodes.append(b)
 		sign_cells.append(c)
 
 func unload(world: World) -> void:

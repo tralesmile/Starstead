@@ -370,5 +370,32 @@
   "name": "Bat Wing",
   "price": 12,
   "stack": 99
+ },
+ "sardine": {
+  "name": "Sardine",
+  "price": 16,
+  "stack": 99
+ },
+ "mackerel": {
+  "name": "Mackerel",
+  "price": 34,
+  "stack": 99
+ },
+ "tuna": {
+  "name": "Tuna",
+  "price": 130,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "swordfish": {
+  "name": "Swordfish",
+  "price": 260,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "smuggle_crate": {
+  "name": "Sealed Crate",
+  "price": 1,
+  "stack": 1
  }
 }

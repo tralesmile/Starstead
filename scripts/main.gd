@@ -39,6 +39,7 @@ var mouse_aim := false
 var legend: Label
 var goal_label: Label
 var city_seen := false
+var harbour := HarbourState.new()
 var _goal_t := 0.0
 var jobs: JobView
 var race: RaceView
@@ -348,6 +349,7 @@ func _process(delta: float) -> void:
 	_update_cursor()
 	_update_highlight()
 	_update_fade(delta)
+	get_tree().call_group("harbour_crate", "set_visible", HarbourActions.crate_visible(self))
 	toast_t -= delta
 	if toast_t <= 0.0:
 		toast.text = ""
@@ -474,6 +476,9 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 		if it.get("kind", "") == "cave":
 			cave.enter(GameState.clock.day)
+			return
+		if it.get("kind", "") in ["board", "crate", "fence"]:
+			HarbourActions.run(self, String(it["kind"]))
 			return
 		if it.get("kind", "") == "sign":
 			_say(String(it.get("text", "")))
@@ -661,7 +666,8 @@ func _fish_ctx() -> Dictionary:
 	for id in GameState.journal.entries:
 		if int(GameState.journal.entries[id].count) > 0:
 			caught.append(id)
-	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught}
+	var cc := _water_cell_ahead(CastMath.distance_tiles(CastMath.power(rod_charge_t)))
+	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc)}
 
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:
@@ -704,7 +710,10 @@ func _update_fishing(delta: float) -> void:
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
 		_skill_gain("fishing")
-		_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
+		if bool(fish_table[fishing.fish_id].get("sea", false)) and harbour.add_catch(GameState.clock.day, HarbourActions.hour_now(), sz):
+			_say("Caught a %s! %d cm. Contest total %d cm" % [fish_table[fishing.fish_id].name, sz, harbour.score])
+		else:
+			_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:
 		_say("It got away")

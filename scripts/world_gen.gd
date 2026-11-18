@@ -68,6 +68,10 @@ func _water_noise(wx: int, wy: int) -> bool:
 		return true  # beyond the world edge is sea
 	if CityModel.in_rect(Vector2i(wx, wy)):
 		return false
+	if HarbourModel.is_quay(Vector2i(wx, wy)):
+		return false
+	if HarbourModel.is_sea(Vector2i(wx, wy)):
+		return true
 	return _n.get_noise_2d(wx, wy) < -0.14
 
 var _n: FastNoiseLite
@@ -124,6 +128,13 @@ func generate() -> void:
 				tiles[y * SIZE + x] = ASPHALT
 			elif k == "sidewalk":
 				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3
+	for y in SIZE:
+		for x in SIZE:
+			var wc := Vector2i(x + _ox, y + _oy)
+			if HarbourModel.is_quay(wc):
+				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3
+			elif HarbourModel.is_sea(wc):
+				tiles[y * SIZE + x] = WATER_DEEP if HarbourModel.is_deep(wc) else WATER_SHALLOW
 	for rc in road_cells:
 		var ri: int = rc.y * SIZE + rc.x
 		if not is_water(tiles[ri]) and not CityModel.in_rect(Vector2i(rc.x + _ox, rc.y + _oy)):
@@ -137,7 +148,7 @@ func generate() -> void:
 	for y in SIZE:
 		for x in SIZE:
 			var t := tiles[y * SIZE + x]
-			if t <= 2 and CityModel.in_rect(Vector2i(x + _ox, y + _oy)):
+			if t <= 2 and (CityModel.in_rect(Vector2i(x + _ox, y + _oy)) or HarbourModel.is_quay(Vector2i(x + _ox, y + _oy))):
 				continue  # the city park stays clear of trees, rocks and bushes
 			if t <= 2 and (not is_home() or absi(x - 32) + absi(y - 32) > 6):
 				var roll := r.randf()
@@ -174,7 +185,7 @@ func generate() -> void:
 		for x in SIZE:
 			var c := Vector2i(x, y)
 			var roll := tr.randf()
-			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
+			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not HarbourModel.is_quay(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
 				tufts.append(c)
 
 static func is_road(t: int) -> bool:

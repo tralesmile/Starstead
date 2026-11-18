@@ -213,6 +213,73 @@ def koi():
     return i
 icons['golden_koi'] = koi
 
+def sardine():
+    i = Ic()
+    i.ell(7, 8, 5.5, 2.4, "#8aa8c8")
+    for x in range(3, 11):
+        i.px(x, 9, "#e4eef8")
+    for x in range(3, 11):
+        i.px(x, 7, "#5a7aa8")  # dark back
+    i.px(12, 8, "#6a88b0"); i.px(12, 7, "#6a88b0"); i.px(12, 9, "#6a88b0")
+    i.px(13, 6, "#6a88b0"); i.px(13, 7, "#6a88b0"); i.px(13, 9, "#6a88b0"); i.px(13, 10, "#6a88b0")
+    i.px(3, 8, "#ffffff"); i.px(3, 7, "#2a1a10")
+    i.px(6, 8, "#d8e8f4"); i.px(8, 8, "#d8e8f4")  # scale glints
+    i.px(7, 5, "#6a88b0")
+    return i
+icons['sardine'] = sardine
+
+def mackerel():
+    i = fish("#3a9a8a", "#d8ecd8", "#2a6a6a", stripe="#1a4a5a")
+    i.px(5, 8 - 3 - 1, "#2a6a6a")  # second dorsal
+    for x in (4, 5, 6, 7, 8, 9, 10):
+        i.px(x, 6, "#5ac0a8") if x % 2 else None
+    return i
+icons['mackerel'] = mackerel
+
+def tuna():
+    i = fish("#2a3e78", "#e4ecf4", "#1e2c58", big=True)
+    for (x, y) in ((8, 12), (9, 12), (10, 12)):
+        i.px(x, y, "#f4d83a")  # yellow finlets along belly
+    for (x, y) in ((11, 6), (11, 10), (10, 5)):
+        i.px(x, y, "#f4d83a")
+    i.px(5, 6, "#5a74b8"); i.px(6, 5, "#4a64a8"); i.px(7, 6, "#4a64a8")  # sheen
+    i.px(14, 8, "#1e2c58")
+    return i
+icons['tuna'] = tuna
+
+def swordfish():
+    i = Ic()
+    i.ell(8, 8, 5.5, 3.4, "#5a7a98")
+    for x in range(5, 12):
+        i.px(x, 10, "#c8d8e4"); i.px(x, 11, "#c8d8e4") if x < 11 else None
+    i.line(0, 7, 4, 8, "#c0ccd8")  # long bill
+    i.px(1, 7, "#a0b0c0"); i.px(0, 6, "#c0ccd8")
+    i.px(12, 7, "#5a7a98"); i.px(12, 8, "#5a7a98"); i.px(12, 9, "#5a7a98")
+    i.px(13, 5, "#3a5870"); i.px(13, 6, "#3a5870"); i.px(13, 7, "#3a5870"); i.px(13, 9, "#3a5870"); i.px(13, 10, "#3a5870"); i.px(13, 11, "#3a5870")
+    i.px(14, 4, "#3a5870"); i.px(14, 12, "#3a5870")
+    for x in (6, 7, 8, 9):
+        i.px(x, 4, "#3a5870")  # tall dorsal
+    i.px(7, 3, "#3a5870"); i.px(8, 3, "#3a5870")
+    i.px(5, 7, "#ffffff"); i.px(5, 8, "#2a1a10")
+    i.px(7, 6, "#8aa8c0"); i.px(8, 6, "#8aa8c0"); i.px(6, 5, "#8aa8c0")
+    return i
+icons['swordfish'] = swordfish
+
+def smuggle_crate():
+    i = Ic()
+    i.rect(2, 4, 13, 13, "#8a5a34")
+    i.rect(2, 4, 13, 5, "#a8743f")
+    i.rect(2, 12, 13, 13, "#6a4026")
+    i.rect(2, 8, 13, 8, "#6a4026")  # plank gap
+    i.rect(11, 5, 13, 12, "#7a4e2c")
+    i.rect(5, 4, 6, 13, "#c43a3a")  # red stripe
+    i.px(5, 5, "#e46a5a")
+    for (x, y) in ((3, 6), (9, 10), (10, 6)):
+        i.rect(x, y, x + 1, y + 1, "#2a1e18")  # tarry seals
+    i.px(3, 10, "#2a1e18"); i.px(4, 10, "#2a1e18")
+    return i
+icons['smuggle_crate'] = smuggle_crate
+
 def worm():
     i = Ic()
     pts = [(3, 11), (4, 10), (5, 10), (6, 11), (7, 12), (8, 11), (9, 10), (10, 9), (11, 8), (12, 9)]
