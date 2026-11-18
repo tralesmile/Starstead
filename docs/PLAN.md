@@ -85,12 +85,12 @@ Physics / feel:
 - [x] Wanted HUD looked bad: drawn badge with 5 stars that fill with heat + red/blue siren strip when seen (WantedHud, tested); cops lighter police-blue instead of black faces
 - [x] Hunting: club hits wild animals (HuntModel + AnimalView.hunt), drops raw meat / hide / feathers, boar fights back, game restocks overnight; new deer, rabbit, boar sprites (gen_wildlife.py), more wildlife around the start (WILD table), Grilled Meat recipe. [ ] bow/traps, butcher/tannery, fists on the hand slot, hunting licence/ranger heat
 - [ ] First 30 seconds: start with almost nothing (hands + a hoe?) and craft/earn tools (Minecraft-like) instead of a full bag; the goal line must say what to do
-- [ ] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad)
+- [ ] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad) (CLAIMED 2026-11-18)
 - [ ] Fishing: character must visibly hold the rod and cast it; improve how fishing looks and feels
-- [ ] Chopping: tree should fall, then be chopped into logs you pick up
-- [ ] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town)
+- [ ] Chopping: tree should fall, then be chopped into logs you pick up (CLAIMED 2026-11-18)
+- [ ] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (CLAIMED 2026-11-18)
 - [ ] Car: bigger on screen, show fuel gauge, mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
-- [ ] Energy bar: make energy readable (bar + number in the HUD)
+- [ ] Energy bar: make energy readable (bar + number in the HUD) (CLAIMED 2026-11-18)
 - [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom)
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
 - [ ] Story-first start: begin in a small story area, unlock the city, then further out and other planets
