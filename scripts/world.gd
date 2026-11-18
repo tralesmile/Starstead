@@ -23,9 +23,19 @@ var reed_sprites: Array[Sprite2D] = []
 var tuft_sprites: Array[Sprite2D] = []
 var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
+var stream: ChunkStream
+var chunk_views: Dictionary = {}   # chunk -> ChunkView
+var chunk_mats: Array = []
+var player_ref: Node2D = null
+var nodes_ref: ResourceNodes = null   # set by main (World must not touch autoloads: tests compile it)
+var season := 0
+var region_id := ""
+var stream_budget := 1             # chunks built per stream_update call
 
 func build(seed_value: int = 1) -> void:
 	gen = WorldGen.new(seed_value)
+	stream = ChunkStream.new(seed_value, gen)
+	gen.stream_ref = stream
 	y_sort_enabled = true
 	_build_ground()
 	_build_collision()
@@ -51,14 +61,31 @@ func build(seed_value: int = 1) -> void:
 	_build_flowers()
 	_build_stall()
 	_build_lanterns()
+	_build_world_wall()
 
-static func data_image(g: WorldGen) -> Image:
-	## 64x64 RGBA8: R = sdf mapped to 0..1 (0.5 = shore), G = path mask, B = dirt mask.
-	var img := Image.create(WorldGen.SIZE, WorldGen.SIZE, false, Image.FORMAT_RGBA8)
-	for y in WorldGen.SIZE:
-		for x in WorldGen.SIZE:
-			var t := g.tile_at(x, y)
-			var r := clampf(g.sdf_at(x, y) / 16.0 + 0.5, 0.0, 1.0)
+static func data_image(g: WorldGen, pad: int = 0) -> Image:
+	## (64+2*pad)^2 RGBA8: R = sdf mapped to 0..1 (0.5 = shore), G = path mask, B = dirt mask.
+	## pad > 0 copies the neighbouring chunks' edge cells (via g.grid or the chunk's own stream) so the
+	## linear filtering at a chunk edge sees the real neighbour instead of a clamped copy (no visible seam).
+	var n := WorldGen.SIZE + 2 * pad
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var origin := ChunkGrid.origin_cell(g.chunk)
+	for y in n:
+		for x in n:
+			var cx := x - pad
+			var cy := y - pad
+			var t: int
+			var sd: float
+			if cx >= 0 and cy >= 0 and cx < WorldGen.SIZE and cy < WorldGen.SIZE:
+				t = g.tile_at(cx, cy)
+				sd = g.sdf_at(cx, cy)
+			elif g.stream_ref != null:
+				t = g.stream_ref.tile_at(origin + Vector2i(cx, cy))
+				sd = g.stream_ref.sdf_at(origin + Vector2i(cx, cy))
+			else:
+				t = g.tile_at(clampi(cx, 0, WorldGen.SIZE - 1), clampi(cy, 0, WorldGen.SIZE - 1))
+				sd = g.sdf_at(clampi(cx, 0, WorldGen.SIZE - 1), clampi(cy, 0, WorldGen.SIZE - 1))
+			var r := clampf(sd / 16.0 + 0.5, 0.0, 1.0)
 			var pth := 1.0 if t >= WorldGen.PATH and t < WorldGen.PATH + 3 else 0.0
 			var drt := 1.0 if t >= WorldGen.DIRT and t < WorldGen.DIRT + 3 else 0.0
 			img.set_pixel(x, y, Color(r, pth, drt, 1.0))
@@ -71,7 +98,9 @@ func _build_ground() -> void:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var m := ShaderMaterial.new()
 	m.shader = load("res://assets/shaders/ground.gdshader")
-	m.set_shader_parameter("data", ImageTexture.create_from_image(data_image(gen)))
+	m.set_shader_parameter("data", ImageTexture.create_from_image(data_image(gen, 1)))
+	m.set_shader_parameter("data_size", float(WorldGen.SIZE + 2))
+	m.set_shader_parameter("data_pad", 1.0)
 	m.set_shader_parameter("chunk_px", float(WorldGen.SIZE * 32))
 	rect.material = m
 	ground_mat = m
@@ -117,10 +146,36 @@ func _build_collision() -> void:
 			dr.z_index = 50
 			add_child(dr)
 	add_child(shore)
-	# world border
-	for i in range(-1, WorldGen.SIZE + 1):
-		for c in [Vector2i(i, -1), Vector2i(i, WorldGen.SIZE), Vector2i(-1, i), Vector2i(WorldGen.SIZE, i)]:
-			layer.set_cell(c, 0, Vector2i(WorldGen.WATER_DEEP, 0))
+
+func _build_world_wall() -> void:
+	## Sea wall around the whole 8x8 chunk world (the homestead is an interior chunk now).
+	var wr := ChunkGrid.world_rect_px()
+	var body := StaticBody2D.new()
+	for r in [Rect2(wr.position.x - 64, wr.position.y - 64, wr.size.x + 128, 64), Rect2(wr.position.x - 64, wr.end.y, wr.size.x + 128, 64), Rect2(wr.position.x - 64, wr.position.y, 64, wr.size.y), Rect2(wr.end.x, wr.position.y, 64, wr.size.y)]:
+		var cs := CollisionShape2D.new()
+		var rs := RectangleShape2D.new()
+		rs.size = r.size
+		cs.shape = rs
+		cs.position = r.position + r.size * 0.5
+		body.add_child(cs)
+	add_child(body)
+
+func make_prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBody2D:
+	return _prop(tex, cell, body, off)
+
+func register_prop(cell: Vector2i, body: StaticBody2D, _tree: bool) -> void:
+	props[cell] = body
+
+func prop_stump(cell: Vector2i, body: Node2D) -> Sprite2D:
+	var st := Sprite2D.new()
+	st.texture = load("res://assets/sprites/stump.png")
+	st.offset = Vector2(0, -10)
+	st.visible = false
+	st.name = "Stump"
+	add_child(st)
+	st.position = body.position
+	stumps[cell] = st
+	return st
 
 func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBody2D:
 	var b := StaticBody2D.new()
@@ -227,10 +282,14 @@ func sync_props(nodes: ResourceNodes) -> void:
 
 func set_season(season: int) -> void:
 	## Seasonal grass colours (shader), leaf colours on trees/bushes, flowers hidden in winter.
+	self.season = season
+	var mats: Array = chunk_mats.duplicate()
 	if ground_mat != null:
-		var m := SeasonMath.ground_mul(season)
-		ground_mat.set_shader_parameter("season_mul", Vector3(m.r, m.g, m.b))
-		ground_mat.set_shader_parameter("season_frost", SeasonMath.ground_frost(season))
+		mats.append(ground_mat)
+	var m := SeasonMath.ground_mul(season)
+	for gm in mats:
+		gm.set_shader_parameter("season_mul", Vector3(m.r, m.g, m.b))
+		gm.set_shader_parameter("season_frost", SeasonMath.ground_frost(season))
 	for ch in get_children():
 		if ch is StaticBody2D and ch.get_child_count() > 0 and ch.get_child(0) is Sprite2D:
 			var spr := ch.get_child(0) as Sprite2D
@@ -409,3 +468,28 @@ func _build_flowers() -> void:
 			count += 1
 			if count >= 520:
 				return
+
+func stream_update(player_px: Vector2) -> void:
+	## Keeps the 3x3 chunks around the player built (one per call) and drops chunks beyond 2.
+	var center := ChunkGrid.chunk_of_pos(player_px)
+	var loaded: Array = chunk_views.keys()
+	loaded.append(ChunkGrid.HOME)
+	for ch in ChunkGrid.to_unload(loaded, center):
+		if chunk_views.has(ch):
+			(chunk_views[ch] as ChunkView).unload(self)
+			chunk_views.erase(ch)
+	var built := 0
+	for ch in ChunkGrid.to_load(loaded, center):
+		var v := ChunkView.new()
+		v.build(self, stream.gen_for(ch))
+		chunk_views[ch] = v
+		built += 1
+		if built >= stream_budget:
+			break
+	if built > 0:
+		set_season(season)
+		if nodes_ref != null:
+			sync_props(nodes_ref)
+
+func region_now(player_px: Vector2) -> Dictionary:
+	return stream.region_at(ChunkGrid.chunk_of_pos(player_px))

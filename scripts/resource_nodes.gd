@@ -13,6 +13,14 @@ var removed_rocks: Dictionary = {}
 func add(kind: String, cell: Vector2i) -> void:
 	nodes[cell] = {"kind": kind, "hp": HP[kind], "stump_days": 0}
 
+var seen: Dictionary = {}   # streamed cells already registered (a mined rock must not respawn on reload)
+
+func add_once(kind: String, cell: Vector2i) -> void:
+	if seen.has(cell) or nodes.has(cell):
+		return
+	seen[cell] = true
+	add(kind, cell)
+
 func is_solid(cell: Vector2i) -> bool:
 	return nodes.has(cell) and nodes[cell].stump_days == 0
 

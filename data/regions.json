@@ -1,0 +1,10 @@
+[
+	{"id": "homestead", "name": "Homestead", "rects": [[3, 4, 3, 4]], "biome": {"trees": 1.0, "rocks": 1.0}},
+	{"id": "farmland", "name": "Halden Farmland", "rects": [[2, 3, 4, 5]], "biome": {"trees": 0.25, "rocks": 0.5}},
+	{"id": "pine_forest", "name": "Pine Forest", "rects": [[0, 2, 2, 4]], "biome": {"trees": 2.6, "rocks": 0.8}},
+	{"id": "port_halden", "name": "Port Halden", "rects": [[5, 3, 6, 4]], "biome": {"trees": 0.15, "rocks": 0.2}},
+	{"id": "harbour", "name": "Halden Harbour", "rects": [[5, 5, 7, 6]], "biome": {"trees": 0.2, "rocks": 1.2}},
+	{"id": "highlands", "name": "Highlands", "rects": [[3, 0, 5, 2]], "biome": {"trees": 0.6, "rocks": 4.0}},
+	{"id": "vance", "name": "Vance Aerospace", "rects": [[7, 2, 7, 2]], "biome": {"trees": 0.1, "rocks": 0.6}},
+	{"id": "circuit", "name": "Race Circuit", "rects": [[1, 6, 1, 6]], "biome": {"trees": 0.3, "rocks": 0.3}}
+]

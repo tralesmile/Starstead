@@ -95,10 +95,10 @@ func _do_leave() -> void:
 	player.position = outside_pos
 	player.facing = PlayerMath.Facing.DOWN
 	player.focus = null
-	player.camera.limit_left = 0
-	player.camera.limit_top = 0
-	player.camera.limit_right = 64 * 32
-	player.camera.limit_bottom = 64 * 32
+	player.camera.limit_left = int(ChunkGrid.world_rect_px().position.x)
+	player.camera.limit_top = int(ChunkGrid.world_rect_px().position.y)
+	player.camera.limit_right = int(ChunkGrid.world_rect_px().end.x)
+	player.camera.limit_bottom = int(ChunkGrid.world_rect_px().end.y)
 
 func _add(n: Node) -> void:
 	world.add_child(n)

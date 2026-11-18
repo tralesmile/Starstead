@@ -53,6 +53,8 @@ var axe_table: Dictionary = _merge(_merge(DataDB.load_json("axes"), DataDB.load_
 
 var demos: DemoFlags
 
+var region_banner: RegionBanner
+
 func _ready() -> void:
 	demos = DemoFlags.new(self)
 	y_sort_enabled = true
@@ -72,6 +74,10 @@ func _ready() -> void:
 	player.gen = world.gen
 	for lp in world.lily_pads:
 		lp.player = player
+	world.player_ref = player
+	world.nodes_ref = GameState.nodes
+	region_banner = RegionBanner.new()
+	add_child(region_banner)
 	player.position = Vector2(32.5, 32.5) * 32.0
 	if world.gen.dock.size() > 0:  # start at the dock: the first view is the pond
 		var d0: Vector2i = world.gen.dock[0]
@@ -273,6 +279,12 @@ func _process(delta: float) -> void:
 		World.apply_sun(get_tree(), _sun_applied)
 	town.set_night(0.0 if interior.active else DayNight.lamp_strength(GameState.clock.minutes))
 	world.part_reeds(player.position, delta)
+	if not interior.active:
+		world.stream_update(player.position)
+		var reg: Dictionary = world.region_now(player.position)
+		if ChunkGrid.region_changed(world.region_id, String(reg.id)):
+			region_banner.show_region(String(reg.name))
+		world.region_id = String(reg.id)
 	var near := world.interactables.near(player.position, _target_cell())
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))

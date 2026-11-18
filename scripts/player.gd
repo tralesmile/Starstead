@@ -75,10 +75,10 @@ func _ready() -> void:
 		elif a.begins_with("--at="):
 			var xy := a.substr(5).split(",")
 			position = Vector2(float(xy[0]), float(xy[1])) * 32.0
-	camera.limit_left = 0
-	camera.limit_top = 0
-	camera.limit_right = 64 * 32
-	camera.limit_bottom = 64 * 32
+	camera.limit_left = int(ChunkGrid.world_rect_px().position.x)
+	camera.limit_top = int(ChunkGrid.world_rect_px().position.y)
+	camera.limit_right = int(ChunkGrid.world_rect_px().end.x)
+	camera.limit_bottom = int(ChunkGrid.world_rect_px().end.y)
 	camera.position_smoothing_enabled = false  # integer pixel snap: no sub-pixel camera
 	add_child(camera)
 

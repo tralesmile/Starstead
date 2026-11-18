@@ -6,6 +6,9 @@ shader_type canvas_item;
 uniform sampler2D data : filter_linear;
 uniform float chunk_px = 2048.0;
 uniform float sdf_range = 8.0;
+uniform float data_size = 64.0;     // data texture side in texels (64 + 2 * pad)
+uniform float data_pad = 0.0;
+uniform vec2 origin_tiles = vec2(0.0);   // chunk origin in world tiles (0 for the homestead); data lookups stay chunk-local
 
 // palette
 const vec3 DEEP = vec3(0.075, 0.25, 0.31);
@@ -57,15 +60,15 @@ vec4 voronoi(vec2 p) {
 }
 float sdf_at(vec2 tile) {
 	vec2 warp = vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5;
-	float r = texture(data, (tile + warp * 0.9) / 64.0).r;
+	float r = texture(data, (tile - origin_tiles + data_pad + warp * 0.9) / data_size).r;
 	return (r - 0.5) * 2.0 * sdf_range + (fbm(tile * 2.5) - 0.5) * 0.5;
 }
 float band(float v, float steps) { return floor(v * steps + 0.5) / steps; }
 
 void fragment() {
-	vec2 px = floor(UV * chunk_px) + 0.5;      // world pixel centre
+	vec2 px = floor(UV * chunk_px) + 0.5 + origin_tiles * 32.0;      // world pixel centre
 	vec2 tile = px / 32.0;                       // tile units
-	vec4 d = texture(data, (tile + (vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5) * 0.9) / 64.0);
+	vec4 d = texture(data, (tile - origin_tiles + data_pad + (vec2(fbm(tile * 0.9), fbm(tile * 0.9 + 17.3)) - 0.5) * 0.9) / data_size);
 	float sdf = sdf_at(tile);
 	// 3/4 view bank: where land lies just NORTH of shore/water we see the bank's vertical stone face
 	float sN = sdf_at(tile - vec2(0.0, 0.55));
