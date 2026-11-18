@@ -169,7 +169,7 @@ Houses, buildings, graphics (5, 10)
 ## Phase 3: Earth alpha (months 7-15)
 - [ ] Full Earth map (farmland, forest, lake, city, caves), built as slices from docs/EARTH_MAP.md:
   - [x] E1 World streaming: 8x8 chunk grid (ChunkGrid/ChunkStream/ChunkView), seamless global noise + padded sdf/data texture, 3x3 chunks around the player built one per frame, choppable trees/rocks in neighbours, data/regions.json biomes + region banner, sea wall around the 512x512 world. [ ] NPC/animal/car awareness outside the homestead, fish shadows + reflections in neighbour chunks, saving streamed node state
-  - [ ] E2 Roads: A* road network between regions, path tiles, signposts
+  - [ ] E2 Roads: A* road network between regions, path tiles, signposts (CLAIMED 2026-11-18)
   - [ ] E3 Port Halden block: 12 buildings, enterable interiors (shop, bank, police, hospital, garage)
   - [ ] E4 Caves: cave chunk, ore nodes, torches, enemies, smelting
   - [ ] E5 Harbour: sea fishing, contest, smuggling crate
