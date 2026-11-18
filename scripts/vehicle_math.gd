@@ -106,3 +106,18 @@ static func surface_grip(tile: int, sdf: float, rain: float = 0.0) -> float:
 	if WorldGen.is_road(tile):
 		return 0.95 * (1.0 - 0.15 * r)
 	return 0.7 * (1.0 - 0.15 * r)
+
+static func kerb_bump(speed: float, cap_before: float, cap_after: float) -> Dictionary:
+	## Driving off the street onto a sidewalk/quay (the surface cap drops to the sidewalk cap) at speed:
+	## the car loses up to 25% speed and the camera jolts. Slow rolls (< 60 px/s) cross the kerb quietly.
+	if cap_before <= SIDEWALK_CAP + 0.01 or cap_after > SIDEWALK_CAP + 0.01 or speed < 60.0:
+		return {"factor": 1.0, "shake": 0.0}
+	var t := clampf((speed - 60.0) / 200.0, 0.0, 1.0)
+	return {"factor": 1.0 - 0.25 * t, "shake": 0.5 + 1.5 * t}
+
+static func skid_alpha(tile: int, sdf: float, rain: float = 0.0) -> float:
+	## Tyre marks show best on dry asphalt, fainter on packed paths, barely on grass; rain washes them out.
+	if sdf < 0.9:
+		return 0.0
+	var base := 0.9 if tile == WorldGen.ASPHALT else (0.6 if WorldGen.is_road(tile) else 0.3)
+	return base * (1.0 - 0.4 * clampf(rain, 0.0, 1.0))

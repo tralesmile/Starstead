@@ -66,7 +66,7 @@ func build(seed_value: int = 1) -> void:
 static func _city_alpha(t: int, wc: Vector2i) -> float:
 	if t == WorldGen.ASPHALT:
 		return [0.0, 0.08, 0.16][CityModel.zebra(wc)]   # asphalt alpha also flags the zebra bar direction
-	if WorldGen.is_road(t) and CityModel.in_rect(wc):
+	if WorldGen.is_road(t) and (CityModel.in_rect(wc) or HarbourModel.is_quay(wc)):
 		return 0.5
 	return 1.0
 

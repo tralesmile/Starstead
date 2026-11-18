@@ -13,6 +13,8 @@ const GAIN := 0.30           # progress per second while overlapping
 const LOSS := 0.22           # progress lost per second while not overlapping
 const BAR_UP := 1.1          # bar acceleration while reeling (held)
 const GRAVITY := 0.9
+const BEGINNER_BONUS := 0.12   # wider catch bar for the first catches (Stardew's fishing starts too hard)
+const BEGINNER_CATCHES := 5
 
 var state: int = State.IDLE
 var timer := 0.0
@@ -81,7 +83,7 @@ func cast(sdf: float, table: Dictionary, season: int, bait: Dictionary = {}, ctx
 		return false
 	difficulty = float(table[fish_id].difficulty)
 	timer = rng.randf_range(BITE_MIN, BITE_MAX) * float(bait.get("bite_mult", 1.0))
-	bar_size = BAR_SIZE + float(bait.get("bar_bonus", 0.0))
+	bar_size = BAR_SIZE + float(bait.get("bar_bonus", 0.0)) + (BEGINNER_BONUS if int(ctx.get("caught_count", 99)) < BEGINNER_CATCHES else 0.0)
 	state = State.WAITING
 	return true
 

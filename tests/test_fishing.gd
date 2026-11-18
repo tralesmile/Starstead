@@ -98,3 +98,11 @@ func test_rod_upgrade_stacks_with_bait() -> void:
 	check(absf(c.bite_mult - 0.28) < 0.001)
 	check(absf(c.bar_bonus - 0.18) < 0.001)
 	check_eq(Fishing.combine({}, {}).bite_mult, 1.0)
+
+func test_beginner_assist_widens_bar() -> void:
+	var f := Fishing.new(5)
+	f.cast(-1.0, _table(), 0, {}, {"caught_count": 0})
+	check_eq(f.bar_size, Fishing.BAR_SIZE + Fishing.BEGINNER_BONUS, "wider bar for beginners")
+	var g := Fishing.new(5)
+	g.cast(-1.0, _table(), 0, {}, {"caught_count": 12})
+	check_eq(g.bar_size, Fishing.BAR_SIZE, "normal bar later")

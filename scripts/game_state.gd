@@ -17,6 +17,7 @@ var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var build := BuildModel.new(DataDB.load_json("build"))
 var journal := FishJournal.new()
+var harbour := HarbourState.new()
 var can := WaterCan.new()
 var animals: Array = []  # tamed animal states (AnimalModel dicts)
 var job_xp: Dictionary = {}  # job id -> xp
@@ -46,7 +47,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -71,6 +72,7 @@ func from_dict(d: Dictionary) -> bool:
 		race_best[str(k)] = float(d["race_best"][k])
 	build.from_dict(d.get("build", {}))
 	journal.from_dict(d.get("journal", {}))
+	harbour.from_dict(d.get("harbour", {}))
 	animals = AnimalModel.new(DataDB.load_json("animals")).deserialize(JSON.stringify(d.get("animals", [])))
 	can.from_dict(d.get("can", {}))
 	skill_xp = {}

@@ -51,3 +51,12 @@ func take_crate(day: int, hour: float) -> bool:
 		return false
 	crate_day = day
 	return true
+
+func to_dict() -> Dictionary:
+	return {"contest_day": contest_day, "score": score, "catches": catches, "crate_day": crate_day}
+
+func from_dict(d: Dictionary) -> void:
+	contest_day = int(d.get("contest_day", -1))
+	score = int(d.get("score", 0))
+	catches = int(d.get("catches", 0))
+	crate_day = int(d.get("crate_day", -1))

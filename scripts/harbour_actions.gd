@@ -6,14 +6,14 @@ static func hour_now() -> float:
 	return fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0)
 
 static func crate_visible(m) -> bool:
-	return m.harbour.can_take_crate(GameState.clock.day, hour_now())
+	return GameState.harbour.can_take_crate(GameState.clock.day, hour_now())
 
 static func run(m, kind: String) -> void:
 	var day: int = GameState.clock.day
 	var hour := hour_now()
 	match kind:
 		"board":
-			var h: HarbourState = m.harbour
+			var h: HarbourState = GameState.harbour
 			var res := h.finish(day, hour)
 			if res["done"]:
 				GameState.money += int(res["prize"])
@@ -28,7 +28,7 @@ static func run(m, kind: String) -> void:
 			else:
 				m._say("Fishing contest every 7th day. Next: day %d" % (day + (6 - day % 7 + 7) % 7))
 		"crate":
-			if m.harbour.take_crate(day, hour):
+			if GameState.harbour.take_crate(day, hour):
 				GameState.bag.add("smuggle_crate", 1)
 				m.police.add_heat(WantedMath.crime_heat("smuggling"))
 				m._say("You take the sealed crate. Deliver it to the buyer in Port Halden")

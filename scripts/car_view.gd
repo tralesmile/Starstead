@@ -12,6 +12,8 @@ var driving := false
 var fuel := VehicleMath.FUEL_MAX
 var health := VehicleMath.HEALTH_MAX
 var _skid_t := 0.0
+var _prev_cap := 1.0
+var _skid_a := 0.7
 var _smoke: CPUParticles2D
 signal toast(msg: String)
 signal crime(kind: String, pos: Vector2)
@@ -82,8 +84,14 @@ func _physics_process(delta: float) -> void:
 		if g != null:
 			var cc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
 			var tt: int = g.tile_at(cc.x, cc.y)
-			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain, CityModel.is_sidewalk(cc))
+			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain, CityModel.is_sidewalk(cc) or HarbourModel.is_quay(cc))
 			grip_m = VehicleMath.surface_grip(tt, g.sdf_at(cc.x, cc.y), player.rain)
+			_skid_a = VehicleMath.skid_alpha(tt, g.sdf_at(cc.x, cc.y), player.rain)
+			var kb := VehicleMath.kerb_bump(vel.length(), _prev_cap, surf)
+			if float(kb["factor"]) < 1.0:
+				vel *= float(kb["factor"])
+				player.shake(float(kb["shake"]), 0.15)
+			_prev_cap = surf
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m)
 		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf)
 		heading = r["heading"]
@@ -118,7 +126,7 @@ func _physics_process(delta: float) -> void:
 				m.texture = load("res://assets/sprites/skid.png")
 				m.position = p.round()
 				m.z_index = -2
-				m.modulate = Color(1, 1, 1, 0.7)
+				m.modulate = Color(1, 1, 1, _skid_a)
 				world.add_child(m)
 				var tw := m.create_tween()
 				tw.tween_property(m, "modulate:a", 0.0, 6.0)

@@ -73,3 +73,14 @@ func test_crate_nights() -> void:
 	check(h.take_crate(1, 22.0), "taken")
 	check(not h.take_crate(1, 23.0), "only once a night")
 	check(HarbourModel.crate_pay(1) > 200 and HarbourModel.too_hot(3) and not HarbourModel.too_hot(2), "pay and heat")
+
+func test_state_round_trip() -> void:
+	var h := HarbourState.new()
+	h.enter(6, 9.0, 100)
+	h.add_catch(6, 10.0, 77)
+	h.take_crate(1, 22.0)
+	var h2 := HarbourState.new()
+	h2.from_dict(h.to_dict())
+	check_eq(h2.score, 77, "score saved")
+	check(h2.entered(6), "entry saved")
+	check(not h2.take_crate(1, 23.0), "crate pickup saved")

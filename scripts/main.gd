@@ -39,7 +39,6 @@ var mouse_aim := false
 var legend: Label
 var goal_label: Label
 var city_seen := false
-var harbour := HarbourState.new()
 var _goal_t := 0.0
 var jobs: JobView
 var race: RaceView
@@ -667,7 +666,7 @@ func _fish_ctx() -> Dictionary:
 		if int(GameState.journal.entries[id].count) > 0:
 			caught.append(id)
 	var cc := _water_cell_ahead(CastMath.distance_tiles(CastMath.power(rod_charge_t)))
-	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc)}
+	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "caught_count": GameState.journal.total_caught(), "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc)}
 
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:
@@ -710,8 +709,8 @@ func _update_fishing(delta: float) -> void:
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
 		_skill_gain("fishing")
-		if bool(fish_table[fishing.fish_id].get("sea", false)) and harbour.add_catch(GameState.clock.day, HarbourActions.hour_now(), sz):
-			_say("Caught a %s! %d cm. Contest total %d cm" % [fish_table[fishing.fish_id].name, sz, harbour.score])
+		if bool(fish_table[fishing.fish_id].get("sea", false)) and GameState.harbour.add_catch(GameState.clock.day, HarbourActions.hour_now(), sz):
+			_say("Caught a %s! %d cm. Contest total %d cm" % [fish_table[fishing.fish_id].name, sz, GameState.harbour.score])
 		else:
 			_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
 		fishing.reset()

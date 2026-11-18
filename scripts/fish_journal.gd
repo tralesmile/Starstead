@@ -20,6 +20,12 @@ func record(id: String, size: int) -> bool:
 func species_caught() -> int:
 	return entries.size()
 
+func total_caught() -> int:
+	var n := 0
+	for id in entries:
+		n += int(entries[id].count)
+	return n
+
 func summary(table: Dictionary) -> String:
 	return "Journal %d/%d species" % [entries.size(), table.size()]
 

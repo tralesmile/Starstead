@@ -79,3 +79,16 @@ func test_car_sidewalk_cap() -> void:
 	check_eq(VehicleMath.surface_cap(true, 3.0, 0.0, false), 1.0)
 	check(CityModel.is_sidewalk(Vector2i(190, 10)), "avenue sidewalk")
 	check(not CityModel.is_asphalt(Vector2i(190, 10)))
+
+func test_kerb_bump_and_skid_alpha() -> void:
+	var slow := VehicleMath.kerb_bump(40.0, 1.0, VehicleMath.SIDEWALK_CAP)
+	check_eq(slow["factor"], 1.0, "slow rolls over the kerb")
+	var fast := VehicleMath.kerb_bump(260.0, 1.0, VehicleMath.SIDEWALK_CAP)
+	check_eq(fast["factor"], 0.75, "fast hit loses a quarter")
+	check(float(fast["shake"]) > 1.5, "jolt")
+	check_eq(VehicleMath.kerb_bump(260.0, 1.0, 1.0)["factor"], 1.0, "no change on the road")
+	check_eq(VehicleMath.kerb_bump(260.0, VehicleMath.SIDEWALK_CAP, VehicleMath.SIDEWALK_CAP)["factor"], 1.0, "already on the sidewalk")
+	check(VehicleMath.skid_alpha(WorldGen.ASPHALT, 5.0) > VehicleMath.skid_alpha(WorldGen.PATH, 5.0), "asphalt marks darker")
+	check(VehicleMath.skid_alpha(WorldGen.PATH, 5.0) > VehicleMath.skid_alpha(WorldGen.GRASS, 5.0), "grass faintest")
+	check(VehicleMath.skid_alpha(WorldGen.ASPHALT, 5.0, 1.0) < VehicleMath.skid_alpha(WorldGen.ASPHALT, 5.0), "rain washes marks")
+	check_eq(VehicleMath.skid_alpha(WorldGen.ASPHALT, 0.0), 0.0, "none on the wet bank")
