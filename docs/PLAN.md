@@ -172,7 +172,7 @@ Houses, buildings, graphics (5, 10)
 - [ ] Full Earth map (farmland, forest, lake, city, caves), built as slices from docs/EARTH_MAP.md:
   - [x] E1 World streaming: 8x8 chunk grid (ChunkGrid/ChunkStream/ChunkView), seamless global noise + padded sdf/data texture, 3x3 chunks around the player built one per frame, choppable trees/rocks in neighbours, data/regions.json biomes + region banner, sea wall around the 512x512 world. [ ] NPC/animal/car awareness outside the homestead, fish shadows + reflections in neighbour chunks, saving streamed node state
   - [x] E2 Roads: RoadNet (A* on a coarse grid over the water noise + string pulling) paints branches from the east-west spine to farmland, highlands, harbour, circuit, Vance and the lumber camp; the spine crosses lakes on causeways; dry-land signposts (E reads direction + steps). [ ] asphalt in the city (E3), bridges over rivers, bus stops
-  - [ ] E3 Port Halden block: 12 buildings, enterable interiors (shop, bank, police, hospital, garage)
+  - [ ] E3 Port Halden block: 12 buildings, enterable interiors (shop, bank, police, hospital, garage) (CLAIMED 2026-11-18)
   - [ ] E4 Caves: cave chunk, ore nodes, torches, enemies, smelting
   - [ ] E5 Harbour: sea fishing, contest, smuggling crate
   - [ ] E6 Race circuit + sports venues
