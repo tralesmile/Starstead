@@ -101,3 +101,50 @@ func test_path_continues_east_west() -> void:
 		if n.tiles[i] >= WorldGen.PATH and n.tiles[i] < WorldGen.PATH + 3:
 			np += 1
 	check_eq(np, 0, "no stray road off the row")
+
+func test_roads_planned_and_avoid_water() -> void:
+	var r := RoadNet.new(1)
+	check(r.polylines.size() >= 5, "branches planned: %d" % r.polylines.size())
+	check_eq(r.signs.size(), r.polylines.size())
+	var s := ChunkStream.new(1)
+	var painted := 0
+	for ch in r.cells:
+		check(ch != ChunkGrid.HOME, "home layout untouched")
+		var g := s.gen_for(ch)
+		for lc in r.cells[ch]:
+			var t := g.tile_at(lc.x, lc.y)
+			if t >= WorldGen.PATH and t < WorldGen.PATH + 3:
+				painted += 1
+			else:
+				check(WorldGen.is_water(t) or t >= WorldGen.PATH, "road cell is path or a ford")
+	check(painted > 200, "roads painted: %d" % painted)
+
+func test_roads_deterministic_and_start_on_spine() -> void:
+	var a := RoadNet.new(1)
+	var b := RoadNet.new(1)
+	check_eq(a.polylines, b.polylines)
+	for pl in a.polylines:
+		var st: Vector2i = pl[0]
+		check_eq(st.y, RoadNet.spine_y(st.x), "branch leaves the spine")
+		check(not ChunkGrid.chunk_of_cell(st) == ChunkGrid.HOME, "junction outside home")
+
+func test_no_trees_on_roads() -> void:
+	var s := ChunkStream.new(1)
+	for ch in s.roads.cells:
+		var g := s.gen_for(ch)
+		for t in g.trees:
+			check(not s.roads.cells[ch].has(t), "tree on road at %s %s" % [ch, t])
+
+func test_direction_text() -> void:
+	check(RoadNet.direction_text(Vector2i(0, 0), Vector2i(0, 100)).begins_with("South"), "south")
+	check(RoadNet.direction_text(Vector2i(0, 0), Vector2i(-100, 0)).begins_with("West"), "west")
+	check(RoadNet.direction_text(Vector2i(0, 0), Vector2i(60, -60)).begins_with("Northeast"), "northeast")
+
+func test_spine_is_walkable_everywhere() -> void:
+	var s := ChunkStream.new(1, WorldGen.new(1))
+	for ch in [Vector2i(0, 4), Vector2i(1, 4), Vector2i(2, 4), Vector2i(4, 4), Vector2i(5, 4), Vector2i(6, 4), Vector2i(7, 4)]:
+		var g := s.gen_for(ch)
+		for x in 64:
+			var y := 32 + int(round(sin((x + (ch.x - 3) * 64) * 0.2) * 3.0))
+			var t := g.tile_at(x, y)
+			check(t >= WorldGen.PATH and t < WorldGen.PATH + 3, "spine open at chunk %s x=%d" % [ch, x])

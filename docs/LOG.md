@@ -54,3 +54,4 @@
 2026-11-17 | Run 3 (cont.) | Garage menu at the workshop bench (repair/fuel/paint). Fuel can finally be refilled. 301 tests green, screenshot checked.
 2026-11-17 | Run 3 (cont.) | Races: lap choice, 2 rival cars with sprites, per-lap best times saved. Fixed bug where a rival finishing set your best time. 301 tests green, race screenshot checked.
 2026-11-18 | Run 4 | E1 world streaming: 8x8 chunk world, seamless terrain across chunks (global noise, padded sdf and data texture), 3x3 chunks streamed around the player, region biomes + banner. Homestead layout unchanged (snapshot test). 310 tests green, seams screenshot checked.
+2026-11-18 | Run 4 (cont.) | E2 roads: RoadNet branches + causeway spine + readable signposts (gen_signpost.py), no trees on roads, home chunk untouched. 315 tests green, screenshots checked.

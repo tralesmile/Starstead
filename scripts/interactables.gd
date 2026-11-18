@@ -4,8 +4,10 @@ extends RefCounted
 
 var cells: Dictionary = {}  # Vector2i -> {"kind": String, "prompt": String}
 
-func add(cell: Vector2i, kind: String, prompt: String) -> void:
-	cells[cell] = {"kind": kind, "prompt": prompt}
+func add(cell: Vector2i, kind: String, prompt: String, extra: Dictionary = {}) -> void:
+	var d := {"kind": kind, "prompt": prompt}
+	d.merge(extra)
+	cells[cell] = d
 
 func at(cell: Vector2i) -> Dictionary:
 	return cells.get(cell, {})

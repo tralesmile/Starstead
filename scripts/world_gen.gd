@@ -37,7 +37,10 @@ var tufts: Array[Vector2i] = []   # grass tuft cells (separate RNG so the layout
 var dock: Array[Vector2i] = []    # walkable dock cells over water, nearest the spawn
 var sdf := PackedFloat32Array()   # signed distance to shore in tiles (water < 0)
 
-func _init(s: int = 1, ch: Vector2i = HOME, biome: Dictionary = {}) -> void:
+var road_cells: Dictionary = {}   # local cell -> true, painted as PATH (RoadNet)
+
+func _init(s: int = 1, ch: Vector2i = HOME, biome: Dictionary = {}, roads: Dictionary = {}) -> void:
+	road_cells = roads
 	seed_value = s
 	chunk = ch
 	_ox = (ch.x - HOME.x) * SIZE
@@ -45,6 +48,14 @@ func _init(s: int = 1, ch: Vector2i = HOME, biome: Dictionary = {}) -> void:
 	tree_mul = float(biome.get("trees", 1.0))
 	rock_mul = float(biome.get("rocks", 1.0))
 	generate()
+
+func clear_cell(c: Vector2i) -> void:
+	## Removes props/tufts on a cell that something else (a signpost) will stand on.
+	trees.erase(c)
+	tree_kinds.erase(c)
+	rocks.erase(c)
+	bushes.erase(c)
+	tufts.erase(c)
 
 func is_home() -> bool:
 	return chunk == HOME
@@ -95,8 +106,13 @@ func generate() -> void:
 		for x in SIZE:
 			var y := 32 + int(round(sin((x + _ox) * 0.2) * 3.0))
 			for dy in 2:
-				if not is_water(tiles[(y + dy) * SIZE + x]):
+				# outside the homestead the main road crosses lakes on a causeway (the home chunk keeps its old layout)
+				if not is_water(tiles[(y + dy) * SIZE + x]) or not is_home():
 					tiles[(y + dy) * SIZE + x] = PATH + r.randi() % 3
+	for rc in road_cells:
+		var ri: int = rc.y * SIZE + rc.x
+		if not is_water(tiles[ri]):
+			tiles[ri] = PATH + r.randi() % 3
 	# keep spawn (32,32) dry
 	if is_home():
 		for y in range(28, 37):

@@ -6,9 +6,11 @@ extends RefCounted
 var seed_value := 1
 var regions: Array = []
 var gens: Dictionary = {}   # chunk -> WorldGen
+var roads: RoadNet
 
 func _init(s: int = 1, home: WorldGen = null) -> void:
 	seed_value = s
+	roads = RoadNet.new(s)
 	var f := FileAccess.open("res://data/regions.json", FileAccess.READ)
 	if f != null:
 		var parsed = JSON.parse_string(f.get_as_text())
@@ -25,7 +27,10 @@ func gen_for(ch: Vector2i) -> WorldGen:
 	if not ChunkGrid.in_world(ch):
 		return null
 	if not gens.has(ch):
-		gens[ch] = WorldGen.new(seed_value, ch, region_at(ch).get("biome", {}))
+		var g := WorldGen.new(seed_value, ch, region_at(ch).get("biome", {}), roads.road_cells(ch))
+		for sg in roads.signs_in(ch):
+			g.clear_cell(ChunkGrid.local_cell(sg["cell"]))
+		gens[ch] = g
 	return gens[ch]
 
 func tile_at(cell: Vector2i) -> int:

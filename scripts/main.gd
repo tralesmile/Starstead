@@ -425,6 +425,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			else:
 				robbery.interact(dcell)
 			return
+		if it.get("kind", "") == "sign":
+			_say(String(it.get("text", "")))
+			toast_t = 4.0
+			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO
 			player.move_v = Vector2.ZERO

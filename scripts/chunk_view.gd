@@ -13,6 +13,7 @@ var layer_cells: Array[Vector2i] = []
 var reeds: Array = []
 var lilies: Array = []
 var flowers: Array = []
+var sign_cells: Array[Vector2i] = []
 
 func build(world: World, g: WorldGen) -> void:
 	gen = g
@@ -23,6 +24,7 @@ func build(world: World, g: WorldGen) -> void:
 	_props(world)
 	_decor(world)
 	_flowers(world)
+	_signs(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -165,6 +167,16 @@ func _flowers(world: World) -> void:
 			if count >= 400:
 				return
 
+func _signs(world: World) -> void:
+	if world.stream == null:
+		return
+	for sg in world.stream.roads.signs_in(chunk):
+		var c: Vector2i = sg["cell"]
+		var b := world.make_prop("res://assets/sprites/signpost.png", c, Vector2(10, 6), Vector2(0, -16))
+		nodes.append(b)
+		world.interactables.add(c, "sign", "E: Read sign", {"text": String(sg["text"])})
+		sign_cells.append(c)
+
 func unload(world: World) -> void:
 	for c in layer_cells:
 		world.layer.erase_cell(c)
@@ -173,6 +185,8 @@ func unload(world: World) -> void:
 		world.stumps.erase(c)
 	for s in flowers:
 		world.flower_sprites.erase(s)
+	for c in sign_cells:
+		world.interactables.cells.erase(c)
 	world.chunk_mats = world.chunk_mats.filter(func(m): return m != null and not _owns(m))
 	for n in nodes:
 		if is_instance_valid(n):
