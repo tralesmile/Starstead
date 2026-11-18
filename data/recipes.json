@@ -4,5 +4,6 @@
  "grilled_fish": {"name": "Grilled Fish", "needs": {"perch": 1}, "makes": "grilled_fish"},
  "turnip_stew": {"name": "Turnip Stew", "needs": {"turnip": 2}, "makes": "turnip_stew"},
  "tomato_salad": {"name": "Tomato Salad", "needs": {"tomato": 1, "turnip": 1}, "makes": "tomato_salad"},
- "pumpkin_pie": {"name": "Pumpkin Pie", "needs": {"pumpkin": 1, "egg": 1, "milk": 1}, "makes": "pumpkin_pie"}
+ "pumpkin_pie": {"name": "Pumpkin Pie", "needs": {"pumpkin": 1, "egg": 1, "milk": 1}, "makes": "pumpkin_pie"},
+ "grilled_meat": {"name": "Grilled Meat", "needs": {"raw_meat": 1}, "makes": "grilled_meat"}
 }

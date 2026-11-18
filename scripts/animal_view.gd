@@ -10,6 +10,14 @@ const LOOK := {
 	"horse": {"y": 14, "shadow": 28},
 	"cow": {"y": 11, "shadow": 24},
 	"sheep": {"y": 9, "shadow": 18},
+	"deer": {"y": 12, "shadow": 24},
+	"rabbit": {"y": 6, "shadow": 10},
+	"boar": {"y": 9, "shadow": 20},
+}
+## Wild herd the land keeps topped up (hunted ones return over the days). id -> [count, min radius, max radius] in tiles.
+const WILD := {
+	"chicken": [4, 4, 14], "horse": [1, 6, 14], "cow": [2, 6, 16], "sheep": [3, 6, 16],
+	"deer": [5, 10, 28], "rabbit": [7, 5, 22], "boar": [2, 14, 30],
 }
 const FEED_ITEM := "turnip"
 var world: Node2D
@@ -32,8 +40,9 @@ func setup(w: Node2D, p: Player, g: WorldGen) -> void:
 	rng.seed = 77
 	for st in GameState.animals:
 		_spawn(String(st["id"]), _free_spot(rng, 2, 5), st)
-	for id in ["chicken", "chicken", "chicken", "horse", "cow", "sheep", "sheep"]:
-		_spawn(id, _free_spot(rng, 4, 12), null)
+	for id in WILD:
+		for i in int(WILD[id][0]):
+			_spawn(id, _free_spot(rng, int(WILD[id][1]), int(WILD[id][2])), null)
 
 func _land(c: Vector2i) -> bool:
 	if GameState.build.placed.has(c) and GameState.build.defs[GameState.build.placed[c]].solid:
@@ -65,7 +74,7 @@ func _spawn(id: String, pos: Vector2, st) -> void:
 	if not wild and not st.has("gear"):
 		st["gear"] = {}
 	critters.append({"st": st if st != null else {}, "id": id, "node": node, "sprite": s, "wild": wild, "prog": model.new_approach(id),
-		"target": pos, "t": randf() * 3.0, "step": 0.0})
+		"target": pos, "t": randf() * 3.0, "step": 0.0, "hp": HuntModel.hp_for(model.animals, id), "rage": 0.0, "bite": 0.0})
 
 func near(pos: Vector2, radius: float = 36.0) -> Dictionary:
 	var best := {}
@@ -83,6 +92,8 @@ func prompt_for(c: Dictionary) -> String:
 	if c.is_empty():
 		return ""
 	var nm := String(model.animals[c["id"]]["name"])
+	if c["wild"] and not HuntModel.tameable(model.animals, c["id"]):
+		return "Swing the club or fists to hunt %s" % nm
 	if c["wild"]:
 		return "E: Feed %s (%s) trust %d%%" % [nm, FEED_ITEM, int(100.0 * float(c["prog"]["trust"]) / model.trust_max())]
 	if model.is_rideable(c["st"]):
@@ -94,6 +105,9 @@ func interact(c: Dictionary) -> void:
 		return
 	var nm := String(model.animals[c["id"]]["name"])
 	if c["wild"]:
+		if not HuntModel.tameable(model.animals, c["id"]):
+			message.emit("%s is too wild to tame - hunt it (club or fists)" % nm)
+			return
 		if GameState.bag.count(FEED_ITEM) < 1:
 			message.emit("%s wants a turnip" % nm)
 			return
@@ -137,7 +151,53 @@ func dismount() -> void:
 	if stamina_back != null:
 		stamina_back.visible = false
 
+func hunt(origin: Vector2, face: Vector2, weapon: Dictionary) -> int:
+	## A weapon swing at wild animals in the cone. Returns how many were hit; kills drop meat, hides, feathers.
+	var hits := 0
+	for c in critters.duplicate():
+		if not c["wild"] or not HuntModel.huntable(model.animals, c["id"]):
+			continue
+		var node: Node2D = c["node"]
+		if not CombatModel.in_swing(origin, face, node.position + Vector2(0, -6), float(weapon["range"])):
+			continue
+		hits += 1
+		c["hp"] = CombatModel.hit(float(c["hp"]), float(weapon["dmg"]))
+		node.position += HitMath.knockback(origin, node.position, float(weapon["force"])) * 0.5
+		var spr: Sprite2D = c["sprite"]
+		spr.modulate = Color(1.6, 0.7, 0.7)
+		get_tree().create_timer(0.12).timeout.connect(func(): if is_instance_valid(spr): spr.modulate = Color.WHITE)
+		if CombatModel.is_down(float(c["hp"])):
+			_kill(c)
+		elif HuntModel.fights_back(model.animals, c["id"]):
+			c["rage"] = 6.0
+	return hits
+
+func _kill(c: Dictionary) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var drops := HuntModel.roll_drops(model.animals, c["id"], rng)
+	var parts := []
+	for item in drops:
+		GameState.bag.add(item, int(drops[item]))
+		parts.append("%d %s" % [int(drops[item]), String(item).replace("_", " ")])
+	message.emit("Hunted %s: %s" % [String(model.animals[c["id"]]["name"]).to_lower(), ", ".join(parts) if parts.size() > 0 else "nothing useful"])
+	(c["node"] as Node2D).queue_free()
+	critters.erase(c)
+
+func respawn_wild(rng: RandomNumberGenerator) -> void:
+	## Overnight the land restocks hunted game, out of sight of the player.
+	for id in WILD:
+		var have := 0
+		for c in critters:
+			if c["wild"] and c["id"] == id:
+				have += 1
+		for i in maxi(0, int(WILD[id][0]) - have):
+			_spawn(id, _free_spot(rng, maxi(int(WILD[id][1]), 8), int(WILD[id][2])), null)
+
 func day_tick() -> void:
+	var rr := RandomNumberGenerator.new()
+	rr.randomize()
+	respawn_wild(rr)
 	for c in critters:
 		if c["wild"]:
 			continue
@@ -178,7 +238,15 @@ func _process(delta: float) -> void:
 			var tf := float(c["prog"]["trust"]) / model.trust_max()
 			model.decay(c["prog"], delta)
 			var dist := node.position.distance_to(player.position)
-			if AnimalModel.should_flee(dist, tf):
+			if float(c["rage"]) > 0.0:
+				c["rage"] = float(c["rage"]) - delta
+				c["bite"] = float(c["bite"]) - delta
+				move = (player.position - node.position).normalized() * spd * 0.9 * delta
+				if float(c["bite"]) <= 0.0 and HuntModel.bite_damage(dist) > 0.0:
+					c["bite"] = 1.0
+					GameState.energy.value = maxf(0.0, GameState.energy.value - HuntModel.bite_damage(dist))
+					message.emit("The boar gores you!")
+			elif AnimalModel.should_flee(dist, tf):
 				move = AnimalModel.flee_dir(node.position, player.position) * spd * 0.8 * delta
 			else:
 				c["t"] -= delta

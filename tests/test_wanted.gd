@@ -21,3 +21,12 @@ func test_police_and_fine_scale() -> void:
 	check(WantedMath.police_count(5) > WantedMath.police_count(2))
 	check_eq(WantedMath.fine(0), 0)
 	check(WantedMath.fine(3) > WantedMath.fine(2))
+
+func test_star_fill_and_shape() -> void:
+	check_eq(WantedMath.star_fill(0.0, 0), 0.0)
+	check_eq(WantedMath.star_fill(10.0, 0), 0.5)
+	check_eq(WantedMath.star_fill(70.0, 1), 1.0, "lower stars are full")
+	check_eq(WantedMath.star_fill(70.0, 4), 0.0, "higher stars empty")
+	check_eq(WantedMath.star_points(Vector2.ZERO, 8.0).size(), 10)
+	check_eq(WantedMath.siren_phase(0.0, false), 0)
+	check(WantedMath.siren_phase(0.0, true) != WantedMath.siren_phase(0.4, true), "siren alternates")

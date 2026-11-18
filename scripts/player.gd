@@ -4,7 +4,7 @@ extends CharacterBody2D
 
 var facing: int = PlayerMath.Facing.DOWN
 var speed_mult := 1.0  # >1 while riding
-var zoom_step := 2     # user zoom 1..3 (integer: crisp pixels)
+var zoom_step := TargetMath.DEFAULT_STEP     # user zoom step 1..4 (TargetMath.ZOOMS)
 var indoors := false   # inside a room or the mine: no shore slowdown, no water reflection
 var focus: Variant = null   # Vector2: room centre while indoors (camera leans toward it)
 var zoom_bias := 0     # -1 while driving/riding
@@ -67,11 +67,11 @@ func _ready() -> void:
 	cs.rotation = PI / 2.0
 	add_child(cs)
 	camera = Camera2D.new()
-	camera.zoom = Vector2(2, 2)  # integer zoom keeps pixels crisp; closer, more detailed view
+	camera.zoom = Vector2.ONE * TargetMath.zoom_value(zoom_step)
 	for a in OS.get_cmdline_user_args():  # screenshot helper: -- --zoom=1 --at=x,y (tiles)
 		if a.begins_with("--zoom="):
 			camera.zoom = Vector2.ONE * float(a.substr(7))
-			zoom_step = clampi(int(float(a.substr(7))), 1, 3)
+			zoom_step = TargetMath.step_for_zoom(float(a.substr(7)))
 			zoom_bias = 0
 		elif a.begins_with("--at="):
 			var xy := a.substr(5).split(",")
@@ -139,7 +139,7 @@ func _physics_process(delta: float) -> void:
 		cam_focus = position  # first frame / teleport (doors, car exit)
 	cam_focus = CameraMath.deadzone(cam_focus, position, CameraMath.box_for_speed(cam_v.length()))
 	camera.offset = CameraMath.snap(look + pull + (cam_focus - position)) + sh
-	var zt := float(TargetMath.effective_zoom(zoom_step, zoom_bias))
+	var zt := TargetMath.zoom_value(TargetMath.effective_zoom(zoom_step, zoom_bias))
 	if absf(camera.zoom.x - zt) > 0.01:
 		camera.zoom = Vector2.ONE * move_toward(camera.zoom.x, zt, delta * 8.0)  # quick glide between integer zooms
 	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel

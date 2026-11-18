@@ -9,6 +9,7 @@ var world: Node2D
 var heat := 0.0
 var cops: Array = []   # Node2D
 var stars_label: Label
+var hud: WantedHud
 var home := Vector2.ZERO
 var gen: WorldGen
 var combat: CombatView
@@ -20,12 +21,11 @@ func setup(w: Node2D, p: Node2D, hud_parent: Node, g: WorldGen) -> void:
 	home = p.position
 	if "--wanted" in OS.get_cmdline_user_args():
 		heat = 70.0
-	stars_label = Label.new()
-	stars_label.position = Vector2(500, 6)
-	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 	var layer := CanvasLayer.new()
 	layer.layer = 6
-	layer.add_child(stars_label)
+	hud = WantedHud.new()
+	hud.position = Vector2(508, 8)
+	layer.add_child(hud)
 	hud_parent.add_child(layer)
 
 func commit(kind: String, pos: Vector2) -> void:
@@ -49,7 +49,7 @@ func _make_cop(p: Vector2) -> Node2D:
 	s.hframes = 8
 	s.vframes = 4
 	s.offset = Vector2(0, -22)
-	s.modulate = Color(0.45, 0.55, 1.0)
+	s.modulate = Color(0.8, 0.9, 1.5)   # light police-blue; the old dark tint turned faces black (owner: wanted looked bad)
 	n.add_child(s)
 	n.add_child(World.make_shadow(20))
 	n.position = p
@@ -70,7 +70,8 @@ func _process(delta: float) -> void:
 		cp.append((c as Node2D).position)
 	heat = WantedMath.decay(heat, delta, PoliceModel.any_sees(cp, player.position))
 	var n := stars()
-	stars_label.text = "" if n == 0 else "WANTED " + "*".repeat(n)
+	hud.heat = heat
+	hud.seen = PoliceModel.any_sees(cp, player.position)
 	if n != WantedMath.stars(heat) or cops.size() != WantedMath.police_count(n):
 		_sync_cops()
 	for c in cops:

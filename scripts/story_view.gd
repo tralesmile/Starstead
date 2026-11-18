@@ -9,6 +9,7 @@ var canvas: Control
 var banner := ""
 var banner_t := 0.0
 var _poll_t := 0.0
+var _was_drawing := false
 
 func _init() -> void:
 	layer = 9
@@ -26,6 +27,7 @@ var _log := false
 
 func toggle_log() -> void:
 	_log = not _log
+	canvas.queue_redraw()   # without this the closed log stays painted (no redraw once idle)
 	if not _log:
 		closed.emit()
 
@@ -58,8 +60,9 @@ func handle(e: InputEvent) -> bool:
 func _process(delta: float) -> void:
 	banner_t = maxf(0.0, banner_t - delta)
 	canvas.size = get_viewport().get_visible_rect().size
-	if banner_t > 0.0 or _log:
+	if banner_t > 0.0 or _log or _was_drawing:
 		canvas.queue_redraw()
+	_was_drawing = banner_t > 0.0 or _log
 
 func _draw_all() -> void:
 	var font := ThemeDB.fallback_font

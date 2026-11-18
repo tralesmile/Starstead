@@ -397,5 +397,27 @@
   "name": "Sealed Crate",
   "price": 1,
   "stack": 1
+ },
+ "raw_meat": {
+  "name": "Raw Meat",
+  "price": 18,
+  "stack": 99
+ },
+ "hide": {
+  "name": "Hide",
+  "price": 25,
+  "stack": 99
+ },
+ "feather": {
+  "name": "Feather",
+  "price": 6,
+  "stack": 99
+ },
+ "grilled_meat": {
+  "name": "Grilled Meat",
+  "price": 55,
+  "stack": 20,
+  "energy": 38,
+  "rarity": "bronze"
  }
 }

@@ -165,6 +165,7 @@ func _ready() -> void:
 	combat.setup(world, player, npcs, police)
 	combat.message.connect(_say)
 	combat.car = car
+	combat.hunt_cb = animals.hunt
 	police.combat = combat
 	npcs.combat = combat
 	add_child(combat)

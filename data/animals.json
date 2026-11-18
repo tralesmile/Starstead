@@ -1,14 +1,226 @@
 {
  "animals": {
-  "chicken": {"name": "Chicken", "wild_speed": 90, "tame_difficulty": 0.5, "feed": ["turnip"], "resource": {"item": "egg", "days": 1}, "rideable": false, "ride_speed_mult": 1.0, "gear_slots": ["armour"]},
-  "cow": {"name": "Cow", "wild_speed": 60, "tame_difficulty": 1.0, "feed": ["turnip"], "resource": {"item": "milk", "days": 1}, "rideable": true, "ride_speed_mult": 0.8, "gear_slots": ["saddle", "coat", "armour"]},
-  "sheep": {"name": "Sheep", "wild_speed": 70, "tame_difficulty": 0.8, "feed": ["turnip"], "resource": {"item": "wool", "days": 3}, "rideable": false, "ride_speed_mult": 1.0, "gear_slots": ["coat", "armour"]},
-  "horse": {"name": "Horse", "wild_speed": 160, "tame_difficulty": 1.5, "feed": ["turnip"], "resource": {"item": "", "days": 0}, "rideable": true, "ride_speed_mult": 1.6, "gear_slots": ["saddle", "coat", "armour"]}
+  "chicken": {
+   "name": "Chicken",
+   "wild_speed": 90,
+   "tame_difficulty": 0.5,
+   "feed": [
+    "turnip"
+   ],
+   "resource": {
+    "item": "egg",
+    "days": 1
+   },
+   "rideable": false,
+   "ride_speed_mult": 1.0,
+   "gear_slots": [
+    "armour"
+   ],
+   "hunt": {
+    "hp": 6,
+    "drops": [
+     {
+      "item": "raw_meat",
+      "min": 1,
+      "max": 1,
+      "chance": 1.0
+     },
+     {
+      "item": "feather",
+      "min": 1,
+      "max": 3,
+      "chance": 1.0
+     }
+    ]
+   }
+  },
+  "cow": {
+   "name": "Cow",
+   "wild_speed": 60,
+   "tame_difficulty": 1.0,
+   "feed": [
+    "turnip"
+   ],
+   "resource": {
+    "item": "milk",
+    "days": 1
+   },
+   "rideable": true,
+   "ride_speed_mult": 0.8,
+   "gear_slots": [
+    "saddle",
+    "coat",
+    "armour"
+   ]
+  },
+  "sheep": {
+   "name": "Sheep",
+   "wild_speed": 70,
+   "tame_difficulty": 0.8,
+   "feed": [
+    "turnip"
+   ],
+   "resource": {
+    "item": "wool",
+    "days": 3
+   },
+   "rideable": false,
+   "ride_speed_mult": 1.0,
+   "gear_slots": [
+    "coat",
+    "armour"
+   ],
+   "hunt": {
+    "hp": 18,
+    "drops": [
+     {
+      "item": "raw_meat",
+      "min": 1,
+      "max": 2,
+      "chance": 1.0
+     },
+     {
+      "item": "hide",
+      "min": 1,
+      "max": 1,
+      "chance": 0.6
+     }
+    ]
+   }
+  },
+  "horse": {
+   "name": "Horse",
+   "wild_speed": 160,
+   "tame_difficulty": 1.5,
+   "feed": [
+    "turnip"
+   ],
+   "resource": {
+    "item": "",
+    "days": 0
+   },
+   "rideable": true,
+   "ride_speed_mult": 1.6,
+   "gear_slots": [
+    "saddle",
+    "coat",
+    "armour"
+   ]
+  },
+  "deer": {
+   "name": "Deer",
+   "wild_speed": 150,
+   "tame_difficulty": 9.0,
+   "tameable": false,
+   "feed": [],
+   "resource": {
+    "item": "",
+    "days": 0
+   },
+   "rideable": false,
+   "ride_speed_mult": 1.0,
+   "gear_slots": [],
+   "hunt": {
+    "hp": 24,
+    "drops": [
+     {
+      "item": "raw_meat",
+      "min": 2,
+      "max": 3,
+      "chance": 1.0
+     },
+     {
+      "item": "hide",
+      "min": 1,
+      "max": 1,
+      "chance": 0.8
+     }
+    ]
+   }
+  },
+  "rabbit": {
+   "name": "Rabbit",
+   "wild_speed": 130,
+   "tame_difficulty": 9.0,
+   "tameable": false,
+   "feed": [],
+   "resource": {
+    "item": "",
+    "days": 0
+   },
+   "rideable": false,
+   "ride_speed_mult": 1.0,
+   "gear_slots": [],
+   "hunt": {
+    "hp": 6,
+    "drops": [
+     {
+      "item": "raw_meat",
+      "min": 1,
+      "max": 1,
+      "chance": 1.0
+     },
+     {
+      "item": "hide",
+      "min": 1,
+      "max": 1,
+      "chance": 0.4
+     }
+    ]
+   }
+  },
+  "boar": {
+   "name": "Boar",
+   "wild_speed": 110,
+   "tame_difficulty": 9.0,
+   "tameable": false,
+   "feed": [],
+   "resource": {
+    "item": "",
+    "days": 0
+   },
+   "rideable": false,
+   "ride_speed_mult": 1.0,
+   "gear_slots": [],
+   "hunt": {
+    "hp": 36,
+    "fights_back": true,
+    "drops": [
+     {
+      "item": "raw_meat",
+      "min": 2,
+      "max": 4,
+      "chance": 1.0
+     },
+     {
+      "item": "hide",
+      "min": 1,
+      "max": 2,
+      "chance": 0.7
+     }
+    ]
+   }
+  }
  },
  "gear": {
-  "saddle": {"slot": "saddle", "speed": 0.2},
-  "fur_coat": {"slot": "coat", "cold_resist": 3},
-  "armour": {"slot": "armour", "defense": 5}
+  "saddle": {
+   "slot": "saddle",
+   "speed": 0.2
+  },
+  "fur_coat": {
+   "slot": "coat",
+   "cold_resist": 3
+  },
+  "armour": {
+   "slot": "armour",
+   "defense": 5
+  }
  },
- "tame": {"trust_max": 100, "feed_trust": 25, "decay_per_sec": 2.0, "hunger_max": 100, "hunger_per_day": 50}
+ "tame": {
+  "trust_max": 100,
+  "feed_trust": 25,
+  "decay_per_sec": 2.0,
+  "hunger_max": 100,
+  "hunger_per_day": 50
+ }
 }

@@ -570,6 +570,48 @@ def bat_wing():
     return i
 icons['bat_wing'] = bat_wing
 
+def raw_meat():
+    i = Ic()
+    i.ell(8, 9, 6, 4.5, "#c8403c")
+    i.ell(7, 8, 3.6, 2, "#e0605a")
+    i.rect(4, 12, 12, 12, "#9a2c2c")
+    i.ell(10, 10, 2.2, 1.6, "#f0d8c8")   # fat marbling
+    i.px(10, 10, "#ffffff")
+    i.px(6, 7, "#ff9a90"); i.px(5, 8, "#ff9a90")
+    i.rect(12, 5, 14, 6, "#f4ecd8"); i.px(14, 4, "#f4ecd8"); i.px(14, 7, "#f4ecd8")  # bone knob
+    i.px(11, 7, "#d8c8a8"); i.px(12, 8, "#d8c8a8")
+    return i
+icons['raw_meat'] = raw_meat
+
+def hide():
+    i = Ic()
+    i.rect(4, 4, 11, 12, "#a8743f")
+    i.rect(2, 5, 4, 7, "#a8743f"); i.rect(11, 5, 13, 7, "#a8743f")      # front legs
+    i.rect(3, 11, 5, 14, "#a8743f"); i.rect(10, 11, 12, 14, "#a8743f")  # hind legs
+    i.rect(6, 3, 9, 3, "#a8743f")                                       # neck
+    i.rect(9, 5, 11, 12, "#8a5a34"); i.rect(4, 12, 11, 12, "#8a5a34")   # shade
+    for (x, y) in ((6, 6), (7, 9), (5, 10), (8, 7)):
+        i.px(x, y, "#c8944f")                                           # fur flecks
+    i.px(5, 5, "#e8b878"); i.px(6, 5, "#e8b878"); i.px(3, 6, "#e8b878")
+    i.px(8, 10, "#6a4026"); i.px(7, 11, "#6a4026")
+    return i
+icons['hide'] = hide
+
+def feather():
+    i = Ic()
+    # diagonal vane (leaf shape) with a centre quill running bottom-left to top-right
+    for k in range(10):
+        x, y = 4 + k, 12 - k
+        w = 2 if 2 <= k <= 7 else 1
+        for t in range(1, w + 1):
+            i.px(x - t, y - t + 1, "#f4f0e4" if k % 2 else "#dcd8c8")    # upper-left barbs
+            i.px(x + t, y + t - 1, "#e4e0d0" if k % 2 else "#c8c4b4")    # lower-right barbs
+    i.line(3, 13, 13, 3, "#a89878")      # quill
+    i.px(2, 14, "#8a7a60")
+    i.px(8, 6, "#ffffff"); i.px(9, 5, "#ffffff")
+    return i
+icons['feather'] = feather
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():

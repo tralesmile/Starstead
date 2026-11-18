@@ -20,7 +20,10 @@ func test_cycle_and_zoom() -> void:
 	check_eq(TargetMath.effective_zoom(2, -1), 1)
 	check_eq(TargetMath.effective_zoom(1, -1), 1)
 	check_eq(TargetMath.effective_zoom(3, 0), 3)
-	check_eq(TargetMath.zoom_step(3, 1), 3)
+	check_eq(TargetMath.zoom_step(4, 1), 4)
+	check_eq(TargetMath.zoom_value(TargetMath.DEFAULT_STEP), 1.5, "default view is zoomed out from 2x")
+	check_eq(TargetMath.step_for_zoom(3.0), 4)
+	check_eq(TargetMath.step_for_zoom(1.0), 1)
 	check_eq(TargetMath.zoom_step(1, -1), 1)
 
 func test_hotbar_number_keys() -> void:

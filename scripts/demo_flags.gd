@@ -50,6 +50,14 @@ func on_process() -> void:
 		GameState.debt_paid = 500
 		m.story_view.poll(2)
 		m.story_view.toggle_log()
+	if "--hunt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: wildlife around the player, a deer and a rabbit right in front of the club
+		GameState.bag.add("club", 1)
+		for id in ["deer", "rabbit", "boar"]:
+			m.animals._spawn(id, m.player.position + Vector2(40 + 26 * ["deer", "rabbit", "boar"].find(id), -6), null)
+		m.animals._spawn("deer", m.player.position + Vector2(-60, 30), null)
+	if "--hunt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 12:
+		m.animals.hunt(m.player.position, Vector2.RIGHT, CombatModel.weapon("club"))
+		m.animals.hunt(m.player.position, Vector2.RIGHT, CombatModel.weapon("club"))
 	if "--shop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the stall with a glut of turnips already sold
 		GameState.bag.add("turnip", 12)
 		GameState.bag.add("carp", 2)

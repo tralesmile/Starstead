@@ -28,3 +28,22 @@ static func police_count(star_n: int) -> int:
 static func fine(star_n: int) -> int:
 	## Paid on arrest; also drops honest reputation (caller).
 	return 50 * star_n * star_n
+
+static func star_fill(heat: float, index: int) -> float:
+	## 0..1 fill of star `index` (0-based): full below the current level, partial on the current one, empty above.
+	return clampf((heat - STAR_STEP * index) / STAR_STEP, 0.0, 1.0)
+
+static func star_points(center: Vector2, radius: float) -> PackedVector2Array:
+	## 5-point star polygon (10 vertices, point up) for the wanted HUD.
+	var pts := PackedVector2Array()
+	for i in 10:
+		var a := -PI / 2.0 + i * PI / 5.0
+		var r := radius if i % 2 == 0 else radius * 0.45
+		pts.append(center + Vector2(cos(a), sin(a)) * r)
+	return pts
+
+static func siren_phase(t: float, seen: bool) -> int:
+	## 0 off, 1 red, 2 blue: alternates 3x/s while a cop sees you, off when hidden.
+	if not seen:
+		return 0
+	return 1 if int(floor(t * 3.0)) % 2 == 0 else 2

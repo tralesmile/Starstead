@@ -61,5 +61,9 @@
  "mackerel": 51,
  "tuna": 52,
  "swordfish": 53,
- "smuggle_crate": 54
+ "smuggle_crate": 54,
+ "raw_meat": 55,
+ "hide": 56,
+ "feather": 57,
+ "grilled_meat": 37
 }

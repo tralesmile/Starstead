@@ -18,3 +18,4 @@
 - A GDScript subclass that defines its own _init() must call super._init() first, or the parent never builds its nodes (SmeltView: canvas was null). Rooms/mines far from the map need Player.indoors, else the out-of-world sdf reads as deep water (shore slowdown, reflection ghost).
 - A screenshot far from the feature looks like 'nothing rendered': when --at shows plain meadow, check the distance in cells (zoom 1 = 20x11 cells) before debugging; screenshot several spots around a new area.
 - Tyre marks last 40 s on the circuit (VehicleMath.skid_life), 6 s elsewhere. Check each new CarView member against test compile: CarView refers to CircuitModel/DriftScore class_names, so run --import before tests.
+- A CanvasItem that only calls queue_redraw while active keeps its last frame when it goes idle: redraw once on every state change (the K log looked stuck open). Owner playtest beats agent screenshots: read docs/PLAYTEST.md owner entries first each run.

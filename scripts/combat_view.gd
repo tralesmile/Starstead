@@ -31,6 +31,8 @@ func _state(node: Node2D, sprite: Sprite2D) -> Dictionary:
 		foes[node] = {"hp": CombatModel.MAX_HP, "down": 0.0, "kv": Vector2.ZERO, "bar": bar, "sprite": sprite}
 	return foes[node]
 
+var hunt_cb := Callable()   # (origin, face, weapon) -> hits on wild animals (AnimalView.hunt)
+
 func attack(weapon_id: String) -> int:
 	## Swing now; returns how many people were hit (0 while on cooldown).
 	if cd > 0.0:
@@ -57,6 +59,8 @@ func attack(weapon_id: String) -> int:
 			continue
 		hits += 1
 		_hurt(node, s, float(w["dmg"]), float(w["force"]), player.position)
+	if hunt_cb.is_valid():
+		hits += int(hunt_cb.call(origin, face, w))
 	if hits > 0:
 		player.shake(1.0, 0.1)
 		Engine.time_scale = 0.1

@@ -27,12 +27,25 @@ static func facing_toward(player_pos: Vector2, c: Vector2i, current: int, tile: 
 static func cycle(sel: int, dir: int, n: int) -> int:
 	return posmod(sel + dir, maxi(n, 1))
 
-## Zoom: user step 1..3, bias -1 while driving/riding; result stays within 1..3.
+## Zoom: user step 1..4 maps to ZOOMS (owner 2026-11-18: 2x was too close, default is now 1.5x), bias -1 while driving/riding.
+const ZOOMS := [1.0, 1.5, 2.0, 3.0]
+const DEFAULT_STEP := 2
+
 static func effective_zoom(step: int, bias: int) -> int:
-	return clampi(step + bias, 1, 3)
+	return clampi(step + bias, 1, ZOOMS.size())
 
 static func zoom_step(step: int, dir: int) -> int:
-	return clampi(step + dir, 1, 3)
+	return clampi(step + dir, 1, ZOOMS.size())
+
+static func zoom_value(step: int) -> float:
+	return float(ZOOMS[clampi(step, 1, ZOOMS.size()) - 1])
+
+static func step_for_zoom(z: float) -> int:
+	var best := 1
+	for i in ZOOMS.size():
+		if absf(float(ZOOMS[i]) - z) < absf(float(ZOOMS[best - 1]) - z):
+			best = i + 1
+	return best
 
 ## Number key -> hotbar slot (1..9 -> 0..8, 0 -> 9), -1 if not a number key.
 static func key_slot(keycode: int) -> int:
