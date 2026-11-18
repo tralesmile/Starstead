@@ -196,7 +196,7 @@ func _physics_process(delta: float) -> void:
 				m.modulate = Color(1, 1, 1, _skid_a)
 				world.add_child(m)
 				var tw := m.create_tween()
-				tw.tween_property(m, "modulate:a", 0.0, 6.0)
+				tw.tween_property(m, "modulate:a", 0.0, VehicleMath.skid_life(_on_circuit, player.rain))
 				tw.tween_callback(m.queue_free)
 
 func repair(bag: Inventory) -> String:

@@ -118,3 +118,7 @@ func test_car_lights() -> void:
 	check(VehicleMath.is_braking(-1.0, 50.0, false), "reverse key while rolling forward brakes")
 	check(not VehicleMath.is_braking(-1.0, -5.0, false), "reversing is not braking")
 	check(VehicleMath.is_braking(0.0, 0.0, true), "handbrake")
+
+func test_skid_life() -> void:
+	check(VehicleMath.skid_life(true, 0.0) > 5.0 * VehicleMath.skid_life(false, 0.0), "rubber builds on the circuit")
+	check(VehicleMath.skid_life(true, 1.0) < VehicleMath.skid_life(true, 0.0), "rain washes marks")

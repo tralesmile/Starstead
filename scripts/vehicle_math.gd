@@ -149,5 +149,9 @@ static func light_levels(night: float, braking: bool, reversing: bool = false) -
 		tail = maxf(tail, 0.95)
 	return {"head": head, "tail": tail, "reverse": 0.7 if reversing else 0.0}
 
+static func skid_life(on_circuit: bool, rain: float) -> float:
+	## Seconds a tyre mark stays: rubber builds up on the circuit (40 s), rain washes it faster, elsewhere 6 s.
+	return (40.0 if on_circuit else 6.0) * (1.0 - 0.5 * clampf(rain, 0.0, 1.0))
+
 static func is_braking(throttle: float, forward_speed: float, handbrake: bool) -> bool:
 	return handbrake or (throttle < 0.0 and forward_speed > 1.0)
