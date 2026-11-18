@@ -19,5 +19,7 @@ static func build(world: World, lights: Array) -> void:
 				lights.append(l)
 			"bench":
 				world.make_prop("res://assets/sprites/bench.png", c, Vector2(28, 8), Vector2(0, -10))
+			"planter":
+				world.make_prop("res://assets/sprites/planter.png", c, Vector2(22, 8), Vector2(0, -8))
 			"fountain":
 				world.make_prop("res://assets/sprites/fountain.png", c, Vector2(52, 20), Vector2(0, -24))

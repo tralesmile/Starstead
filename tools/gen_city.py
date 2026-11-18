@@ -543,6 +543,19 @@ def bench():
     save(im, "bench.png")
 
 
+def planter():
+    im, d = new(28, 22)
+    shadow(d, 2, 21, 25)
+    d.ellipse([3, 1, 24, 12], fill=(46, 96, 52), outline=OUT)                     # shrub
+    d.ellipse([6, 0, 18, 8], fill=(66, 124, 64))
+    for (x, y, c) in ((8, 3, (236, 120, 140)), (15, 5, (250, 220, 90)), (20, 4, (236, 120, 140)), (11, 8, (250, 220, 90))):
+        d.rectangle([x, y, x + 1, y + 1], fill=c)                                 # blossoms
+    d.rectangle([2, 11, 25, 19], fill=(150, 146, 138), outline=OUT)               # stone box
+    d.line([3, 12, 24, 12], fill=(190, 186, 176))
+    d.line([3, 18, 24, 18], fill=(110, 106, 100))
+    save(im, "planter.png")
+
+
 def fountain():
     rng = random.Random(68)
     im, d = new(64, 48)
@@ -813,7 +826,7 @@ def main():
     os.makedirs(SPR, exist_ok=True)
     for fn in (shop_building, bank_building, police_building, hospital_building, garage_building,
                apartment_a, apartment_b, town_hall, cafe_building,
-               streetlamp, bench, fountain,
+               streetlamp, bench, planter, fountain,
                int_counter, int_teller, int_vault, int_desk, int_cell, int_hosp_bed, int_lift,
                int_tyres, int_medcab, int_register):
         fn()

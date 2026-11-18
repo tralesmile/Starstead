@@ -31,11 +31,14 @@ var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
 var story_view: StoryView
+var map_view: MapView
+var hud: Hud
 var chest_view: ChestView
 var cook_view: CookView
 var sports: SportsView
 var garage_view: GarageView
 var drops_view: DropsView
+var tree_fall: TreeFallView
 var float_fx: FloatFx
 var mouse_aim := false
 var legend: Label
@@ -106,13 +109,14 @@ func _ready() -> void:
 	flash_rect.color = Color(0.85, 0.9, 1.0, 0.0)
 	fog_layer.add_child(flash_rect)
 	add_child(fog_layer)
-	add_child(Hud.new())
+	hud = Hud.new()
+	add_child(hud)
 	hotbar = Hotbar.new()
 	for cid in GameState.farm.crops:
 		hotbar.seed_ids.append(GameState.farm.crops[cid].seed)
 	add_child(hotbar)
 	toast = Label.new()
-	toast.position = Vector2(8, 24)
+	toast.position = Vector2(8, 48)
 	add_child(toast)
 	ambient = AmbientView.new()
 	ambient.player = player
@@ -135,6 +139,7 @@ func _ready() -> void:
 	car.world = world
 	car.position = _car_spot()
 	car.toast.connect(_say)
+	hud.car = car
 	car.drift_banked.connect(func(p):
 		var best: int = int(GameState.sport_best.get("drift", 0))
 		GameState.sport_best["drift"] = maxi(best, p)
@@ -186,6 +191,8 @@ func _ready() -> void:
 	inv_view.closed.connect(func(): player.set_physics_process(true))
 	inv_view.ate.connect(func(n, g): _say("Ate %s (+%d energy)" % [n, g]))
 	add_child(inv_view)
+	map_view = MapView.new().setup(player, world.gen, _workshop_door())
+	add_child(map_view)
 	story_view = StoryView.new()
 	story_view.said.connect(func(t): _say(t); toast_t = 5.0)
 	story_view.closed.connect(func(): player.set_physics_process(true))
@@ -247,6 +254,8 @@ func _ready() -> void:
 	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
+	tree_fall = TreeFallView.new()
+	tree_fall.setup(world, drops_view)
 	float_fx = FloatFx.new()
 	world.add_child(float_fx)
 	drops_view.picked.connect(func(id, n): float_fx.pickup(player.position, id, n))
@@ -254,6 +263,7 @@ func _ready() -> void:
 	cursor = CursorView.new()
 	cursor.z_index = 30
 	world.add_child(cursor)
+	world.add_child(CropHoverView.new().setup(cursor))
 	legend = Label.new()
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
@@ -262,7 +272,7 @@ func _ready() -> void:
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	goal_label = Label.new()
-	goal_label.position = Vector2(8, 24)
+	goal_label.position = Vector2(8, 48)
 	goal_label.add_theme_font_size_override("font_size", 11)
 	goal_label.modulate = Color(1.0, 0.92, 0.55, 0.9)
 	leg_layer.add_child(goal_label)
@@ -398,6 +408,13 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if not shop.visible and not dialogue.visible and not inv_view.visible and not story_view.log_open() and map_view.handle(e):
+		if not car.driving:
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(not map_view.is_open())
+		get_viewport().set_input_as_handled()
+		return
 	if not shop.visible and not car.driving and not dialogue.visible and not inv_view.visible and not journal_view.visible and story_view.handle(e):
 		if story_view.log_open():
 			player.velocity = Vector2.ZERO
@@ -571,6 +588,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			if GameState.can.is_empty():
 				_say("The can is empty - face the water and use it to refill")
 				return
+		if hotbar.current() == "axe" and tree_fall.hit_log(cell, player.position):
+			return  # chopping a fallen trunk into logs
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
 		var line_cells: Array = [cell]
 		if msg != "" and (hotbar.current() == "hoe" or hotbar.current() == "watering_can"):
@@ -585,12 +604,15 @@ func _unhandled_input(e: InputEvent) -> void:
 						GameState.can.use()
 		if msg.begins_with("Harvested"):
 			_quality_pass(dl)
+		if hotbar.current() == "axe" and msg.begins_with("Got") and world.gen.trees.has(cell):
+			dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
 			var tspr := world.prop_sprite(cell)
 			if msg.begins_with("Got"):
-				ChopFx.fall(world, tspr, (world.props[cell] as Node2D).position, ChopFx.fall_dir(player.position.x, (world.props[cell] as Node2D).position.x))
+				var tb := (world.props[cell] as Node2D).position
+				tree_fall.fell(cell, tspr, tb, ChopFx.fall_dir(player.position.x, tb.x))
 			elif msg == "Hit":
 				ChopFx.wobble(tspr, tspr)
 				ChopFx.leaves(world, (world.props[cell] as Node2D).position + Vector2(0, -34), 5)
@@ -959,3 +981,9 @@ func _merge(a: Dictionary, b: Dictionary) -> Dictionary:
 	var o := a.duplicate()
 	o.merge(b)
 	return o
+
+func _workshop_door() -> Vector2i:
+	for b in town.buildings:
+		if b.get("id", "") == "workshop":
+			return b["door"]
+	return Vector2i(20, 30)

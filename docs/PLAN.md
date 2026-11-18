@@ -24,7 +24,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
-- [ ] Next graphics ideas: shadow under bridges/causeways on water, flat grey plazas in Port Halden need paving variation and planters (playtest 10 ugliest), wet footprints on quay
+- [x] Port Halden plazas: checkered slab tone, terracotta inlays, 8 planters (run 11). [ ] Next graphics ideas: shadow under bridges/causeways on water, wet footprints on quay
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
 - [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [x] wet-asphalt shine and puddles in rain (ground shader `wet`, World.set_wet)
 - [x] Harbour quay in the paved-slab shader look (grey stone, sunlit curb) instead of orange dirt
@@ -50,6 +50,7 @@ Physics / feel:
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
 - [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [x] tyre marks linger 40 s on the circuit (skid_life, tested)
 - [x] Physics: pit-lane/infield speed limit (DriftScore.pit_cap) and drift scoring on the circuit (DriftScore: multiplier by drift time, banks on clean exit, crash loses it, best saved). [ ] drift leaderboard/ghost, tyre squeal audio
+- [x] Car high-speed understeer (VehicleMath.steer_scale: up to 40% less steering at top speed; tested)
 - [x] Car tyre grip by surface (VehicleMath.surface_grip: asphalt 1.2, path 0.95, grass 0.7, wet bank 0.5, rain slicks asphalt most), wired into the car step
 - [x] Car is capped to half speed on city sidewalks (VehicleMath.surface_cap sidewalk, tested). [x] skid mark opacity by surface (VehicleMath.skid_alpha: asphalt strongest, rain washes out) and kerb bump (VehicleMath.kerb_bump: fast drop onto a sidewalk/quay loses up to 25% speed + camera jolt, tested). [ ] tyre squeal audio
 - [x] Player acceleration + friction (no instant start/stop), tested in PlayerMath
@@ -85,12 +86,12 @@ Physics / feel:
 - [x] Wanted HUD looked bad: drawn badge with 5 stars that fill with heat + red/blue siren strip when seen (WantedHud, tested); cops lighter police-blue instead of black faces
 - [x] Hunting: club hits wild animals (HuntModel + AnimalView.hunt), drops raw meat / hide / feathers, boar fights back, game restocks overnight; new deer, rabbit, boar sprites (gen_wildlife.py), more wildlife around the start (WILD table), Grilled Meat recipe. [ ] bow/traps, butcher/tannery, fists on the hand slot, hunting licence/ranger heat
 - [ ] First 30 seconds: start with almost nothing (hands + a hoe?) and craft/earn tools (Minecraft-like) instead of a full bag; the goal line must say what to do
-- [ ] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad) (CLAIMED 2026-11-18)
+- [x] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad) (CropInfo hover label + stage bar, new soil rows and sprout art; tested)
 - [ ] Fishing: character must visibly hold the rod and cast it; improve how fishing looks and feels
-- [ ] Chopping: tree should fall, then be chopped into logs you pick up (CLAIMED 2026-11-18)
-- [ ] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (CLAIMED 2026-11-18)
-- [ ] Car: bigger on screen, show fuel gauge, mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
-- [ ] Energy bar: make energy readable (bar + number in the HUD) (CLAIMED 2026-11-18)
+- [x] Chopping: tree should fall, then be chopped into logs you pick up (TreeFall: last hit topples the tree, trunk needs 2 chops, wood drops; tested. logs not saved)
+- [x] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (MapModel/MapView: M opens terrain+roads+regions+POIs+player dot, fuel stations in orange with nearest-fuel hint; tested)
+- [ ] Car (fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
+- [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
 - [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom)
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
 - [ ] Story-first start: begin in a small story area, unlock the city, then further out and other planets

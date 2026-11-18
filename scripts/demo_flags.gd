@@ -45,6 +45,8 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--map-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: world map open
+		m.map_view.toggle()
 	if "--story-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: quest log with a few beats done
 		GameState.story.notify("enter_farmhouse")
 		GameState.debt_paid = 500
@@ -115,7 +117,16 @@ func on_process() -> void:
 		var f := Engine.get_process_frames()
 		m.hotbar.selected = 4
 		m.player.facing = PlayerMath.Facing.UP
-		if f > 3 and f % 5 == 0 and f <= 28:
+		if f == 2:  # stand just below the nearest grass tree so the chops land on it
+			var best := Vector2i.ZERO
+			var bd := 1e9
+			for tc in m.world.gen.trees:
+				var dd: float = Vector2(tc).distance_to(Vector2(TargetMath.cell_of(m.player.position)))
+				if dd < bd and m.world.gen.sdf_at(tc.x, tc.y + 1) > 3.0:
+					bd = dd
+					best = tc
+			m.player.position = TargetMath.center_of(best + Vector2i(0, 1))
+		if f > 3 and f % 5 == 0 and f <= 45:
 			var ev := InputEventAction.new()
 			ev.action = "use_tool"
 			ev.pressed = true

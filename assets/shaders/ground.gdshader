@@ -200,6 +200,9 @@ void fragment() {
 					float wsw = wet;
 					col = mix(vec3(0.66, 0.64, 0.60), vec3(0.73, 0.71, 0.66), step(0.7, sp));
 					col = mix(col, vec3(0.50, 0.48, 0.45), max(step(sl.x, 0.07), step(sl.y, 0.07)) * 0.8);
+					float chk = mod(float(tcell.x + tcell.y), 2.0);                                   // paving variation: checkered slab tone + inlaid band every 4th tile
+					col *= 0.96 + 0.05 * chk;
+					if (mod(float(tcell.x), 4.0) == 0.0 && mod(float(tcell.y), 4.0) == 0.0 && sl.x > 0.3 && sl.x < 0.7 && sl.y > 0.3 && sl.y < 0.7) col = mix(col, vec3(0.62, 0.50, 0.40), 0.55);  // terracotta inlay
 					col *= 1.0 - 0.15 * wsw;
 					vec4 ns = texelFetch(data, tcell + ivec2(0, -1), 0);
 					if (ns.g > 0.5 && ns.a < 0.25 && fract(tile.y) < 0.07) col = mix(col, vec3(0.84, 0.82, 0.77), 0.9);  // sunlit curb lip

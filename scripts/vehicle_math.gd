@@ -41,11 +41,16 @@ static func step(vel: Vector2, heading: float, throttle: float, steer: float, ha
 	vs *= exp(-g * grip_mul * delta)
 	# steering needs speed; reverses when rolling backwards; handbrake adds yaw
 	var speed_factor := clampf(absf(vf) / 80.0, 0.0, 1.0)
-	var yaw := steer * STEER_RATE * speed_factor * (1.0 if vf >= 0.0 else -1.0)
+	var yaw := steer * STEER_RATE * speed_factor * steer_scale(absf(vf)) * (1.0 if vf >= 0.0 else -1.0)
 	if handbrake:
 		yaw *= 1.5
 	var h := wrapf(heading + yaw * delta, -PI, PI)
 	return {"vel": f * vf + side * vs, "heading": h}
+
+const STEER_LOSS := 0.4   # share of steering lost at top speed (high-speed understeer: nimble in town, stable on the straight)
+
+static func steer_scale(speed: float) -> float:
+	return 1.0 - STEER_LOSS * clampf(speed / MAX_SPEED, 0.0, 1.0)
 
 const FUEL_MAX := 40.0
 const FUEL_BURN := 0.35   # units/s at full throttle (idle burns a little)

@@ -99,6 +99,8 @@ static func props() -> Array:
 		x += 8
 	for p in [Vector2i(178, 4), Vector2i(186, 4), Vector2i(198, 4), Vector2i(206, 4)]:
 		out.append({"kind": "bench", "cell": p})
+	for p in [Vector2i(176, 3), Vector2i(188, 3), Vector2i(196, 3), Vector2i(208, 3), Vector2i(176, 8), Vector2i(188, 8), Vector2i(196, 8), Vector2i(208, 8)]:
+		out.append({"kind": "planter", "cell": p})   # plaza corners
 	out.append({"kind": "fountain", "cell": Vector2i(202, 6)})
 	return out
 

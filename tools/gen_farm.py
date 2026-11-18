@@ -23,10 +23,10 @@ def hx(s):
 
 
 # ------------------------------------------------------------------ soil
-DRY = dict(base=hx("#8a5a34"), crest=hx("#b07c47"), crest2=hx("#9c6a3b"), furrow=hx("#5e3b22"),
-           deep=hx("#4a2e1a"), edge1=hx("#4a2e1a"), edge2=hx("#6b4429"), clod=hx("#a06f3f"), speck=hx("#6e4528"))
-WET = dict(base=hx("#5e3c24"), crest=hx("#7e5535"), crest2=hx("#6b4529"), furrow=hx("#3c2616"),
-           deep=hx("#2e1c10"), edge1=hx("#2e1c10"), edge2=hx("#4a2e1c"), clod=hx("#714a2e"), speck=hx("#4a2e1c"))
+DRY = dict(base=hx("#6e4527"), crest=hx("#8f5d33"), crest2=hx("#7a4d2b"), furrow=hx("#4a2d19"),
+           deep=hx("#35200f"), edge1=hx("#35200f"), edge2=hx("#553520"), clod=hx("#a67444"), speck=hx("#3f2614"))
+WET = dict(base=hx("#46291a"), crest=hx("#5c3822"), crest2=hx("#4f2f1d"), furrow=hx("#2c190f"),
+           deep=hx("#1f110a"), edge1=hx("#1f110a"), edge2=hx("#341e12"), clod=hx("#6a4429"), speck=hx("#2a170d"))
 
 
 def tile_noise(seed):
@@ -55,9 +55,11 @@ def soil_tile(mask, P, wet, noise, puddles):
                 continue
             depth = -d  # distance inside the edge
             # furrow row profile (period 8), with a gentle x-periodic wobble
-            wob = 1.2 * math.sin(2 * math.pi * x / 16.0 + 0.7) + 0.6 * math.sin(2 * math.pi * x / 32.0 + 2.0)
+            wob = 0.7 * math.sin(2 * math.pi * x / 32.0 + 0.7)
             ry = (y + int(round(wob))) % 8
             col = [P["crest"], P["crest"], P["crest2"], P["base"], P["furrow"], P["deep"], P["furrow"], P["base"]][ry]
+            if ry == 0 and not wet and noise[y][x] > 0.55:
+                col = tuple(min(255, int(c * 1.14)) for c in col)  # sunlit top of each ridge
             if ry in (3, 7) and noise[y][x] > 0.82:
                 col = P["clod"]
             if ry in (0, 1) and noise[y][x] < 0.12:
@@ -65,11 +67,11 @@ def soil_tile(mask, P, wet, noise, puddles):
             if ry in (4, 5, 6) and noise[y][x] > 0.9:
                 col = P["speck"]
             if wet:
-                # blue-ish sheen on ridge crests
-                if ry in (0, 1):
-                    col = tuple(int(c * 0.82 + b * 0.18) for c, b in zip(col, (96, 128, 170)))
+                # cool sheen on ridge crests, wet shine on the top row
+                if ry == 0:
+                    col = tuple(int(c * 0.7 + b * 0.3) for c, b in zip(col, (110, 140, 175)))
                 if (x, y) in puddles:
-                    col = (150, 188, 214) if ry != 5 else (112, 150, 184)
+                    col = (120, 160, 190) if ry != 5 else (78, 108, 140)
             # dark rounded edge band
             if depth < 1.0:
                 col = OUTLINE
@@ -88,7 +90,7 @@ def make_soil(P, wet, name):
     if wet:
         # tiny puddle highlights inside furrow rows (periodic positions, wrap-safe)
         for row in (5, 13, 21, 29):
-            for _ in range(2):
+            for _ in range(1):
                 px = r.randrange(0, 30)
                 for k in range(r.choice((2, 3))):
                     puddles.add(((px + k) % 32, row))
@@ -168,9 +170,9 @@ def crop_stage(kind, st):
             d.point((x, y), fill=hx("#e8d29a"))
             d.point((x, y + 1), fill=hx("#9c7a44"))
     elif st == 1:
-        d.line([(16, 27), (16, 22)], fill=dark)
-        leaf(d, 16, 23, -150, 5, 2, mid, lite, dark)
-        leaf(d, 16, 23, -30, 5, 2, mid, lite, dark)
+        d.line([(16, 27), (16, 21)], fill=lite)
+        leaf(d, 16, 22, -140, 7, 2.2, mid, lite, dark)
+        leaf(d, 16, 22, -40, 7, 2.2, mid, lite, dark)
     elif st == 2:
         d.line([(16, 27), (16, 20)], fill=dark)
         for a, l in ((-160, 8), (-20, 8), (-115, 8), (-65, 8)):
