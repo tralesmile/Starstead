@@ -8,10 +8,12 @@ signal garage_requested
 signal cook_requested
 signal chest_requested
 signal sleep_requested
+signal service_requested(action: String)
 signal loot_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
+const ACTIONS := ["sleep", "loot", "chest", "cook", "garage", "shop", "bank", "heal", "fine", "coffee", "notice"]
 var world: Node2D
 var player: Player
 var active := false
@@ -172,20 +174,20 @@ func rel() -> Vector2:
 func prompt() -> String:
 	if not active or busy:
 		return ""
-	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest", "cook", "garage"])
+	var a := InteriorModel.action_near(layout, rel(), ACTIONS)
 	match String(a.get("action", "")):
 		"garage": return "E: Garage services"
 		"cook": return "E: Cook at the stove"
 		"chest": return "E: Open the storage chest"
 		"sleep": return "E: Sleep until morning"
 		"loot": return "E: Search the %s" % a["id"]
-	return ""
+	return CityActions.prompt(String(a.get("action", "")))
 
 func interact() -> bool:
 	## E key inside a room; returns true when handled.
 	if not active or busy:
 		return false
-	var a := InteriorModel.action_near(layout, rel(), ["sleep", "loot", "chest", "cook", "garage"])
+	var a := InteriorModel.action_near(layout, rel(), ACTIONS)
 	match String(a.get("action", "")):
 		"garage":
 			garage_requested.emit()
@@ -201,6 +203,9 @@ func interact() -> bool:
 			return true
 		"loot":
 			loot_requested.emit(building)
+			return true
+		"shop", "bank", "heal", "fine", "coffee", "notice":
+			service_requested.emit(String(a["action"]))
 			return true
 	return true
 

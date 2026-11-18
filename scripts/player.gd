@@ -88,7 +88,7 @@ func _physics_process(delta: float) -> void:
 	var grip := 1.0
 	if gen != null:
 		var c := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
-		var on_path := gen.tile_at(c.x, c.y) >= WorldGen.PATH and gen.tile_at(c.x, c.y) < WorldGen.PATH + 3
+		var on_path := WorldGen.is_road(gen.tile_at(c.x, c.y))
 		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
 		grip = PlayerMath.wet_grip(rain, on_path)
 	grip *= PlayerMath.ride_grip(speed_mult)

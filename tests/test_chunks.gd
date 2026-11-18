@@ -147,4 +147,4 @@ func test_spine_is_walkable_everywhere() -> void:
 		for x in 64:
 			var y := 32 + int(round(sin((x + (ch.x - 3) * 64) * 0.2) * 3.0))
 			var t := g.tile_at(x, y)
-			check(t >= WorldGen.PATH and t < WorldGen.PATH + 3, "spine open at chunk %s x=%d" % [ch, x])
+			check(WorldGen.is_road(t), "spine open at chunk %s x=%d" % [ch, x])

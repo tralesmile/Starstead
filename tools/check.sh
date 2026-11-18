@@ -13,7 +13,7 @@ if [ "$1" != "quick" ]; then
   # name|frames|flags
   for spec in "start|12|" "farm|12|--farm-demo" "car|30|--car-demo" "race|40|--car-demo --race-demo" "build|12|--build-demo --zoom=1" \
               "bag|10|--bag-demo" "chest|8|--chest-demo" "cook|8|--cook-demo" "garage|8|--garage-demo" "journal|8|--journal-demo" \
-              "fx|14|--fx-demo" "pots|12|--pot-demo" "autumn|12|--season=2" "night|12|--hour=22"; do
+              "city|40|--at=192,-2 --zoom=1 --hour=12" "bank|20|--enter-demo=city_bank" "fx|14|--fx-demo" "pots|12|--pot-demo" "autumn|12|--season=2" "night|12|--hour=22"; do
     IFS='|' read -r name frames flags <<< "$spec"
     ERR=$(tools/screenshot.sh "$frames" -- $flags 2>&1 | grep -E "SCRIPT|SHADER ERROR")
     cp "$(ls /tmp/mv*.png | tail -1)" "/tmp/check/$name.png" 2>/dev/null

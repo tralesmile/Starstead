@@ -22,6 +22,7 @@ var animals: Array = []  # tamed animal states (AnimalModel dicts)
 var job_xp: Dictionary = {}  # job id -> xp
 var skill_xp: Dictionary = {}  # skill id -> xp (SkillModel)
 var world: String = "earth"
+var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
 
@@ -42,7 +43,7 @@ func has_item(id: String, n: int = 1) -> bool:
 
 func to_dict() -> Dictionary:
 	return {
-		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money,
+		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
 		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "skill_xp": skill_xp,
@@ -53,6 +54,7 @@ func from_dict(d: Dictionary) -> bool:
 		return false
 	clock.from_dict(d.get("clock", {}))
 	money = int(d.get("money", 500))
+	bank_balance = int(d.get("bank_balance", 0))
 	inventory = {}
 	for k in d.get("inventory", {}):
 		inventory[k] = int(d["inventory"][k])

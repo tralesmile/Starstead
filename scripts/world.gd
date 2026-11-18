@@ -63,6 +63,13 @@ func build(seed_value: int = 1) -> void:
 	_build_lanterns()
 	_build_world_wall()
 
+static func _city_alpha(t: int, wc: Vector2i) -> float:
+	if t == WorldGen.ASPHALT:
+		return 0.0
+	if WorldGen.is_road(t) and CityModel.in_rect(wc):
+		return 0.5
+	return 1.0
+
 static func data_image(g: WorldGen, pad: int = 0) -> Image:
 	## (64+2*pad)^2 RGBA8: R = sdf mapped to 0..1 (0.5 = shore), G = path mask, B = dirt mask.
 	## pad > 0 copies the neighbouring chunks' edge cells (via g.grid or the chunk's own stream) so the
@@ -86,9 +93,11 @@ static func data_image(g: WorldGen, pad: int = 0) -> Image:
 				t = g.tile_at(clampi(cx, 0, WorldGen.SIZE - 1), clampi(cy, 0, WorldGen.SIZE - 1))
 				sd = g.sdf_at(clampi(cx, 0, WorldGen.SIZE - 1), clampi(cy, 0, WorldGen.SIZE - 1))
 			var r := clampf(sd / 16.0 + 0.5, 0.0, 1.0)
-			var pth := 1.0 if t >= WorldGen.PATH and t < WorldGen.PATH + 3 else 0.0
+			var pth := 1.0 if WorldGen.is_road(t) else 0.0
 			var drt := 1.0 if t >= WorldGen.DIRT and t < WorldGen.DIRT + 3 else 0.0
-			img.set_pixel(x, y, Color(r, pth, drt, 1.0))
+			if t == WorldGen.ASPHALT:
+				drt = [0.0, 0.5, 1.0][CityModel.lane(origin + Vector2i(cx, cy))]  # asphalt reuses B for the lane line
+			img.set_pixel(x, y, Color(r, pth, drt, _city_alpha(t, origin + Vector2i(cx, cy))))  # alpha: 1 dirt path, 0.5 city sidewalk, 0 asphalt
 	return img
 
 func _build_ground() -> void:

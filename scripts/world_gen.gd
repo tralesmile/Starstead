@@ -8,6 +8,7 @@ const DIRT := 3    # 3-5
 const PATH := 6    # 6-8
 const WATER_SHALLOW := 9
 const WATER_DEEP := 10
+const ASPHALT := 11  # city streets (CityModel); also counts as road
 
 const HOME := Vector2i(3, 4)   # chunk coordinates of the homestead (cells 0..63 = world cells)
 const PAD := 8                 # sdf padding so shores match across chunk edges
@@ -65,6 +66,8 @@ func _water_noise(wx: int, wy: int) -> bool:
 	var ch := Vector2i(HOME.x + floori(float(wx) / SIZE), HOME.y + floori(float(wy) / SIZE))
 	if ch.x < 0 or ch.y < 0 or ch.x >= 8 or ch.y >= 8:
 		return true  # beyond the world edge is sea
+	if CityModel.in_rect(Vector2i(wx, wy)):
+		return false
 	return _n.get_noise_2d(wx, wy) < -0.14
 
 var _n: FastNoiseLite
@@ -109,9 +112,21 @@ func generate() -> void:
 				# outside the homestead the main road crosses lakes on a causeway (the home chunk keeps its old layout)
 				if not is_water(tiles[(y + dy) * SIZE + x]) or not is_home():
 					tiles[(y + dy) * SIZE + x] = PATH + r.randi() % 3
+	for y in SIZE:
+		for x in SIZE:
+			var wc := Vector2i(x + _ox, y + _oy)
+			if not CityModel.in_rect(wc):
+				continue
+			if is_water(tiles[y * SIZE + x]):
+				tiles[y * SIZE + x] = GRASS
+			var k := CityModel.tile_kind(wc)
+			if k == "asphalt":
+				tiles[y * SIZE + x] = ASPHALT
+			elif k == "sidewalk":
+				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3
 	for rc in road_cells:
 		var ri: int = rc.y * SIZE + rc.x
-		if not is_water(tiles[ri]):
+		if not is_water(tiles[ri]) and not CityModel.in_rect(Vector2i(rc.x + _ox, rc.y + _oy)):
 			tiles[ri] = PATH + r.randi() % 3
 	# keep spawn (32,32) dry
 	if is_home():
@@ -122,6 +137,8 @@ func generate() -> void:
 	for y in SIZE:
 		for x in SIZE:
 			var t := tiles[y * SIZE + x]
+			if t <= 2 and CityModel.in_rect(Vector2i(x + _ox, y + _oy)):
+				continue  # the city park stays clear of trees, rocks and bushes
 			if t <= 2 and (not is_home() or absi(x - 32) + absi(y - 32) > 6):
 				var roll := r.randf()
 				var dens := (0.015 + 0.3 * maxf(0.0, forest.get_noise_2d(x + _ox, y + _oy))) * tree_mul
@@ -157,8 +174,11 @@ func generate() -> void:
 		for x in SIZE:
 			var c := Vector2i(x, y)
 			var roll := tr.randf()
-			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not (c in trees) and not (c in rocks) and not (c in bushes):
+			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
 				tufts.append(c)
+
+static func is_road(t: int) -> bool:
+	return (t >= PATH and t < PATH + 3) or t == ASPHALT
 
 static func is_water(t: int) -> bool:
 	return t == WATER_SHALLOW or t == WATER_DEEP

@@ -82,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		if g != null:
 			var cc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
 			var tt: int = g.tile_at(cc.x, cc.y)
-			surf = VehicleMath.surface_cap(tt >= WorldGen.PATH and tt < WorldGen.PATH + 3, g.sdf_at(cc.x, cc.y), player.rain)
+			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain)
 		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf)
 		heading = r["heading"]
 	else:

@@ -207,6 +207,7 @@ func _ready() -> void:
 		player.move_v = Vector2.ZERO
 		player.set_physics_process(false)
 		chest_view.open())
+	interior.service_requested.connect(func(a): CityActions.run(self, a))
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
 	add_child(interior)
 	drops_view = DropsView.new()
@@ -793,6 +794,7 @@ func _end_day() -> void:
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
 	animals.day_tick()
+	GameState.bank_balance += CityServices.daily_interest(GameState.bank_balance)
 	GameState.energy.new_day(false)
 	world.sync_props(GameState.nodes)
 	GameState.save_game()

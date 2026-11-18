@@ -161,6 +161,10 @@ void fragment() {
 		// path and dirt
 		float pathm = max(d.g, d.b * 0.9);
 		float pe = pathm + (fbm(tile * 3.0 + 9.0) - 0.5) * 0.35;
+		ivec2 tcell = ivec2(floor(tile - origin_tiles)) + ivec2(int(data_pad));
+		vec4 cc = texelFetch(data, tcell, 0);                       // exact cell: city streets get crisp straight edges
+		bool city_cell = cc.g > 0.5 && cc.a < 0.75;
+		if (d.a < 0.98 && d.g > 0.02) pe = city_cell ? 1.0 : 0.0;
 		if (pe > 0.5) {
 			float ds = band(fbm(tile * 0.9 + 2.0), 3.0);
 			vec3 dc = mix(mix(DIRT_D, DIRT_M, 0.7), DIRT_M, smoothstep(0.2, 0.55, ds));
@@ -170,6 +174,22 @@ void fragment() {
 			dc = mix(dc, mix(STONE_M, STONE_L, step(pv.x, 0.07)), peb);
 			dc = mix(dc, DIRT_D, (1.0 - smoothstep(0.5, 0.54, pe)) * 0.45);  // soft darker rim
 			col = dc;
+			if (city_cell) {
+				// ---- Port Halden: asphalt (a=0) and paved sidewalk (a=0.5)
+				vec2 cp = floor(px / 2.0);
+				float sp = hash(cp + 5.0);
+				if (cc.a < 0.25) {
+					col = mix(vec3(0.23, 0.24, 0.27), vec3(0.30, 0.31, 0.34), step(0.78, sp) * 0.8 + step(0.5, fbm(tile * 3.0)) * 0.12);
+					float dash_h = step(0.5, fract(px.x / 64.0)) * step(abs(fract(tile.y) - 0.5), 0.045) * step(0.25, cc.b) * step(cc.b, 0.75);
+					float dash_v = step(0.5, fract(px.y / 64.0)) * step(abs(fract(tile.x) - 0.5), 0.045) * step(0.75, cc.b);
+					float lane = max(dash_h, dash_v);
+					col = mix(col, vec3(0.93, 0.80, 0.30), lane);
+				} else {
+					vec2 sl = fract(px / 16.0);
+					col = mix(vec3(0.66, 0.64, 0.60), vec3(0.73, 0.71, 0.66), step(0.7, sp));
+					col = mix(col, vec3(0.50, 0.48, 0.45), max(step(sl.x, 0.07), step(sl.y, 0.07)) * 0.8);
+				}
+			}
 		}
 		// grass -> path transition: darker grass fringe hugging the edge, tufts leaning over it, and grass specks creeping into the dirt rim
 		if (pe <= 0.5 && pe > 0.36) {

@@ -3,13 +3,16 @@ extends RefCounted
 ## Pure interior room layouts. Cells are 32px; floor cells (0,0)..(w-1,h-1), the back wall is drawn above row 0.
 ## Furniture: {id, sprite, cell, size (cells), solid, action}. Door gap is the bottom-row cell door_x.
 
-const PUBLIC := ["farmhouse", "barn", "workshop"]   # walk straight in; other houses need their lock picked
+const PUBLIC := ["farmhouse", "barn", "workshop", "city_shop", "city_police", "city_cafe", "city_bank", "city_hospital", "city_garage", "city_hall"]   # walk straight in; other houses need their lock picked
 
 static func kind_for(building_id: String) -> String:
 	match building_id:
 		"farmhouse": return "farmhouse"
 		"barn": return "barn"
 		"workshop": return "workshop"
+	var ck := CityModel.kind_of(building_id)
+	if ck in ["shop", "police", "cafe", "bank", "hospital", "garage", "hall"]:
+		return "city_" + ck
 	return "house"
 
 static func _f(id: String, sprite: String, x: int, y: int, w: int, h: int, solid: bool = true, action: String = "") -> Dictionary:
@@ -43,6 +46,53 @@ static func layout(kind: String) -> Dictionary:
 				_f("sack1", "int_sack", 7, 0, 1, 1),
 				_f("sack2", "int_sack", 8, 1, 1, 1),
 				_f("crate", "int_crate", 8, 3, 1, 1),
+				_f("mat", "int_mat", 4, 5, 1, 1, false)]}
+		"city_shop":
+			return {"w": 8, "h": 5, "door_x": 3, "window_x": [1, 5], "furniture": [
+				_f("counter", "int_counter", 4, 1, 2, 1, true, "shop"),
+				_f("register", "int_register", 6, 1, 1, 1),
+				_f("shelf1", "int_shelf", 0, 0, 1, 1), _f("shelf2", "int_shelf", 2, 0, 1, 1), _f("shelf3", "int_shelf", 7, 0, 1, 1),
+				_f("crate", "int_crate", 0, 3, 1, 1), _f("sack", "int_sack", 7, 3, 1, 1),
+				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
+		"city_bank":
+			return {"w": 9, "h": 6, "door_x": 4, "window_x": [2, 6], "furniture": [
+				_f("teller", "int_teller", 3, 1, 2, 1, true, "bank"),
+				_f("teller2", "int_teller", 5, 1, 2, 1),
+				_f("vault", "int_vault", 8, 0, 1, 1),
+				_f("desk", "int_desk", 0, 1, 2, 1),
+				_f("rug", "int_rug", 3, 3, 3, 2, false),
+				_f("mat", "int_mat", 4, 5, 1, 1, false)]}
+		"city_police":
+			return {"w": 8, "h": 5, "door_x": 3, "window_x": [1, 5], "furniture": [
+				_f("desk", "int_desk", 2, 1, 2, 1, true, "fine"),
+				_f("cell1", "int_cell", 6, 0, 1, 2), _f("cell2", "int_cell", 7, 0, 1, 2),
+				_f("shelf", "int_shelf", 0, 0, 1, 1),
+				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
+		"city_hospital":
+			return {"w": 9, "h": 6, "door_x": 4, "window_x": [2, 6], "furniture": [
+				_f("bed1", "int_hosp_bed", 0, 1, 1, 2, true, "heal"), _f("bed2", "int_hosp_bed", 2, 1, 1, 2, true, "heal"),
+				_f("bed3", "int_hosp_bed", 6, 1, 1, 2),
+				_f("medcab", "int_medcab", 4, 0, 1, 1), _f("medcab2", "int_medcab", 8, 0, 1, 1),
+				_f("desk", "int_desk", 3, 3, 2, 1, true, "heal"),
+				_f("mat", "int_mat", 4, 5, 1, 1, false)]}
+		"city_garage":
+			return {"w": 9, "h": 5, "door_x": 1, "window_x": [6], "furniture": [
+				_f("lift", "int_lift", 3, 1, 2, 1, true, "garage"),
+				_f("workbench", "int_workbench", 6, 0, 2, 1, true, "garage"),
+				_f("tyres", "int_tyres", 0, 0, 1, 1), _f("tyres2", "int_tyres", 8, 3, 1, 1),
+				_f("toolrack", "int_toolrack", 0, 2, 1, 1),
+				_f("mat", "int_mat", 1, 4, 1, 1, false)]}
+		"city_cafe":
+			return {"w": 7, "h": 5, "door_x": 1, "window_x": [3, 5], "furniture": [
+				_f("counter", "int_counter", 4, 0, 2, 1, true, "coffee"),
+				_f("table1", "int_table", 1, 1, 2, 1), _f("table2", "int_table", 4, 3, 2, 1),
+				_f("stove", "int_stove", 6, 0, 1, 1),
+				_f("mat", "int_mat", 1, 4, 1, 1, false)]}
+		"city_hall":
+			return {"w": 9, "h": 6, "door_x": 4, "window_x": [2, 6], "furniture": [
+				_f("desk", "int_desk", 3, 1, 2, 1, true, "notice"),
+				_f("shelf1", "int_shelf", 0, 0, 1, 1), _f("shelf2", "int_shelf", 8, 0, 1, 1),
+				_f("rug", "int_rug", 3, 3, 3, 2, false),
 				_f("mat", "int_mat", 4, 5, 1, 1, false)]}
 	return {"w": 7, "h": 5, "door_x": 3, "window_x": [1, 5], "furniture": [
 		_f("rug", "int_rug", 2, 2, 3, 2, false),

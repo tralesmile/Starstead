@@ -31,6 +31,10 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	buildings = TownModel.layout(npcs["places"], home, ok, blocked)
 	for b in buildings:
 		_make(world, gen, b)
+	for b in CityModel.buildings():   # Port Halden (far east of the homestead chunk)
+		buildings.append(b)
+		_make(world, gen, b)
+	CityView.build(world, lights)
 
 func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	var body := StaticBody2D.new()
@@ -77,4 +81,5 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 		sm.z_index = 3
 		body.add_child(sm)
 	world.add_child(body)
-	world.interactables.add(b["door"], "door", "E: %s (locked)" % b["name"])
+	var open_door: bool = String(b["id"]) in InteriorModel.PUBLIC
+	world.interactables.add(b["door"], "door", ("E: Enter %s" if open_door else "E: %s (locked)") % b["name"])
