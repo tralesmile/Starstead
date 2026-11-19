@@ -93,9 +93,9 @@ Physics / feel:
 - [x] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (MapModel/MapView: M opens terrain+roads+regions+POIs+player dot, fuel stations in orange with nearest-fuel hint; tested)
 - [x] Race start line: R only works at a start line (chequered strip beside the parked car, or the circuit line), prompt tells you where to drive (RaceModel.gate_near, StartGateView). Fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
 - [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
-- [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom)
+- [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom) (CLAIMED 2026-11-19)
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
-- [ ] Story-first start: begin in a small story area, unlock the city, then further out and other planets
+- [ ] Story-first start: begin in a small story area, unlock the city, then further out and other planets (CLAIMED 2026-11-19)
 
 ## Phase 1.5: Feel & polish (OWNER PRIORITY 2026-11-17, do these BEFORE new Phase 2/3 items; order chosen by owner: feel first)
 Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.
