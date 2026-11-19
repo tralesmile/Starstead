@@ -18,6 +18,7 @@ var circuit := false                # racing on the Halden circuit (licence need
 var t := 0.0
 var label: Label
 var markers: Array = []
+var gates: Array = []               # start line centres (px): the circuit line and the homestead track line
 var rival_nodes: Dictionary = {}
 const RIVAL_TINT := {"rival": Color(0.55, 0.75, 1.3), "rival2": Color(1.3, 1.2, 0.45)}
 
@@ -36,7 +37,24 @@ func setup(c: CarView, w: World, g: WorldGen, hud: Node) -> void:
 func _drivable(c: Vector2i) -> bool:
 	return gen.sdf_at(c.x, c.y) >= 2.0 and not (c in gen.trees) and not (c in gen.rocks) and not (c in gen.bushes)
 
+func add_gate(pos: Vector2, vertical: bool = false, draw: bool = true) -> void:
+	gates.append(pos)
+	if not draw:
+		return
+	var g := Node2D.new()
+	g.position = pos
+	g.z_index = -8
+	g.set_script(load("res://scripts/start_gate_view.gd"))
+	g.vertical = vertical
+	world.add_child(g)
+
+func at_gate() -> bool:
+	return RaceModel.gate_near(car.position, gates) >= 0
+
 func start() -> void:
+	if not at_gate():
+		message.emit("Drive to a start line (chequered strip; the circuit is on the M map)")
+		return
 	_clear_markers()
 	var cell := Vector2i(floori(car.position.x / 32.0), floori(car.position.y / 32.0))
 	circuit = CircuitModel.on_circuit(cell)
@@ -95,7 +113,12 @@ func _unhandled_input(e: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	if not running:
-		label.text = "R: start race (%d lap%s, L: change)" % [laps, "s" if laps > 1 else ""] if car.driving else ""
+		if not car.driving:
+			label.text = ""
+		elif at_gate():
+			label.text = "R: start race (%d lap%s, L: change)" % [laps, "s" if laps > 1 else ""]
+		else:
+			label.text = "Race: drive to a start line (M map)"
 		return
 	t += delta
 	model.update("you", car.position, t)

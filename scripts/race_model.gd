@@ -108,3 +108,14 @@ static func ring_checkpoints(center: Vector2, ring_r: float, n: int, ok: Callabl
 ## Rival AI: drives straight at its next checkpoint at `spd` px/s; returns the new position.
 static func ai_step(pos: Vector2, target: Vector2, spd: float, dt: float) -> Vector2:
 	return pos.move_toward(target, spd * dt)
+
+## Index of the start gate within `radius` px of pos (the nearest), or -1.
+static func gate_near(pos: Vector2, gates: Array, radius: float = 110.0) -> int:
+	var best := -1
+	var bd := radius
+	for i in gates.size():
+		var d := pos.distance_to(gates[i])
+		if d <= bd:
+			bd = d
+			best = i
+	return best

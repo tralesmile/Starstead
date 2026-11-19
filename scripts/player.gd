@@ -102,7 +102,7 @@ func _physics_process(delta: float) -> void:
 	if _skid_cd <= 0.0 and PlayerMath.is_skid(move_v, input):
 		skid.emit(PlayerMath.skid_dust_amount(move_v.length()))
 		_skid_cd = 0.25
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult, grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult * PlayerMath.swing_slow(tool_t), grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking

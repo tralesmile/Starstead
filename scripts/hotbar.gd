@@ -73,6 +73,8 @@ func _draw_bar() -> void:
 		canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(4, 4)), Color(0.26, 0.17, 0.1, 0.9))
 		var t: String = slot_tool(i)
 		_icon(t, r)
+		if not ToolKit.owns(GameState.tools_owned, t):
+			canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(4, 4)), Color(0.05, 0.03, 0.02, 0.6))
 		canvas.draw_string(font, r.position + Vector2(3, 10), str((i + 1) % 10), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.75))
 		if t == "watering_can":
 			var f := GameState.can.fraction()

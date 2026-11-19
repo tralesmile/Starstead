@@ -1,0 +1,7 @@
+{
+	"watering_can": {"name": "Watering Can", "needs": {"wood": 3}, "makes": "watering_can"},
+	"scythe": {"name": "Scythe", "needs": {"wood": 3}, "makes": "scythe"},
+	"club": {"name": "Wooden Club", "needs": {"wood": 2}, "makes": "club"},
+	"rod": {"name": "Fishing Rod", "needs": {"wood": 4}, "makes": "rod"},
+	"pickaxe": {"name": "Pickaxe", "needs": {"wood": 6}, "makes": "pickaxe"}
+}

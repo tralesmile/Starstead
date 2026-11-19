@@ -22,6 +22,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
 
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
+- [x] Run 12: Graphics: held fishing rod with charge/cast/bite poses (RodMath tested). Physics: planting your feet during a tool swing (PlayerMath.swing_slow 0.35x, tested). [ ] next: fishing cast pose frames, swing slow only for heavy tools
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
 - [x] Port Halden plazas: checkered slab tone, terracotta inlays, 8 planters (run 11). [ ] Next graphics ideas: shadow under bridges/causeways on water, wet footprints on quay
@@ -85,12 +86,12 @@ Physics / feel:
 - [x] Camera too close: default zoom 1.5x (TargetMath.ZOOMS 1/1.5/2/3, +/- cycles; tested)
 - [x] Wanted HUD looked bad: drawn badge with 5 stars that fill with heat + red/blue siren strip when seen (WantedHud, tested); cops lighter police-blue instead of black faces
 - [x] Hunting: club hits wild animals (HuntModel + AnimalView.hunt), drops raw meat / hide / feathers, boar fights back, game restocks overnight; new deer, rabbit, boar sprites (gen_wildlife.py), more wildlife around the start (WILD table), Grilled Meat recipe. [ ] bow/traps, butcher/tannery, fists on the hand slot, hunting licence/ranger heat
-- [ ] First 30 seconds: start with almost nothing (hands + a hoe?) and craft/earn tools (Minecraft-like) instead of a full bag; the goal line must say what to do (CLAIMED 2026-11-19)
+- [x] First 30 seconds: new game starts with hoe, axe, hand and seeds; C opens the craft menu (wood -> can, scythe, club, rod, pickaxe; ToolKit/CraftView, data/crafting.json, saved, old saves own everything), unowned hotbar slots dim, goal line says chop wood + craft the can. [ ] craft bench prop, stone/iron tool tiers via smelting, a tutorial arrow
 - [x] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad) (CropInfo hover label + stage bar, new soil rows and sprout art; tested)
-- [ ] Fishing: character must visibly hold the rod and cast it; improve how fishing looks and feels (CLAIMED 2026-11-19)
+- [x] Fishing: character visibly holds the rod (RodMath: leans back while charging, whips forward on release, tip dips on a bite, flexes while reeling; line starts at the tip). [ ] cast/reel player pose frames, fish jumping out of the water
 - [x] Chopping: tree should fall, then be chopped into logs you pick up (TreeFall: last hit topples the tree, trunk needs 2 chops, wood drops; tested. logs not saved)
 - [x] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (MapModel/MapView: M opens terrain+roads+regions+POIs+player dot, fuel stations in orange with nearest-fuel hint; tested)
-- [ ] Car (fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R (CLAIMED 2026-11-19)
+- [x] Race start line: R only works at a start line (chequered strip beside the parked car, or the circuit line), prompt tells you where to drive (RaceModel.gate_near, StartGateView). Fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
 - [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
 - [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom)
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel

@@ -103,3 +103,9 @@ static func is_skid(v: Vector2, input: Vector2) -> bool:
 static func skid_dust_amount(speed: float) -> int:
 	## Particle count grows with the speed being shed (3..8).
 	return clampi(2 + int(speed / 30.0), 3, 8)
+
+## Speed factor while a tool swing is playing: you plant your feet (0.35x) and ease back to full speed over the last 0.06 s.
+static func swing_slow(tool_left: float) -> float:
+	if tool_left <= 0.0:
+		return 1.0
+	return lerpf(1.0, 0.35, clampf(tool_left / 0.06, 0.0, 1.0))

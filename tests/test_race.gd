@@ -60,3 +60,9 @@ func test_payout_and_record_and_serialize() -> void:
 	var r2 := RaceModel.new()
 	r2.load_data(r.serialize())
 	check_eq(r2.best_time, 9.5)
+
+func test_gate_near() -> void:
+	var gates := [Vector2(0, 0), Vector2(500, 0)]
+	check_eq(RaceModel.gate_near(Vector2(40, 10), gates), 0)
+	check_eq(RaceModel.gate_near(Vector2(470, 0), gates), 1)
+	check_eq(RaceModel.gate_near(Vector2(250, 0), gates), -1)

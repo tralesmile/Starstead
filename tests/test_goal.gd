@@ -15,3 +15,7 @@ func test_crops_planted() -> void:
 	check_eq(f.crops_planted(), 0)
 	f.soil[Vector2i(1, 1)]["crop"] = "turnip"
 	check_eq(f.crops_planted(), 1)
+
+func test_needs_can() -> void:
+	check(GoalText.current(3, 2, 1, 500, false, 0, "", false).contains("craft"), "no can: craft one")
+	check(GoalText.current(3, 2, 1, 500, false, 0, "", true).contains("sleep"), "can: normal goal")

@@ -30,6 +30,9 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	var casting := fishing.state != Fishing.State.IDLE and fishing.state != Fishing.State.CAUGHT
+	if charge >= 0.0 or casting or cast_age < 0.5:
+		_draw_rod(casting)
 	if charge >= 0.0:
 		var o := player.position + Vector2(-12, 6)
 		draw_rect(Rect2(o + Vector2(-1, -1), Vector2(26, 5)), Color(0.1, 0.06, 0.03, 0.9))
@@ -38,7 +41,7 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, o + Vector2(2, 14), "%d tiles" % d, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.9))
 	if fishing.state == Fishing.State.IDLE or fishing.state == Fishing.State.CAUGHT:
 		return
-	var tip := player.position + Vector2(11, -26)
+	var tip := _rod_tip()
 	var biting := fishing.state == Fishing.State.BITE
 	var reeling := fishing.state == Fishing.State.REELING
 	var bp := target + Vector2(0, BobberMath.bob(t, biting or reeling))
@@ -70,3 +73,32 @@ func _ellipse(c: Vector2, rx: float, ry: float, col: Color) -> void:
 		var p := c + Vector2(roundf(cos(a) * rx), roundf(sin(a) * ry))
 		draw_line(prev, p, col, 1.0)
 		prev = p
+
+func _side() -> float:
+	return RodMath.side_for(player.facing == PlayerMath.Facing.LEFT, target.x - player.position.x if casting_target() else 0.0)
+
+func casting_target() -> bool:
+	return fishing.state != Fishing.State.IDLE and fishing.state != Fishing.State.CAUGHT
+
+func _grip() -> Vector2:
+	return player.position + Vector2(_side() * 6.0, -13.0)
+
+func _rod_deg() -> float:
+	if charge >= 0.0:
+		return RodMath.charge_deg(charge)
+	if cast_age < RodMath.SWING_TIME:
+		return RodMath.swing_deg(cast_age)
+	return RodMath.hold_deg(t, fishing.state == Fishing.State.BITE, fishing.state == Fishing.State.REELING)
+
+func _rod_tip() -> Vector2:
+	return RodMath.tip(_grip(), _side(), _rod_deg())
+
+func _draw_rod(_casting: bool) -> void:
+	var g := _grip().round()
+	var tp := _rod_tip().round()
+	var mid := g.lerp(tp, 0.5)
+	draw_line(g, tp + Vector2(0, 1), Color(0.12, 0.07, 0.04), 3.0)   # outline
+	draw_line(g, mid, Color(0.55, 0.36, 0.18), 1.0)                   # handle half
+	draw_line(mid, tp, Color(0.78, 0.6, 0.3), 1.0)                    # thin tip half
+	draw_circle(g, 1.5, Color(0.9, 0.72, 0.55))                       # hand
+	draw_rect(Rect2(tp - Vector2(1, 1), Vector2(2, 2)), Color(0.9, 0.9, 0.85))

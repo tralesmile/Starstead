@@ -27,6 +27,7 @@ var rod_charge_t := 0.0
 var interior: InteriorView
 var cave: CaveView
 var smelt_view: SmeltView
+var craft_view: CraftView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
@@ -157,6 +158,8 @@ func _ready() -> void:
 	race = RaceView.new()
 	race.setup(car, world, world.gen, self)
 	race.message.connect(_say)
+	race.add_gate(car.position)   # homestead track start line where the car is parked
+	race.add_gate(CircuitModel.start_px(), false, false)   # the circuit's own chequered line is already painted
 	add_child(race)
 	jobs = JobView.new()
 	jobs.setup(player, town.buildings, world.stall_cell())
@@ -246,6 +249,10 @@ func _ready() -> void:
 	smelt_view.closed.connect(func(): player.set_physics_process(true))
 	smelt_view.cooked.connect(func(n): _say("Smelted " + n))
 	add_child(smelt_view)
+	craft_view = CraftView.new()
+	craft_view.closed.connect(func(): player.set_physics_process(true))
+	craft_view.cooked.connect(func(n): _say("Crafted " + n))
+	add_child(craft_view)
 	cave = CaveView.new()
 	cave.setup(world, player, self)
 	cave.ore_broken.connect(_on_ore_broken)
@@ -268,7 +275,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   C: craft  Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	goal_label = Label.new()
@@ -302,7 +309,7 @@ func _process(delta: float) -> void:
 		if CityModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))):
 			city_seen = true
 		story_view.poll(GameState.farm.crops_planted())
-		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text())
+		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
 	if GameState.clock.advance(delta):
 		_end_day()
 	if rain_day != GameState.clock.day:
@@ -444,6 +451,16 @@ func _unhandled_input(e: InputEvent) -> void:
 		smelt_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if craft_view.visible or (e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_C and not car.driving and not shop.visible and not dialogue.visible and not inv_view.visible and not journal_view.visible and not interior.active):
+		if not craft_view.visible:
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+			craft_view.open()
+		else:
+			craft_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if sports.visible:
 		sports.handle(e)
 		get_viewport().set_input_as_handled()
@@ -544,7 +561,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.is_empty() and rc != ContextAction.NONE:
 			_context_harvest(rc)  # E on a ripe crop: pick it with any tool in hand
 			return
-	if e.is_action_pressed("use_tool") and hotbar.current() == "rod":
+	if e.is_action_pressed("use_tool") and not ToolKit.owns(GameState.tools_owned, hotbar.current()):
+		_say("You have no %s yet - press C to craft it from wood" % hotbar.current().replace("_", " "))
+	elif e.is_action_pressed("use_tool") and hotbar.current() == "rod":
 		_rod_pressed()
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
 		if GameState.energy.can_use("club") and combat.cd <= 0.0:

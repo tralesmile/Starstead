@@ -3,7 +3,7 @@ extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
-## --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
+## --craft-demo --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
 
@@ -11,6 +11,9 @@ func _init(main) -> void:
 	m = main
 
 func on_ready() -> void:
+	for a in OS.get_cmdline_user_args():   # demos and QA flags want the full toolbelt
+		if a.ends_with("-demo") or a.begins_with("--sports-demo") or a.begins_with("--enter-demo") or a == "--allgear":
+			GameState.tools_owned = ToolKit.all_tools()
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the m.car and floor it
 		m.player.position = m.car.position
 		m.car.enter()
@@ -65,6 +68,10 @@ func on_process() -> void:
 		GameState.bag.add("carp", 2)
 		GameState.market.record("turnip", 10)
 		m.shop.open()
+	if "--craft-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: the craft menu with wood, new-game toolbelt
+		GameState.tools_owned = ToolKit.start()
+		GameState.bag.add("wood", 5)
+		m.craft_view.open()
 	if "--smelt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the furnace menu with ore in the bag
 		GameState.bag.add("copper_ore", 4)
 		GameState.bag.add("coal", 2)

@@ -2,11 +2,13 @@ class_name GoalText
 extends RefCounted
 ## One-line "what should I do now" hint under the HUD (playtest 2026-11-18: no goal was visible in the first 30 seconds).
 
-static func current(tilled: int, planted: int, day: int, money: int, city_seen: bool, bank: int = 0, story: String = "") -> String:
+static func current(tilled: int, planted: int, day: int, money: int, city_seen: bool, bank: int = 0, story: String = "", can_owned: bool = true) -> String:
 	if tilled == 0 and planted == 0 and day <= 1:
 		return "Goal: press 1 for the hoe and click grass to till a field"
 	if planted == 0 and day <= 1:
 		return "Goal: press 3 (seeds) and click the tilled soil to plant"
+	if day <= 1 and not can_owned:
+		return "Goal: chop a tree with the axe (5) for wood, press C to craft a watering can"
 	if day <= 1:
 		return "Goal: water with the can (2), fish at the dock (6), then sleep in your farmhouse bed (E)"
 	if story != "":
