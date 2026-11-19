@@ -25,6 +25,7 @@ func build(world: World, g: WorldGen) -> void:
 	_decor(world)
 	_flowers(world)
 	_signs(world)
+	_gates(world)
 	_cave_mouth(world)
 	_harbour(world)
 	_circuit(world)
@@ -170,6 +171,18 @@ func _flowers(world: World) -> void:
 			count += 1
 			if count >= 400:
 				return
+
+func _gates(world: World) -> void:
+	## Story gate barricades on the roads that lead into a still-locked region (removed when the story opens it).
+	if world.stream == null or world.gates.is_empty():
+		return
+	for sp in world.stream.gate_spots(world.gates):
+		var c: Vector2i = sp["cell"]
+		if ChunkGrid.chunk_of_cell(c) != chunk or StoryGate.lock_message(world.gates, str(sp["region"]), world.gate_done) == "":
+			continue
+		var b := world.make_prop("res://assets/sprites/road_barrier.png", c, Vector2(30, 8), Vector2(0, -10))
+		nodes.append(b)
+		world.gate_props.append({"node": b, "region": str(sp["region"])})
 
 func _signs(world: World) -> void:
 	if world.stream == null:

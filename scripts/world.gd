@@ -27,6 +27,9 @@ var stream: ChunkStream
 var chunk_views: Dictionary = {}   # chunk -> ChunkView
 var chunk_mats: Array = []
 var player_ref: Node2D = null
+var gates: Dictionary = {}           # StoryGate data, set by main
+var gate_done: Dictionary = {}       # story steps done (same Dictionary object as GameState.story.done)
+var gate_props: Array = []           # {node, region} barricades currently in the world
 var nodes_ref: ResourceNodes = null   # set by main (World must not touch autoloads: tests compile it)
 var season := 0
 var region_id := ""
@@ -521,6 +524,17 @@ func stream_update(player_px: Vector2) -> void:
 		set_season(season)
 		if nodes_ref != null:
 			sync_props(nodes_ref)
+
+func refresh_gate_props() -> void:
+	## Remove barricades whose region the story has opened.
+	for i in range(gate_props.size() - 1, -1, -1):
+		var gp: Dictionary = gate_props[i]
+		var n: Node = gp["node"]
+		if not is_instance_valid(n):
+			gate_props.remove_at(i)
+		elif StoryGate.lock_message(gates, str(gp["region"]), gate_done) == "":
+			n.queue_free()
+			gate_props.remove_at(i)
 
 func region_now(player_px: Vector2) -> Dictionary:
 	return stream.region_at(ChunkGrid.chunk_of_pos(player_px))

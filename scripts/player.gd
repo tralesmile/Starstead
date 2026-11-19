@@ -32,6 +32,7 @@ signal footstep
 signal skid(amount: int)
 var _sprint := 1.0
 var _skid_cd := 0.0
+var _idle_t := 0.0     # seconds standing still: the dead-zone camera drifts back to centre after a moment
 
 func _ready() -> void:
 	sprite = Sprite2D.new()
@@ -102,7 +103,7 @@ func _physics_process(delta: float) -> void:
 	if _skid_cd <= 0.0 and PlayerMath.is_skid(move_v, input):
 		skid.emit(PlayerMath.skid_dust_amount(move_v.length()))
 		_skid_cd = 0.25
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult * PlayerMath.swing_slow(tool_t), grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)), grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
@@ -138,6 +139,8 @@ func _physics_process(delta: float) -> void:
 	if cam_focus == Vector2.ZERO or cam_focus.distance_to(position) > 200.0:
 		cam_focus = position  # first frame / teleport (doors, car exit)
 	cam_focus = CameraMath.deadzone(cam_focus, position, CameraMath.box_for_speed(cam_v.length()))
+	_idle_t = 0.0 if cam_v.length() > 8.0 else _idle_t + delta
+	cam_focus = CameraMath.recenter(cam_focus, position, _idle_t, delta)
 	camera.offset = CameraMath.snap(look + pull + (cam_focus - position)) + sh
 	var zt := TargetMath.zoom_value(TargetMath.effective_zoom(zoom_step, zoom_bias))
 	if absf(camera.zoom.x - zt) > 0.01:

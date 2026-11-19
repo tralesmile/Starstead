@@ -13,3 +13,16 @@ func test_target_never_outside_box_after_update() -> void:
 		var t := Vector2(i * 5.0, sin(i) * 40.0)
 		cam = CameraMath.deadzone(cam, t, Vector2(8, 6))
 		check(absf(t.x - cam.x) <= 8.001 and absf(t.y - cam.y) <= 6.001)
+
+func test_recenter() -> void:
+	var f := Vector2(10, 5)
+	check_eq(CameraMath.recenter(f, Vector2.ZERO, 0.1, 0.1), f)        # still walking/just stopped: no drift
+	var a := CameraMath.recenter(f, Vector2.ZERO, 0.5, 0.1)
+	check(a.length() < f.length() and a.length() > 0.0, "eases toward the player after the delay")
+	var p := f
+	for i in 60:
+		p = CameraMath.recenter(p, Vector2.ZERO, 1.0, 0.05)
+	check_eq(p, Vector2.ZERO)                                          # lands exactly, no endless creep
+	check_eq(CameraMath.recenter(Vector2.ZERO, Vector2.ZERO, 5.0, 0.1), Vector2.ZERO)
+	var snapped := CameraMath.recenter(Vector2(0.3, 0.2), Vector2.ZERO, 1.0, 0.0001)
+	check_eq(snapped, Vector2.ZERO)                                    # within half a pixel snaps home

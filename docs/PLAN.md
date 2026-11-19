@@ -25,6 +25,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Run 12: Graphics: held fishing rod with charge/cast/bite poses (RodMath tested). Physics: planting your feet during a tool swing (PlayerMath.swing_slow 0.35x, tested). [ ] next: fishing cast pose frames, swing slow only for heavy tools
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
+- [x] Run 13: road barricades with warning sign at story gates (before: roads just ran into the city on day 1; after: the road visibly ends at a striped barrier). [ ] next: shadow under causeways on water, wet footprints on quay
 - [x] Port Halden plazas: checkered slab tone, terracotta inlays, 8 planters (run 11). [ ] Next graphics ideas: shadow under bridges/causeways on water, wet footprints on quay
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
 - [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [x] wet-asphalt shine and puddles in rain (ground shader `wet`, World.set_wet)
@@ -47,6 +48,7 @@ Graphics:
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
+- [x] Run 13: camera recentre when standing still + per-tool swing plant (tested). [ ] next: sprint zoom punch, tyre squeal audio
 - [x] Drift smoke by surface (VehicleMath.smoke_style: white tyre smoke on asphalt, tan dust on paths, olive dust on grass, thin in rain, puffs scale with slide angle; tested). [ ] tyre squeal audio, drift leaderboard
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
 - [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [x] tyre marks linger 40 s on the circuit (skid_life, tested)
@@ -93,9 +95,9 @@ Physics / feel:
 - [x] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (MapModel/MapView: M opens terrain+roads+regions+POIs+player dot, fuel stations in orange with nearest-fuel hint; tested)
 - [x] Race start line: R only works at a start line (chequered strip beside the parked car, or the circuit line), prompt tells you where to drive (RaceModel.gate_near, StartGateView). Fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
 - [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
-- [ ] Movement/sprint/camera feel pass (camera still feels off beyond zoom) (CLAIMED 2026-11-19)
+- [x] Movement/sprint/camera feel pass: camera drifts back onto the player after 0.35 s standing still (CameraMath.recenter, tested); swing slow depends on the tool (PlayerMath.tool_plant: axe/pickaxe/club 0.35, hoe/scythe 0.55, can/rod/hand 0.85, tested). [ ] sprint zoom punch, hands-on check by owner
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
-- [ ] Story-first start: begin in a small story area, unlock the city, then further out and other planets (CLAIMED 2026-11-19)
+- [x] Story-first start: data/gates.json locks Port Halden, harbour and circuit until the Vance visit (step vance_car, day 3), the Highlands until the ledger visit, the Vance yard until the debt is cleared. StoryGate/Keeper bounces walker or car back with a message, red-white road barricades (tools/gen_barrier.py) stand on the roads and vanish when the story opens them; demo flags bypass (use --gated to test). Tested. [ ] planets gate (rocket), map shows locked regions, NPC hint about the closed road
 
 ## Phase 1.5: Feel & polish (OWNER PRIORITY 2026-11-17, do these BEFORE new Phase 2/3 items; order chosen by owner: feel first)
 Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.

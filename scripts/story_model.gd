@@ -102,6 +102,6 @@ func to_array() -> Array:
 	return a
 
 func from_array(a: Array) -> void:
-	done = {}
+	done.clear()  # same Dictionary object: World.gate_done points at it
 	for k in a:
 		done[str(k)] = true

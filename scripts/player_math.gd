@@ -105,7 +105,20 @@ static func skid_dust_amount(speed: float) -> int:
 	return clampi(2 + int(speed / 30.0), 3, 8)
 
 ## Speed factor while a tool swing is playing: you plant your feet (0.35x) and ease back to full speed over the last 0.06 s.
-static func swing_slow(tool_left: float) -> float:
+static func swing_slow(tool_left: float, floor_mult: float = 0.35) -> float:
 	if tool_left <= 0.0:
 		return 1.0
-	return lerpf(1.0, 0.35, clampf(tool_left / 0.06, 0.0, 1.0))
+	return lerpf(1.0, floor_mult, clampf(tool_left / 0.06, 0.0, 1.0))
+
+## How hard a tool plants your feet: heavy tools (axe, pickaxe, club) stop you, medium (hoe, scythe) slow you, light ones barely do.
+static func tool_plant(tool: String) -> float:
+	match tool:
+		"axe", "pickaxe", "club":
+			return 0.35
+		"hoe", "scythe":
+			return 0.55
+		"watering_can", "rod", "hand", "":
+			return 0.85
+	if tool.begins_with("axe") or tool.begins_with("pickaxe"):
+		return 0.35
+	return 0.7

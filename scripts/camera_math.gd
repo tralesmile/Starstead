@@ -53,3 +53,15 @@ static func box_for_speed(speed: float) -> Vector2:
 
 static func look_vec(vel: Vector2) -> Vector2:
 	return vel.normalized() * look_for_speed(vel.length()) if vel.length() > 0.01 else Vector2.ZERO
+
+const RECENTER_DELAY := 0.35   # s standing still before the camera drifts back onto the player
+const RECENTER_RATE := 3.5     # 1/s
+
+static func recenter(focus: Vector2, target: Vector2, idle_t: float, delta: float) -> Vector2:
+	## The dead-zone camera leaves you off-centre after a walk; once you stand still it eases back so the
+	## character sits in the middle again (Stardew keeps you centred). Stops exactly on the target.
+	if idle_t < RECENTER_DELAY or focus == target:
+		return focus
+	var k := 1.0 - exp(-RECENTER_RATE * delta)
+	var out := focus.lerp(target, k)
+	return target if out.distance_to(target) < 0.5 else out

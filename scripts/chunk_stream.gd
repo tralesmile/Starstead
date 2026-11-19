@@ -7,6 +7,8 @@ var seed_value := 1
 var regions: Array = []
 var gens: Dictionary = {}   # chunk -> WorldGen
 var roads: RoadNet
+var _gate_spots: Array = []
+var _gate_built := false
 
 func _init(s: int = 1, home: WorldGen = null) -> void:
 	seed_value = s
@@ -19,6 +21,12 @@ func _init(s: int = 1, home: WorldGen = null) -> void:
 	if home != null:
 		gens[ChunkGrid.HOME] = home
 		home.grid = self
+
+func gate_spots(gates: Dictionary) -> Array:
+	if not _gate_built:
+		_gate_spots = StoryGate.spots(roads, regions, gates)
+		_gate_built = true
+	return _gate_spots
 
 func region_at(ch: Vector2i) -> Dictionary:
 	return ChunkGrid.region_of(ch, regions)

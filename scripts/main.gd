@@ -65,6 +65,7 @@ var axe_table: Dictionary = _merge(_merge(DataDB.load_json("axes"), DataDB.load_
 var demos: DemoFlags
 
 var region_banner: RegionBanner
+var gate_keeper: StoryGate.Keeper
 
 func _ready() -> void:
 	demos = DemoFlags.new(self)
@@ -87,6 +88,11 @@ func _ready() -> void:
 		lp.player = player
 	world.player_ref = player
 	world.nodes_ref = GameState.nodes
+	var gate_on := not StoryGate.bypass(OS.get_cmdline_user_args())
+	gate_keeper = StoryGate.Keeper.new(StoryGate.load_gates(), gate_on)
+	if gate_on:
+		world.gates = gate_keeper.gates
+		world.gate_done = GameState.story.done
 	region_banner = RegionBanner.new()
 	add_child(region_banner)
 	player.position = Vector2(32.5, 32.5) * 32.0
@@ -309,6 +315,7 @@ func _process(delta: float) -> void:
 		if CityModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))):
 			city_seen = true
 		story_view.poll(GameState.farm.crops_planted())
+		world.refresh_gate_props()
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
 	if GameState.clock.advance(delta):
 		_end_day()
@@ -354,6 +361,9 @@ func _process(delta: float) -> void:
 		if ChunkGrid.region_changed(world.region_id, String(reg.id)):
 			region_banner.show_region(String(reg.name))
 		world.region_id = String(reg.id)
+		var gr := gate_keeper.step(player.position, String(reg.id), GameState.story.done, delta)
+		if gr["bounce"]:
+			_gate_bounce(gr)
 	var near := world.interactables.near(player.position, _target_cell())
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
@@ -792,6 +802,18 @@ func _update_fishing(delta: float) -> void:
 	elif fishing.state == Fishing.State.LOST:
 		_say("It got away")
 		fishing.reset()
+
+func _gate_bounce(gr: Dictionary) -> void:
+	## Story gate: the road is closed, so the mover is pushed back to the last open spot.
+	var to: Vector2 = gr["to"]
+	if car.driving:
+		car.vel = StoryGate.bounce_velocity(car.vel, to, car.position)
+		car.position = to
+	player.position = to
+	player.shake(1.5, 0.2)
+	if str(gr["msg"]) != "":
+		_say(str(gr["msg"]))
+		toast_t = 4.0
 
 func _say(msg: String) -> void:
 	toast.text = msg
