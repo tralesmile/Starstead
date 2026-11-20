@@ -1,7 +1,7 @@
 {
-	"port_halden": {"needs": "vance_car", "msg": "Road closed: a chain across the road. Port Halden opens after Mr. Vance's visitor calls (day 3)."},
-	"harbour": {"needs": "vance_car", "msg": "Road closed: the harbour road opens after Mr. Vance's visitor calls (day 3)."},
-	"circuit": {"needs": "vance_car", "msg": "Gate locked: the race circuit opens after Mr. Vance's visitor calls (day 3)."},
-	"highlands": {"needs": "see_ledger", "msg": "Rockfall on the road: ask at the Town Hall ledger in Port Halden first."},
-	"vance": {"needs": "debt_free", "msg": "Vance Aerospace is fenced off. Clear the Vance debt to be noticed."}
+	"port_halden": {"needs": "vance_car", "msg": "Road closed: a chain across the road. Port Halden opens after Mr. Vance's visitor calls (day 3).", "hint": "Port Halden: after the Vance visit (day 3)"},
+	"harbour": {"needs": "vance_car", "msg": "Road closed: the harbour road opens after Mr. Vance's visitor calls (day 3).", "hint": "Harbour: after the Vance visit (day 3)"},
+	"circuit": {"needs": "vance_car", "msg": "Gate locked: the race circuit opens after Mr. Vance's visitor calls (day 3).", "hint": "Race circuit: after the Vance visit (day 3)"},
+	"highlands": {"needs": "see_ledger", "msg": "Rockfall on the road: ask at the Town Hall ledger in Port Halden first.", "hint": "Highlands: read the Town Hall ledger first"},
+	"vance": {"needs": "debt_free", "msg": "Vance Aerospace is fenced off. Clear the Vance debt to be noticed.", "hint": "Vance yard: clear the Vance debt"}
 }

@@ -204,6 +204,7 @@ func _ready() -> void:
 	inv_view.ate.connect(func(n, g): _say("Ate %s (+%d energy)" % [n, g]))
 	add_child(inv_view)
 	map_view = MapView.new().setup(player, world.gen, _workshop_door())
+	map_view.locked_cb = func() -> Dictionary: return MapModel.locked_regions(gate_keeper.gates if gate_keeper.enabled else {}, GameState.story.done)
 	add_child(map_view)
 	story_view = StoryView.new()
 	story_view.said.connect(func(t): _say(t); toast_t = 5.0)

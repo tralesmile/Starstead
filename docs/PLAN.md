@@ -15,10 +15,10 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Painted ground shader: water depth + submerged boulders + ripples, mossy shore stones, layered grass, dirt path
 - [x] Water decor placement (lily pads, reeds, swimming fish shadows) + dock at shore near spawn, camera zoom 2
 - [x] Soft drop shadows under trees, rocks, bushes, player
-- [ ] Tree/reed wind sway (vertex shader) and lily pad bob
+- [x] Tree/reed wind sway (vertex shader) and lily pad bob (done in the Ongoing list; ticked run 14)
 - [x] Prop reflections/darkening in water; dock shadow on water (soft dark silhouette under the planks, 2026-11-18)
-- [ ] Higher-detail player (more frames, tool-use poses) and NPC base
-- [ ] Bank height: raised grass edge over shore stones (3/4 depth illusion)
+- [x] Higher-detail player (more frames, tool-use poses) and NPC base (player_hd 32x48; NPC base = tools/gen_npcs.py villager sheet, run 14)
+- [x] Bank height: raised grass edge over shore stones (3/4 depth illusion) (done in the Ongoing list; ticked run 14)
 - [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
 
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
@@ -97,7 +97,7 @@ Physics / feel:
 - [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
 - [x] Movement/sprint/camera feel pass: camera drifts back onto the player after 0.35 s standing still (CameraMath.recenter, tested); swing slow depends on the tool (PlayerMath.tool_plant: axe/pickaxe/club 0.35, hoe/scythe 0.55, can/rod/hand 0.85, tested). [x] sprint zoom punch (run 14). [ ] hands-on check by owner
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
-- [x] Story-first start: data/gates.json locks Port Halden, harbour and circuit until the Vance visit (step vance_car, day 3), the Highlands until the ledger visit, the Vance yard until the debt is cleared. StoryGate/Keeper bounces walker or car back with a message, red-white road barricades (tools/gen_barrier.py) stand on the roads and vanish when the story opens them; demo flags bypass (use --gated to test). Tested. [ ] planets gate (rocket), map shows locked regions, NPC hint about the closed road
+- [x] Story-first start: data/gates.json locks Port Halden, harbour and circuit until the Vance visit (step vance_car, day 3), the Highlands until the ledger visit, the Vance yard until the debt is cleared. StoryGate/Keeper bounces walker or car back with a message, red-white road barricades (tools/gen_barrier.py) stand on the roads and vanish when the story opens them; demo flags bypass (use --gated to test). Tested. [x] map shows locked regions (run 14: red hatching over gated chunks, LOCKED tags on POIs, short hints from gates.json; MapModel.locked_regions tested). [ ] planets gate (rocket), NPC hint about the closed road
 
 ## Phase 1.5: Feel & polish (OWNER PRIORITY 2026-11-17, do these BEFORE new Phase 2/3 items; order chosen by owner: feel first)
 Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', shops, robbery targets). Stardew-inspired.

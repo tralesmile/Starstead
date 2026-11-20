@@ -14,6 +14,8 @@ var gen: WorldGen
 var stream: ChunkStream
 var player: Node2D
 var pois: Array = []
+var locked: Dictionary = {}          # region id -> msg (story gates still shut), refreshed on open
+var locked_cb: Callable              # main supplies MapModel.locked_regions(...) for the current story
 var _open := false
 var _t := 0.0
 
@@ -38,6 +40,8 @@ func is_open() -> bool:
 
 func toggle() -> void:
 	_open = not _open
+	if _open and locked_cb.is_valid():
+		locked = locked_cb.call()
 	if _open and tex == null:
 		tex = ImageTexture.create_from_image(_build_image())
 	canvas.queue_redraw()
@@ -117,6 +121,7 @@ func _draw_all() -> void:
 	canvas.draw_rect(Rect2(o - Vector2(3, 3), sz + Vector2(6, 6)), Color(0.82, 0.7, 0.45))
 	canvas.draw_texture_rect(tex, Rect2(o, sz), false)
 	var font := ThemeDB.fallback_font
+	_draw_locked(o, font)
 	for p in pois:
 		var mp := o + MapModel.to_map(Vector2(p["cell"])) * SCALE
 		var col: Color = KIND_COL.get(p["kind"], Color.WHITE)
@@ -136,8 +141,43 @@ func _draw_all() -> void:
 		var col: Color = KIND_COL.get(p["kind"], Color.WHITE)
 		canvas.draw_rect(Rect2(Vector2(lx, ly - 7), Vector2(6, 6)), col)
 		var dist := int(Vector2(p["cell"] - Vector2i(pc)).length())
-		canvas.draw_string(font, Vector2(lx + 12, ly), "%s  (%d)" % [p["name"], dist], HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.95, 0.95, 0.95))
+		var shut := _poi_locked(p)
+		canvas.draw_string(font, Vector2(lx + 12, ly), "%s  (%d)%s" % [p["name"], dist, "  LOCKED" if shut else ""], HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.6, 0.6, 0.6) if shut else Color(0.95, 0.95, 0.95))
 		ly += 14.0
 	canvas.draw_string(font, Vector2(lx, ly + 8), "Red dot = you. Orange = fuel.", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 0.7, 0.3))
 	var fp := MapModel.fuel_prompt(Vector2i(pc), pois)
 	canvas.draw_string(font, Vector2(lx, ly + 22), fp, HORIZONTAL_ALIGNMENT_LEFT, int(vs.x - lx - 4), 9, Color(1, 0.8, 0.4))
+	if not locked.is_empty():
+		ly += 40.0
+		canvas.draw_string(font, Vector2(lx, ly), "Hatched = closed for now:", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 0.55, 0.45))
+		var ids: Array = locked.keys()
+		ids.sort()
+		for rid in ids:
+			ly += 13.0
+			canvas.draw_string(font, Vector2(lx + 6, ly), "- " + str(locked[rid]), HORIZONTAL_ALIGNMENT_LEFT, int(vs.x - lx - 10), 8, Color(0.9, 0.8, 0.75))
+
+func _region_of_cell(c: Vector2i) -> String:
+	return String(stream.region_at(ChunkGrid.chunk_of_cell(c)).get("id", "")) if stream != null else ""
+
+func _poi_locked(p: Dictionary) -> bool:
+	return locked.has(_region_of_cell(p["cell"]))
+
+func _draw_locked(o: Vector2, _font: Font) -> void:
+	## Story-gated regions: darkened with red diagonal hatching (like a closed road on a paper map).
+	if locked.is_empty() or stream == null:
+		return
+	for cy in ChunkGrid.GRID:
+		for cx in ChunkGrid.GRID:
+			var ch := Vector2i(cx, cy)
+			if not locked.has(String(stream.region_at(ch).get("id", ""))):
+				continue
+			var r := MapModel.chunk_rect(ch)
+			var rr := Rect2(o + r.position * SCALE, r.size * SCALE)
+			canvas.draw_rect(rr, Color(0.05, 0.03, 0.03, 0.45))
+			var step := 6.0
+			var k := 0.0
+			while k < rr.size.x + rr.size.y:
+				var a := rr.position + Vector2(minf(k, rr.size.x), maxf(0.0, k - rr.size.x))
+				var b := rr.position + Vector2(maxf(0.0, k - rr.size.y), minf(k, rr.size.y))
+				canvas.draw_line(a, b, Color(0.85, 0.25, 0.2, 0.55), 1.0)
+				k += step

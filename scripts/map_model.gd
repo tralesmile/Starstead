@@ -54,3 +54,24 @@ static func fuel_prompt(cell: Vector2i, list: Array) -> String:
 	if f.is_empty():
 		return ""
 	return "%s: %s" % [f["name"], RoadNet.direction_text(cell, f["cell"])]
+
+static func locked_regions(gates: Dictionary, done: Dictionary) -> Dictionary:
+	## region id -> short legend line for every story-gated region that is still shut (StoryGate rules).
+	var out := {}
+	for rid in gates:
+		var msg := StoryGate.lock_message(gates, str(rid), done)
+		if msg != "":
+			var g: Dictionary = gates[rid]
+			out[str(rid)] = str(g["hint"]) if g.has("hint") else short_reason(msg)
+	return out
+
+static func chunk_rect(ch: Vector2i) -> Rect2:
+	## A chunk's square on the map image, in map pixels.
+	var o := to_map(Vector2(ChunkGrid.origin_cell(ch)))
+	return Rect2(o, Vector2(WorldGen.SIZE, WorldGen.SIZE) / STEP)
+
+static func short_reason(msg: String) -> String:
+	## "Road closed: a chain ... (day 3)." -> the part after the first colon, trimmed, for the map legend.
+	var i := msg.find(":")
+	var s := msg.substr(i + 1).strip_edges() if i >= 0 else msg
+	return s if s.length() <= 60 else s.substr(0, 57) + "..."
