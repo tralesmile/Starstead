@@ -17,3 +17,18 @@ func test_every_npc_has_default_line() -> void:
 	var d: Dictionary = DataDB.load_json("npcs")
 	for n in d["npcs"]:
 		check(n.get("lines", {}).has("default"), n["id"])
+
+func test_gate_gossip() -> void:
+	var g := {"a": {"needs": "s1", "msg": "x", "gossip": "road A shut"}, "b": {"needs": "s2", "msg": "y", "gossip": "road B shut"}}
+	check_eq(Dialogue.gate_gossip(g, {}, 1), "", "odd talks use the NPC's own lines")
+	check_eq(Dialogue.gate_gossip(g, {}, 0), "road A shut")
+	check_eq(Dialogue.gate_gossip(g, {}, 2), "road B shut", "rotates")
+	check_eq(Dialogue.gate_gossip(g, {"s1": true}, 0), "road B shut", "opened roads are not gossiped")
+	check_eq(Dialogue.gate_gossip(g, {"s1": true, "s2": true}, 0), "")
+	check_eq(Dialogue.gate_gossip({}, {}, 0), "", "gates off")
+
+func test_real_gates_have_gossip() -> void:
+	var g := StoryGate.load_gates()
+	check(Dialogue.gate_gossip(g, {}, 0) != "")
+	for rid in g:
+		check((g[rid] as Dictionary).has("gossip"), rid)

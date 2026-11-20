@@ -208,6 +208,7 @@ func _ready() -> void:
 	shop.closed.connect(func(): player.set_physics_process(true))
 	add_child(shop)
 	dialogue = DialogueView.new()
+	dialogue.gossip_cb = func(n: int) -> String: return Dialogue.gate_gossip(gate_keeper.gates if gate_keeper.enabled else {}, GameState.story.done, n)
 	add_child(dialogue)
 	inv_view = InventoryView.new()
 	inv_view.closed.connect(func(): player.set_physics_process(true))

@@ -26,10 +26,17 @@ func _init() -> void:
 	panel.add_child(body)
 	visible = false
 
+var gossip_cb: Callable   # main: (counter) -> closed-road gossip line or ""
+
 func open(npc: Dictionary, activity: String) -> void:
 	counter += 1
 	name_label.text = str(npc["name"])
-	text = "\n".join(Dialogue.wrap(Dialogue.pick(npc, activity, counter), 58))
+	var line := Dialogue.pick(npc, activity, counter)
+	if gossip_cb.is_valid():
+		var g := str(gossip_cb.call(counter))
+		if g != "":
+			line = g
+	text = "\n".join(Dialogue.wrap(line, 58))
 	t = 0.0
 	body.text = ""
 	visible = true
