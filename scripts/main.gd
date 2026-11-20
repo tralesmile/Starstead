@@ -823,6 +823,7 @@ func _update_fishing(delta: float) -> void:
 	fishing.tick(delta, Input.is_action_pressed("use_tool") or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
 	if fishing.state == Fishing.State.CAUGHT:
 		GameState.bag.add(fishing.fish_id, 1)
+		fish_fx.leap(fishing.fish_id)
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
 		_skill_gain("fishing")

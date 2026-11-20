@@ -48,6 +48,9 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--leap-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:  # screenshot helper: a carp leaps from the water into your arms
+		m.fish_fx.target = m.player.position + Vector2(70, 80)
+		m.fish_fx.leap("carp")
 	if "--knock-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 30:  # screenshot helper: the nearest pedestrian is knocked out
 		var best: Array = []
 		for t in m.folk.targets():

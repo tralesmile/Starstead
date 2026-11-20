@@ -16,6 +16,16 @@ func setup(f: Fishing, p: Node2D) -> void:
 	player = p
 	z_index = 5
 
+var _icons: Dictionary = DataDB.load_json("item_icons")
+var _item_tex: Texture2D = load("res://assets/sprites/items.png")
+var leaps: Array = []   # {id, from, to, t, dur}: caught fish arcing into the player's arms (LeapMath)
+
+func leap(fish_id: String) -> void:
+	var from := target if target != Vector2.ZERO else player.position + Vector2(0, 40)
+	var to := player.position + Vector2(0, -24)
+	leaps.append({"id": fish_id, "from": from, "to": to, "t": 0.0, "dur": LeapMath.duration(from, to)})
+	cast_age = 0.0   # splash rings where it jumped out
+
 func start_cast(cell_center: Vector2) -> void:
 	target = cell_center
 	cast_age = 0.0
@@ -27,9 +37,35 @@ func _process(delta: float) -> void:
 	if fishing.state == Fishing.State.BITE and _last_state != Fishing.State.BITE:
 		bite_age = 0.0
 	_last_state = fishing.state
+	for l in leaps:
+		l["t"] = float(l["t"]) + delta
+		l["to"] = player.position + Vector2(0, -24)   # follows the player if they step back
+	leaps = leaps.filter(func(l): return float(l["t"]) < float(l["dur"]) + 0.35)
 	queue_redraw()
 
+func _draw_leaps() -> void:
+	var cols := maxi(1, _item_tex.get_width() / 16)
+	for l in leaps:
+		var dur: float = l["dur"]
+		var k := float(l["t"]) / dur
+		var from: Vector2 = l["from"]
+		var to: Vector2 = l["to"]
+		var p := LeapMath.pos(from, to, k) - global_position
+		var rot := LeapMath.spin(k, to.x - from.x) if k < 1.0 else 0.0
+		var sc := LeapMath.landing_squash(float(l["t"]) - dur) if k >= 1.0 else Vector2.ONE
+		if k < 1.0:   # shadow on the ground under the fish
+			var gp := from.lerp(to, clampf(k, 0.0, 1.0)) - global_position + Vector2(0, 24 * k)
+			_ellipse(gp, 6.0, 2.0, Color(0, 0, 0, 0.25))
+		var fi := int(_icons.get(String(l["id"]), 0))
+		draw_set_transform(p, rot, sc * 1.25)
+		draw_texture_rect_region(_item_tex, Rect2(-8, -8, 16, 16), Rect2((fi % cols) * 16, (fi / cols) * 16, 16, 16))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		if k < 0.25:   # water drops shaken off as it leaves the water
+			for i in 3:
+				draw_rect(Rect2(p + Vector2(-6 + i * 6, 6 + i % 2 * 3) * (1.0 + k * 3.0), Vector2(1, 1)), Color(0.8, 0.95, 1.0, 0.9))
+
 func _draw() -> void:
+	_draw_leaps()
 	var casting := fishing.state != Fishing.State.IDLE and fishing.state != Fishing.State.CAUGHT
 	if charge >= 0.0 or casting or cast_age < 0.5:
 		_draw_rod(casting)
