@@ -25,7 +25,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Run 12: Graphics: held fishing rod with charge/cast/bite poses (RodMath tested). Physics: planting your feet during a tool swing (PlayerMath.swing_slow 0.35x, tested). [ ] next: fishing cast pose frames, swing slow only for heavy tools
 Rule: add new items at the bottom whenever one is ticked, so this queue never runs dry.
 Graphics:
-- [x] Run 13: road barricades with warning sign at story gates (before: roads just ran into the city on day 1; after: the road visibly ends at a striped barrier). [ ] next: shadow under causeways on water, wet footprints on quay
+- [x] Run 13: road barricades with warning sign at story gates (before: roads just ran into the city on day 1; after: the road visibly ends at a striped barrier). [x] Run 14: soft two-step shadow on the water south-east of causeways/roadside banks (ground shader, warped path-mask lookup). [ ] next: wet footprints on quay, reflections of pedestrians in puddles
 - [x] Port Halden plazas: checkered slab tone, terracotta inlays, 8 planters (run 11). [ ] Next graphics ideas: shadow under bridges/causeways on water, wet footprints on quay
 - [x] Port Halden asphalt with painted lane dashes, paved sidewalk slabs, crisp cell-exact street edges (ground shader, texelFetch); city window glow and streetlamp pools at night
 - [x] Zebra crossings (CityModel.zebra, bars across the avenue and the streets) and a curb shadow/lit lip between sidewalk and street (ground shader). [x] wet-asphalt shine and puddles in rain (ground shader `wet`, World.set_wet)

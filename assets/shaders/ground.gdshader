@@ -104,6 +104,12 @@ void fragment() {
 		col = mix(col, rockc, body * present * 0.75);
 		col += (fbm(tile * 3.0 + TIME * 0.05) - 0.5) * 0.06;          // caustic shimmer
 		col *= 1.0 - 0.35 * (1.0 - smoothstep(0.0, 0.35, depth));     // shadow under the bank
+		// causeway / roadside shadow: a road just north-west casts a soft, two-step shadow onto the water (sun top-left)
+		vec2 cwarp = (vec2(fbm(tile * 1.7 + 5.0), fbm(tile * 1.7 + 29.0)) - 0.5) * 0.7;
+		vec2 cw = (tile - origin_tiles + data_pad - vec2(0.22, 0.85) + cwarp) / data_size;
+		float road_n = max(texture(data, cw).g, texture(data, cw + vec2(0.0, 0.25) / data_size).g * 0.8);
+		float cshadow = band(smoothstep(0.15, 0.75, road_n), 2.0) * (1.0 - smoothstep(1.5, 4.0, depth));
+		col *= 1.0 - 0.32 * cshadow;
 		// short animated ripple dashes
 		vec2 rp = floor(vec2(px.x / 6.0 + TIME * 0.6 * (hash(vec2(floor(px.y / 5.0))) - 0.3), px.y / 5.0));
 		float r = step(0.985, hash(rp)) * step(mod(px.y, 5.0), 1.0);
