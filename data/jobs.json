@@ -97,5 +97,38 @@
     ],
     "place": "workshop",
     "shift_hours": 4
+  },
+  "rocket_tech": {
+    "name": "Rocket Yard Tech",
+    "pay": 110,
+    "energy": 36,
+    "xp_per_shift": 15,
+    "hours": {
+      "start": 7,
+      "end": 19
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 10
+    },
+    "ranks": [
+      {
+        "name": "Yard Hand",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Rigger",
+        "pay_mult": 1.35,
+        "xp": 80
+      },
+      {
+        "name": "Launch Tech",
+        "pay_mult": 1.8,
+        "xp": 200
+      }
+    ],
+    "place": "vance_gate",
+    "shift_hours": 5
   }
 }

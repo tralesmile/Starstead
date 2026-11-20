@@ -5,8 +5,8 @@ func _m() -> JobModel:
 
 func test_three_jobs_complete() -> void:
 	var m := _m()
-	check_eq(m.ids().size(), 3)
-	for id in ["farmhand", "delivery_driver", "mechanic"]:
+	check_eq(m.ids().size(), 4)
+	for id in ["farmhand", "delivery_driver", "mechanic", "rocket_tech"]:
 		check(m.jobs.has(id), id)
 		check(m.jobs[id]["ranks"].size() >= 2, id)
 

@@ -16,6 +16,7 @@ var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
 var folk: CityFolkView
+var vance_pos := Vector2.INF   # Mr. Vance at his yard gate (also the Rocket Yard Tech job spot)
 var dialogue: DialogueView
 var car: CarView
 var police: PoliceView
@@ -183,6 +184,8 @@ func _ready() -> void:
 	add_child(race)
 	jobs = JobView.new()
 	jobs.setup(player, town.buildings, world.stall_cell())
+	if vance_pos != Vector2.INF:
+		jobs.spots["vance_gate"] = vance_pos
 	jobs.message.connect(_say)
 	add_child(jobs)
 	animals = AnimalView.new()
@@ -308,9 +311,15 @@ func _ready() -> void:
 	goal_label.modulate = Color(1.0, 0.92, 0.55, 0.9)
 	leg_layer.add_child(goal_label)
 	add_child(leg_layer)
-	prompt = Label.new()
-	prompt.position = Vector2(260, 300)
-	add_child(prompt)
+	prompt = Label.new()   # screen layer, centred above the hotbar (was a world-space child: invisible away from the homestead)
+	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	prompt.position = Vector2(0, 276)
+	prompt.size = Vector2(640, 16)
+	prompt.add_theme_font_size_override("font_size", 12)
+	prompt.add_theme_color_override("font_color", Color(1.0, 0.96, 0.8))
+	prompt.add_theme_color_override("font_outline_color", Color(0.12, 0.07, 0.03))
+	prompt.add_theme_constant_override("outline_size", 4)
+	leg_layer.add_child(prompt)
 	if GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
 		GameState.bag.add("turnip", 4)  # treats for taming the first animals
@@ -394,6 +403,9 @@ func _process(delta: float) -> void:
 	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
+		var jp := jobs.prompt()   # Vance's gate is also a workplace (Rocket Yard Tech)
+		if jp != "":
+			prompt.text += "    " + jp
 	if _indoors():
 		prompt.text = interior.prompt() if interior.active else cave.prompt()
 	elif prompt.text == "" and not shop.visible:
@@ -855,7 +867,8 @@ func _place_vance() -> void:
 	if st == null or npc.is_empty() or not st.roads.hubs.has("vance"):
 		return
 	var hub: Vector2i = st.roads.hubs["vance"]
-	npcs.add_static(npc, (Vector2(hub) + Vector2(1.5, 0.6)) * 32.0)
+	vance_pos = (Vector2(hub) + Vector2(1.5, 0.6)) * 32.0
+	npcs.add_static(npc, vance_pos)
 
 func _say(msg: String) -> void:
 	toast.text = msg
