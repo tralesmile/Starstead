@@ -65,27 +65,47 @@ func _draw_bar() -> void:
 	var x0 := (canvas.size.x - total) * 0.5
 	var y0 := canvas.size.y - SLOT - 16.0
 	var font := ThemeDB.fallback_font
+	# wooden tray behind the slots (same plank frame as the HUD panel)
+	var tray := Rect2(x0 - 5, y0 - 4, total + 10, SLOT + 8)
+	canvas.draw_rect(tray.grow(1), Color(0.13, 0.08, 0.04, 0.95))
+	canvas.draw_rect(tray, Color(0.55, 0.34, 0.17))
+	canvas.draw_rect(Rect2(tray.position, Vector2(tray.size.x, 1)), Color(0.73, 0.49, 0.26))
+	canvas.draw_rect(Rect2(tray.position + Vector2(0, tray.size.y - 1), Vector2(tray.size.x, 1)), Color(0.36, 0.21, 0.1))
 	for i in n:
-		var r := Rect2(x0 + i * (SLOT + GAP), y0, SLOT, SLOT)
 		var sel := i == selected
-		canvas.draw_rect(r.grow(1), Color(0.16, 0.1, 0.06, 0.95))
-		canvas.draw_rect(r, Color(0.43, 0.29, 0.17, 0.92) if not sel else Color(0.62, 0.43, 0.24, 0.96))
-		canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(4, 4)), Color(0.26, 0.17, 0.1, 0.9))
+		var r := Rect2(x0 + i * (SLOT + GAP), y0 - (2.0 if sel else 0.0), SLOT, SLOT)   # the picked slot lifts a little
+		# inset slot: dark rim on top/left (shadow), lit rim bottom/right, warm inner
+		canvas.draw_rect(r, Color(0.30, 0.18, 0.08))
+		canvas.draw_rect(Rect2(r.position + Vector2(1, 1), r.size - Vector2(1, 1)), Color(0.80, 0.62, 0.38) if sel else Color(0.66, 0.47, 0.26))
+		canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(3, 3)), Color(0.96, 0.88, 0.66) if sel else Color(0.86, 0.74, 0.52))
+		canvas.draw_rect(Rect2(r.position + Vector2(2, 2), Vector2(r.size.x - 3, 1)), Color(0.70, 0.56, 0.36))
 		var t: String = slot_tool(i)
 		_icon(t, r)
 		if not ToolKit.owns(GameState.tools_owned, t):
-			canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(4, 4)), Color(0.05, 0.03, 0.02, 0.6))
-		canvas.draw_string(font, r.position + Vector2(3, 10), str((i + 1) % 10), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.75))
+			canvas.draw_rect(Rect2(r.position + Vector2(2, 2), r.size - Vector2(3, 3)), Color(0.18, 0.12, 0.07, 0.62))
+		canvas.draw_string(font, r.position + Vector2(3, 9), str((i + 1) % 10), HORIZONTAL_ALIGNMENT_LEFT, -1, 7, Color(0.36, 0.22, 0.1, 0.9))
 		if t == "watering_can":
 			var f := GameState.can.fraction()
-			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0, 0, 0, 0.7))
+			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0.2, 0.14, 0.08, 0.8))
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2((SLOT - 6) * f, 3)), Color(0.35, 0.7, 1.0))
 		if t.ends_with("_seed") or t == "sprinkler" or t == "crab_pot":
-			canvas.draw_string(font, r.position + Vector2(SLOT - 13, SLOT - 3), str(GameState.bag.count(t)), HORIZONTAL_ALIGNMENT_RIGHT, 12, 9, Color(1, 1, 1))
+			var cnt := str(GameState.bag.count(t))
+			var w := font.get_string_size(cnt, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
+			var p := r.position + Vector2(SLOT - 2 - w, SLOT - 2)
+			for o in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
+				canvas.draw_string(font, p + o, cnt, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.2, 0.12, 0.05))
+			canvas.draw_string(font, p, cnt, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 1, 1))
 		if sel:
-			canvas.draw_rect(r.grow(2), Color(1.0, 0.85, 0.2), false, 2.0)
+			canvas.draw_rect(r.grow(1), Color(1.0, 0.82, 0.25), false, 2.0)
+			canvas.draw_rect(r.grow(2.5), Color(0.35, 0.2, 0.05, 0.6), false, 1.0)
+	# name tag above the picked slot
 	var name := String(current()).replace("_", " ").capitalize()
-	canvas.draw_string(font, Vector2(x0, y0 - 4), name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 0.95, 0.7))
+	var nw := font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+	var sx := x0 + selected * (SLOT + GAP) + SLOT * 0.5
+	var tag := Rect2(clampf(sx - nw * 0.5 - 4, 2.0, canvas.size.x - nw - 10), y0 - 20, nw + 8, 13)
+	canvas.draw_rect(tag.grow(1), Color(0.13, 0.08, 0.04, 0.95))
+	canvas.draw_rect(tag, Color(0.94, 0.87, 0.68))
+	canvas.draw_string(font, tag.position + Vector2(4, 10), name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.24, 0.15, 0.08))
 
 func _icon(t: String, r: Rect2) -> void:
 	var dst := Rect2(r.position + Vector2(6, 6), Vector2(16, 16))
@@ -96,4 +116,4 @@ func _icon(t: String, r: Rect2) -> void:
 		var fi := int(icons.get(t, 0))
 		canvas.draw_texture_rect_region(item_tex, dst, Rect2(fi * 16, 0, 16, 16))
 	else:
-		canvas.draw_string(ThemeDB.fallback_font, r.position + Vector2(5, 18), "hand" if t == "hand" else "?", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.9))
+		canvas.draw_string(ThemeDB.fallback_font, r.position + Vector2(5, 18), "hand" if t == "hand" else "?", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(0.3, 0.18, 0.08))
