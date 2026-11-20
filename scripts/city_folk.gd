@@ -146,3 +146,20 @@ static func separation(pos: Vector2, others: Array) -> Vector2:
 		var dir := d / l if l > 0.01 else Vector2.RIGHT
 		push += dir * (PERSONAL - l) / PERSONAL
 	return push.limit_length(1.0) * SIDESTEP
+
+const RESIDENTS := {
+	"city_house1": "The Okafor family",
+	"city_house2": "Mrs. Lindqvist",
+	"city_house3": "Dev and Tamsin Rao",
+	"city_apt_a": "a dozen tenants",
+	"city_apt_b": "the Delacroix sisters",
+}
+
+static func resident(building_id: String) -> String:
+	## Who lives behind a city door ("" for shops and public buildings). Shown on the door prompt.
+	return String(RESIDENTS.get(building_id, ""))
+
+static func door_label(b: Dictionary, open_door: bool) -> String:
+	var who := resident(String(b["id"]))
+	var home := " (%s live%s here)" % [who, "s" if not who.begins_with("The ") and not who.contains(" and ") and not who.begins_with("a ") and not who.begins_with("the ") else ""] if who != "" else ""
+	return ("E: Enter %s%s" if open_door else "E: %s%s (locked)") % [b["name"], home]

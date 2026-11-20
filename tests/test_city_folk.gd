@@ -79,3 +79,15 @@ func test_separation() -> void:
 	check(CityFolk.separation(Vector2.ZERO, [Vector2.ZERO]).length() > 0.0, "exact overlap still splits")
 	var crowd := CityFolk.separation(Vector2.ZERO, [Vector2(2, 0), Vector2(-2, 0), Vector2(0, 2), Vector2(1, 1)])
 	check(crowd.length() <= CityFolk.SIDESTEP + 0.01, "capped in a crowd")
+
+func test_residents_on_doors() -> void:
+	check_eq(CityFolk.resident("city_bank"), "")
+	check(CityFolk.resident("city_house2") != "")
+	for b in CityModel.buildings():
+		var who := CityFolk.resident(String(b["id"]))
+		if String(b["id"]).begins_with("city_house") or String(b["id"]).begins_with("city_apt"):
+			check(who != "", "named home %s" % b["id"])
+	var h := {"id": "city_house2", "name": "Townhouse 2"}
+	check_eq(CityFolk.door_label(h, false), "E: Townhouse 2 (Mrs. Lindqvist lives here) (locked)")
+	check_eq(CityFolk.door_label({"id": "city_house1", "name": "Townhouse 1"}, true), "E: Enter Townhouse 1 (The Okafor family live here)")
+	check_eq(CityFolk.door_label({"id": "city_bank", "name": "Halden Bank"}, true), "E: Enter Halden Bank")

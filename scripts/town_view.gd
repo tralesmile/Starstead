@@ -151,4 +151,4 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 		body.add_child(sm)
 	world.add_child(body)
 	var open_door: bool = String(b["id"]) in InteriorModel.PUBLIC
-	world.interactables.add(b["door"], "door", ("E: Enter %s" if open_door else "E: %s (locked)") % b["name"])
+	world.interactables.add(b["door"], "door", CityFolk.door_label(b, open_door))
