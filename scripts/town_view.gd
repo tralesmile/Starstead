@@ -4,6 +4,7 @@ extends Node2D
 
 var buildings: Array = []
 var lights: Array = []   # PointLight2D at the windows, glow at night
+var paddock_cells: Array[Vector2i] = []   # fence ring beside the barn
 const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(23, 68), Vector2(105, 68)], "workshop": [Vector2(16, 57), Vector2(89, 57)],
 	"shop_building": [Vector2(30, 82), Vector2(108, 82)], "bank_building": [Vector2(25, 70), Vector2(133, 70)],
 	"police_building": [Vector2(20, 66), Vector2(52, 66), Vector2(112, 70)], "hospital_building": [Vector2(18, 60), Vector2(46, 60), Vector2(112, 60), Vector2(142, 60), Vector2(18, 96), Vector2(142, 96)],
@@ -35,6 +36,8 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	buildings = TownModel.layout(npcs["places"], home, ok, blocked)
 	for b in buildings:
 		_make(world, gen, b)
+	if stall.x >= 0:
+		_village(world, gen, stall)
 	for b in CityModel.buildings():   # Port Halden (far east of the homestead chunk)
 		buildings.append(b)
 		_make(world, gen, b)
@@ -42,6 +45,50 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 		buildings.append(b)
 		_make(world, gen, b)
 	CityView.build(world, lights)
+
+func _village(world: World, gen: WorldGen, stall: Vector2i) -> void:
+	## A fenced paddock beside the barn, then worn dirt footpaths from every village door to the market stall
+	## (routed around the paddock fence).
+	var hub := stall + Vector2i(1, 2)
+	var walk := func(c: Vector2i) -> bool:
+		return c.x > 0 and c.y > 0 and c.x < WorldGen.SIZE - 1 and c.y < WorldGen.SIZE - 1 and gen.sdf_at(c.x, c.y) >= 1.0 and not (c in gen.trees) and not (c in gen.rocks) and not (c in gen.dock)
+	var taken := {}
+	for ob in buildings:
+		for c in TownModel.footprint_cells(ob):
+			taken[c] = true
+	var fences := {}
+	for b in buildings:
+		if String(b["id"]) != "barn":
+			continue
+		var free := func(c: Vector2i) -> bool:
+			return walk.call(c) and not taken.has(c) and not (c in gen.bushes) and not GameState.farm.soil.has(c) and c != hub and c != stall
+		var pd := TownModel.paddock(b, free)
+		if pd.is_empty():
+			continue
+		for c in pd["fence"]:
+			fences[c] = "fence"
+		for c in pd["fence"]:
+			var body := world.make_prop("res://assets/sprites/build_fence_auto.png", c, Vector2(30, 8), Vector2(0, -16))
+			var spr := body.get_child(0) as Sprite2D
+			spr.region_enabled = true
+			spr.region_rect = Rect2(Autotile.atlas_index(Autotile.mask(fences, c, ["fence"])) * 32, 0, 32, 32)
+			spr.offset = Vector2(0, -12)
+			for ch in body.get_children():   # make_prop sized the shadow from the whole 16-frame sheet
+				if ch is Sprite2D and ch != spr:
+					ch.queue_free()
+			var sh := World.make_shadow(22)
+			sh.scale *= Vector2(1.0, 0.6)
+			body.add_child(sh)
+			paddock_cells.append(c)
+	var walk_paths := func(c: Vector2i) -> bool: return walk.call(c) and not fences.has(c)
+	var cells := TownModel.village_paths(buildings, hub, walk_paths, WorldGen.SIZE)
+	for c in cells:
+		if c in gen.bushes:
+			continue
+		gen.tiles[c.y * WorldGen.SIZE + c.x] = WorldGen.PATH + (c.x * 7 + c.y * 13) % 3
+		world.cut_tuft(c)
+	if not cells.is_empty():
+		world.refresh_ground()
 
 func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	var body := StaticBody2D.new()

@@ -189,6 +189,8 @@ func _ready() -> void:
 	jobs.message.connect(_say)
 	add_child(jobs)
 	animals = AnimalView.new()
+	for pc in town.paddock_cells:
+		animals.extra_solid[pc] = true
 	animals.setup(world, player, world.gen)
 	animals.message.connect(_say)
 	world.add_child(animals)

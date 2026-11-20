@@ -52,7 +52,11 @@ func setup(w: Node2D, p: Player, g: WorldGen) -> void:
 		for i in int(WILD[id][0]):
 			_spawn(id, _free_spot(rng, int(WILD[id][1]), int(WILD[id][2])), null)
 
+var extra_solid: Dictionary = {}   # cell -> true: the village paddock fence (TownView) pens animals too
+
 func _land(c: Vector2i) -> bool:
+	if extra_solid.has(c):
+		return false
 	if GameState.build.placed.has(c) and GameState.build.defs[GameState.build.placed[c]].solid:
 		return false  # fences and walls pen animals in
 	return gen.sdf_at(c.x, c.y) >= 2.0 and not (c in gen.trees) and not (c in gen.rocks) and not (c in gen.bushes) and not GameState.nodes.is_solid(c)

@@ -65,3 +65,65 @@ static func footprint_cells(b: Dictionary) -> Array[Vector2i]:
 
 static func sprite_bottom_center(b: Dictionary) -> Vector2:
 	return Vector2((b["cell"].x + float(b["w"]) * 0.5) * 32.0, (b["cell"].y + DEPTH) * 32.0)
+
+static func village_paths(buildings: Array, hub: Vector2i, walk: Callable, size: int = 64) -> Array[Vector2i]:
+	## Dirt footpaths from each village door to the hub (the market stall front), routed around water, trees
+	## and buildings (walk(c) = cell may carry a path). Shared stretches merge. Sorted, unique cells.
+	var g := AStarGrid2D.new()
+	g.region = Rect2i(0, 0, size, size)
+	g.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
+	g.default_compute_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	g.update()
+	var solid := {}
+	for b in buildings:
+		for c in footprint_cells(b):
+			solid[c] = true
+	for y in size:
+		for x in size:
+			var c := Vector2i(x, y)
+			if solid.has(c) or not walk.call(c):
+				g.set_point_solid(c, true)
+	var seen := {}
+	for b in buildings:
+		var door: Vector2i = b["door"]
+		if not g.is_in_boundsv(door) or not g.is_in_boundsv(hub):
+			continue
+		var was_d := g.is_point_solid(door)
+		var was_h := g.is_point_solid(hub)
+		g.set_point_solid(door, false)
+		g.set_point_solid(hub, false)
+		for c in g.get_id_path(door, hub):
+			seen[c] = true
+		g.set_point_solid(door, was_d)
+		g.set_point_solid(hub, was_h)
+	var out: Array[Vector2i] = []
+	for c in seen:
+		out.append(c)
+	out.sort()
+	return out
+
+static func paddock(barn: Dictionary, free: Callable) -> Dictionary:
+	## A 5x4 fenced paddock beside the barn (east, west, lower east/west, upper east/west, behind): {fence, gate, rect} or {}.
+	## The gate gap faces south, toward the village paths.
+	var bc: Vector2i = barn["cell"]
+	var w := int(barn["w"])
+	for origin in [bc + Vector2i(w + 1, -1), bc + Vector2i(-6, -1), bc + Vector2i(w + 1, 2), bc + Vector2i(-6, 2),
+			bc + Vector2i(w + 1, -4), bc + Vector2i(-6, -4), bc + Vector2i(0, -5)]:
+		var r := Rect2i(origin, Vector2i(5, 4))
+		var ok := true
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				if not free.call(Vector2i(x, y)):
+					ok = false
+		if not ok:
+			continue
+		var gate := Vector2i(r.position.x + 2, r.end.y - 1)
+		var fence: Array[Vector2i] = []
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				var c := Vector2i(x, y)
+				var edge := x == r.position.x or x == r.end.x - 1 or y == r.position.y or y == r.end.y - 1
+				if edge and c != gate:
+					fence.append(c)
+		return {"fence": fence, "gate": gate, "rect": r}
+	return {}

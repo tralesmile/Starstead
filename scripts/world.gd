@@ -173,6 +173,11 @@ func _build_world_wall() -> void:
 		body.add_child(cs)
 	add_child(body)
 
+func refresh_ground() -> void:
+	## Re-upload the homestead ground data after tiles changed (village footpaths).
+	if ground_mat != null:
+		ground_mat.set_shader_parameter("data", ImageTexture.create_from_image(data_image(gen, 1)))
+
 func cut_tuft(c: Vector2i) -> bool:
 	## Scythe on a wild grass tuft: it disappears (grows back when its chunk is rebuilt / next session).
 	if not tufts_by_cell.has(c):
