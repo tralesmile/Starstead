@@ -127,3 +127,24 @@ static func paddock(barn: Dictionary, free: Callable) -> Dictionary:
 					fence.append(c)
 		return {"fence": fence, "gate": gate, "rect": r}
 	return {}
+
+static func field(barn: Dictionary, avoid: Rect2i, free: Callable) -> Array[Vector2i]:
+	## A 6x3 plot of bare earth just south of the barn (tries a few lateral shifts), clear of `avoid` (the paddock):
+	## the first cells of a field to till. [] when nothing fits.
+	var bc: Vector2i = barn["cell"]
+	var w := int(barn["w"])
+	for dx in [0, -3, 3, -6, 6, w - 6]:
+		var r := Rect2i(bc + Vector2i(dx, 5), Vector2i(6, 3))
+		if avoid.size != Vector2i.ZERO and r.intersects(avoid.grow(1)):
+			continue
+		var ok := true
+		var cells: Array[Vector2i] = []
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				var c := Vector2i(x, y)
+				if not free.call(c):
+					ok = false
+				cells.append(c)
+		if ok:
+			return cells
+	return []

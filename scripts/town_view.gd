@@ -80,6 +80,21 @@ func _village(world: World, gen: WorldGen, stall: Vector2i) -> void:
 			sh.scale *= Vector2(1.0, 0.6)
 			body.add_child(sh)
 			paddock_cells.append(c)
+	for b in buildings:
+		if String(b["id"]) != "barn":
+			continue
+		var avoid := Rect2i()
+		if not paddock_cells.is_empty():
+			avoid = Rect2i(paddock_cells[0], Vector2i.ONE)
+			for pc in paddock_cells:
+				avoid = avoid.expand(pc)
+		var fld := TownModel.field(b, avoid, func(c: Vector2i) -> bool:
+			return walk.call(c) and not taken.has(c) and not (c in gen.bushes) and not fences.has(c) and c != hub and c != stall)
+		for c in fld:
+			gen.tiles[c.y * WorldGen.SIZE + c.x] = WorldGen.DIRT + (c.x * 5 + c.y * 11) % 3
+			world.cut_tuft(c)
+		if not fld.is_empty():
+			world.refresh_ground()
 	var walk_paths := func(c: Vector2i) -> bool: return walk.call(c) and not fences.has(c)
 	var cells := TownModel.village_paths(buildings, hub, walk_paths, WorldGen.SIZE)
 	for c in cells:

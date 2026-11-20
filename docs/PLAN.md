@@ -180,7 +180,7 @@ Houses, buildings, graphics (5, 10)
 - [x] NPC A* pathing around trees/rocks/water (NpcPath, AStarGrid2D)
 - [x] NPC dialogue box with per-NPC lines (data/npcs.json)
 - [x] Town layout model (TownModel) + barn/workshop/houses placed near NPC places with collision and door prompts (art tools/gen_town.py)
-- [ ] Town: enterable interiors, farm fences/field around the barn, roads between buildings
+- [ ] Town: enterable interiors, farm fences/field around the barn (run 14: paddock, footpaths, bare-earth field plot south of the barn), roads between buildings
 - [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
 - [x] Robbery model (RobberyModel, data/loot.json: locks, lockpick, noise, loot, NPC memory/dog; tested)
 - [x] One house to rob in play: RobberyView on town doors (E pick lock, E loot, noise wakes residents -> heat, memory)

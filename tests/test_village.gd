@@ -32,3 +32,15 @@ func test_paddock_beside_barn() -> void:
 	var west := TownModel.paddock(barn, func(c): return c.x < 10)
 	check(not west.is_empty() and (west["rect"] as Rect2i).end.x <= 10, "falls back to the west side")
 	check(TownModel.paddock(barn, func(c): return false).is_empty())
+
+func test_field_south_of_barn() -> void:
+	var barn: Dictionary = _bld()[0]
+	var f := TownModel.field(barn, Rect2i(), func(c): return true)
+	check_eq(f.size(), 18, "6x3 plot")
+	for c in f:
+		check(c.y >= 10, "below the barn")
+	var pad := Rect2i(Vector2i(10, 9), Vector2i(5, 4))
+	var g := TownModel.field(barn, pad, func(c): return true)
+	for c in g:
+		check(not pad.has_point(c), "clear of the paddock")
+	check(TownModel.field(barn, Rect2i(), func(c): return false).is_empty())
