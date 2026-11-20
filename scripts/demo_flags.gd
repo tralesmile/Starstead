@@ -48,6 +48,10 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--treasure-demo" in OS.get_cmdline_user_args() and m.fishing.state == Fishing.State.REELING and not m.fishing.treasure_on:  # screenshot helper: a chest in the reel track
+		m.fishing.treasure_on = true
+		m.fishing.treasure_pos = 0.75
+		m.fishing.treasure_prog = 0.45
 	if "--leap-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:  # screenshot helper: a carp leaps from the water into your arms
 		m.fish_fx.target = m.player.position + Vector2(70, 80)
 		m.fish_fx.leap("carp")

@@ -836,13 +836,24 @@ func _update_fishing(delta: float) -> void:
 	if fishing.state == Fishing.State.CAUGHT:
 		GameState.bag.add(fishing.fish_id, 1)
 		fish_fx.leap(fishing.fish_id)
+		var treasure_txt := ""
+		if fishing.treasure_got:   # opened the chest in the reel and landed the fish: the loot comes too
+			var loot := Fishing.treasure_loot(randf(), randf())
+			var lid := String(loot["id"])
+			if lid == "$":
+				GameState.money += int(loot["n"])
+				treasure_txt = "  + TREASURE $%d" % int(loot["n"])
+			else:
+				GameState.bag.add(lid, int(loot["n"]))
+				float_fx.pickup(player.position + Vector2(0, -30), lid, int(loot["n"]))
+				treasure_txt = "  + TREASURE %d %s" % [int(loot["n"]), lid.replace("_", " ")]
 		var sz := FishJournal.size_cm(float(fish_table[fishing.fish_id].difficulty), randf())
 		var rec := GameState.journal.record(fishing.fish_id, sz)
 		_skill_gain("fishing")
 		if bool(fish_table[fishing.fish_id].get("sea", false)) and GameState.harbour.add_catch(GameState.clock.day, HarbourActions.hour_now(), sz):
-			_say("Caught a %s! %d cm. Contest total %d cm" % [fish_table[fishing.fish_id].name, sz, GameState.harbour.score])
+			_say("Caught a %s! %d cm. Contest total %d cm%s" % [fish_table[fishing.fish_id].name, sz, GameState.harbour.score, treasure_txt])
 		else:
-			_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table)])
+			_say(("LEGENDARY! " if bool(fish_table[fishing.fish_id].get("legendary", false)) else "") + "Caught a %s! %d cm%s  (%s)%s" % [fish_table[fishing.fish_id].name, sz, " NEW!" if rec else "", GameState.journal.summary(fish_table), treasure_txt])
 		fishing.reset()
 	elif fishing.state == Fishing.State.LOST:
 		_say("It got away")

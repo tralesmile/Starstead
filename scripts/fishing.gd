@@ -28,6 +28,21 @@ var progress := 0.3
 var rng := RandomNumberGenerator.new()
 var bar_size := BAR_SIZE   # per-cast (bait can widen it)
 
+## Treasure chest in the reel (Stardew-style side goal): sometimes a chest drifts into the track; keep the bar
+## on it to open it, but the fish slips meanwhile. Loot only counts if the fish is landed too.
+const TREASURE_CHANCE := 0.18
+const TREASURE_FILL := 0.5    # per second while the bar covers the chest
+const TREASURE_DRAIN := 0.2
+const TREASURE_LOOT := [   # [weight, item id ("$" = money), min, max]
+	[30, "$", 40, 120], [20, "glow_bait", 3, 6], [15, "copper_ore", 3, 6], [12, "iron_ore", 2, 4],
+	[10, "coal", 3, 6], [8, "copper_bar", 1, 2], [5, "iron_bar", 1, 1],
+]
+var treasure_on := false
+var treasure_pos := 0.5
+var treasure_prog := 0.0
+var treasure_got := false
+var treasure_in := -1.0   # seconds until the chest appears (-1 = none this cast)
+
 func _init(seed_value: int = 1) -> void:
 	rng.seed = seed_value
 
@@ -96,6 +111,10 @@ func hook() -> bool:
 		fish_pos = 0.5
 		fish_target = 0.5
 		progress = 0.3
+		treasure_on = false
+		treasure_got = false
+		treasure_prog = 0.0
+		treasure_in = rng.randf_range(1.0, 3.0) if rng.randf() < TREASURE_CHANCE else -1.0
 		return true
 	if state == State.WAITING:
 		reset()  # pulled too early: the fish is scared off
@@ -128,10 +147,40 @@ func _reel(delta: float, hold: bool) -> void:
 		fish_target = rng.randf()  # darting: harder fish choose new spots more often
 	fish_pos = move_toward(fish_pos, fish_target, delta * (0.15 + 0.9 * difficulty))
 	progress += (GAIN if overlapping() else -LOSS) * delta
+	_treasure(delta)
 	if progress >= 1.0:
 		state = State.CAUGHT
 	elif progress <= 0.0:
 		state = State.LOST
+
+func _treasure(delta: float) -> void:
+	if treasure_in > 0.0:
+		treasure_in -= delta
+		if treasure_in <= 0.0:
+			treasure_on = true
+			treasure_pos = rng.randf_range(0.15, 0.85)
+	if not treasure_on:
+		return
+	if absf(bar - treasure_pos) <= bar_size / 2.0:
+		treasure_prog += TREASURE_FILL * delta
+	else:
+		treasure_prog = maxf(0.0, treasure_prog - TREASURE_DRAIN * delta)
+	if treasure_prog >= 1.0:
+		treasure_got = true
+		treasure_on = false
+
+static func treasure_loot(roll: float, roll2: float) -> Dictionary:
+	## {id, n}: id "$" means money. roll picks the entry by weight, roll2 the amount.
+	var total := 0.0
+	for e in TREASURE_LOOT:
+		total += float(e[0])
+	var acc := 0.0
+	for e in TREASURE_LOOT:
+		acc += float(e[0]) / total
+		if roll <= acc:
+			return {"id": String(e[1]), "n": int(round(lerpf(float(e[2]), float(e[3]), clampf(roll2, 0.0, 1.0))))}
+	var last: Array = TREASURE_LOOT[TREASURE_LOOT.size() - 1]
+	return {"id": String(last[1]), "n": int(last[2])}
 
 func overlapping() -> bool:
 	return absf(bar - fish_pos) <= bar_size / 2.0
