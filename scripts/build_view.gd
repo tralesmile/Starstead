@@ -3,6 +3,8 @@ extends Node2D
 ## Build mode: B toggles, Q cycles the piece, F places, X demolishes. The ghost is green when valid, red when not.
 ## Placed pieces are sprites in the y-sorted world; solid ones get a collider.
 
+const WALL_SHEET: Texture2D = preload("res://assets/sprites/build_wall_auto.png")
+const WALL_LINK := ["wall", "door"]
 const FENCE_SHEET: Texture2D = preload("res://assets/sprites/build_fence_auto.png")
 var world: Node2D
 var gen: WorldGen
@@ -46,6 +48,8 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 		_roofs[cell] = s
 	if piece_id == "fence":
 		_fence_frame(s, cell)
+	if piece_id == "wall":
+		_wall_frame(s, cell)
 	if piece_id == "floor":
 		s.z_index = -8  # under props and the player
 		body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
@@ -59,8 +63,15 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 		body.add_child(cs)
 	world.add_child(body)
 	_sprites[cell] = body
-	if piece_id == "fence":
+	if piece_id == "fence" or piece_id == "wall" or piece_id == "door":
 		_refresh_fence_neighbours(cell)
+
+func _wall_frame(s: Sprite2D, cell: Vector2i) -> void:
+	## Connected walls: same mask idea as fences (N1|E2|S4|W8), walls and doors link.
+	s.texture = WALL_SHEET
+	s.region_enabled = true
+	s.region_rect = Rect2(Autotile.atlas_index(Autotile.mask(GameState.build.placed, cell, WALL_LINK)) * 32, 0, 32, 48)
+	s.offset = Vector2(-16, -48)
 
 func _fence_frame(s: Sprite2D, cell: Vector2i) -> void:
 	## Connected fences: the sheet frame follows which neighbours are fences (Autotile mask N1|E2|S4|W8).
@@ -72,9 +83,13 @@ func _fence_frame(s: Sprite2D, cell: Vector2i) -> void:
 func _refresh_fence_neighbours(cell: Vector2i) -> void:
 	for d in [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]:
 		var n: Vector2i = cell + d
-		if GameState.build.placed.get(n) == "fence" and _sprites.has(n):
-			var spr := _sprites[n].get_child(0) as Sprite2D
-			_fence_frame(spr, n)
+		if not _sprites.has(n):
+			continue
+		var kind = GameState.build.placed.get(n)
+		if kind == "fence":
+			_fence_frame(_sprites[n].get_child(0) as Sprite2D, n)
+		elif kind == "wall":
+			_wall_frame(_sprites[n].get_child(0) as Sprite2D, n)
 
 func _unspawn(cell: Vector2i) -> void:
 	_roofs.erase(cell)

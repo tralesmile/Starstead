@@ -101,6 +101,37 @@ def wall():
     save(im, "build_wall.png")
 
 
+def wall_auto():
+    """16-frame wall sheet (512x48): frame index = neighbour mask N1|E2|S4|W8. Walls that touch run on without
+    an outline between them, so a row of walls reads as one long wall; free ends keep the outline."""
+    sheet = Image.new("RGBA", (512, 48), (0, 0, 0, 0))
+    for m in range(16):
+        rng = random.Random(23)
+        im, d = new(32, 48)
+        plank_face(d, 0, 10, 31, 47, WOOD, rng)
+        d.line([1, 45, 30, 45], fill=shade(WOOD[0], 0.85))
+        d.line([0, 28, 31, 28], fill=shade(WOOD[0], 0.9))
+        d.line([0, 29, 31, 29], fill=shade(WOOD[3], 0.95))
+        d.rectangle([0, 0, 31, 11], fill=WOOD[3])
+        for y in (3, 7):
+            d.line([0, y, 31, y], fill=shade(WOOD[3], 0.9))
+        d.line([0, 1, 31, 1], fill=(214, 156, 96))
+        d.line([0, 11, 31, 11], fill=WOOD[0])
+        d.line([0, 10, 31, 10], fill=shade(WOOD[1], 0.85))
+        d.line([0, 11, 31, 11], fill=OUT)
+        d.line([0, 47, 31, 47], fill=OUT)            # bottom edge always
+        if not m & 1:
+            d.line([0, 0, 31, 0], fill=OUT)          # no wall above: closed top edge
+        if not m & 8:
+            d.line([0, 0, 0, 47], fill=OUT)          # free west end
+        if not m & 2:
+            d.line([31, 0, 31, 47], fill=OUT)        # free east end
+        if m & 4:                                    # wall continues south: no bottom line, a darker seam instead
+            d.line([0, 47, 31, 47], fill=shade(WOOD[0], 0.8))
+        sheet.alpha_composite(im, (m * 32, 0))
+    save(sheet, "build_wall_auto.png")
+
+
 def door():
     rng = random.Random(37)
     im, d = new(32, 48)
@@ -232,4 +263,4 @@ def roof():
 
 if __name__ == "__main__":
     os.makedirs(SPR, exist_ok=True)
-    floor(); wall(); door(); fence(); fence_auto(); roof()
+    floor(); wall(); door(); fence(); fence_auto(); wall_auto(); roof()
