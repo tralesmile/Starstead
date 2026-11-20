@@ -49,7 +49,7 @@ Graphics:
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
 - [x] Run 13: camera recentre when standing still + per-tool swing plant (tested). [x] Run 14: sprint zoom punch (CameraMath.sprint_zoom: 4% kick out when a sprint starts, decays in ~0.3 s, holds 5% out while running; tested). [ ] next: tyre squeal audio, landing squash after a jump/fall
-- [x] Drift smoke by surface (VehicleMath.smoke_style: white tyre smoke on asphalt, tan dust on paths, olive dust on grass, thin in rain, puffs scale with slide angle; tested). [x] drift leaderboard (run 14: DriftBoard top-5, rank in the drift toast, E on the circuit flag shows it, saved; tested) [ ] tyre squeal audio
+- [x] Drift smoke by surface (VehicleMath.smoke_style: white tyre smoke on asphalt, tan dust on paths, olive dust on grass, thin in rain, puffs scale with slide angle; tested). [x] drift leaderboard (run 14: DriftBoard top-5, rank in the drift toast, E on the circuit flag shows it, saved; tested) [x] tyre squeal audio (run 14: SquealMath level by slip/surface/rain, procedural looping noise, no assets; untested by ear)
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
 - [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [x] tyre marks linger 40 s on the circuit (skid_life, tested)
 - [x] Physics: pit-lane/infield speed limit (DriftScore.pit_cap) and drift scoring on the circuit (DriftScore: multiplier by drift time, banks on clean exit, crash loses it, best saved). [ ] drift leaderboard/ghost, tyre squeal audio

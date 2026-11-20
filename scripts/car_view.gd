@@ -186,6 +186,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		drift.crash()
 	var skid := driving and VehicleMath.is_skidding(vel, heading)
+	_squeal_tick(driving, vel)
 	_smoke.emitting = skid
 	if skid:
 		var ss := VehicleMath.smoke_style(VehicleMath.slip(vel, heading), _smoke_tile, _smoke_sdf, player.rain)
@@ -217,3 +218,28 @@ func repair(bag: Inventory) -> String:
 		return "Car needs %d wood to repair" % cost
 	health = VehicleMath.HEALTH_MAX
 	return "Car repaired (-%d wood)" % cost
+
+var _squeal: AudioStreamPlayer
+
+func _squeal_tick(driving: bool, vel: Vector2) -> void:
+	## Looping procedural tyre noise (SquealMath): louder on asphalt, near silent on grass, muffled in rain.
+	if _squeal == null:
+		var w := AudioStreamWAV.new()
+		w.format = AudioStreamWAV.FORMAT_16_BITS
+		w.mix_rate = SquealMath.RATE
+		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		w.loop_end = 4410
+		w.data = SquealMath.loop_samples()
+		_squeal = AudioStreamPlayer.new()
+		_squeal.stream = w
+		_squeal.volume_db = SquealMath.SILENT_DB
+		add_child(_squeal)
+	var lv := 0.0
+	if driving:
+		lv = SquealMath.level(VehicleMath.slip(vel, heading), vel.length(), _smoke_tile, _smoke_sdf, player.rain)
+	_squeal.volume_db = SquealMath.volume_db(lv)
+	_squeal.pitch_scale = SquealMath.pitch(vel.length())
+	if lv > 0.01 and not _squeal.playing:
+		_squeal.play()
+	elif lv <= 0.01 and _squeal.playing:
+		_squeal.stop()
