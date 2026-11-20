@@ -16,6 +16,7 @@ var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
 var folk: CityFolkView
+var yard_dogs: YardGuardView
 var vance_pos := Vector2.INF   # Mr. Vance at his yard gate (also the Rocket Yard Tech job spot)
 var dialogue: DialogueView
 var car: CarView
@@ -154,6 +155,10 @@ func _ready() -> void:
 	folk.setup(world, player)
 	folk.message.connect(_say)
 	world.add_child(folk)
+	yard_dogs = YardGuardView.new()   # Vance yard guard dogs
+	yard_dogs.setup(player)
+	yard_dogs.message.connect(_say)
+	world.add_child(yard_dogs)
 	car = CarView.new()
 	car.player = player
 	car.world = world
