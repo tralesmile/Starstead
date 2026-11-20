@@ -172,7 +172,9 @@ func _ready() -> void:
 	car.drift_banked.connect(func(p):
 		var best: int = int(GameState.sport_best.get("drift", 0))
 		GameState.sport_best["drift"] = maxi(best, p)
-		_say("Drift +%d%s" % [p, "  NEW BEST!" if p > best else "  (best %d)" % best]))
+		var res := DriftBoard.submit(GameState.drift_board, p)
+		GameState.drift_board = res["board"]
+		_say("Drift +%d%s%s" % [p, "  NEW BEST!" if p > best else "  (best %d)" % best, ("  #%d on the board" % int(res["rank"])) if int(res["rank"]) > 0 else ""]))
 	world.add_child(car)
 	police = PoliceView.new()
 	police.setup(world, player, self, world.gen)
@@ -609,6 +611,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 		if it.get("kind", "") == "pitch":
 			CityActions.run(self, "pitch")
+			return
+		if it.get("kind", "") == "driftboard":
+			_say(DriftBoard.lines(GameState.drift_board))
+			toast_t = 6.0
 			return
 		if it.get("kind", "") == "yardcrate":
 			var yi := YardHeist.nearest(player.position)

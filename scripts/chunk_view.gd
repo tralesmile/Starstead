@@ -279,6 +279,8 @@ func _circuit(world: World) -> void:
 		var b := world.make_prop(tex, c, d[1], Vector2(0, -float(d[2]) / 2.0))
 		if String(p["kind"]) == "goal" and c == CircuitModel.GOAL_CELL:
 			world.interactables.add(c, "pitch", "E: Penalty shootout (5 kicks)")
+		if String(p["kind"]) == "flag":
+			world.interactables.add(c + Vector2i(0, 1), "driftboard", "E: Drift leaderboard")
 		nodes.append(b)
 		sign_cells.append(c)
 
