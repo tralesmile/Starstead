@@ -44,13 +44,11 @@ func stars() -> int:
 
 func _make_cop(p: Vector2) -> Node2D:
 	var n := Node2D.new()
-	var s := Sprite2D.new()
-	s.texture = load("res://assets/sprites/player_hd.png")
-	s.hframes = 8
-	s.vframes = 4
-	s.offset = Vector2(0, -22)
-	s.modulate = Color(0.8, 0.9, 1.5)   # light police-blue; the old dark tint turned faces black (owner: wanted looked bad)
+	var s := NpcLook.make_sprite(NpcLook.POLICE)   # navy uniform + peaked cap (tools/gen_npcs.py)
+	s.name = "Sprite"
 	n.add_child(s)
+	n.set_meta("t", 0.0)
+	n.set_meta("face", 0)
 	n.add_child(World.make_shadow(20))
 	n.position = p
 	world.add_child(n)
@@ -78,10 +76,22 @@ func _process(delta: float) -> void:
 		var cn := c as Node2D
 		if combat != null and combat.is_down(cn):
 			continue  # knocked out
+		var before := cn.position
 		cn.position = PoliceModel.step(cn.position, player.position, n, delta)
+		_animate(cn, cn.position - before, delta)
 		if PoliceModel.arrests(cn.position, player.position):
 			_arrest()
 			return
+
+func _animate(cn: Node2D, d: Vector2, delta: float) -> void:
+	var moving := d.length() > 0.01
+	var face := NpcSchedule.facing_of(d, int(cn.get_meta("face", 0)))
+	var t: float = float(cn.get_meta("t", 0.0)) + delta if moving else 0.0
+	cn.set_meta("face", face)
+	cn.set_meta("t", t)
+	var s := cn.get_node_or_null("Sprite") as Sprite2D
+	if s != null:
+		s.frame = NpcLook.frame(NpcLook.POLICE, face, PlayerMath.walk_frame_hd(t, moving))
 
 func _arrest() -> void:
 	var fine := mini(WantedMath.fine(stars()), GameState.money)

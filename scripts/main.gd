@@ -141,6 +141,9 @@ func _ready() -> void:
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
 	world.add_child(npcs)
+	var folk := CityFolkView.new()   # Port Halden pedestrians + beat cops (E9)
+	folk.setup(world, player)
+	world.add_child(folk)
 	car = CarView.new()
 	car.player = player
 	car.world = world

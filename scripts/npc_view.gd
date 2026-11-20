@@ -1,16 +1,11 @@
 class_name NpcView
 extends Node2D
 ## Spawns the townsfolk from data/npcs.json and walks them along their schedule.
-## Visual only (no collision): they stay on land via NpcSchedule.safe_step. Sprites reuse the
-## player sheet with a per-NPC tint until dedicated NPC art exists.
+## Visual only (no collision): they stay on land via NpcSchedule.safe_step. Each wears its own outfit
+## from the villager sheet (NpcLook, tools/gen_npcs.py).
 
 const SPEED := 38.0
-const TINTS := {
-	"farmer": Color(1.0, 0.85, 0.6),
-	"shopkeeper": Color(0.7, 0.85, 1.0),
-	"fisher": Color(0.7, 1.0, 0.85),
-	"mechanic": Color(1.0, 0.7, 0.7),
-}
+const TINTS := {}   # outfits carry the colour now; kept so hit-flash resets fall back to white
 
 var gen: WorldGen
 var world: Node2D
@@ -39,12 +34,7 @@ func cell_for(npc: Dictionary, hour: float) -> Vector2i:
 
 func _spawn(npc: Dictionary) -> void:
 	var body := Node2D.new()
-	var s := Sprite2D.new()
-	s.texture = load("res://assets/sprites/player_hd.png")
-	s.hframes = 8
-	s.vframes = 4
-	s.offset = Vector2(0, -22)
-	s.modulate = TINTS.get(npc["id"], Color.WHITE)
+	var s := NpcLook.make_sprite(NpcLook.outfit_of(str(npc["id"])))
 	body.add_child(s)
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
@@ -59,7 +49,7 @@ func _spawn(npc: Dictionary) -> void:
 	var start := (Vector2(cell_for(npc, h)) + Vector2(0.5, 0.6)) * 32.0
 	body.position = start
 	world.add_child(body)
-	actors.append({"npc": npc, "node": body, "sprite": s, "face": 0, "t": 0.0, "goal": Vector2i(-1, -1), "path": [] as Array[Vector2]})
+	actors.append({"npc": npc, "node": body, "sprite": s, "outfit": NpcLook.outfit_of(str(npc["id"])), "face": 0, "t": 0.0, "goal": Vector2i(-1, -1), "path": [] as Array[Vector2]})
 
 func _process(delta: float) -> void:
 	var h := NpcSchedule.hour_of(GameState.clock.minutes)
@@ -87,7 +77,7 @@ func _process(delta: float) -> void:
 		a["face"] = NpcSchedule.facing_of(d, a["face"])
 		a["t"] = a["t"] + delta if moving else 0.0
 		var col := PlayerMath.walk_frame_hd(a["t"], moving)
-		a["sprite"].frame = a["face"] * 8 + col
+		a["sprite"].frame = NpcLook.frame(a["outfit"], a["face"], col)
 
 func near(pos: Vector2, radius: float = 40.0) -> Dictionary:
 	## Closest NPC within radius of pos: {name, activity} or {}.
