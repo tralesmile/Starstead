@@ -41,6 +41,13 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 				inv.remove("sprinkler", 1)
 				return "Placed sprinkler"
 			return ""
+		"fertiliser":
+			if inv.count("fertiliser") < 1:
+				return "No fertiliser (craft it: C)"
+			if farm.fertilise(cell):
+				inv.remove("fertiliser", 1)
+				return "Fertilised"
+			return "" if not farm.soil.has(cell) else "Already fertilised"
 		"scythe":
 			if farm.cut_weed(cell):
 				_give(inv, drops, "fibre", 1 + (1 if FarmModel.weed_roll(cell, 7) > 0.6 else 0))

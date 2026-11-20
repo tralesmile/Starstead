@@ -425,6 +425,18 @@ def hay():
     return i
 icons['hay'] = hay
 
+def fertiliser():
+    i = Ic()
+    i.rect(4, 4, 11, 14, "#8a6a3a")              # sack
+    i.rect(5, 5, 10, 13, "#b08850")
+    i.rect(5, 5, 6, 13, "#c8a066")               # lit side
+    i.rect(4, 3, 11, 4, "#6a4e28")               # tied top
+    i.px(7, 2, "#6a4e28"); i.px(8, 2, "#6a4e28")
+    i.ell(8, 10, 2, 2, "#5a9a30")                # green sprout mark
+    i.px(8, 7, "#5a9a30"); i.px(9, 7, "#7ac040")
+    return i
+icons['fertiliser'] = fertiliser
+
 def sprinkler():
     i = Ic()
     i.rect(7, 8, 8, 13, "#b8c0cc")      # pipe

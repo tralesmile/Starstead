@@ -424,5 +424,10 @@
   "name": "Hay",
   "price": 4,
   "stack": 99
+ },
+ "fertiliser": {
+  "name": "Fertiliser",
+  "price": 8,
+  "stack": 99
  }
 }

@@ -19,6 +19,11 @@ func test_craft_spends_wood() -> void:
 
 func test_every_recipe_makes_a_hotbar_tool() -> void:
 	var recipes: Dictionary = DataDB.load_json("crafting")
+	var items: Dictionary = DataDB.load_json("items")
 	for id in recipes:
+		if bool(recipes[id].get("item", false)):   # item recipes (fertiliser) make a real bag item instead
+			check(items.has(String(recipes[id]["makes"])), id)
+			check(int(recipes[id].get("count", 1)) >= 1, id)
+			continue
 		check(String(recipes[id]["makes"]) in ToolUse.TOOLS, id)
 		check(not (String(recipes[id]["makes"]) in ToolKit.STARTER))

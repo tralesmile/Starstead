@@ -21,6 +21,13 @@ func on_ready() -> void:
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
 			m.race.start()
+	if "--fert-demo" in OS.get_cmdline_user_args():   # screenshot helper: a fertilised row beside a plain one
+		var pc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+		for dx in 4:
+			for dy in 2:
+				GameState.farm.till(pc + Vector2i(dx + 1, dy + 1))
+				if dy == 0:
+					GameState.farm.fertilise(pc + Vector2i(dx + 1, dy + 1))
 	if "--hut-demo" in OS.get_cmdline_user_args():  # screenshot helper: stamp a hut via the blueprint key path
 		GameState.bag.add("wood", 99)
 		m.player.position += Vector2(160, 0)

@@ -26,6 +26,12 @@ func _draw() -> void:
 		var m := Autotile.mask(joins, cell, [true])
 		var tex: Texture2D = wet if s.watered else dry
 		draw_texture_rect_region(tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(Autotile.atlas_index(m) * 32, 0, 32, 32))
+		if bool(s.get("fert", false)) and not bool(s.get("fert_spent", false)):   # fertiliser: pale-green flecks in the furrows
+			var o := Vector2(cell) * 32.0
+			for i in 7:
+				var h: int = (cell.x * 92821 + cell.y * 68917 + i * 7919) & 0xffff
+				draw_rect(Rect2(o + Vector2(4 + h % 24, 6 + (h / 24) % 22), Vector2(1, 1)), Color(0.72, 0.86, 0.45, 0.9))
+				draw_rect(Rect2(o + Vector2(5 + h % 24, 6 + (h / 24) % 22), Vector2(1, 1)), Color(0.45, 0.6, 0.25, 0.9))
 		if s.crop != "":
 			crops.append(cell)
 	for cell in crops:  # crops drawn after all soil so tall plants overlap the next row

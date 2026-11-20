@@ -685,7 +685,7 @@ func _unhandled_input(e: InputEvent) -> void:
 					if hotbar.current() == "watering_can":
 						GameState.can.use()
 		if msg.begins_with("Harvested"):
-			_quality_pass(dl)
+			_quality_pass(dl, GameState.farm.fert_bonus(cell))
 		if hotbar.current() == "axe" and msg.begins_with("Got") and world.gen.trees.has(cell):
 			dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
 		for d in dl:
@@ -791,12 +791,12 @@ func _steal_from_stall() -> void:
 	else:
 		_say("You swipe a %s unseen" % id)
 
-func _quality_pass(dl: Array) -> void:
+func _quality_pass(dl: Array, fert: float = 0.0) -> void:
 	## Harvested crops roll silver/gold by farming level (QualityMath).
 	var flvl := SkillModel.level(int(GameState.skill_xp.get("farming", 0)))
 	for d in dl:
 		if GameState.farm.crops.has(d["id"]):
-			d["id"] = QualityMath.variant(String(d["id"]), QualityMath.roll(flvl, randf()))
+			d["id"] = QualityMath.variant(String(d["id"]), QualityMath.roll(flvl, randf(), fert))
 
 func _fish_ctx() -> Dictionary:
 	var caught: Array = []
@@ -1021,7 +1021,7 @@ func _context_harvest(cell: Vector2i) -> void:
 	player.held_tool = "hand"
 	player.swing()
 	if msg.begins_with("Harvested"):
-		_quality_pass(dl)
+		_quality_pass(dl, GameState.farm.fert_bonus(cell))
 	for d in dl:
 		drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 	if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():

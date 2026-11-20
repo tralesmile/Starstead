@@ -24,6 +24,19 @@ func till(cell: Vector2i) -> bool:
 	soil[cell] = {"watered": false, "crop": "", "age": 0}
 	return true
 
+const FERT_BONUS := 0.12   # extra gold chance at harvest (QualityMath.roll fert)
+
+func fertilise(cell: Vector2i) -> bool:
+	## Fertiliser on tilled soil lasts until the next crop there is harvested.
+	if not soil.has(cell) or bool(soil[cell].get("fert", false)):
+		return false
+	soil[cell]["fert"] = true
+	soil[cell]["fert_spent"] = false
+	return true
+
+func fert_bonus(cell: Vector2i) -> float:
+	return FERT_BONUS if soil.has(cell) and bool(soil[cell].get("fert", false)) else 0.0
+
 func crop_for_seed(seed_id: String) -> String:
 	for id in crops:
 		if crops[id].seed == seed_id:
@@ -46,6 +59,9 @@ func plant(cell: Vector2i, seed_id: String, season: int) -> bool:
 		return false
 	soil[cell].crop = id
 	soil[cell].age = 0
+	if bool(soil[cell].get("fert_spent", false)):
+		soil[cell]["fert"] = false
+		soil[cell]["fert_spent"] = false
 	return true
 
 func water(cell: Vector2i) -> bool:
@@ -71,6 +87,8 @@ func harvest(cell: Vector2i) -> Dictionary:
 	var id: String = soil[cell].crop
 	soil[cell].crop = ""
 	soil[cell].age = 0
+	if bool(soil[cell].get("fert", false)):
+		soil[cell]["fert_spent"] = true   # still counts for this harvest's quality roll; gone at the next planting
 	return {"id": id, "n": int(crops[id].yield)}
 
 const WEED_CHANCE := 0.18
@@ -140,7 +158,8 @@ func next_day() -> void:
 func to_array() -> Array:
 	var out := []
 	for c in soil:
-		out.append({"x": c.x, "y": c.y, "watered": soil[c].watered, "crop": soil[c].crop, "age": soil[c].age})
+		out.append({"x": c.x, "y": c.y, "watered": soil[c].watered, "crop": soil[c].crop, "age": soil[c].age,
+			"fert": bool(soil[c].get("fert", false)), "fs": bool(soil[c].get("fert_spent", false))})
 	return out
 
 func weeds_to_array() -> Array:
@@ -158,7 +177,8 @@ func from_array(a: Array) -> void:
 	soil = {}
 	weeds = {}
 	for e in a:
-		soil[Vector2i(int(e.x), int(e.y))] = {"watered": bool(e.watered), "crop": str(e.crop), "age": int(e.age)}
+		soil[Vector2i(int(e.x), int(e.y))] = {"watered": bool(e.watered), "crop": str(e.crop), "age": int(e.age),
+			"fert": bool(e.get("fert", false)), "fert_spent": bool(e.get("fs", false))}
 
 ## Growth frame 0..frames-1 for a crop of `age` days out of `total` (last frame = ripe, only when age >= total).
 static func stage(age: int, total: int, frames: int = 5) -> int:
