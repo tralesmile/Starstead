@@ -34,8 +34,17 @@ func toggle_log() -> void:
 func event(name: String) -> void:
 	_land(GameState.story.notify(name))
 
+var _fee_seen := -1
+
 func poll(planted: int) -> void:
-	_land(GameState.story.poll({"day": GameState.clock.day, "money": GameState.money, "planted": planted, "debt_paid": GameState.debt_paid}))
+	_land(GameState.story.poll({"day": GameState.clock.day, "money": GameState.money, "planted": planted, "debt_paid": GameState.debt_paid,
+		"rep_honest": GameState.rep_honest, "rep_street": GameState.rep_street}))
+	var fee: int = GameState.story.late_fee()
+	if _fee_seen >= 0 and fee > _fee_seen:
+		banner = "Vance's clerk sends a note: the debt is late. A $%d fee is added (pay at the Town Hall ledger)." % (fee - _fee_seen)
+		banner_t = 7.0
+		said.emit(banner)
+	_fee_seen = fee
 
 func _land(steps: Array) -> void:
 	for s in steps:

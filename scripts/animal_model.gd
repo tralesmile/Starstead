@@ -163,4 +163,4 @@ func next_gear(st: Dictionary, have: Dictionary) -> String:
 
 static func wild_ok(c: Vector2i) -> bool:
 	## Wild animals keep out of paved places (Port Halden streets, the circuit, the harbour quay).
-	return not CityModel.in_rect(c) and not CircuitModel.in_rect(c) and not HarbourModel.is_quay(c)
+	return not CityModel.in_rect(c) and not CircuitModel.in_rect(c) and not HarbourModel.is_quay(c) and not VanceYard.in_rect(c)

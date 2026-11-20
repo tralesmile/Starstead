@@ -4,7 +4,7 @@ extends RefCounted
 ## Sheet: 8 columns (idle, 6 walk, tool pose) x 4 rows per outfit (down, left, up, right), outfits stacked.
 
 const SHEET := "res://assets/sprites/npcs.png"
-const OUTFITS := ["farmer", "shopkeeper", "fisher", "mechanic", "police", "citizen_a", "citizen_b", "citizen_c"]
+const OUTFITS := ["farmer", "shopkeeper", "fisher", "mechanic", "police", "citizen_a", "citizen_b", "citizen_c", "vance"]
 const CITIZENS := [5, 6, 7, 1, 2, 3]   # outfits pedestrians draw from (not the police uniform, not Odalys' bun)
 const POLICE := 4
 

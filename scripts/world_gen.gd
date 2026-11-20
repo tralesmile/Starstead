@@ -135,6 +135,10 @@ func generate() -> void:
 				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3
 			elif HarbourModel.is_sea(wc):
 				tiles[y * SIZE + x] = WATER_DEEP if HarbourModel.is_deep(wc) else WATER_SHALLOW
+	for y in SIZE:   # Vance Aerospace yard (VanceYard): forced land, paved concrete
+		for x in SIZE:
+			if VanceYard.in_rect(Vector2i(x + _ox, y + _oy)):
+				tiles[y * SIZE + x] = PATH + ((x + _ox) * 7 + (y + _oy) * 13) % 3
 	for y in SIZE:   # Halden circuit (CircuitModel): forced land, asphalt oval
 		for x in SIZE:
 			var cc := Vector2i(x + _ox, y + _oy)
@@ -156,7 +160,7 @@ func generate() -> void:
 	for y in SIZE:
 		for x in SIZE:
 			var t := tiles[y * SIZE + x]
-			if t <= 2 and (CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) or CityModel.in_rect(Vector2i(x + _ox, y + _oy)) or HarbourModel.is_quay(Vector2i(x + _ox, y + _oy))):
+			if t <= 2 and (VanceYard.in_rect(Vector2i(x + _ox, y + _oy)) or CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) or CityModel.in_rect(Vector2i(x + _ox, y + _oy)) or HarbourModel.is_quay(Vector2i(x + _ox, y + _oy))):
 				continue  # the city park stays clear of trees, rocks and bushes
 			if t <= 2 and (not is_home() or absi(x - 32) + absi(y - 32) > 6):
 				var roll := r.randf()
@@ -193,7 +197,7 @@ func generate() -> void:
 		for x in SIZE:
 			var c := Vector2i(x, y)
 			var roll := tr.randf()
-			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) and not HarbourModel.is_quay(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
+			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) and not HarbourModel.is_quay(Vector2i(x + _ox, y + _oy)) and not VanceYard.in_rect(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
 				tufts.append(c)
 
 static func is_road(t: int) -> bool:

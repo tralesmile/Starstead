@@ -45,4 +45,9 @@ static func run(m, kind: String) -> void:
 				var pay := HarbourModel.crate_pay(day)
 				GameState.money += pay
 				GameState.rep_street += 2
-				m._say("No questions asked: $%d" % pay)
+				var a: Dictionary = GameState.story.active()
+				if not a.is_empty() and str(a["step"]["id"]) == "rocket_seat":
+					m._say("No questions asked: $%d. And this fell off a Vance truck: a launch-pad keycard." % pay)
+					m.story_view.event("keycard")
+				else:
+					m._say("No questions asked: $%d" % pay)

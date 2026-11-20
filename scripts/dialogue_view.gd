@@ -32,7 +32,7 @@ func open(npc: Dictionary, activity: String) -> void:
 	counter += 1
 	name_label.text = str(npc["name"])
 	var line := Dialogue.pick(npc, activity, counter)
-	if gossip_cb.is_valid():
+	if gossip_cb.is_valid() and str(npc.get("id", "")) != "vance":
 		var g := str(gossip_cb.call(counter))
 		if g != "":
 			line = g

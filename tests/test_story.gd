@@ -54,7 +54,13 @@ func test_full_run_and_save() -> void:
 	m.notify("enter_cave")
 	m.notify("notice")
 	m.poll(ctx)
-	check(m.finished(), "act 1 done")
+	check(m.done.has("debt_free"), "act 1 done")
+	check_eq(m.active()["step"]["id"], "visit_vance", "act 2 follows")
+	m.notify("region_vance")
+	m.notify("vance_talk")
+	ctx["rep_honest"] = 12
+	m.poll(ctx)   # honest road + $5000 ticket finish Act 2 in one poll
+	check(m.finished(), "acts 1 and 2 done")
 	check_eq(m.goal_text(), "")
 	var m2 := _m()
 	m2.from_array(m.to_array())
@@ -65,3 +71,53 @@ func test_full_run_and_save() -> void:
 func test_goal_uses_story() -> void:
 	check(GoalText.current(3, 2, 5, 300, false, 0, "Story: do it").contains("Story: do it"))
 	check(GoalText.current(0, 0, 1, 500, false, 0, "Story: x").contains("hoe"), "day 1 keeps the tutorial")
+
+func test_late_fees() -> void:
+	var m := _m()
+	m.day = 28
+	check_eq(m.late_fee(), 0, "on time")
+	m.day = 29
+	check_eq(m.late_fee(), 100, "first late week")
+	m.day = 36
+	check_eq(m.late_fee(), 200)
+	m.day = 400
+	check_eq(m.late_fee(), 500, "capped")
+	check_eq(m.debt_left(0), 2500)
+	m.done["debt_free"] = true
+	check_eq(m.late_fee(), 0, "no fees after clearing")
+	check_eq(m.debt_left(0), 0)
+
+func test_debt_clear_trigger_counts_fees() -> void:
+	var m := _m()
+	check(m.cond_ok({"debt_clear": true}, {"debt_paid": 2000}))
+	m.day = 30
+	check(not m.cond_ok({"debt_clear": true}, {"debt_paid": 2000}), "late fee still owed")
+	check(m.cond_ok({"debt_clear": true}, {"debt_paid": 2100}))
+
+func test_act2_branches() -> void:
+	var m := _m()
+	for s in ["read_letter", "first_crop", "first_profit", "vance_car", "see_ledger", "first_instalment", "cave_note", "read_notice", "debt_free"]:
+		m.done[s] = true
+	check_eq(m.active()["step"]["id"], "visit_vance")
+	check_eq(m.notify("region_vance").size(), 1)
+	check_eq(m.notify("vance_talk").size(), 1)
+	check_eq(m.poll({"rep_honest": 4, "rep_street": 9}).size(), 0)
+	check_eq(m.poll({"rep_honest": 4, "rep_street": 10, "money": 100}).size(), 1, "street road")
+	check_eq(m.active()["step"]["id"], "rocket_seat")
+	var street := m.notify("keycard")
+	check_eq(street.size(), 1, "keycard opens the pad")
+	check(m.finished())
+
+func test_act2_honest_ticket() -> void:
+	var m := _m()
+	for q in m.quests:
+		for s in q["steps"]:
+			if s["id"] != "rocket_seat":
+				m.done[s["id"]] = true
+	check_eq(m.poll({"money": 4999}).size(), 0)
+	check_eq(m.poll({"money": 5000}).size(), 1)
+
+func test_side_and_events() -> void:
+	check_eq(StoryModel.side(3, 5), "street")
+	check_eq(StoryModel.side(5, 5), "honest")
+	check_eq(StoryModel.trigger_events({"any": [{"money_min": 1}, {"event": "k"}]}), ["k"])

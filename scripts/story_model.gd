@@ -8,12 +8,19 @@ var done: Dictionary = {}       # step id -> true
 var debt_total := 2000
 var debt_step := 250
 var act := ""
+var day := 1                    # last polled game day (late fees)
+var due_day := 28
+var late_fee_step := 100
+var late_cap := 500
 
 func _init(data: Dictionary = {}) -> void:
 	quests = data.get("quests", [])
 	debt_total = int(data.get("debt_total", 2000))
 	debt_step = int(data.get("debt_step", 250))
 	act = str(data.get("act", ""))
+	due_day = int(data.get("debt_due_day", 28))
+	late_fee_step = int(data.get("late_fee", 100))
+	late_cap = int(data.get("late_cap", 500))
 
 func active() -> Dictionary:
 	## {quest, step, index, total} of the first unfinished step, or {} when the act is complete.
@@ -49,34 +56,66 @@ func notify(event: String) -> Array:
 	## An in-game event happened. Returns the steps completed (the caller shows "say" and pays "reward").
 	var out := []
 	var a := active()
-	if not a.is_empty() and str(a["step"]["trigger"].get("event", "")) == event:
+	if not a.is_empty() and event in trigger_events(a["step"]["trigger"]):
 		_complete(a["step"], out)
 	return out
+
+static func trigger_events(t: Dictionary) -> Array:
+	## Events that complete a trigger: its own "event" plus any listed under "any".
+	var out := []
+	if t.has("event"):
+		out.append(str(t["event"]))
+	for sub in t.get("any", []):
+		out.append_array(trigger_events(sub))
+	return out
+
+func cond_ok(t: Dictionary, ctx: Dictionary) -> bool:
+	## Poll conditions. "any" = one of several sub-triggers (events never hold in a poll).
+	if t.has("any"):
+		for sub in t["any"]:
+			if not (sub as Dictionary).has("event") and cond_ok(sub, ctx):
+				return true
+		return false
+	if t.has("day_min"):
+		return int(ctx.get("day", 0)) >= int(t["day_min"])
+	if t.has("money_min"):
+		return int(ctx.get("money", 0)) >= int(t["money_min"])
+	if t.has("planted_min"):
+		return int(ctx.get("planted", 0)) >= int(t["planted_min"])
+	if t.has("debt_paid_min"):
+		return int(ctx.get("debt_paid", 0)) >= int(t["debt_paid_min"])
+	if t.has("debt_clear"):
+		return debt_left(int(ctx.get("debt_paid", 0))) == 0
+	if t.has("rep_any_min"):
+		return maxi(int(ctx.get("rep_honest", 0)), int(ctx.get("rep_street", 0))) >= int(t["rep_any_min"])
+	return false
+
+func late_fee() -> int:
+	## Vance adds a fee for every started week past the due day, up to the cap; nothing once the debt is cleared.
+	if done.has("debt_free") or day <= due_day:
+		return 0
+	return mini(late_cap, ((day - due_day - 1) / 7 + 1) * late_fee_step)
+
+static func side(rep_honest: int, rep_street: int) -> String:
+	return "street" if rep_street > rep_honest else "honest"
 
 func poll(ctx: Dictionary) -> Array:
 	## ctx: {day, money, planted, debt_paid}. Completes consecutive condition steps (a chain can finish in one call).
 	var out := []
+	day = int(ctx.get("day", day))
 	for _i in 8:
 		var a := active()
 		if a.is_empty():
 			break
-		var t: Dictionary = a["step"]["trigger"]
-		var ok := false
-		if t.has("day_min"):
-			ok = int(ctx.get("day", 0)) >= int(t["day_min"])
-		elif t.has("money_min"):
-			ok = int(ctx.get("money", 0)) >= int(t["money_min"])
-		elif t.has("planted_min"):
-			ok = int(ctx.get("planted", 0)) >= int(t["planted_min"])
-		elif t.has("debt_paid_min"):
-			ok = int(ctx.get("debt_paid", 0)) >= int(t["debt_paid_min"])
-		if not ok:
+		if not cond_ok(a["step"]["trigger"], ctx):
 			break
 		_complete(a["step"], out)
 	return out
 
 func debt_left(paid: int) -> int:
-	return maxi(0, debt_total - paid)
+	if done.has("debt_free"):
+		return 0
+	return maxi(0, debt_total + late_fee() - paid)
 
 func pay_debt(cash: int, paid: int, all: bool = false) -> Dictionary:
 	## One ledger payment: a slice (or everything affordable). Returns {cash, paid, moved}.
@@ -93,7 +132,11 @@ func log_lines(paid: int) -> PackedStringArray:
 		for s in q["steps"]:
 			var mark := "[x] " if done.has(str(s["id"])) else ("[>] " if not a.is_empty() and a["step"] == s else "[ ] ")
 			out.append("  " + mark + str(s["text"]))
-	out.append("Vance debt: $%d of $%d paid" % [paid, debt_total])
+	if done.has("debt_free"):
+		out.append("Vance debt: cleared")
+	else:
+		var fee := late_fee()
+		out.append("Vance debt: $%d of $%d paid, due day %d%s" % [paid, debt_total + fee, due_day, ("  (late fees $%d)" % fee) if fee > 0 else ""])
 	return out
 
 func to_array() -> Array:

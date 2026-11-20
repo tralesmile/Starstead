@@ -148,6 +148,7 @@ func _ready() -> void:
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
 	world.add_child(npcs)
+	_place_vance()
 	folk = CityFolkView.new()   # Port Halden pedestrians + beat cops (E9)
 	folk.setup(world, player)
 	folk.message.connect(_say)
@@ -377,6 +378,7 @@ func _process(delta: float) -> void:
 		var reg: Dictionary = world.region_now(player.position)
 		if ChunkGrid.region_changed(world.region_id, String(reg.id)):
 			region_banner.show_region(String(reg.name))
+			story_view.event("region_" + String(reg.id))
 		world.region_id = String(reg.id)
 		var gr := gate_keeper.step(player.position, String(reg.id), GameState.story.done, delta)
 		if gr["bounce"]:
@@ -549,6 +551,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		var nn := npcs.near(player.position + Vector2(0, -8))
 		if it.is_empty() and not nn.is_empty():
 			dialogue.open(nn["npc"], nn["activity"])
+			if String(nn.get("id", "")) == "vance":
+				story_view.event("vance_talk")
 			return
 		var an := animals.near(player.position)
 		if it.is_empty() and not an.is_empty():
@@ -571,6 +575,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 		if it.get("kind", "") == "pitch":
 			CityActions.run(self, "pitch")
+			return
+		if it.get("kind", "") == "rocket":
+			_say("Your seat on the Vance rocket is waiting. The Moon (Act 3) is not built yet." if VanceYard.gate_open(GameState.story.done) else "Half-built, white and red, scaffolding up one side. Grandmother beat this to the Moon?")
+			toast_t = 4.0
 			return
 		if it.get("kind", "") in ["board", "crate", "fence"]:
 			HarbourActions.run(self, String(it["kind"]))
@@ -832,6 +840,15 @@ func _gate_bounce(gr: Dictionary) -> void:
 	if str(gr["msg"]) != "":
 		_say(str(gr["msg"]))
 		toast_t = 4.0
+
+func _place_vance() -> void:
+	## Act 2: Mr. Vance waits beside the road end at his yard (RoadNet hub "vance").
+	var st: ChunkStream = world.gen.stream_ref
+	var npc: Dictionary = DataDB.load_json("story").get("vance_npc", {})
+	if st == null or npc.is_empty() or not st.roads.hubs.has("vance"):
+		return
+	var hub: Vector2i = st.roads.hubs["vance"]
+	npcs.add_static(npc, (Vector2(hub) + Vector2(1.5, 0.6)) * 32.0)
 
 func _say(msg: String) -> void:
 	toast.text = msg

@@ -29,6 +29,7 @@ func build(world: World, g: WorldGen) -> void:
 	_cave_mouth(world)
 	_harbour(world)
 	_circuit(world)
+	_vance_yard(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -277,6 +278,46 @@ func _circuit(world: World) -> void:
 			world.interactables.add(c, "pitch", "E: Penalty shootout (5 kicks)")
 		nodes.append(b)
 		sign_cells.append(c)
+
+const YARD_SPRITES := {   # kind -> [sprite, body size, sprite height]
+	"rocket": ["rocket", Vector2(30, 14), 176],
+	"hangar": ["hangar", Vector2(168, 40), 128],
+	"tank": ["fuel_tank", Vector2(34, 12), 64],
+	"flood": ["floodlight", Vector2(8, 6), 88],
+	"crates": ["yard_crates", Vector2(40, 10), 40],
+}
+
+func _vance_yard(world: World) -> void:
+	## Vance Aerospace rocket yard (VanceYard): launch pad decal, razor-wire fence, the shut gate, rocket and props.
+	if not VanceYard.RECT.intersects(Rect2i(origin, Vector2i(WorldGen.SIZE, WorldGen.SIZE))):
+		return
+	if ChunkGrid.chunk_of_cell(VanceYard.PAD.position) == chunk:
+		var pad := Sprite2D.new()
+		pad.texture = load("res://assets/sprites/launch_pad.png")
+		pad.centered = false
+		pad.position = Vector2(VanceYard.PAD.position) * 32.0
+		pad.z_index = -9
+		_add(world, pad)
+	var r := VanceYard.RECT
+	for c in VanceYard.fence_cells():
+		if ChunkGrid.chunk_of_cell(c) != chunk:
+			continue
+		var side := (c.x == r.position.x or c.x == r.end.x - 1) and c.y != r.position.y and c.y != r.end.y - 1
+		var b := world.make_prop("res://assets/sprites/%s.png" % ("yard_fence_v" if side else "yard_fence"), c,
+			Vector2(8, 32) if side else Vector2(32, 8), Vector2(0, -20))
+		nodes.append(b)
+	if not VanceYard.gate_open(world.gate_done) and ChunkGrid.chunk_of_cell(VanceYard.GATE[1]) == chunk:
+		nodes.append(world.make_prop("res://assets/sprites/yard_gate.png", VanceYard.GATE[1], Vector2(96, 8), Vector2(0, -16)))
+	for p in VanceYard.props():
+		var c: Vector2i = p["cell"]
+		if ChunkGrid.chunk_of_cell(c) != chunk:
+			continue
+		var d: Array = YARD_SPRITES[String(p["kind"])]
+		var b2 := world.make_prop("res://assets/sprites/%s.png" % d[0], c, d[1], Vector2(0, -float(d[2]) / 2.0 + 4.0))
+		if String(p["kind"]) == "rocket":
+			world.interactables.add(c + Vector2i(0, 1), "rocket", "E: Look at the Vance rocket")
+			sign_cells.append(c + Vector2i(0, 1))
+		nodes.append(b2)
 
 func unload(world: World) -> void:
 	for c in layer_cells:

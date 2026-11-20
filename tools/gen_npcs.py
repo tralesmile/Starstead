@@ -8,7 +8,7 @@ Reuses the lit-surface renderer of tools/gen_player_hd.py (same proportions, lig
 but swaps the palette per outfit and draws beardless heads with three hair styles, so townsfolk no
 longer look like tinted copies of the player.
 
-Layout: 256 x 1536. Each outfit is a block of 4 rows (down, left, up, right) x 8 columns
+Layout: 256 x (192 * outfits). Each outfit is a block of 4 rows (down, left, up, right) x 8 columns
 (idle, 6 walk frames, tool pose), frames 32x48, exactly like player_hd.png.
 Outfit index = block (row // 4). Order is OUTFITS below; scripts/npc_look.gd mirrors it.
 """
@@ -54,6 +54,8 @@ OUTFITS = [
      ("#2a2a2a", "#4e4e4e", "#686868", "#848484", "#a4a4a4"), ("#1c160e", "#30261a", "#443626", "#5a4834"), "gold"),
     ("citizen_c", "tan", "blond", "long",
      ("#3a3010", "#6e5e1e", "#94802c", "#b8a03e", "#d6c05c"), ("#1a2430", "#2a3a4e", "#3a4e68", "#4e6484"), "gold"),
+    ("vance", "fair", "grey", "short",   # Mr. Vance: charcoal suit, near-black trousers
+     ("#121216", "#24242c", "#34343e", "#46465a", "#5c5c72"), ("#0c0c10", "#16161c", "#202028", "#2c2c36"), "gold"),
 ]
 
 

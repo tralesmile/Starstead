@@ -79,10 +79,35 @@ func _process(delta: float) -> void:
 		var col := PlayerMath.walk_frame_hd(a["t"], moving)
 		a["sprite"].frame = NpcLook.frame(a["outfit"], a["face"], col)
 
+var statics: Array = []   # {npc, node}: NPCs who stand at one spot (Mr. Vance at his yard gate)
+
+func add_static(npc: Dictionary, pos: Vector2) -> Node2D:
+	var body := Node2D.new()
+	body.position = pos
+	var s := NpcLook.make_sprite(NpcLook.outfit_of(str(npc["id"])))
+	body.add_child(s)
+	var sh := World.make_shadow(20)
+	sh.scale = Vector2(0.6, 0.7)
+	body.add_child(sh)
+	var l := Label.new()
+	l.text = str(npc["name"])
+	l.scale = Vector2(0.5, 0.5)
+	l.position = Vector2(-18, -62)
+	l.add_theme_font_size_override("font_size", 12)
+	body.add_child(l)
+	world.add_child(body)
+	statics.append({"npc": npc, "node": body})
+	return body
+
 func near(pos: Vector2, radius: float = 40.0) -> Dictionary:
 	## Closest NPC within radius of pos: {name, activity} or {}.
 	var best := {}
 	var bd := radius
+	for st in statics:
+		var d0: float = (st["node"] as Node2D).position.distance_to(pos)
+		if d0 < bd:
+			bd = d0
+			best = {"npc": st["npc"], "name": st["npc"]["name"], "activity": "default", "id": st["npc"]["id"]}
 	var h := NpcSchedule.hour_of(GameState.clock.minutes)
 	for a in actors:
 		var d: float = (a["node"] as Node2D).position.distance_to(pos)

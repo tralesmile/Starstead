@@ -18,7 +18,8 @@ func test_frame_layout() -> void:
 	check_eq(NpcLook.frame(0, 3, 7), 31)
 	check_eq(NpcLook.frame(1, 0, 0), 32)
 	check_eq(NpcLook.frame(7, 3, 7), 8 * 4 * 8 - 1)
-	check_eq(NpcLook.frame(99, 9, 9), 8 * 4 * 8 - 1, "clamped")
+	check_eq(NpcLook.frame(99, 9, 9), NpcLook.OUTFITS.size() * 4 * 8 - 1, "clamped")
+	check_eq(NpcLook.outfit_of("vance"), 8)
 
 func test_sheet_size_matches() -> void:
 	var img := Image.load_from_file(ProjectSettings.globalize_path(NpcLook.SHEET))
