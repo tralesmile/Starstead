@@ -19,7 +19,15 @@ const WILD := {
 	"chicken": [4, 4, 14], "horse": [1, 6, 14], "cow": [2, 6, 16], "sheep": [3, 6, 16],
 	"deer": [5, 10, 28], "rabbit": [7, 5, 22], "boar": [2, 14, 30],
 }
-const FEED_ITEM := "turnip"
+const FEED_ITEM := "turnip"   # default treat; grazers also eat hay (feed_for)
+
+func feed_for(id: String) -> String:
+	## The item this animal would be fed now: hay first for grazers when the bag has some, else turnips.
+	var feeds: Array = model.animals.get(id, {}).get("feed", [FEED_ITEM])
+	for f in feeds:
+		if GameState.bag.count(String(f)) > 0:
+			return String(f)
+	return FEED_ITEM
 var world: Node2D
 var player: Player
 var gen: WorldGen
@@ -96,7 +104,7 @@ func prompt_for(c: Dictionary) -> String:
 	if c["wild"] and not HuntModel.tameable(model.animals, c["id"]):
 		return "Swing the club or fists to hunt %s" % nm
 	if c["wild"]:
-		return "E: Feed %s (%s) trust %d%%" % [nm, FEED_ITEM, int(100.0 * float(c["prog"]["trust"]) / model.trust_max())]
+		return "E: Feed %s (%s) trust %d%%" % [nm, feed_for(c["id"]), int(100.0 * float(c["prog"]["trust"]) / model.trust_max())]
 	if model.is_rideable(c["st"]):
 		return "E: Ride %s" % nm
 	return "E: Stay/follow %s" % nm if model.is_fed(c["st"]) else "E: Feed %s" % nm
@@ -109,11 +117,12 @@ func interact(c: Dictionary) -> void:
 		if not HuntModel.tameable(model.animals, c["id"]):
 			message.emit("%s is too wild to tame - hunt it (club or fists)" % nm)
 			return
-		if GameState.bag.count(FEED_ITEM) < 1:
-			message.emit("%s wants a turnip" % nm)
+		var fi := feed_for(c["id"])
+		if GameState.bag.count(fi) < 1:
+			message.emit("%s wants %s" % [nm, " or ".join(model.animals[c["id"]].get("feed", [FEED_ITEM]))])
 			return
-		GameState.bag.remove(FEED_ITEM, 1)
-		model.feed_wild(c["prog"], FEED_ITEM)
+		GameState.bag.remove(fi, 1)
+		model.feed_wild(c["prog"], fi)
 		_pop_heart(c["node"])
 		if model.is_tamed(c["prog"]):
 			c["st"] = model.tame(c["prog"])
@@ -124,8 +133,8 @@ func interact(c: Dictionary) -> void:
 			message.emit("%s trusts you more" % nm)
 	elif model.is_rideable(c["st"]):
 		_mount(c)
-	elif GameState.bag.count(FEED_ITEM) > 0 and model.feed(c["st"], FEED_ITEM):
-		GameState.bag.remove(FEED_ITEM, 1)
+	elif GameState.bag.count(feed_for(c["id"])) > 0 and model.feed(c["st"], feed_for(c["id"])):
+		GameState.bag.remove(feed_for(c["id"]), 1)
 		_pop_heart(c["node"])
 		message.emit("%s is fed" % nm)
 	else:

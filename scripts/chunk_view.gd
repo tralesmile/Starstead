@@ -14,6 +14,7 @@ var reeds: Array = []
 var lilies: Array = []
 var flowers: Array = []
 var sign_cells: Array[Vector2i] = []
+var tuft_cells: Array[Vector2i] = []
 
 func build(world: World, g: WorldGen) -> void:
 	gen = g
@@ -132,6 +133,8 @@ func _decor(world: World) -> void:
 		Outline.set_sway(s, 1.5, c.x * 0.9 + c.y)
 		s.z_index = -3
 		_add(world, s)
+		world.tufts_by_cell[origin + c] = s
+		tuft_cells.append(origin + c)
 
 func _flowers(world: World) -> void:
 	var noise := FastNoiseLite.new()
@@ -341,6 +344,8 @@ func unload(world: World) -> void:
 		world.flower_sprites.erase(s)
 	for c in sign_cells:
 		world.interactables.cells.erase(c)
+	for c in tuft_cells:
+		world.tufts_by_cell.erase(c)
 	world.chunk_mats = world.chunk_mats.filter(func(m): return m != null and not _owns(m))
 	for n in nodes:
 		if is_instance_valid(n):

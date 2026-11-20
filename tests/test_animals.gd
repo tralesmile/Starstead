@@ -116,3 +116,12 @@ func test_next_gear_fits_empty_slot_only() -> void:
 	check_eq(m.next_gear(st, {"armour": 1}), "")
 	var h := {"id": "horse", "gear": {}}
 	check_eq(m.next_gear(h, {"saddle": 1, "fur_coat": 1}), "fur_coat")  # sorted ids: fur_coat before saddle
+
+func test_grazers_eat_hay() -> void:
+	var m := AnimalModel.new(DataDB.load_json("animals"))
+	for id in ["cow", "sheep", "horse"]:
+		check("hay" in m.animals[id]["feed"], id)
+	check(not ("hay" in m.animals["chicken"]["feed"]), "chickens want turnips")
+	var st := {"id": "cow", "hunger": 80.0}
+	check(m.feed(st, "hay"))
+	check_eq(st["hunger"], 0.0)

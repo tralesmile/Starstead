@@ -419,5 +419,10 @@
   "stack": 20,
   "energy": 38,
   "rarity": "bronze"
+ },
+ "hay": {
+  "name": "Hay",
+  "price": 4,
+  "stack": 99
  }
 }

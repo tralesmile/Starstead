@@ -664,6 +664,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		if hotbar.current() == "axe" and tree_fall.hit_log(cell, player.position):
 			return  # chopping a fallen trunk into logs
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
+		if msg == "" and hotbar.current() == "scythe" and world.cut_tuft(cell):   # wild grass -> hay (feeds cows, sheep, horses)
+			dl.append({"id": "hay", "n": 1})
+			msg = "Cut grass"
+			_hay_fx(cell)
 		var line_cells: Array = [cell]
 		if msg != "" and (hotbar.current() == "hoe" or hotbar.current() == "watering_can"):
 			var extra: Array = LineMath.cells(cell, player.facing, ToolUse.axe_power(GameState.bag, axe_table, hotbar.current()))
@@ -880,6 +884,26 @@ func _place_vance() -> void:
 	var hub: Vector2i = st.roads.hubs["vance"]
 	vance_pos = (Vector2(hub) + Vector2(1.5, 0.6)) * 32.0
 	npcs.add_static(npc, vance_pos)
+
+func _hay_fx(cell: Vector2i) -> void:
+	## A puff of cut grass blades.
+	var p := CPUParticles2D.new()
+	p.position = TargetMath.center_of(cell) + Vector2(0, 8)
+	p.emitting = true
+	p.one_shot = true
+	p.amount = 10
+	p.lifetime = 0.5
+	p.explosiveness = 0.9
+	p.direction = Vector2(0, -1)
+	p.spread = 70.0
+	p.initial_velocity_min = 25.0
+	p.initial_velocity_max = 55.0
+	p.gravity = Vector2(0, 140)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.0
+	p.color = Color(0.62, 0.78, 0.3)
+	world.add_child(p)
+	get_tree().create_timer(1.0).timeout.connect(p.queue_free)
 
 func _say(msg: String) -> void:
 	toast.text = msg

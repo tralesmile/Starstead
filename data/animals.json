@@ -39,6 +39,7 @@
    "wild_speed": 60,
    "tame_difficulty": 1.0,
    "feed": [
+    "hay",
     "turnip"
    ],
    "resource": {
@@ -58,6 +59,7 @@
    "wild_speed": 70,
    "tame_difficulty": 0.8,
    "feed": [
+    "hay",
     "turnip"
    ],
    "resource": {
@@ -93,6 +95,7 @@
    "wild_speed": 160,
    "tame_difficulty": 1.5,
    "feed": [
+    "hay",
     "turnip"
    ],
    "resource": {

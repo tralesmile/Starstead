@@ -414,6 +414,17 @@ def fibre():
     return i
 icons['fibre'] = fibre
 
+def hay():
+    i = Ic()
+    i.ell(8, 10, 6, 4, "#c8a040")                 # bundle
+    for x in range(3, 14, 2):                     # straws, lit on the left
+        i.line(x, 6 + (x % 3), x + 1, 13, "#e8c860" if x < 8 else "#b08a30")
+    i.rect(3, 9, 13, 10, "#8a6020")               # twine band
+    i.px(4, 9, "#c08840")
+    i.px(5, 6, "#fff0a0"); i.px(7, 5, "#fff0a0")
+    return i
+icons['hay'] = hay
+
 def sprinkler():
     i = Ic()
     i.rect(7, 8, 8, 13, "#b8c0cc")      # pipe

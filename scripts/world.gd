@@ -21,6 +21,7 @@ var lily_pads: Array[LilyPad] = []
 var lanterns: Array[Lantern] = []
 var reed_sprites: Array[Sprite2D] = []
 var tuft_sprites: Array[Sprite2D] = []
+var tufts_by_cell: Dictionary = {}   # world cell -> Sprite2D (homestead + streamed chunks): the scythe cuts them for hay
 var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
 var stream: ChunkStream
@@ -172,6 +173,17 @@ func _build_world_wall() -> void:
 		body.add_child(cs)
 	add_child(body)
 
+func cut_tuft(c: Vector2i) -> bool:
+	## Scythe on a wild grass tuft: it disappears (grows back when its chunk is rebuilt / next session).
+	if not tufts_by_cell.has(c):
+		return false
+	var s: Sprite2D = tufts_by_cell[c]
+	tufts_by_cell.erase(c)
+	if is_instance_valid(s):
+		reed_sprites.erase(s)
+		s.queue_free()
+	return true
+
 func make_prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBody2D:
 	return _prop(tex, cell, body, off)
 
@@ -243,6 +255,7 @@ func _build_water_decor() -> void:
 		s.z_index = -3
 		add_child(s)
 		tuft_sprites.append(s)
+		tufts_by_cell[c] = s
 		reed_sprites.append(s)  # tufts part around the walker too (ReedMath)
 	if gen.dock.size() > 0:
 		var a: Vector2i = gen.dock[0]
