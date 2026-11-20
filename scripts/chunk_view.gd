@@ -332,6 +332,10 @@ func _vance_yard(world: World) -> void:
 		if String(p["kind"]) == "rocket":
 			world.interactables.add(c + Vector2i(0, 1), "rocket", "E: Look at the Vance rocket")
 			sign_cells.append(c + Vector2i(0, 1))
+		if String(p["kind"]) == "crates":
+			var ci := YardHeist.crate_cells().find(c + Vector2i(0, 1))
+			if ci >= 0:
+				world.interactables.add(c + Vector2i(0, 1), "yardcrate", "E: Search the Vance crate")
 		nodes.append(b2)
 
 func unload(world: World) -> void:

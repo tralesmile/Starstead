@@ -606,6 +606,25 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.get("kind", "") == "pitch":
 			CityActions.run(self, "pitch")
 			return
+		if it.get("kind", "") == "yardcrate":
+			var yi := YardHeist.nearest(player.position)
+			var yd: int = GameState.clock.day
+			if yi < 0:
+				return
+			if not YardHeist.ready(GameState.yard_looted, yi, yd):
+				_say("Already stripped. Restocked in %d days" % YardHeist.days_left(GameState.yard_looted, yi, yd))
+				toast_t = 3.0
+				return
+			var yl := YardHeist.loot(yi, yd)
+			GameState.yard_looted[yi] = yd
+			GameState.money += int(yl["cash"])
+			if String(yl["item"]) != "":
+				GameState.bag.add(String(yl["item"]), int(yl["n"]))
+			GameState.rep_street += YardHeist.REP
+			police.add_heat(WantedMath.crime_heat("theft"))
+			_say("You lift Vance stock: $%d%s. Quiet!" % [int(yl["cash"]), (" + %d %s" % [int(yl["n"]), String(yl["item"]).replace("_", " ")]) if String(yl["item"]) != "" else ""])
+			toast_t = 4.0
+			return
 		if it.get("kind", "") == "rocket":
 			_say("Your seat on the Vance rocket is waiting. The Moon (Act 3) is not built yet." if VanceYard.gate_open(GameState.story.done) else "Half-built, white and red, scaffolding up one side. Grandmother beat this to the Moon?")
 			toast_t = 4.0

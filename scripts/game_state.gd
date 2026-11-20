@@ -29,6 +29,7 @@ var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var story := StoryModel.new(DataDB.load_json("story"))
 var market := MarketModel.new()  # sell pressure (E8)
 var tools_owned: Array = ToolKit.start()   # hotbar tools you have crafted or started with (ToolKit)
+var yard_looted: Dictionary = {}   # Vance yard crate index -> day last cleared
 var debt_paid: int = 0       # Vance debt repaid at the Town Hall ledger
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
@@ -53,7 +54,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "market": market.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "market": market.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -94,6 +95,10 @@ func from_dict(d: Dictionary) -> bool:
 	story.from_array(d.get("story", []))
 	tools_owned = Array(d["tools_owned"]) if d.has("tools_owned") else ToolKit.all_tools()   # old saves own every tool
 	debt_paid = int(d.get("debt_paid", 0))
+	yard_looted = {}
+	var yl: Dictionary = d.get("yard_looted", {})
+	for k in yl:
+		yard_looted[int(k)] = int(yl[k])
 	market.from_dict(d.get("market", {}))
 	if d.has("chest"):
 		chest.from_array(d["chest"])
