@@ -140,7 +140,11 @@ func interact(c: Dictionary) -> void:
 	elif GameState.bag.count(feed_for(c["id"])) > 0 and model.feed(c["st"], feed_for(c["id"])):
 		GameState.bag.remove(feed_for(c["id"]), 1)
 		_pop_heart(c["node"])
+		c["st"]["bond"] = mini(AnimalModel.BOND_MAX, model.bond(c["st"]) + AnimalModel.FEED_GAIN)
 		message.emit("%s is fed" % nm)
+	elif model.pet(c["st"], GameState.clock.day):
+		_pop_heart(c["node"])
+		message.emit("You pet %s: %s (bond %d)" % [nm, model.bond_tier(c["st"]), model.bond(c["st"])])
 	else:
 		var st: Dictionary = c["st"]
 		var stay := not bool(st.get("stay", false))
@@ -215,10 +219,11 @@ func day_tick() -> void:
 	for c in critters:
 		if c["wild"]:
 			continue
-		var out := model.day_tick(c["st"])
+		var salt := critters.find(c)
+		var out := model.day_tick(c["st"], GameState.clock.day, salt)
 		for item in out:
 			GameState.bag.add(item, int(out[item]))
-			message.emit("%s gave %s" % [model.animals[c["id"]]["name"], item])
+			message.emit("%s gave %s%s" % [model.animals[c["id"]]["name"], item, (" x%d (a happy one!)" % int(out[item])) if int(out[item]) > 1 else ""])
 
 func _pop_heart(node: Node2D) -> void:
 	var h := Sprite2D.new()

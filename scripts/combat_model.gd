@@ -60,3 +60,26 @@ static func car_hit(speed: float) -> Dictionary:
 	if speed < CAR_MIN_SPEED:
 		return {"dmg": 0.0, "force": 0.0}
 	return {"dmg": minf(MAX_HP, speed * 0.25), "force": clampf(speed / 150.0, 0.5, 2.5)}
+
+# --- combo: land hits in quick succession and each one hits harder; the third is a heavy finisher ---
+const COMBO_WINDOW := 0.9      # s after a landing hit during which the next swing continues the chain
+const COMBO_STEP := 0.25       # +25% damage per chained hit
+const COMBO_MAX := 3           # hits in a chain (the last is the finisher)
+
+static func chain_len(combo: int, since_hit: float) -> int:
+	## Hits already chained when a swing starts: 0 after a finisher or when the window ran out.
+	return combo if (since_hit <= COMBO_WINDOW and combo < COMBO_MAX) else 0
+
+static func combo_next(combo: int, since_hit: float, landed: bool) -> int:
+	## Stored chain length after a swing. A miss resets it; hitting after a finisher or a late swing starts over at 1.
+	if not landed:
+		return 0
+	return chain_len(combo, since_hit) + 1
+
+static func combo_weapon(w: Dictionary, combo: int) -> Dictionary:
+	## The weapon as modified by the chain length before this swing (0 = first hit).
+	var c := clampi(combo, 0, COMBO_MAX - 1)
+	var out := w.duplicate()
+	out["dmg"] = float(w["dmg"]) * (1.0 + COMBO_STEP * c)
+	out["force"] = float(w["force"]) * (1.0 + (0.5 if c >= COMBO_MAX - 1 else 0.0))
+	return out

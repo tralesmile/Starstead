@@ -47,11 +47,42 @@ func feed(st: Dictionary, item: String) -> bool:
 	st["hunger"] = 0.0
 	return true
 
+# --- bond (friendship) ---
+const BOND_MAX := 100
+const PET_GAIN := 4
+const FEED_GAIN := 3
+const BOND_BONUS_AT := 50   # from here on there is a chance of a double yield
+
+func bond(st: Dictionary) -> int:
+	return int(st.get("bond", 0))
+
+func can_pet(st: Dictionary, day: int) -> bool:
+	return int(st.get("pet_day", -1)) != day
+
+func pet(st: Dictionary, day: int) -> bool:
+	## One pat a day raises the bond; returns false if already petted today.
+	if not can_pet(st, day):
+		return false
+	st["pet_day"] = day
+	st["bond"] = mini(BOND_MAX, bond(st) + PET_GAIN)
+	return true
+
+func bond_tier(st: Dictionary) -> String:
+	var b := bond(st)
+	return "devoted" if b >= 80 else ("friendly" if b >= BOND_BONUS_AT else ("warming up" if b >= 20 else "wary"))
+
+static func bonus_roll(bond_v: int, day: int, salt: int) -> bool:
+	## Deterministic per (day, animal): chance of a double yield = (bond-50)/100 above 50 (0..50%).
+	if bond_v < BOND_BONUS_AT:
+		return false
+	var h := absi((day * 73856093) ^ (salt * 19349663)) % 100
+	return h < bond_v - BOND_BONUS_AT
+
 func is_fed(st: Dictionary) -> bool:
 	return float(st["hunger"]) < float(cfg.get("hunger_max", 100))
 
 ## Advance one day: hunger rises; fed animals (before the rise) produce. Returns {item: count}.
-func day_tick(st: Dictionary) -> Dictionary:
+func day_tick(st: Dictionary, day: int = 0, salt: int = 0) -> Dictionary:
 	var out := {}
 	var a: Dictionary = animals.get(st["id"], {})
 	var res: Dictionary = a.get("resource", {})
@@ -63,7 +94,7 @@ func day_tick(st: Dictionary) -> Dictionary:
 		st["days_fed"] = int(st.get("days_fed", 0)) + 1
 		if int(st["days_fed"]) >= days:
 			st["days_fed"] = 0
-			out[item] = 1
+			out[item] = 2 if bonus_roll(bond(st), day, salt) else 1
 	return out
 
 # --- gear / riding ---
@@ -114,6 +145,7 @@ func deserialize(s: String) -> Array:
 				st["trust"] = float(st.get("trust", 0))
 				st["hunger"] = float(st.get("hunger", 0))
 				st["gear"] = st.get("gear", {})
+				st["bond"] = int(st.get("bond", 0))
 				out.append(st)
 	return out
 

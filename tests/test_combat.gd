@@ -45,3 +45,21 @@ func test_car_hit_scales_with_speed() -> void:
 	check(float(fast["force"]) > float(slow["force"]))
 	check(float(fast["dmg"]) >= CombatModel.MAX_HP * 0.99 or float(fast["dmg"]) > 20.0)
 	check(float(CombatModel.car_hit(9999.0)["force"]) <= 2.5)
+
+func test_combo_chain() -> void:
+	var w := CombatModel.weapon("club")
+	var c := 0
+	c = CombatModel.combo_next(c, 99.0, true)
+	check_eq(c, 1)
+	c = CombatModel.combo_next(c, 0.5, true)
+	check_eq(c, 2)
+	c = CombatModel.combo_next(c, 0.5, true)
+	check_eq(c, 3, "finisher landed")
+	check_eq(CombatModel.chain_len(c, 0.1), 0, "restarts after a finisher")
+	check_eq(CombatModel.combo_next(c, 0.1, true), 1)
+	check_eq(CombatModel.combo_next(2, 2.0, true), 1, "late swing starts over")
+	check_eq(CombatModel.combo_next(2, 0.2, false), 0, "miss resets")
+	check_eq(float(CombatModel.combo_weapon(w, 0)["dmg"]), float(w["dmg"]))
+	check(float(CombatModel.combo_weapon(w, 1)["dmg"]) > float(w["dmg"]))
+	var fin := CombatModel.combo_weapon(w, 2)
+	check(float(fin["dmg"]) == float(w["dmg"]) * 1.5 and float(fin["force"]) > float(w["force"]), "heavy finisher")

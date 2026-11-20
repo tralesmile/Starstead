@@ -52,3 +52,28 @@ func test_farm_roundtrip() -> void:
 	var g := _farm()
 	g.from_array(JSON.parse_string(JSON.stringify(f.to_array())))
 	check_eq(g.soil[Vector2i(1, 1)].crop, "turnip")
+
+func test_tomato_regrows() -> void:
+	var f := FarmModel.new(DataDB.load_json("crops"))
+	var c := Vector2i(3, 3)
+	f.till(c)
+	check(f.plant(c, "tomato_seed", 1))
+	for i in 6:
+		f.water(c)
+		f.next_day()
+	check(f.is_ripe(c))
+	var h := f.harvest(c)
+	check_eq(h["id"], "tomato")
+	check_eq(f.soil[c].crop, "tomato", "vine stays planted")
+	check(not f.is_ripe(c))
+	for i in 3:
+		f.water(c)
+		f.next_day()
+	check(f.is_ripe(c), "ripe again after 3 watered days")
+	f.till(Vector2i(4, 4))
+	f.plant(Vector2i(4, 4), "turnip_seed", 1)
+	for i in 4:
+		f.water(Vector2i(4, 4))
+		f.next_day()
+	f.harvest(Vector2i(4, 4))
+	check_eq(f.soil[Vector2i(4, 4)].crop, "", "turnip is one-shot")

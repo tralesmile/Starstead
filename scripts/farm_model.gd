@@ -81,12 +81,16 @@ func is_ripe(cell: Vector2i) -> bool:
 	return soil[cell].age >= int(crops[soil[cell].crop].grow_days)
 
 func harvest(cell: Vector2i) -> Dictionary:
-	## Returns {id, n} or {} if nothing ripe. Soil stays tilled.
+	## Returns {id, n} or {} if nothing ripe. Soil stays tilled. Crops with "regrow" (tomato) stay planted and ripen again.
 	if not is_ripe(cell):
 		return {}
 	var id: String = soil[cell].crop
-	soil[cell].crop = ""
-	soil[cell].age = 0
+	var regrow := int(crops[id].get("regrow", 0))
+	if regrow > 0:
+		soil[cell].age = maxi(0, int(crops[id].grow_days) - regrow)   # vines keep growing: ripe again after `regrow` watered days
+	else:
+		soil[cell].crop = ""
+		soil[cell].age = 0
 	if bool(soil[cell].get("fert", false)):
 		soil[cell]["fert_spent"] = true   # still counts for this harvest's quality roll; gone at the next planting
 	return {"id": id, "n": int(crops[id].yield)}

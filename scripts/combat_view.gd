@@ -34,11 +34,15 @@ func _state(node: Node2D, sprite: Sprite2D) -> Dictionary:
 var extra_targets := Callable()   # () -> Array of [node, sprite]: Port Halden pedestrians (CityFolkView.targets)
 var hunt_cb := Callable()   # (origin, face, weapon) -> hits on wild animals (AnimalView.hunt)
 
+var combo := 0
+var since_hit := 99.0
+
 func attack(weapon_id: String) -> int:
 	## Swing now; returns how many people were hit (0 while on cooldown).
 	if cd > 0.0:
 		return 0
-	var w := CombatModel.weapon(weapon_id)
+	var chain := CombatModel.chain_len(combo, since_hit)
+	var w := CombatModel.combo_weapon(CombatModel.weapon(weapon_id), chain)
 	cd = CombatModel.cooldown(weapon_id)
 	var face := CombatModel.facing_vec(player.facing)
 	var origin := player.position + Vector2(0, -8)
@@ -65,8 +69,10 @@ func attack(weapon_id: String) -> int:
 		_hurt(node, s, float(w["dmg"]), float(w["force"]), player.position)
 	if hunt_cb.is_valid():
 		hits += int(hunt_cb.call(origin, face, w))
+	combo = CombatModel.combo_next(combo, since_hit, hits > 0)
 	if hits > 0:
-		player.shake(1.0, 0.1)
+		since_hit = 0.0
+		player.shake(1.0 + 0.4 * chain, 0.1)
 		Engine.time_scale = 0.1
 		get_tree().create_timer(HitMath.hitstop(float(w["force"])), true, false, true).timeout.connect(func(): Engine.time_scale = 1.0)
 	return hits
@@ -113,6 +119,7 @@ func _car_hits(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	cd = maxf(0.0, cd - delta)
+	since_hit += delta
 	for k in car_cd.keys():
 		car_cd[k] = float(car_cd[k]) - delta
 	_car_hits(delta)

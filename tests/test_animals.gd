@@ -125,3 +125,46 @@ func test_grazers_eat_hay() -> void:
 	var st := {"id": "cow", "hunger": 80.0}
 	check(m.feed(st, "hay"))
 	check_eq(st["hunger"], 0.0)
+
+func _bm() -> AnimalModel:
+	return AnimalModel.new(DataDB.load_json("animals"))
+
+func test_pet_once_a_day_and_tiers() -> void:
+	var m := _bm()
+	var st := {"id": "cow", "trust": 0.0, "hunger": 0.0, "gear": {}}
+	check(m.pet(st, 5))
+	check(not m.pet(st, 5), "once per day")
+	check_eq(m.bond(st), AnimalModel.PET_GAIN)
+	check_eq(m.bond_tier(st), "wary")
+	for d in range(6, 30):
+		m.pet(st, d)
+	check(m.bond(st) >= 80, "a month of pats")
+	check_eq(m.bond_tier(st), "devoted")
+	for d in range(30, 60):
+		m.pet(st, d)
+	check_eq(m.bond(st), AnimalModel.BOND_MAX, "capped")
+
+func test_bonus_yield_needs_a_bond() -> void:
+	check(not AnimalModel.bonus_roll(49, 3, 1))
+	var any := false
+	var none_low := true
+	for d in range(1, 200):
+		if AnimalModel.bonus_roll(100, d, 0):
+			any = true
+		if AnimalModel.bonus_roll(50, d, 0):
+			none_low = false
+	check(any, "full bond sometimes doubles")
+	check(none_low, "bond 50 gives 0% chance")
+	check_eq(AnimalModel.bonus_roll(90, 7, 2), AnimalModel.bonus_roll(90, 7, 2), "deterministic")
+
+func test_day_tick_double_yield() -> void:
+	var m := _bm()
+	var total1 := 0
+	var total0 := 0
+	for d in range(1, 120):
+		var a := {"id": "chicken", "trust": 0.0, "hunger": 0.0, "gear": {}, "bond": 100}
+		var b := {"id": "chicken", "trust": 0.0, "hunger": 0.0, "gear": {}}
+		total1 += int(m.day_tick(a, d, 0).get("egg", 0))
+		total0 += int(m.day_tick(b, d, 0).get("egg", 0))
+	check_eq(total0, 119, "daily egg without a bond")
+	check(total1 > total0, "bonded hen lays extra")

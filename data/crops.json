@@ -26,7 +26,8 @@
    1
   ],
   "yield": 2,
-  "tint": "#e04a3a"
+  "tint": "#e04a3a",
+  "regrow": 3
  },
  "pumpkin": {
   "seed": "pumpkin_seed",
