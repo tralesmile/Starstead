@@ -116,6 +116,8 @@ func on_process() -> void:
 		for a in OS.get_cmdline_user_args():
 			if a.begins_with("--enter-demo="):
 				kind = a.substr(13)
+		if "--dog-demo" in OS.get_cmdline_user_args():   # screenshot helper: this house keeps a guard dog
+			m.robbery.model.house(kind)["dog"] = true
 		for b in m.town.buildings:
 			if b["id"] == kind:
 				m.player.position = TownModel.sprite_bottom_center(b) + Vector2(0, 40)

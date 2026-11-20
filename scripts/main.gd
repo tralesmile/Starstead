@@ -248,6 +248,7 @@ func _ready() -> void:
 	car.sprite.modulate = GarageModel.PAINTS[GameState.car_paint]["color"]
 	interior = InteriorView.new()
 	interior.setup(world, player, self)
+	interior.message.connect(_say)
 	interior.sleep_requested.connect(_sleep)
 	interior.garage_requested.connect(func():
 		player.velocity = Vector2.ZERO
@@ -266,6 +267,10 @@ func _ready() -> void:
 		chest_view.open())
 	interior.service_requested.connect(func(a): CityActions.run(self, a))
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
+	interior.dog_cb = func(id: String) -> bool: return bool(robbery.model.house(id)["dog"])
+	interior.bark_cb = func() -> void:
+		robbery.active = String(interior.building.get("id", ""))
+		robbery.model.add_noise(DogMath.BARK_NOISE)
 	interior.smelt_requested.connect(func():
 		player.velocity = Vector2.ZERO
 		player.move_v = Vector2.ZERO

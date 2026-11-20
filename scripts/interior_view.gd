@@ -25,6 +25,10 @@ var outside_pos := Vector2.ZERO
 var nodes: Array = []
 var fade: ColorRect
 var tex := {}
+var dog_cb: Callable    # (building id) -> true when this house keeps a guard dog (RobberyModel memory)
+var bark_cb: Callable   # () -> called on every bark (noise toward waking the residents)
+var dog: Node2D = null
+var dog_state := {"awake": false, "timer": DogMath.BARK_EVERY, "chew": 0.0, "t": 0.0}
 
 func setup(w: Node2D, p: Player, host: Node) -> void:
 	world = w
@@ -160,6 +164,7 @@ func _build() -> void:
 		Rect2((door_x + 1) * 32, h * 32, (w - door_x - 1) * 32 + 16, 16),
 	]
 	rects.append_array(InteriorModel.solid_rects(layout))
+	_spawn_dog(w)
 	for r in rects:
 		var cs := CollisionShape2D.new()
 		var rs := RectangleShape2D.new()
@@ -168,6 +173,63 @@ func _build() -> void:
 		cs.position = r.position + r.size * 0.5
 		body.add_child(cs)
 	_add(body)
+
+func _spawn_dog(w: int) -> void:
+	dog = null
+	if not dog_cb.is_valid() or String(building.get("id", "")) in InteriorModel.PUBLIC or not bool(dog_cb.call(String(building.get("id", "")))):
+		return
+	dog = Node2D.new()
+	dog.position = ORIGIN + Vector2(w * 32.0 - 40.0, 56.0)   # asleep in the far corner
+	var s := Sprite2D.new()
+	s.texture = _t("guard_dog")
+	s.hframes = 2
+	s.offset = Vector2(0, -10)
+	s.name = "Sprite"
+	dog.add_child(s)
+	var l := Label.new()
+	l.name = "Woof"
+	l.text = "Zzz"
+	l.position = Vector2(-10, -38)
+	l.add_theme_font_size_override("font_size", 10)
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	l.add_theme_constant_override("outline_size", 3)
+	dog.add_child(l)
+	_add(dog)
+	dog_state = {"awake": false, "timer": 0.3, "chew": 0.0, "t": 0.0}
+
+func _dog_tick(d: float) -> void:
+	if dog == null or not is_instance_valid(dog):
+		return
+	var s := dog.get_node("Sprite") as Sprite2D
+	var l := dog.get_node("Woof") as Label
+	dog_state["awake"] = DogMath.awake(dog.position, player.position, bool(dog_state["awake"]))
+	if not bool(dog_state["awake"]):
+		return
+	if float(dog_state["chew"]) > 0.0:
+		dog_state["chew"] = float(dog_state["chew"]) - d
+		s.frame = 0
+		l.text = "*chew*"
+		return
+	if GameState.bag.count(DogMath.TREAT) > 0:   # toss it a piece of raw meat: quiet for a while
+		GameState.bag.remove(DogMath.TREAT, 1)
+		dog_state["chew"] = DogMath.CHEW_SECS
+		message.emit("You toss the dog some raw meat. It's busy chewing.")
+		return
+	var before := dog.position
+	dog.position = DogMath.step(dog.position, player.position, d)
+	var mv := dog.position - before
+	if absf(mv.x) > 0.01:
+		s.flip_h = mv.x < 0.0
+	dog_state["t"] = float(dog_state["t"]) + d
+	s.frame = (int(float(dog_state["t"]) * 8.0) % 2) if mv.length() > 0.01 else 0
+	var r := DogMath.bark(float(dog_state["timer"]), d)
+	dog_state["timer"] = r["timer"]
+	if r["bark"]:
+		l.text = "WOOF!"
+		if bark_cb.is_valid():
+			bark_cb.call()
+	elif float(dog_state["timer"]) < DogMath.BARK_EVERY * 0.5:
+		l.text = "grr"
 
 func rel() -> Vector2:
 	return player.position - ORIGIN
@@ -215,5 +277,7 @@ func interact() -> bool:
 	return true
 
 func _process(_d: float) -> void:
+	if active and not busy:
+		_dog_tick(_d)
 	if active and not busy and InteriorModel.left_through_door(layout, rel()):
 		leave()

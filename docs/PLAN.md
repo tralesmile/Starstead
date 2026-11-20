@@ -184,7 +184,7 @@ Houses, buildings, graphics (5, 10)
 - [x] One drivable car (CarView: E enter/exit, VehicleMath, fuel, skid marks, tyre smoke; crash damage, speed cap, wood repair near the workshop)
 - [x] Robbery model (RobberyModel, data/loot.json: locks, lockpick, noise, loot, NPC memory/dog; tested)
 - [x] One house to rob in play: RobberyView on town doors (E pick lock, E loot, noise wakes residents -> heat, memory)
-- [ ] Robbery: enter interior scene, dogs bark, police respond to noise
+- [x] Robbery: enter interior scene, dogs bark, police respond to noise (interiors + loot furniture existed; run 14: houses that got a dog from NPC memory now have a visible guard dog that wakes, chases and barks, each bark is noise toward waking residents -> heat; raw meat keeps it chewing; DogMath tested, gen_dog.py, --dog-demo)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
 - [x] Basic combat: club tool (key 8), swing cone, NPC/cop health + knock-out + knockback + assault heat (CombatModel/CombatView)
