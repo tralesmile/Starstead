@@ -51,9 +51,10 @@ func _land(c: Vector2i) -> bool:
 
 func _free_spot(rng: RandomNumberGenerator, rmin: int, rmax: int) -> Vector2:
 	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
-	for i in 80:
-		var c := pc + Vector2i(rng.randi_range(-rmax, rmax), rng.randi_range(-rmax, rmax))
-		if maxi(absi(c.x - pc.x), absi(c.y - pc.y)) >= rmin and _land(c):
+	for i in 160:   # second half searches a wider ring (from inside Port Halden the nearest meadow is far)
+		var r := rmax if i < 80 else rmax * 3
+		var c := pc + Vector2i(rng.randi_range(-r, r), rng.randi_range(-r, r))
+		if maxi(absi(c.x - pc.x), absi(c.y - pc.y)) >= rmin and _land(c) and AnimalModel.wild_ok(c):
 			return (Vector2(c) + Vector2(0.5, 0.6)) * 32.0
 	return player.position + Vector2(48, 0)
 
@@ -268,6 +269,9 @@ func _process(delta: float) -> void:
 				move = dd2.normalized() * spd * 0.25 * delta
 		else:
 			move = AnimalModel.follow_step(node.position, player.position, spd * 0.9, delta, 44.0 + 14.0 * critters.find(c))
+		if move.length() > 0.0 and bool(c.get("wild", false)) and not AnimalModel.wild_ok(Vector2i(floori((node.position.x + move.x) / 32.0), floori((node.position.y + move.y) / 32.0))):
+			move = Vector2.ZERO   # wild ones turn back at the city edge
+			c["t"] = 0.0
 		if move.length() > 0.0:
 			var np := node.position + move
 			if _land(Vector2i(floori(np.x / 32.0), floori(np.y / 32.0))):

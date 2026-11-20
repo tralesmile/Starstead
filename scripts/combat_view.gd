@@ -31,6 +31,7 @@ func _state(node: Node2D, sprite: Sprite2D) -> Dictionary:
 		foes[node] = {"hp": CombatModel.MAX_HP, "down": 0.0, "kv": Vector2.ZERO, "bar": bar, "sprite": sprite}
 	return foes[node]
 
+var extra_targets := Callable()   # () -> Array of [node, sprite]: Port Halden pedestrians (CityFolkView.targets)
 var hunt_cb := Callable()   # (origin, face, weapon) -> hits on wild animals (AnimalView.hunt)
 
 func attack(weapon_id: String) -> int:
@@ -48,6 +49,9 @@ func attack(weapon_id: String) -> int:
 	for c in police.cops:
 		var spr: Sprite2D = (c as Node2D).get_child(0) as Sprite2D
 		targets.append([c, spr, true])
+	if extra_targets.is_valid():
+		for t in extra_targets.call():
+			targets.append([t[0], t[1], false])
 	for t in targets:
 		var node: Node2D = t[0]
 		if not is_instance_valid(node):
@@ -91,6 +95,8 @@ func _car_hits(delta: float) -> void:
 		targets.append([a["node"], a["sprite"]])
 	for c in police.cops:
 		targets.append([c, (c as Node2D).get_child(0)])
+	if extra_targets.is_valid():
+		targets.append_array(extra_targets.call())
 	for t in targets:
 		var node: Node2D = t[0]
 		if not is_instance_valid(node) or node.position.distance_to(car.position) > 26.0:

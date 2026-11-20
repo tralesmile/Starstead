@@ -70,3 +70,12 @@ func test_flee_away_from_crime() -> void:
 	d = CityFolk.flee_spot(doors, Vector2i(10, 0), Vector2i(4, 0))         # crime to the west
 	check(d.x > 10, "runs east")
 	check_eq(CityFolk.flee_spot([], Vector2i(3, 3), Vector2i(0, 0)), Vector2i(3, 3), "nowhere to go")
+
+func test_separation() -> void:
+	check_eq(CityFolk.separation(Vector2.ZERO, [Vector2(100, 0)]), Vector2.ZERO, "far apart")
+	var p := CityFolk.separation(Vector2.ZERO, [Vector2(5, 0)])
+	check(p.x < 0.0, "pushed away from a neighbour on the right")
+	check(p.length() <= CityFolk.SIDESTEP + 0.01)
+	check(CityFolk.separation(Vector2.ZERO, [Vector2.ZERO]).length() > 0.0, "exact overlap still splits")
+	var crowd := CityFolk.separation(Vector2.ZERO, [Vector2(2, 0), Vector2(-2, 0), Vector2(0, 2), Vector2(1, 1)])
+	check(crowd.length() <= CityFolk.SIDESTEP + 0.01, "capped in a crowd")

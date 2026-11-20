@@ -195,6 +195,8 @@ func _ready() -> void:
 	combat.hunt_cb = animals.hunt
 	police.combat = combat
 	npcs.combat = combat
+	folk.combat = combat
+	combat.extra_targets = folk.targets
 	add_child(combat)
 	add_child(FishingView.new(fishing))
 	fish_fx = FishingWorldView.new()

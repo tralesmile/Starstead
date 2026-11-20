@@ -160,3 +160,7 @@ func next_gear(st: Dictionary, have: Dictionary) -> String:
 		if slot in animals.get(st["id"], {}).get("gear_slots", []) and not st["gear"].has(slot):
 			return id
 	return ""
+
+static func wild_ok(c: Vector2i) -> bool:
+	## Wild animals keep out of paved places (Port Halden streets, the circuit, the harbour quay).
+	return not CityModel.in_rect(c) and not CircuitModel.in_rect(c) and not HarbourModel.is_quay(c)

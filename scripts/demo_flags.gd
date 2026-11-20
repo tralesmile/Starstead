@@ -48,6 +48,13 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--knock-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 30:  # screenshot helper: the nearest pedestrian is knocked out
+		var best: Array = []
+		for t in m.folk.targets():
+			if best.is_empty() or (t[0] as Node2D).position.distance_to(m.player.position) < (best[0] as Node2D).position.distance_to(m.player.position):
+				best = t
+		if not best.is_empty():
+			m.combat._hurt(best[0], m.combat._state(best[0], best[1]), 999.0, 1.0, m.player.position)
 	if "--crime-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 30:  # screenshot helper: a theft in Port Halden; pedestrians flee
 		m.police.commit("theft", m.player.position)
 	if "--map-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: world map open

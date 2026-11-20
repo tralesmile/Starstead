@@ -130,3 +130,19 @@ static func flee_spot(doors: Array, from: Vector2i, crime: Vector2i) -> Vector2i
 			best_score = score
 			best = c
 	return best
+
+const PERSONAL := 14.0     # px: walkers keep this much room between each other
+const SIDESTEP := 26.0     # px/s at full overlap
+
+static func separation(pos: Vector2, others: Array) -> Vector2:
+	## Gentle push away from anyone closer than PERSONAL (px/s), so people pass shoulder to shoulder
+	## instead of walking through each other. Exact overlaps sidestep to the right of the walker.
+	var push := Vector2.ZERO
+	for o in others:
+		var d := pos - (o as Vector2)
+		var l := d.length()
+		if l >= PERSONAL:
+			continue
+		var dir := d / l if l > 0.01 else Vector2.RIGHT
+		push += dir * (PERSONAL - l) / PERSONAL
+	return push.limit_length(1.0) * SIDESTEP

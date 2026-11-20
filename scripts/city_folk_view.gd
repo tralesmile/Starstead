@@ -13,6 +13,17 @@ var spots: Array = []
 var walkers: Array = []   # {node, sprite, outfit, cop, path: Array[Vector2i], lane, wait, kind, face, t, leaving}
 var spawn_cd := 0.0
 signal message(text: String)
+var combat: CombatView   # knocked-out walkers lie still until they get up
+
+func targets() -> Array:
+	## [node, sprite] pairs for CombatView (club swings and car hits).
+	var out: Array = []
+	for w in walkers:
+		out.append([w["node"], w["sprite"]])
+	return out
+
+func _down(w: Dictionary) -> bool:
+	return combat != null and combat.is_down(w["node"])
 var _serial := 0
 
 func setup(w: Node2D, p: Node2D) -> void:
@@ -75,7 +86,7 @@ func on_crime(_kind: String, pos: Vector2) -> void:
 	var n := CityFolk.witnesses(ps, pos)
 	for w in walkers:
 		var body: Node2D = w["node"]
-		if not CityFolk.panics(body.position, pos):
+		if _down(w) or not CityFolk.panics(body.position, pos):
 			continue
 		var here := Vector2i(floori(body.position.x / 32.0), floori(body.position.y / 32.0))
 		if grid.is_point_solid(here):
@@ -179,6 +190,11 @@ func _nearest_walkable(c: Vector2i) -> Vector2i:
 
 func _step(w: Dictionary, delta: float) -> void:
 	var body: Node2D = w["node"]
+	if _down(w):
+		w["path"] = [] as Array[Vector2i]   # after getting up: limp home through the nearest door
+		w["leaving"] = true
+		w["wait"] = 1.0
+		return
 	var spr: Sprite2D = w["sprite"]
 	var before := body.position
 	if float(w["wait"]) > 0.0:
@@ -205,6 +221,16 @@ func _step(w: Dictionary, delta: float) -> void:
 		if float(w["panic"]) <= 0.0:
 			(w["alarm"] as Label).visible = false
 	body.position = body.position.move_toward(target, speed * delta)
+	var others: Array = []
+	for o in walkers:
+		if o != w and not _down(o):
+			var op: Vector2 = (o["node"] as Node2D).position
+			if op.distance_squared_to(body.position) < 400.0:
+				others.append(op)
+	if not others.is_empty():
+		var np := body.position + CityFolk.separation(body.position, others) * delta
+		if CityFolk.walkable(Vector2i(floori(np.x / 32.0), floori(np.y / 32.0)), blocked):
+			body.position = np
 	if body.position.distance_to(target) < 0.5:
 		path.pop_front()
 	var d := body.position - before
@@ -214,7 +240,7 @@ func _step(w: Dictionary, delta: float) -> void:
 
 func _arrive(w: Dictionary) -> void:
 	var kind := String(w["kind"])
-	if bool(w["leaving"]) and kind == "door":
+	if bool(w["leaving"]) and kind == "door" and not _down(w):
 		(w["node"] as Node2D).queue_free()
 		walkers.erase(w)
 		return
