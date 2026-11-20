@@ -65,3 +65,23 @@ static func recenter(focus: Vector2, target: Vector2, idle_t: float, delta: floa
 	var k := 1.0 - exp(-RECENTER_RATE * delta)
 	var out := focus.lerp(target, k)
 	return target if out.distance_to(target) < 0.5 else out
+
+const SPRINT_ZOOM := 0.05     # zoom out 5% at full sprint, so you see further ahead when running
+const SPRINT_PUNCH := 0.04    # extra quick kick out the moment a sprint starts
+const PUNCH_DECAY := 9.0      # 1/s
+
+static func sprint_level(sprint_mult: float, full: float) -> float:
+	## 0 walking .. 1 at full sprint (PlayerMath sprint multiplier eases between 1 and full).
+	if full <= 1.0:
+		return 0.0
+	return clampf((sprint_mult - 1.0) / (full - 1.0), 0.0, 1.0)
+
+static func punch_decay(punch: float, dt: float) -> float:
+	return punch * exp(-PUNCH_DECAY * dt)
+
+static func sprint_starts(prev_level: float, level: float) -> bool:
+	return prev_level < 0.05 and level >= 0.05
+
+static func sprint_zoom(level: float, punch: float) -> float:
+	## Multiplier on camera zoom (< 1 = zoomed out). Never zooms in, never beyond 9% out.
+	return clampf(1.0 - SPRINT_ZOOM * clampf(level, 0.0, 1.0) - SPRINT_PUNCH * clampf(punch, 0.0, 1.0), 1.0 - SPRINT_ZOOM - SPRINT_PUNCH, 1.0)

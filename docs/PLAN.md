@@ -48,7 +48,7 @@ Graphics:
 - [x] (tools/run_tests.sh wrapper added) Test runner: fail the run when any SCRIPT ERROR / parse error appears in the output (found 2026-11-17: errors were printed while TESTS said 0 failed)
 - [x] Tool-hit feedback: wood chips, stone sparks, screen shake (squash on hit still to do)
 Physics / feel:
-- [x] Run 13: camera recentre when standing still + per-tool swing plant (tested). [ ] next: sprint zoom punch, tyre squeal audio
+- [x] Run 13: camera recentre when standing still + per-tool swing plant (tested). [x] Run 14: sprint zoom punch (CameraMath.sprint_zoom: 4% kick out when a sprint starts, decays in ~0.3 s, holds 5% out while running; tested). [ ] next: tyre squeal audio, landing squash after a jump/fall
 - [x] Drift smoke by surface (VehicleMath.smoke_style: white tyre smoke on asphalt, tan dust on paths, olive dust on grass, thin in rain, puffs scale with slide angle; tested). [ ] tyre squeal audio, drift leaderboard
 - [x] Circuit kerb rumble (VehicleMath.rumble: shake + 8% grip loss on red/white kerbs) and slipstream drafting (VehicleMath.slipstream, up to +8% top speed behind a rival), both tested
 - [x] Graphics: car headlights (cone beams) + tail lights at night, brake lights flare (VehicleMath.light_levels). [x] tyre marks linger 40 s on the circuit (skid_life, tested)
@@ -95,7 +95,7 @@ Physics / feel:
 - [x] Map: M world map with the town, roads, circuit, harbour, player marker (owner could not find the town) (MapModel/MapView: M opens terrain+roads+regions+POIs+player dot, fuel stations in orange with nearest-fuel hint; tested)
 - [x] Race start line: R only works at a start line (chequered strip beside the parked car, or the circuit line), prompt tells you where to drive (RaceModel.gate_near, StartGateView). Fuel gauge + fuel stations on the map done; still: bigger car, race start line prompt), mark fuel station(s) on the map/prompt where to refuel; race must start at a marked start line, not wherever you press R
 - [x] Energy bar: make energy readable (bar + number in the HUD) (HudBars: green/amber/red bar with number, blinks when low; car fuel gauge while driving)
-- [x] Movement/sprint/camera feel pass: camera drifts back onto the player after 0.35 s standing still (CameraMath.recenter, tested); swing slow depends on the tool (PlayerMath.tool_plant: axe/pickaxe/club 0.35, hoe/scythe 0.55, can/rod/hand 0.85, tested). [ ] sprint zoom punch, hands-on check by owner
+- [x] Movement/sprint/camera feel pass: camera drifts back onto the player after 0.35 s standing still (CameraMath.recenter, tested); swing slow depends on the tool (PlayerMath.tool_plant: axe/pickaxe/club 0.35, hoe/scythe 0.55, can/rod/hand 0.85, tested). [x] sprint zoom punch (run 14). [ ] hands-on check by owner
 - [ ] Graphics overall: owner says nothing feels real; raise the art bar toward docs/ART_TARGET.md (characters, farm tiles, UI), sports/racing feel
 - [x] Story-first start: data/gates.json locks Port Halden, harbour and circuit until the Vance visit (step vance_car, day 3), the Highlands until the ledger visit, the Vance yard until the debt is cleared. StoryGate/Keeper bounces walker or car back with a message, red-white road barricades (tools/gen_barrier.py) stand on the roads and vanish when the story opens them; demo flags bypass (use --gated to test). Tested. [ ] planets gate (rocket), map shows locked regions, NPC hint about the closed road
 

@@ -31,6 +31,9 @@ var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whol
 signal footstep
 signal skid(amount: int)
 var _sprint := 1.0
+var _sprint_lvl := 0.0
+var _punch := 0.0
+var _base_zoom := 0.0
 var _skid_cd := 0.0
 var _idle_t := 0.0     # seconds standing still: the dead-zone camera drifts back to centre after a moment
 
@@ -143,8 +146,17 @@ func _physics_process(delta: float) -> void:
 	cam_focus = CameraMath.recenter(cam_focus, position, _idle_t, delta)
 	camera.offset = CameraMath.snap(look + pull + (cam_focus - position)) + sh
 	var zt := TargetMath.zoom_value(TargetMath.effective_zoom(zoom_step, zoom_bias))
-	if absf(camera.zoom.x - zt) > 0.01:
-		camera.zoom = Vector2.ONE * move_toward(camera.zoom.x, zt, delta * 8.0)  # quick glide between integer zooms
+	if _base_zoom <= 0.0:
+		_base_zoom = camera.zoom.x   # start from the zoom set in _ready (or a --zoom= flag)
+	if absf(_base_zoom - zt) > 0.01:
+		_base_zoom = move_toward(_base_zoom, zt, delta * 8.0)  # quick glide between zoom steps
+	# sprint zoom punch: a quick kick out when the sprint starts, then a slight hold while running
+	var lvl := CameraMath.sprint_level(_sprint, PlayerMath.SPRINT_MULT)
+	if CameraMath.sprint_starts(_sprint_lvl, lvl):
+		_punch = 1.0
+	_sprint_lvl = lvl
+	_punch = CameraMath.punch_decay(_punch, delta)
+	camera.zoom = Vector2.ONE * _base_zoom * CameraMath.sprint_zoom(lvl, _punch)
 	# rendering is pixel-snapped by the project setting; the body keeps sub-pixel position for smooth accel
 
 func shake(amp: float = 1.0, secs: float = 0.15) -> void:
