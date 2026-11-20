@@ -91,7 +91,7 @@ func _draw_all() -> void:
 		var panel := Rect2(90, 24, 460, 30.0 + rows.size() * 14.0)
 		canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
 		canvas.draw_rect(panel, Color(0.16, 0.18, 0.28, 0.97))
-		canvas.draw_string(font, panel.position + Vector2(10, 16), "%s    %d/%d beats" % [GameState.story.act, GameState.story.steps_done(), GameState.story.total_steps()], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.9, 0.55))
+		canvas.draw_string(font, panel.position + Vector2(10, 16), "%s    %d/%d beats" % [GameState.story.current_act(), GameState.story.steps_done(), GameState.story.total_steps()], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.9, 0.55))
 		for i in rows.size():
 			var t := str(rows[i])
 			var col := Color(0.7, 0.95, 0.7) if t.contains("[x]") else (Color(1, 0.95, 0.5) if t.contains("[>]") else (Color(1, 1, 1) if not t.begins_with("  ") else Color(0.75, 0.78, 0.85)))

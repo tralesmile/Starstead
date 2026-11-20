@@ -121,3 +121,9 @@ func test_side_and_events() -> void:
 	check_eq(StoryModel.side(3, 5), "street")
 	check_eq(StoryModel.side(5, 5), "honest")
 	check_eq(StoryModel.trigger_events({"any": [{"money_min": 1}, {"event": "k"}]}), ["k"])
+
+func test_current_act() -> void:
+	var m := _m()
+	check_eq(m.current_act(), "Act 1: Earth Homestead")
+	m.done["debt_free"] = true
+	check_eq(m.current_act(), "Act 2: Earth City")

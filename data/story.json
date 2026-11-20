@@ -172,5 +172,15 @@
     "If you ever want a seat on that rocket, bring money. Or don't get caught."
    ]
   }
- }
+ },
+ "acts": [
+  {
+   "after": "",
+   "name": "Act 1: Earth Homestead"
+  },
+  {
+   "after": "debt_free",
+   "name": "Act 2: Earth City"
+  }
+ ]
 }

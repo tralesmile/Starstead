@@ -8,6 +8,7 @@ var done: Dictionary = {}       # step id -> true
 var debt_total := 2000
 var debt_step := 250
 var act := ""
+var acts: Array = []            # [{after: step id, name}] in order; the last reached one is the current act
 var day := 1                    # last polled game day (late fees)
 var due_day := 28
 var late_fee_step := 100
@@ -18,6 +19,7 @@ func _init(data: Dictionary = {}) -> void:
 	debt_total = int(data.get("debt_total", 2000))
 	debt_step = int(data.get("debt_step", 250))
 	act = str(data.get("act", ""))
+	acts = data.get("acts", [])
 	due_day = int(data.get("debt_due_day", 28))
 	late_fee_step = int(data.get("late_fee", 100))
 	late_cap = int(data.get("late_cap", 500))
@@ -89,6 +91,14 @@ func cond_ok(t: Dictionary, ctx: Dictionary) -> bool:
 	if t.has("rep_any_min"):
 		return maxi(int(ctx.get("rep_honest", 0)), int(ctx.get("rep_street", 0))) >= int(t["rep_any_min"])
 	return false
+
+func current_act() -> String:
+	var name := act
+	for a in acts:
+		var after := str(a.get("after", ""))
+		if after == "" or done.has(after):
+			name = str(a["name"])
+	return name
 
 func late_fee() -> int:
 	## Vance adds a fee for every started week past the due day, up to the cap; nothing once the debt is cleared.

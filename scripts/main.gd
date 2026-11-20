@@ -124,7 +124,7 @@ func _ready() -> void:
 		hotbar.seed_ids.append(GameState.farm.crops[cid].seed)
 	add_child(hotbar)
 	toast = Label.new()   # on its own screen layer: as a child of this Node2D it sat at a fixed WORLD spot, so messages were off-screen
-	toast.position = Vector2(8, 48)
+	toast.position = Vector2(8, 72)   # below the HUD panel (and the fuel gauge while driving)
 	toast.add_theme_font_size_override("font_size", 12)
 	toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
 	toast.add_theme_constant_override("font_outline_size", 3)
@@ -303,7 +303,7 @@ func _ready() -> void:
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	goal_label = Label.new()
-	goal_label.position = Vector2(8, 48)
+	goal_label.position = Vector2(8, 72)
 	goal_label.add_theme_font_size_override("font_size", 11)
 	goal_label.modulate = Color(1.0, 0.92, 0.55, 0.9)
 	leg_layer.add_child(goal_label)
@@ -422,7 +422,7 @@ func _process(delta: float) -> void:
 	toast_t -= delta
 	if toast_t <= 0.0:
 		toast.text = ""
-	goal_label.visible = toast.text == ""   # both live at (8,48): a fresh message hides the goal line for 1.5 s
+	goal_label.visible = toast.text == ""   # both live at (8,72): a fresh message hides the goal line for 1.5 s
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
