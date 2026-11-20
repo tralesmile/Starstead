@@ -334,6 +334,8 @@ func _process(delta: float) -> void:
 			city_seen = true
 		story_view.poll(GameState.farm.crops_planted())
 		world.refresh_gate_props()
+		if VanceYard.gate_open(GameState.story.done):
+			get_tree().call_group("vance_gate", "queue_free")   # Act 2 seat earned: the yard gate rolls away
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
 	if GameState.clock.advance(delta):
 		_end_day()
@@ -371,7 +373,11 @@ func _process(delta: float) -> void:
 	if absf(GameState.clock.minutes - _sun_applied) >= 6.0 or _sun_applied < 0.0:
 		_sun_applied = GameState.clock.minutes
 		World.apply_sun(get_tree(), _sun_applied)
-	town.set_night(0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes))
+	var lamp_k := 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
+	town.set_night(lamp_k)
+	for l in get_tree().get_nodes_in_group("night_lights"):   # streamed-chunk lights (Vance yard floodlights)
+		(l as PointLight2D).energy = 1.3 * lamp_k
+		(l as PointLight2D).visible = lamp_k > 0.01
 	world.part_reeds(player.position, delta)
 	if not _indoors():
 		world.stream_update(player.position)

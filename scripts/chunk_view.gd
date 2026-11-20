@@ -307,13 +307,25 @@ func _vance_yard(world: World) -> void:
 			Vector2(8, 32) if side else Vector2(32, 8), Vector2(0, -20))
 		nodes.append(b)
 	if not VanceYard.gate_open(world.gate_done) and ChunkGrid.chunk_of_cell(VanceYard.GATE[1]) == chunk:
-		nodes.append(world.make_prop("res://assets/sprites/yard_gate.png", VanceYard.GATE[1], Vector2(96, 8), Vector2(0, -16)))
+		var gb := world.make_prop("res://assets/sprites/yard_gate.png", VanceYard.GATE[1], Vector2(96, 8), Vector2(0, -16))
+		gb.add_to_group("vance_gate")
+		nodes.append(gb)
 	for p in VanceYard.props():
 		var c: Vector2i = p["cell"]
 		if ChunkGrid.chunk_of_cell(c) != chunk:
 			continue
 		var d: Array = YARD_SPRITES[String(p["kind"])]
 		var b2 := world.make_prop("res://assets/sprites/%s.png" % d[0], c, d[1], Vector2(0, -float(d[2]) / 2.0 + 4.0))
+		if String(p["kind"]) == "flood":   # cold white floodlight pool, driven by main via the night_lights group
+			var l := PointLight2D.new()
+			l.texture = Lantern.light_texture()
+			l.texture_scale = 3.2
+			l.color = Color(0.85, 0.92, 1.0)
+			l.position = Vector2(0, -70)
+			l.energy = 0.0
+			l.visible = false
+			l.add_to_group("night_lights")
+			b2.add_child(l)
 		if String(p["kind"]) == "rocket":
 			world.interactables.add(c + Vector2i(0, 1), "rocket", "E: Look at the Vance rocket")
 			sign_cells.append(c + Vector2i(0, 1))
