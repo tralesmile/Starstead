@@ -15,6 +15,7 @@ var shop: ShopView
 var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
+var folk: CityFolkView
 var dialogue: DialogueView
 var car: CarView
 var police: PoliceView
@@ -122,9 +123,15 @@ func _ready() -> void:
 	for cid in GameState.farm.crops:
 		hotbar.seed_ids.append(GameState.farm.crops[cid].seed)
 	add_child(hotbar)
-	toast = Label.new()
+	toast = Label.new()   # on its own screen layer: as a child of this Node2D it sat at a fixed WORLD spot, so messages were off-screen
 	toast.position = Vector2(8, 48)
-	add_child(toast)
+	toast.add_theme_font_size_override("font_size", 12)
+	toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	toast.add_theme_constant_override("font_outline_size", 3)
+	var toast_layer := CanvasLayer.new()
+	toast_layer.layer = 3
+	toast_layer.add_child(toast)
+	add_child(toast_layer)
 	ambient = AmbientView.new()
 	ambient.player = player
 	world.add_child(ambient)
@@ -141,8 +148,9 @@ func _ready() -> void:
 	npcs = NpcView.new()
 	npcs.setup(world, world.gen)
 	world.add_child(npcs)
-	var folk := CityFolkView.new()   # Port Halden pedestrians + beat cops (E9)
+	folk = CityFolkView.new()   # Port Halden pedestrians + beat cops (E9)
 	folk.setup(world, player)
+	folk.message.connect(_say)
 	world.add_child(folk)
 	car = CarView.new()
 	car.player = player
@@ -159,6 +167,8 @@ func _ready() -> void:
 	police.setup(world, player, self, world.gen)
 	police.message.connect(_say)
 	car.crime.connect(police.commit)
+	police.witness_cb = folk.witnessed
+	police.crime_seen.connect(folk.on_crime)
 	world.add_child(police)
 	robbery = RobberyView.new()
 	robbery.setup(town, world, police, player)
@@ -401,6 +411,7 @@ func _process(delta: float) -> void:
 	toast_t -= delta
 	if toast_t <= 0.0:
 		toast.text = ""
+	goal_label.visible = toast.text == ""   # both live at (8,48): a fresh message hides the goal line for 1.5 s
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):

@@ -55,3 +55,18 @@ func test_active_radius() -> void:
 	check(CityFolk.active(CityFolk.CENTER))
 	check(CityFolk.active(Vector2i(192, 40)))
 	check(not CityFolk.active(Vector2i(20, 14)), "homestead is far")
+
+func test_witnesses_and_panic() -> void:
+	var crime := Vector2(100, 100)
+	check_eq(CityFolk.witnesses([Vector2(110, 100), Vector2(100, 300), Vector2(2000, 0)], crime), 2)
+	check_eq(CityFolk.witnesses([], crime), 0)
+	check(CityFolk.panics(Vector2(100, 350), crime))
+	check(not CityFolk.panics(Vector2(900, 100), crime))
+
+func test_flee_away_from_crime() -> void:
+	var doors := [{"cell": Vector2i(0, 0)}, {"cell": Vector2i(20, 0)}, {"cell": Vector2i(11, 0)}]
+	var d := CityFolk.flee_spot(doors, Vector2i(10, 0), Vector2i(14, 0))   # crime to the east
+	check_eq(d, Vector2i(0, 0), "runs west, not past the crime")
+	d = CityFolk.flee_spot(doors, Vector2i(10, 0), Vector2i(4, 0))         # crime to the west
+	check(d.x > 10, "runs east")
+	check_eq(CityFolk.flee_spot([], Vector2i(3, 3), Vector2i(0, 0)), Vector2i(3, 3), "nowhere to go")

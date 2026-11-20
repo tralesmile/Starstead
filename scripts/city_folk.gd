@@ -100,3 +100,33 @@ static func route(g: AStarGrid2D, from: Vector2i, to: Vector2i) -> Array[Vector2
 static func cell_px(c: Vector2i, lane: float = 0.0) -> Vector2:
 	## Pixel centre of a cell, nudged sideways by lane (-1..1) so walkers do not all walk the same line.
 	return (Vector2(c) + Vector2(0.5 + lane * 0.25, 0.55 + lane * 0.2)) * 32.0
+
+const WITNESS_RADIUS := 7.0 * 32.0   # px: pedestrians this close see a crime and report it
+const PANIC_RADIUS := 9.0 * 32.0     # px: everyone this close runs for a door
+const PANIC_SPEED := 2.2             # x walking speed
+const SCREAM_SECS := 4.0             # how long a panicked walker keeps running before calming down
+
+static func witnesses(positions: Array, crime: Vector2) -> int:
+	var n := 0
+	for p in positions:
+		if (p as Vector2).distance_to(crime) <= WITNESS_RADIUS:
+			n += 1
+	return n
+
+static func panics(pos: Vector2, crime: Vector2) -> bool:
+	return pos.distance_to(crime) <= PANIC_RADIUS
+
+static func flee_spot(doors: Array, from: Vector2i, crime: Vector2i) -> Vector2i:
+	## The door to run to: far from the crime, not too far from where you stand, and not past the crime.
+	var best := from
+	var best_score := -INF
+	for d in doors:
+		var c: Vector2i = d["cell"] if d is Dictionary else d
+		var away := Vector2(c - crime).length()
+		var walk := Vector2(c - from).length()
+		var toward := Vector2(c - from).dot(Vector2(crime - from))
+		var score := away - 0.5 * walk - (1000.0 if toward > 0.0 and walk > 1.0 else 0.0)
+		if score > best_score:
+			best_score = score
+			best = c
+	return best

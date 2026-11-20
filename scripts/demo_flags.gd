@@ -3,7 +3,7 @@ extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
-## --craft-demo --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
+## --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
 
@@ -48,6 +48,8 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--crime-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 30:  # screenshot helper: a theft in Port Halden; pedestrians flee
+		m.police.commit("theft", m.player.position)
 	if "--map-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: world map open
 		m.map_view.toggle()
 	if "--story-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: quest log with a few beats done

@@ -28,12 +28,17 @@ func setup(w: Node2D, p: Node2D, hud_parent: Node, g: WorldGen) -> void:
 	layer.add_child(hud)
 	hud_parent.add_child(layer)
 
+signal crime_seen(kind: String, pos: Vector2)
+var witness_cb: Callable   # CityFolkView: true when pedestrians or beat cops saw the crime
+
 func commit(kind: String, pos: Vector2) -> void:
 	var cop_pos: Array = []
 	for c in cops:
 		cop_pos.append((c as Node2D).position)
-	heat = WantedMath.add(heat, kind, PoliceModel.witnessed(cop_pos, pos) or cops.size() > 0 or randf() < 0.5)
+	var seen_by_folk := witness_cb.is_valid() and bool(witness_cb.call(pos))
+	heat = WantedMath.add(heat, kind, PoliceModel.witnessed(cop_pos, pos) or cops.size() > 0 or seen_by_folk or randf() < 0.5)
 	_sync_cops()
+	crime_seen.emit(kind, pos)
 
 func add_heat(h: float) -> void:
 	heat = clampf(heat + h, 0.0, WantedMath.MAX_HEAT)

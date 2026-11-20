@@ -12,6 +12,7 @@ var blocked: Dictionary
 var spots: Array = []
 var walkers: Array = []   # {node, sprite, outfit, cop, path: Array[Vector2i], lane, wait, kind, face, t, leaving}
 var spawn_cd := 0.0
+signal message(text: String)
 var _serial := 0
 
 func setup(w: Node2D, p: Node2D) -> void:
@@ -53,6 +54,51 @@ func clear() -> void:
 		(w["node"] as Node2D).queue_free()
 	walkers.clear()
 
+func witnessed(pos: Vector2) -> bool:
+	## PoliceView asks this when a crime happens: anyone on the street close enough saw it.
+	var ps: Array = []
+	for w in walkers:
+		ps.append((w["node"] as Node2D).position)
+	return CityFolk.witnesses(ps, pos) > 0
+
+func on_crime(_kind: String, pos: Vector2) -> void:
+
+	## Everyone nearby screams and runs for the nearest safe door (and goes inside); beat cops come to look.
+	if walkers.is_empty():
+		return
+	_ensure_grid()
+	var doors: Array = spots.filter(func(s): return s["kind"] == "door")
+	var crime_cell := Vector2i(floori(pos.x / 32.0), floori(pos.y / 32.0))
+	var ps: Array = []
+	for w in walkers:
+		ps.append((w["node"] as Node2D).position)
+	var n := CityFolk.witnesses(ps, pos)
+	for w in walkers:
+		var body: Node2D = w["node"]
+		if not CityFolk.panics(body.position, pos):
+			continue
+		var here := Vector2i(floori(body.position.x / 32.0), floori(body.position.y / 32.0))
+		if grid.is_point_solid(here):
+			here = _nearest_walkable(here)
+		if bool(w["cop"]):
+			var r := CityFolk.route(grid, here, _nearest_walkable(crime_cell) if grid.is_point_solid(crime_cell) else crime_cell)
+			if r.size() > 1:
+				w["path"] = r
+				w["wait"] = 0.0
+				w["kind"] = "plaza"
+				w["panic"] = CityFolk.SCREAM_SECS
+			continue
+		var r2 := CityFolk.route(grid, here, CityFolk.flee_spot(doors, here, crime_cell))
+		if r2.size() > 1:
+			w["path"] = r2
+			w["kind"] = "door"
+			w["leaving"] = true
+			w["wait"] = 0.0
+			w["panic"] = CityFolk.SCREAM_SECS
+			(w["alarm"] as Label).visible = true
+	if n > 0:
+		message.emit("%d witness%s saw that!" % [n, "" if n == 1 else "es"])
+
 func _balance(target: int, cops: bool, instant: bool) -> void:
 	var have := 0
 	for w in walkers:
@@ -86,11 +132,20 @@ func _spawn(cop: bool, anywhere: bool) -> void:
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
 	body.add_child(sh)
+	var alarm := Label.new()
+	alarm.text = "!"
+	alarm.add_theme_font_size_override("font_size", 14)
+	alarm.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+	alarm.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	alarm.add_theme_constant_override("font_outline_size", 3)
+	alarm.position = Vector2(-3, -62)
+	alarm.visible = false
+	body.add_child(alarm)
 	var lane := rng.randf_range(-1.0, 1.0)
 	body.position = CityFolk.cell_px(from["cell"], lane)
 	world.add_child(body)
 	var w := {"node": body, "sprite": s, "outfit": outfit, "cop": cop, "path": [] as Array[Vector2i], "lane": lane,
-		"wait": rng.randf_range(0.0, 2.0), "kind": "", "face": 0, "t": 0.0, "leaving": false}
+		"wait": rng.randf_range(0.0, 2.0), "kind": "", "face": 0, "t": 0.0, "leaving": false, "panic": 0.0, "alarm": alarm}
 	walkers.append(w)
 	_next_goal(w)
 
@@ -138,11 +193,17 @@ func _step(w: Dictionary, delta: float) -> void:
 		_arrive(w)
 		return
 	# give way: pause when the player stands right in front
-	if player.position.distance_to(body.position) < 18.0 and (player.position - body.position).dot(CityFolk.cell_px(path[0], w["lane"]) - body.position) > 0.0:
+	if float(w["panic"]) <= 0.0 and player.position.distance_to(body.position) < 18.0 and (player.position - body.position).dot(CityFolk.cell_px(path[0], w["lane"]) - body.position) > 0.0:
 		w["wait"] = 0.4
 		return
 	var target := CityFolk.cell_px(path[0], w["lane"])
 	var speed := CityFolk.COP_SPEED if bool(w["cop"]) else CityFolk.SPEED
+	var panic := float(w["panic"])
+	if panic > 0.0:
+		w["panic"] = panic - delta
+		speed *= CityFolk.PANIC_SPEED
+		if float(w["panic"]) <= 0.0:
+			(w["alarm"] as Label).visible = false
 	body.position = body.position.move_toward(target, speed * delta)
 	if body.position.distance_to(target) < 0.5:
 		path.pop_front()
