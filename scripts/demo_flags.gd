@@ -41,6 +41,10 @@ func on_ready() -> void:
 		m.player.position += Vector2(224, 0)
 		m.build_view.stamp_blueprint("pen")
 		m.player.position -= Vector2(256, -128)
+		var pc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+		for dx in [-3, 0, 3]:   # lamp posts along the front (lit after dark)
+			if GameState.build.place(pc + Vector2i(dx, 1), "lamp", 3.0, false, GameState.bag) == "":
+				m.build_view._spawn(pc + Vector2i(dx, 1), "lamp")
 	if "--build-demo" in OS.get_cmdline_user_args():  # screenshot helper: a little house next to the m.player
 		GameState.bag.add("wood", 99)
 		var o := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0)) + Vector2i(2, -3)

@@ -182,3 +182,22 @@ func test_tame_animals_sleep_at_night() -> void:
 	check(not AnimalModel.asleep(12.0, false))
 	check(not AnimalModel.asleep(23.0, true), "wild ones roam all night")
 	check(not AnimalModel.asleep(5.0, false) and AnimalModel.asleep(21.0, false), "edges")
+
+func test_pen_bonus_needs_stay_and_enclosure() -> void:
+	var m := _bm()
+	var st := {"id": "cow", "stay": true, "bond": 10}
+	m.pen_bonus(st, true)
+	check_eq(m.bond(st), 11)
+	m.pen_bonus(st, false)
+	check_eq(m.bond(st), 11, "open field")
+	var free := {"id": "cow", "bond": 10}
+	m.pen_bonus(free, true)
+	check_eq(m.bond(free), 10, "not told to stay")
+	var full := {"id": "cow", "stay": true, "bond": 100}
+	m.pen_bonus(full, true)
+	check_eq(m.bond(full), 100, "capped")
+	var bm := BuildModel.new(DataDB.load_json("build"))
+	var bag := Inventory.new()
+	bag.add("wood", 200)
+	bm.stamp("pen", Vector2i(20, 20), bag)
+	check(bm.is_enclosed(Vector2i(22, 22)) and not bm.is_enclosed(Vector2i(40, 40)), "pen counts, open ground does not")

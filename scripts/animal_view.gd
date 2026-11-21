@@ -220,6 +220,8 @@ func day_tick() -> void:
 		if c["wild"]:
 			continue
 		var salt := critters.find(c)
+		var hc := Vector2i(floori(float(c["st"].get("hx", c["node"].position.x)) / 32.0), floori(float(c["st"].get("hy", c["node"].position.y)) / 32.0))
+		model.pen_bonus(c["st"], GameState.build.is_enclosed(hc))
 		var out := model.day_tick(c["st"], GameState.clock.day, salt)
 		for item in out:
 			GameState.bag.add(item, int(out[item]))

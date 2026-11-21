@@ -54,6 +54,16 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 		s.z_index = -8  # under props and the player
 		body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
 	body.add_child(s)
+	if bool(GameState.build.defs[piece_id].get("light", false)):
+		var l := PointLight2D.new()   # warm lamp pool, driven by main via the night_lights group
+		l.texture = Lantern.light_texture()
+		l.texture_scale = 2.4
+		l.color = Color(1.0, 0.82, 0.5)
+		l.position = Vector2(0, -34)
+		l.energy = 0.0
+		l.visible = false
+		l.add_to_group("night_lights")
+		body.add_child(l)
 	if GameState.build.defs[piece_id].solid:
 		var cs := CollisionShape2D.new()
 		var r := RectangleShape2D.new()

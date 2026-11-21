@@ -63,3 +63,14 @@ func test_house_is_enclosed_and_pen_is_sealed() -> void:
 	bm2.stamp("pen", o, bag)
 	check(bm2.is_solid(o + Vector2i(0, 2)), "pen fence blocks")
 	check(bm2.is_enclosed(o + Vector2i(2, 2)), "pen interior is closed off")
+
+func test_lamp_post_piece() -> void:
+	var bm := BuildModel.new(DataDB.load_json("build"))
+	check("lamp" in BuildModel.PIECES)
+	check(bool(bm.defs["lamp"].get("light", false)) and bool(bm.defs["lamp"].solid))
+	var bag := Inventory.new()
+	bag.add("wood", 3)
+	check_eq(bm.place(Vector2i(1, 1), "lamp", 3.0, false, bag), "")
+	check_eq(bag.count("wood"), 0)
+	check_eq(bm.place(Vector2i(2, 1), "lamp", 3.0, false, bag), "Need materials")
+	check(bm.remove_piece(Vector2i(1, 1), bag), "demolish refunds")

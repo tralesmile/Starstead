@@ -289,3 +289,5 @@ Houses, buildings, graphics (5, 10)
 - [x] Animals: tame animals bed down 21:00-05:00 (AnimalModel.asleep, tested).
 - [x] Hunting: hide now has a use: Leather Boots (4 hide + 2 fibre, one pair, +8% walking speed while carried; recipe "limit", PlayerMath.boots_mult, new icon, tested).
 - [x] Farming: two new crops: Strawberry (spring, 5 days, regrows every 2) and Kale (winter, 5 days); seeds sold, items with silver/gold quality, new icons, tinted crop art; winter is no longer turnips only (tested).
+- [x] Animals: animals told to stay inside a sealed pen gain +1 bond/day (AnimalModel.pen_bonus + BuildModel.is_enclosed, tested).
+- [x] Building: Lamp Post piece (3 wood, new sprite, warm PointLight2D after dark via the night_lights group; Q cycles to it; tested, screen blueprints at 22:00).

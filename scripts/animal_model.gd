@@ -56,6 +56,13 @@ const BOND_BONUS_AT := 50   # from here on there is a chance of a double yield
 func bond(st: Dictionary) -> int:
 	return int(st.get("bond", 0))
 
+const PEN_GAIN := 1   # bond per day for an animal kept inside a closed pen
+
+func pen_bonus(st: Dictionary, enclosed: bool) -> void:
+	## Animals told to stay inside a sealed pen (BuildModel.is_enclosed) feel safe: a little extra bond each day.
+	if enclosed and bool(st.get("stay", false)):
+		st["bond"] = mini(BOND_MAX, bond(st) + PEN_GAIN)
+
 func can_pet(st: Dictionary, day: int) -> bool:
 	return int(st.get("pet_day", -1)) != day
 

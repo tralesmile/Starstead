@@ -132,6 +132,23 @@ def wall_auto():
     save(sheet, "build_wall_auto.png")
 
 
+def lamp():
+    """Lamp post (32x48): dark pole, warm glass lantern on top, small base shadow."""
+    im, d = new(32, 48)
+    sh = Image.new("RGBA", (32, 48), (0, 0, 0, 0)); sd = ImageDraw.Draw(sh)
+    sd.ellipse([8, 41, 25, 47], fill=(30, 20, 12, 70))
+    im.alpha_composite(sh)
+    d.rectangle([14, 16, 17, 44], fill=(70, 60, 56), outline=OUT)          # pole
+    d.line([15, 17, 15, 43], fill=(110, 98, 92))
+    d.rectangle([11, 42, 20, 45], fill=(60, 52, 48), outline=OUT)          # foot
+    d.rectangle([10, 14, 21, 17], fill=(60, 52, 48), outline=OUT)          # lantern base
+    d.rectangle([10, 4, 21, 14], fill=(255, 214, 120), outline=OUT)        # glass
+    d.rectangle([12, 6, 19, 12], fill=(255, 240, 180))
+    d.line([13, 7, 13, 11], fill=(255, 255, 230))
+    d.polygon([(9, 4), (22, 4), (19, 0), (12, 0)], fill=(60, 52, 48), outline=OUT)   # cap
+    save(im, "build_lamp.png")
+
+
 def door():
     rng = random.Random(37)
     im, d = new(32, 48)
@@ -263,4 +280,4 @@ def roof():
 
 if __name__ == "__main__":
     os.makedirs(SPR, exist_ok=True)
-    floor(); wall(); door(); fence(); fence_auto(); wall_auto(); roof()
+    floor(); wall(); door(); fence(); fence_auto(); wall_auto(); lamp(); roof()

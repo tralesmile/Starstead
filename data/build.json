@@ -39,5 +39,14 @@
     "solid": false,
     "sprite": "build_roof",
     "roof": true
+  },
+  "lamp": {
+    "name": "Lamp Post",
+    "cost": {
+      "wood": 3
+    },
+    "solid": true,
+    "sprite": "build_lamp",
+    "light": true
   }
 }
