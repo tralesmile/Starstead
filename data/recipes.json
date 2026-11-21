@@ -5,5 +5,8 @@
  "turnip_stew": {"name": "Turnip Stew", "needs": {"turnip": 2}, "makes": "turnip_stew"},
  "tomato_salad": {"name": "Tomato Salad", "needs": {"tomato": 1, "turnip": 1}, "makes": "tomato_salad"},
  "pumpkin_pie": {"name": "Pumpkin Pie", "needs": {"pumpkin": 1, "egg": 1, "milk": 1}, "makes": "pumpkin_pie"},
- "grilled_meat": {"name": "Grilled Meat", "needs": {"raw_meat": 1}, "makes": "grilled_meat"}
+ "grilled_meat": {"name": "Grilled Meat", "needs": {"raw_meat": 1}, "makes": "grilled_meat"},
+ "strawberry_tart": {"name": "Strawberry Tart", "needs": {"strawberry": 2, "egg": 1, "milk": 1}, "makes": "strawberry_tart"},
+ "kale_soup": {"name": "Kale Soup", "needs": {"kale": 2, "turnip": 1}, "makes": "kale_soup"},
+ "hunters_stew": {"name": "Hunter's Stew", "needs": {"raw_meat": 1, "potato": 1, "turnip": 1}, "makes": "hunters_stew"}
 }

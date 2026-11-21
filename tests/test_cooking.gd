@@ -42,3 +42,18 @@ func test_recipes_reference_real_items() -> void:
 		check(int(items[rec[k]["makes"]].get("energy", 0)) > 0)
 		for n in rec[k]["needs"]:
 			check(items.has(n))
+
+func test_new_dishes_cook_from_the_new_ingredients() -> void:
+	var rec: Dictionary = DataDB.load_json("recipes")
+	var items: Dictionary = DataDB.load_json("items")
+	for id in ["strawberry_tart", "kale_soup", "hunters_stew"]:
+		check(rec.has(id) and items.has(id) and int(items[id].energy) > 0, id)
+		var cost := 0
+		for n in rec[id]["needs"]:
+			cost += int(items[n].price) * int(rec[id]["needs"][n])
+		check(int(items[id].price) > cost, "%s is worth cooking (%d > %d)" % [id, items[id].price, cost])
+	var inv := Inventory.new()
+	inv.add("kale", 2)
+	inv.add("turnip", 1)
+	check(CookModel.cook(inv, rec["kale_soup"]))
+	check_eq(inv.count("kale_soup"), 1)

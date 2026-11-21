@@ -498,5 +498,26 @@
   "buy": true,
   "buy_price": 720,
   "rarity": "silver"
+ },
+ "strawberry_tart": {
+  "name": "Strawberry Tart",
+  "price": 170,
+  "stack": 20,
+  "energy": 75,
+  "rarity": "silver"
+ },
+ "kale_soup": {
+  "name": "Kale Soup",
+  "price": 120,
+  "stack": 20,
+  "energy": 60,
+  "rarity": "silver"
+ },
+ "hunters_stew": {
+  "name": "Hunter's Stew",
+  "price": 110,
+  "stack": 20,
+  "energy": 65,
+  "rarity": "silver"
  }
 }
