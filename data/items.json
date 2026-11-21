@@ -482,5 +482,21 @@
   "price": 42,
   "stack": 99,
   "rarity": "gold"
+ },
+ "club_copper": {
+  "name": "Copper-Banded Club",
+  "price": 60,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 260,
+  "rarity": "bronze"
+ },
+ "club_iron": {
+  "name": "Iron-Banded Club",
+  "price": 160,
+  "stack": 1,
+  "buy": true,
+  "buy_price": 720,
+  "rarity": "silver"
  }
 }

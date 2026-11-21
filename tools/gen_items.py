@@ -670,6 +670,18 @@ def leather_boots():
     return i
 icons['leather_boots'] = leather_boots
 
+def club_icon(band, band_l):
+    def f():
+        i = Ic()
+        i.line(3, 13, 11, 5, "#8a5a34"); i.line(4, 13, 12, 5, "#a8743f")     # shaft
+        i.ell(11, 5, 3.2, 3.2, "#a8743f"); i.px(10, 4, "#c8944f"); i.px(12, 6, "#6a4026")   # head
+        i.line(9, 8, 13, 4, band); i.line(10, 8, 14, 4, band_l)                 # metal band
+        i.px(3, 14, "#6a4026"); i.px(2, 14, "#6a4026")
+        return i
+    return f
+icons['club_copper'] = club_icon("#b8602c", "#e0904c")
+icons['club_iron'] = club_icon("#7a8494", "#c4ccd8")
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():

@@ -42,7 +42,10 @@ func attack(weapon_id: String) -> int:
 	if cd > 0.0:
 		return 0
 	var chain := CombatModel.chain_len(combo, since_hit)
-	var w := CombatModel.combo_weapon(CombatModel.weapon(weapon_id), chain)
+	var base := CombatModel.weapon(weapon_id)
+	if weapon_id == "club":
+		base = CombatModel.with_mult(base, CombatModel.club_mult(GameState.bag, DataDB.load_json("clubs")))
+	var w := CombatModel.combo_weapon(base, chain)
 	cd = CombatModel.cooldown(weapon_id)
 	var face := CombatModel.facing_vec(player.facing)
 	var origin := player.position + Vector2(0, -8)

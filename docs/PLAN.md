@@ -291,3 +291,4 @@ Houses, buildings, graphics (5, 10)
 - [x] Farming: two new crops: Strawberry (spring, 5 days, regrows every 2) and Kale (winter, 5 days); seeds sold, items with silver/gold quality, new icons, tinted crop art; winter is no longer turnips only (tested).
 - [x] Animals: animals told to stay inside a sealed pen gain +1 bond/day (AnimalModel.pen_bonus + BuildModel.is_enclosed, tested).
 - [x] Building: Lamp Post piece (3 wood, new sprite, warm PointLight2D after dark via the night_lights group; Q cycles to it; tested, screen blueprints at 22:00).
+- [x] Weapons: banded clubs: Copper (+40% damage, 2 wood + 3 copper bars) and Iron (+80%, 2 wood + 3 iron bars), also sold in the shop; best one in the bag applies to town, wild animals and cave bats (data/clubs.json, CombatModel.club_mult, icons, tested).

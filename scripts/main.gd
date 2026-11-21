@@ -1010,7 +1010,7 @@ func _cave_tool() -> void:
 			player.held_tool = "club"
 			player.swing()
 			combat.cd = CombatModel.cooldown("club")
-			var w := CombatModel.weapon("club")
+			var w := CombatModel.with_mult(CombatModel.weapon("club"), CombatModel.club_mult(GameState.bag, DataDB.load_json("clubs")))
 			cave.club_swing(float(w["dmg"]), float(w["range"]) + 10.0, float(w["force"]))
 		return
 	if tool != "pickaxe":

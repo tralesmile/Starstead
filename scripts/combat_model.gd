@@ -83,3 +83,16 @@ static func combo_weapon(w: Dictionary, combo: int) -> Dictionary:
 	out["dmg"] = float(w["dmg"]) * (1.0 + COMBO_STEP * c)
 	out["force"] = float(w["force"]) * (1.0 + (0.5 if c >= COMBO_MAX - 1 else 0.0))
 	return out
+
+static func club_mult(inv: Inventory, clubs: Dictionary) -> float:
+	## Best banded club in the bag scales the base club's damage (1.0 with the plain club).
+	var best := 1.0
+	for id in clubs:
+		if inv.count(String(id)) > 0:
+			best = maxf(best, float(clubs[id]["dmg_mult"]))
+	return best
+
+static func with_mult(w: Dictionary, mult: float) -> Dictionary:
+	var out := w.duplicate()
+	out["dmg"] = float(w["dmg"]) * mult
+	return out

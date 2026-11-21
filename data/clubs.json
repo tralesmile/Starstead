@@ -1,0 +1,8 @@
+{
+ "club_copper": {
+  "dmg_mult": 1.4
+ },
+ "club_iron": {
+  "dmg_mult": 1.8
+ }
+}

@@ -63,3 +63,19 @@ func test_combo_chain() -> void:
 	check(float(CombatModel.combo_weapon(w, 1)["dmg"]) > float(w["dmg"]))
 	var fin := CombatModel.combo_weapon(w, 2)
 	check(float(fin["dmg"]) == float(w["dmg"]) * 1.5 and float(fin["force"]) > float(w["force"]), "heavy finisher")
+
+func test_banded_clubs_scale_damage() -> void:
+	var clubs: Dictionary = DataDB.load_json("clubs")
+	var inv := Inventory.new()
+	check_eq(CombatModel.club_mult(inv, clubs), 1.0)
+	inv.add("club_copper", 1)
+	check_eq(CombatModel.club_mult(inv, clubs), 1.4)
+	inv.add("club_iron", 1)
+	check_eq(CombatModel.club_mult(inv, clubs), 1.8, "best one counts")
+	var w := CombatModel.with_mult(CombatModel.weapon("club"), 1.8)
+	check_eq(float(w["dmg"]), 18.0)
+	check_eq(float(w["range"]), float(CombatModel.weapon("club")["range"]), "other stats unchanged")
+	var items: Dictionary = DataDB.load_json("items")
+	var rec: Dictionary = DataDB.load_json("crafting")
+	for id in clubs:
+		check(items.has(id) and rec.has(id), "%s is an item and craftable" % id)

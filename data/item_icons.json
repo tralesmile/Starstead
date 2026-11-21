@@ -76,5 +76,7 @@
  "kale_seed": 64,
  "kale": 65,
  "kale_silver": 65,
- "kale_gold": 65
+ "kale_gold": 65,
+ "club_copper": 66,
+ "club_iron": 67
 }
