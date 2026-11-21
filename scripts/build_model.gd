@@ -76,7 +76,31 @@ const BLUEPRINTS := {
 			[0, 2, "wall"], [1, 2, "door"], [2, 2, "wall"],
 		],
 	},
+	"house": {
+		"name": "Wood House",
+		"cells": [
+			[0, 0, "wall"], [1, 0, "wall"], [2, 0, "wall"], [3, 0, "wall"],
+			[4, 0, "wall"], [0, 1, "wall"], [1, 1, "floor"], [2, 1, "floor"],
+			[3, 1, "floor"], [4, 1, "wall"], [0, 2, "wall"], [1, 2, "floor"],
+			[2, 2, "floor"], [3, 2, "floor"], [4, 2, "wall"], [0, 3, "wall"],
+			[1, 3, "wall"], [2, 3, "door"], [3, 3, "wall"], [4, 3, "wall"],
+		],
+	},
+	"pen": {
+		"name": "Animal Pen",
+		"cells": [
+			[0, 0, "fence"], [1, 0, "fence"], [2, 0, "fence"], [3, 0, "fence"],
+			[4, 0, "fence"], [5, 0, "fence"], [0, 1, "fence"], [5, 1, "fence"],
+			[0, 2, "fence"], [5, 2, "fence"], [0, 3, "fence"], [5, 3, "fence"],
+			[0, 4, "fence"], [1, 4, "fence"], [2, 4, "door"], [3, 4, "fence"],
+			[4, 4, "fence"], [5, 4, "fence"],
+		],
+	},
 }
+const BLUEPRINT_ORDER := ["hut", "house", "pen"]
+
+static func next_blueprint(cur: String) -> String:
+	return BLUEPRINT_ORDER[(BLUEPRINT_ORDER.find(cur) + 1) % BLUEPRINT_ORDER.size()]
 
 func blueprint_cost(name: String) -> Dictionary:
 	var total := {}

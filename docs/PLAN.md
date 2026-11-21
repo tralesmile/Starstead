@@ -285,3 +285,4 @@ Houses, buildings, graphics (5, 10)
 - [x] Hoeing: breaking ground can turn up a worm (14%) or a stone (4%), deterministic per cell (FarmModel.dig_find, tested).
 - [x] Fishing: bite wait depends on time of day and rain (Fishing.bite_time_mult: dawn/dusk 0.75x, midday 1.15x, rain -15%; tested).
 - Pushing to dev/main is impossible from this session (git proxy 403, add_repo needs a linked GitHub account). The bundle/patch are the delivery.
+- [x] Building: blueprints Wood House (5x4, 3x2 floor, door) and Animal Pen (6x5 fence ring + gate); R cycles, H builds (BuildModel.BLUEPRINTS/next_blueprint, tested, screen blueprints).

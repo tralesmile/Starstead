@@ -37,3 +37,29 @@ func test_demolish_refund_and_save_roundtrip() -> void:
 	check(m.remove_piece(Vector2i(3, 4), b))
 	check_eq(b.count("wood"), 7)
 	check(not m.remove_piece(Vector2i(3, 4), b))
+
+func test_blueprints_cycle_and_cost() -> void:
+	check_eq(BuildModel.next_blueprint("hut"), "house")
+	check_eq(BuildModel.next_blueprint("pen"), "hut")
+	var bm := BuildModel.new(DataDB.load_json("build"))
+	for k in BuildModel.BLUEPRINTS:
+		var seen := {}
+		for e in BuildModel.BLUEPRINTS[k].cells:
+			var c := Vector2i(int(e[0]), int(e[1]))
+			check(not seen.has(c), "%s: no duplicate cell %s" % [k, str(c)])
+			seen[c] = true
+			check(bm.defs.has(str(e[2])), "%s: known piece" % k)
+		check(int(bm.blueprint_cost(k).get("wood", 0)) > 0)
+
+func test_house_is_enclosed_and_pen_is_sealed() -> void:
+	var bm := BuildModel.new(DataDB.load_json("build"))
+	var bag := Inventory.new()
+	bag.add("wood", 500)
+	var o := Vector2i(10, 10)
+	check(bm.stamp("house", o, bag) > 15)
+	check(bm.is_enclosed(o + Vector2i(1, 1)), "house interior is sealed")
+	check_eq(bm.placed[o + Vector2i(2, 3)], "door")
+	var bm2 := BuildModel.new(DataDB.load_json("build"))
+	bm2.stamp("pen", o, bag)
+	check(bm2.is_solid(o + Vector2i(0, 2)), "pen fence blocks")
+	check(bm2.is_enclosed(o + Vector2i(2, 2)), "pen interior is closed off")

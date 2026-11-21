@@ -1,7 +1,7 @@
 class_name DemoFlags
 extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
-## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
+## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
 ## --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
@@ -33,6 +33,14 @@ func on_ready() -> void:
 		m.player.position += Vector2(160, 0)
 		m.player.facing = PlayerMath.Facing.RIGHT
 		m.build_view.stamp_blueprint("hut")
+	if "--blueprint-demo" in OS.get_cmdline_user_args():  # screenshot helper: the house and the animal pen side by side
+		GameState.bag.add("wood", 400)
+		m.player.facing = PlayerMath.Facing.RIGHT
+		m.player.position += Vector2(96, -64)
+		m.build_view.stamp_blueprint("house")
+		m.player.position += Vector2(224, 0)
+		m.build_view.stamp_blueprint("pen")
+		m.player.position -= Vector2(256, -128)
 	if "--build-demo" in OS.get_cmdline_user_args():  # screenshot helper: a little house next to the m.player
 		GameState.bag.add("wood", 99)
 		var o := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0)) + Vector2i(2, -3)

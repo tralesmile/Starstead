@@ -113,6 +113,8 @@ func _update_roofs(d: float) -> void:
 		var s: Sprite2D = _roofs[c]
 		s.modulate.a = move_toward(s.modulate.a, want, d * 4.0)
 
+var blueprint := "hut"
+
 func stamp_blueprint(name: String) -> void:
 	## Place the blueprint with its centre-top at the faced cell; only if every cell is free and dry.
 	var o := target() - Vector2i(1, 0)
@@ -154,7 +156,7 @@ func handle_key(e: InputEvent) -> bool:
 	if e is InputEventKey and e.pressed and not e.echo:
 		if e.keycode == KEY_B:
 			active = not active
-			message.emit("Build mode ON (Q piece, F place, H hut, X demolish)" if active else "Build mode off")
+			message.emit("Build mode ON (Q piece, F place, R blueprint, H build it, X demolish)" if active else "Build mode off")
 			return true
 		if not active:
 			return false
@@ -162,8 +164,12 @@ func handle_key(e: InputEvent) -> bool:
 			idx = (idx + 1) % BuildModel.PIECES.size()
 			message.emit(GameState.build.defs[piece()].name)
 			return true
+		if e.keycode == KEY_R:
+			blueprint = BuildModel.next_blueprint(blueprint)
+			message.emit("Blueprint: %s (H to build, %d wood)" % [BuildModel.BLUEPRINTS[blueprint].name, int(GameState.build.blueprint_cost(blueprint).get("wood", 0))])
+			return true
 		if e.keycode == KEY_H:
-			stamp_blueprint("hut")
+			stamp_blueprint(blueprint)
 			return true
 		if e.keycode == KEY_X:
 			var c := target()
