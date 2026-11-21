@@ -106,3 +106,18 @@ func test_beginner_assist_widens_bar() -> void:
 	var g := Fishing.new(5)
 	g.cast(-1.0, _table(), 0, {}, {"caught_count": 12})
 	check_eq(g.bar_size, Fishing.BAR_SIZE, "normal bar later")
+
+func test_bite_time_of_day() -> void:
+	check(Fishing.bite_time_mult(6.0, 0.0) < Fishing.bite_time_mult(12.5, 0.0), "dawn beats midday")
+	check(Fishing.bite_time_mult(18.0, 0.0) < 1.0)
+	check_eq(Fishing.bite_time_mult(22.0, 0.0), 1.0, "night is neutral")
+	check(Fishing.bite_time_mult(22.0, 1.0) < 1.0, "rain stirs fish")
+	var f := Fishing.new()
+	var table: Dictionary = DataDB.load_json("fish")
+	f.rng.seed = 5
+	check(f.cast(-5.0, table, 0, {}, {"hour": 6.0}))
+	var dawn := f.timer
+	f.reset()
+	f.rng.seed = 5
+	check(f.cast(-5.0, table, 0, {}, {"hour": 12.5}))
+	check(dawn < f.timer, "same roll, quicker at dawn")

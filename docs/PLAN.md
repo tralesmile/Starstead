@@ -282,3 +282,6 @@ Houses, buildings, graphics (5, 10)
 - [x] Animals: bond (friendship) 0-100: pet once a day (E on a fed animal), feeding adds bond, bond >= 50 gives a chance of a double yield (AnimalModel.pet/bond_tier/bonus_roll, saved, tested).
 - [x] Weapons: 3-hit combo (CombatModel.chain_len/combo_next/combo_weapon: +25% damage per chained hit within 0.9 s, heavy finisher, tested; applies to townsfolk and wild animals).
 - [x] Hunting: Ctrl sneaks (0.55x speed) and wild animals spook from half the distance; sprinting spooks from 1.6x (HuntModel.scare_scale, AnimalModel.should_flee scare param, tested).
+- [x] Hoeing: breaking ground can turn up a worm (14%) or a stone (4%), deterministic per cell (FarmModel.dig_find, tested).
+- [x] Fishing: bite wait depends on time of day and rain (Fishing.bite_time_mult: dawn/dusk 0.75x, midday 1.15x, rain -15%; tested).
+- Pushing to dev/main is impossible from this session (git proxy 403, add_repo needs a linked GitHub account). The bundle/patch are the delivery.

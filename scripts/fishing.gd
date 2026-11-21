@@ -97,7 +97,7 @@ func cast(sdf: float, table: Dictionary, season: int, bait: Dictionary = {}, ctx
 	if fish_id == "":
 		return false
 	difficulty = float(table[fish_id].difficulty)
-	timer = rng.randf_range(BITE_MIN, BITE_MAX) * float(bait.get("bite_mult", 1.0))
+	timer = rng.randf_range(BITE_MIN, BITE_MAX) * float(bait.get("bite_mult", 1.0)) * bite_time_mult(float(ctx.get("hour", 12.0)), float(ctx.get("rain", 0.0)))
 	bar_size = BAR_SIZE + float(bait.get("bar_bonus", 0.0)) + (BEGINNER_BONUS if int(ctx.get("caught_count", 99)) < BEGINNER_CATCHES else 0.0)
 	state = State.WAITING
 	return true
@@ -184,6 +184,16 @@ static func treasure_loot(roll: float, roll2: float) -> Dictionary:
 
 func overlapping() -> bool:
 	return absf(bar - fish_pos) <= bar_size / 2.0
+
+static func bite_time_mult(hour: float, rain: float) -> float:
+	## Waiting-time multiplier (below 1 = quicker bites): fish feed at dawn and dusk, sulk in the midday glare,
+	## and rain stirs them up.
+	var m := 1.0
+	if (hour >= 5.0 and hour < 8.0) or (hour >= 17.0 and hour < 20.0):
+		m = 0.75
+	elif hour >= 11.0 and hour < 15.0:
+		m = 1.15
+	return m * (1.0 - 0.15 * clampf(rain, 0.0, 1.0))
 
 static func pick_bait(bait: Dictionary, inv) -> String:
 	## Best bait (lowest bite multiplier) the bag holds, or "".

@@ -31,7 +31,13 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 		"hoe":
 			if gen != null and gen.tile_at(cell.x, cell.y) >= WorldGen.PATH:
 				return ""  # cannot till paths or water
-			return "Tilled" if farm.till(cell) else ""
+			if not farm.till(cell):
+				return ""
+			var find := FarmModel.dig_find(cell)
+			if find != "":
+				_give(inv, drops, find, 1)
+				return "Tilled: dug up %s" % find.replace("_", " ")
+			return "Tilled"
 		"sprinkler":
 			if inv.count("sprinkler") < 1:
 				return "No sprinklers"

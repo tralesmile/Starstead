@@ -98,6 +98,15 @@ func harvest(cell: Vector2i) -> Dictionary:
 const WEED_CHANCE := 0.18
 const WEED_CAP_FRACTION := 0.5   # never more than half the fields at once
 
+static func dig_find(cell: Vector2i) -> String:
+	## What the hoe turns up when first breaking ground at a cell (deterministic): a worm now and then, a stone rarely.
+	var r := weed_roll(cell, 31)
+	if r < 0.14:
+		return "worm_bait"
+	if r > 0.96:
+		return "stone"
+	return ""
+
 static func weed_roll(cell: Vector2i, day: int) -> float:
 	## Deterministic 0..1 per (cell, day): same save, same weeds.
 	var h := (cell.x * 73856093) ^ (cell.y * 19349663) ^ (day * 83492791)

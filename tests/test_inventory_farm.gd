@@ -77,3 +77,15 @@ func test_tomato_regrows() -> void:
 		f.next_day()
 	f.harvest(Vector2i(4, 4))
 	check_eq(f.soil[Vector2i(4, 4)].crop, "", "turnip is one-shot")
+
+func test_hoe_digs_up_finds() -> void:
+	var worms := 0
+	var stones := 0
+	for x in 60:
+		for y in 60:
+			match FarmModel.dig_find(Vector2i(x, y)):
+				"worm_bait": worms += 1
+				"stone": stones += 1
+	check(worms > 300 and worms < 600, "about 14%% worms (%d)" % worms)
+	check(stones > 40 and stones < 200 and stones < worms, "rare stones (%d)" % stones)
+	check_eq(FarmModel.dig_find(Vector2i(5, 9)), FarmModel.dig_find(Vector2i(5, 9)), "deterministic")
