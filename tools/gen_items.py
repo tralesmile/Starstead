@@ -470,6 +470,12 @@ def pic_kale(i):
     i.ell(8, 9, 3.2, 2.8, "#3f9a52"); i.px(8, 7, "#7ad08a"); i.px(7, 9, "#2a7a3c"); i.px(9, 10, "#2a7a3c"); i.px(6, 8, "#7ad08a")
 icons['strawberry_seed'] = packet("#b8244a", "#e0546e", pic_strawberry)
 icons['kale_seed'] = packet("#2f7a42", "#5ab06a", pic_kale)
+def pic_radish(i):
+    i.ell(8, 9, 2.4, 2.8, "#d8406a"); i.px(8, 12, "#f4e8e8"); i.px(8, 6, "#4a9a3a"); i.px(7, 6, "#4a9a3a")
+def pic_corn(i):
+    i.rect(7, 6, 9, 12, "#e8c840"); i.px(6, 8, "#5ab04a"); i.px(10, 8, "#5ab04a"); i.px(8, 7, "#fff0a0")
+icons['radish_seed'] = packet("#a82a50", "#d8546e", pic_radish)
+icons['corn_seed'] = packet("#b8982a", "#e8c860", pic_corn)
 icons['potato_seed'] = packet("#8a6a3a", "#b08a54", pic_potato)
 icons['tomato_seed'] = packet("#b8342a", "#e05a4a", pic_tomato)
 icons['pumpkin_seed'] = packet("#c86a10", "#f0922a", pic_pumpkin)
@@ -508,6 +514,22 @@ def kale():
     return i
 icons['strawberry'] = strawberry
 icons['kale'] = kale
+def radish():
+    i = Ic()
+    i.ell(8, 9, 3.8, 4.2, "#d8406a"); i.ell(8, 10, 2.4, 2.8, "#e8708a"); i.px(8, 14, "#f4e8e8"); i.px(8, 15, "#f4e8e8")
+    for x, y in [(8, 4), (7, 3), (9, 3), (6, 4), (10, 4), (8, 2)]:
+        i.px(x, y, "#4a9a3a")
+    i.px(6, 8, "#ff9ab0")
+    return i
+def corn():
+    i = Ic()
+    i.ell(8, 8, 2.8, 5.6, "#e8c840"); i.ell(8, 8, 1.6, 4.4, "#f8e070")
+    for y in (5, 7, 9, 11):
+        i.px(7, y, "#c8a028"); i.px(9, y + 1, "#c8a028")
+    i.line(3, 14, 7, 6, "#4a9a3a"); i.line(13, 14, 9, 6, "#3a8a2a")
+    return i
+icons['radish'] = radish
+icons['corn'] = corn
 icons['potato'] = potato
 icons['tomato'] = tomato
 icons['pumpkin'] = pumpkin

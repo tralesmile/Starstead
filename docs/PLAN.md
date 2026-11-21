@@ -294,3 +294,4 @@ Houses, buildings, graphics (5, 10)
 - [x] Weapons: banded clubs: Copper (+40% damage, 2 wood + 3 copper bars) and Iron (+80%, 2 wood + 3 iron bars), also sold in the shop; best one in the bag applies to town, wild animals and cave bats (data/clubs.json, CombatModel.club_mult, icons, tested).
 - [x] Cooking: Strawberry Tart, Kale Soup and Hunter's Stew (raw meat + potato + turnip) use the new crops and hunting drops; each is worth more than its ingredients (tested).
 - [x] Fishing: daily hot spots: 1 in 7 five-cell water blocks "bubble" each day (FishSpots, deterministic); hold the cast button to see ripples; casting into one cuts the bite wait to 55% (tested, screen hotspot).
+- [x] Farming: Radish (spring/autumn, 3 days) and Corn (summer/autumn, 7 days, 2 ears, regrows every 3); every season now has several crops; seeds sold, quality items, icons, economy audit still green (tested).

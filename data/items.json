@@ -519,5 +519,53 @@
   "stack": 20,
   "energy": 65,
   "rarity": "silver"
+ },
+ "radish_seed": {
+  "name": "Radish Seeds",
+  "price": 6,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 12
+ },
+ "radish": {
+  "name": "Radish",
+  "price": 22,
+  "stack": 99
+ },
+ "radish_silver": {
+  "name": "Silver Radish",
+  "price": 27,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "radish_gold": {
+  "name": "Gold Radish",
+  "price": 33,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "corn_seed": {
+  "name": "Corn Seeds",
+  "price": 16,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 36
+ },
+ "corn": {
+  "name": "Corn",
+  "price": 30,
+  "stack": 99
+ },
+ "corn_silver": {
+  "name": "Silver Corn",
+  "price": 37,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "corn_gold": {
+  "name": "Gold Corn",
+  "price": 45,
+  "stack": 99,
+  "rarity": "gold"
  }
 }

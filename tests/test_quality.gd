@@ -33,7 +33,7 @@ func test_cooking_accepts_quality_crops() -> void:
 func test_variants_have_items_icons_and_rarity() -> void:
 	var items = JSON.parse_string(FileAccess.open("res://data/items.json", FileAccess.READ).get_as_text())
 	var icons = JSON.parse_string(FileAccess.open("res://data/item_icons.json", FileAccess.READ).get_as_text())
-	for c in ["turnip", "potato", "tomato", "pumpkin", "strawberry", "kale"]:
+	for c in ["turnip", "potato", "tomato", "pumpkin", "strawberry", "kale", "radish", "corn"]:
 		check_eq(items[c + "_gold"]["rarity"], "gold")
 		check(items[c + "_gold"]["price"] > items[c + "_silver"]["price"])
 		check_eq(icons[c + "_gold"], icons[c])

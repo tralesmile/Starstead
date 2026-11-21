@@ -51,3 +51,15 @@ func test_new_crops_fill_the_calendar() -> void:
 	for id in ["strawberry", "kale"]:
 		check(items.has(f.crops[id].seed) and bool(items[f.crops[id].seed].get("buy", false)), "%s seed is sold" % id)
 		check(int(items[id].price) > int(items[f.crops[id].seed].price), "sells for more than a seed's value")
+
+func test_every_season_has_a_quick_and_a_slow_crop() -> void:
+	var f := FarmModel.new(DataDB.load_json("crops"))
+	for season in 4:
+		var days: Array = []
+		for id in f.crops:
+			if f.in_season(id, season):
+				days.append(int(f.crops[id].grow_days))
+		check(days.size() >= 2, "season %d has choices" % season)
+	check(f.in_season("radish", 0) and f.in_season("radish", 2) and not f.in_season("radish", 1))
+	check(f.in_season("corn", 1) and f.in_season("corn", 2) and not f.in_season("corn", 0))
+	check_eq(int(f.crops["corn"].regrow), 3)

@@ -56,5 +56,26 @@
   ],
   "yield": 2,
   "tint": "#3f9a52"
+ },
+ "radish": {
+  "seed": "radish_seed",
+  "grow_days": 3,
+  "season": [
+   0,
+   2
+  ],
+  "yield": 1,
+  "tint": "#d8406a"
+ },
+ "corn": {
+  "seed": "corn_seed",
+  "grow_days": 7,
+  "season": [
+   1,
+   2
+  ],
+  "yield": 2,
+  "tint": "#e8c840",
+  "regrow": 3
  }
 }
