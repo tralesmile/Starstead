@@ -37,5 +37,24 @@
   ],
   "yield": 1,
   "tint": "#f08a20"
+ },
+ "strawberry": {
+  "seed": "strawberry_seed",
+  "grow_days": 5,
+  "season": [
+   0
+  ],
+  "yield": 2,
+  "tint": "#e0345a",
+  "regrow": 2
+ },
+ "kale": {
+  "seed": "kale_seed",
+  "grow_days": 5,
+  "season": [
+   3
+  ],
+  "yield": 2,
+  "tint": "#3f9a52"
  }
 }

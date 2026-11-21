@@ -288,3 +288,4 @@ Houses, buildings, graphics (5, 10)
 - [x] Building: blueprints Wood House (5x4, 3x2 floor, door) and Animal Pen (6x5 fence ring + gate); R cycles, H builds (BuildModel.BLUEPRINTS/next_blueprint, tested, screen blueprints).
 - [x] Animals: tame animals bed down 21:00-05:00 (AnimalModel.asleep, tested).
 - [x] Hunting: hide now has a use: Leather Boots (4 hide + 2 fibre, one pair, +8% walking speed while carried; recipe "limit", PlayerMath.boots_mult, new icon, tested).
+- [x] Farming: two new crops: Strawberry (spring, 5 days, regrows every 2) and Kale (winter, 5 days); seeds sold, items with silver/gold quality, new icons, tinted crop art; winter is no longer turnips only (tested).

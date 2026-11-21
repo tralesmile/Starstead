@@ -464,6 +464,12 @@ def pic_tomato(i):
     i.ell(8, 9, 2.8, 2.6, "#e04a3a"); i.px(7, 8, "#ff9a8a"); i.px(8, 6, "#4a9a3a"); i.px(7, 6, "#4a9a3a"); i.px(9, 6, "#4a9a3a")
 def pic_pumpkin(i):
     i.ell(8, 9, 3.2, 2.6, "#f08a20"); i.px(8, 7, "#a85a10"); i.px(8, 6, "#4a9a3a"); i.px(6, 9, "#c86a10"); i.px(10, 9, "#c86a10")
+def pic_strawberry(i):
+    i.ell(8, 9, 2.6, 2.8, "#e0345a"); i.px(7, 8, "#ff8aa0"); i.px(8, 6, "#4a9a3a"); i.px(7, 6, "#4a9a3a"); i.px(9, 6, "#4a9a3a"); i.px(7, 10, "#ffe08a"); i.px(9, 9, "#ffe08a")
+def pic_kale(i):
+    i.ell(8, 9, 3.2, 2.8, "#3f9a52"); i.px(8, 7, "#7ad08a"); i.px(7, 9, "#2a7a3c"); i.px(9, 10, "#2a7a3c"); i.px(6, 8, "#7ad08a")
+icons['strawberry_seed'] = packet("#b8244a", "#e0546e", pic_strawberry)
+icons['kale_seed'] = packet("#2f7a42", "#5ab06a", pic_kale)
 icons['potato_seed'] = packet("#8a6a3a", "#b08a54", pic_potato)
 icons['tomato_seed'] = packet("#b8342a", "#e05a4a", pic_tomato)
 icons['pumpkin_seed'] = packet("#c86a10", "#f0922a", pic_pumpkin)
@@ -485,6 +491,23 @@ def pumpkin():
     i.ell(8, 10, 6, 4.5, "#f08a20"); i.ell(5.5, 10, 2, 4.2, "#d66a12"); i.ell(10.5, 10, 2, 4.2, "#d66a12")
     i.rect(7, 5, 9, 6, "#5a8a2a"); i.px(9, 4, "#5a8a2a"); i.px(6, 8, "#ffc060"); i.px(7, 8, "#ffc060")
     return i
+def strawberry():
+    i = Ic()
+    i.ell(8, 9, 4.2, 4.4, "#e0345a"); i.rect(5, 12, 11, 13, "#b8244a")
+    i.px(6, 7, "#ff9ab0"); i.px(7, 7, "#ff9ab0")
+    for x, y in [(6, 10), (9, 9), (8, 12), (10, 11), (7, 11)]:
+        i.px(x, y, "#ffe08a")
+    for x, y in [(8, 4), (7, 4), (9, 4), (6, 5), (10, 5), (8, 3)]:
+        i.px(x, y, "#4a9a3a")
+    return i
+def kale():
+    i = Ic()
+    i.ell(8, 9, 5.5, 4.2, "#3f9a52"); i.ell(5.5, 9, 2, 3.6, "#2f7a42"); i.ell(10.5, 9, 2, 3.6, "#2f7a42")
+    i.line(8, 5, 8, 13, "#a8e0b0")
+    i.px(6, 7, "#7ad08a"); i.px(10, 7, "#7ad08a"); i.px(6, 10, "#7ad08a"); i.px(10, 10, "#7ad08a")
+    return i
+icons['strawberry'] = strawberry
+icons['kale'] = kale
 icons['potato'] = potato
 icons['tomato'] = tomato
 icons['pumpkin'] = pumpkin

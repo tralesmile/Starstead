@@ -434,5 +434,53 @@
   "name": "Leather Boots",
   "price": 120,
   "stack": 1
+ },
+ "strawberry_seed": {
+  "name": "Strawberry Seeds",
+  "price": 16,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 35
+ },
+ "strawberry": {
+  "name": "Strawberry",
+  "price": 30,
+  "stack": 99
+ },
+ "strawberry_silver": {
+  "name": "Silver Strawberry",
+  "price": 37,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "strawberry_gold": {
+  "name": "Gold Strawberry",
+  "price": 45,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "kale_seed": {
+  "name": "Kale Seeds",
+  "price": 11,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 22
+ },
+ "kale": {
+  "name": "Kale",
+  "price": 28,
+  "stack": 99
+ },
+ "kale_silver": {
+  "name": "Silver Kale",
+  "price": 35,
+  "stack": 99,
+  "rarity": "silver"
+ },
+ "kale_gold": {
+  "name": "Gold Kale",
+  "price": 42,
+  "stack": 99,
+  "rarity": "gold"
  }
 }

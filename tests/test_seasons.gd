@@ -37,3 +37,17 @@ func test_harvest_yield_two_potatoes() -> void:
 	check(f.plant(Vector2i(0, 0), "potato_seed", 0))
 	f.soil[Vector2i(0, 0)].age = 5
 	check_eq(f.harvest(Vector2i(0, 0)), {"id": "potato", "n": 2})
+
+func test_new_crops_fill_the_calendar() -> void:
+	var f := FarmModel.new(DataDB.load_json("crops"))
+	check(f.in_season("strawberry", 0) and not f.in_season("strawberry", 1))
+	check(f.in_season("kale", 3) and not f.in_season("kale", 2))
+	var winter := 0
+	for id in f.crops:
+		if f.in_season(id, 3):
+			winter += 1
+	check(winter >= 2, "winter has more than turnips")
+	var items: Dictionary = DataDB.load_json("items")
+	for id in ["strawberry", "kale"]:
+		check(items.has(f.crops[id].seed) and bool(items[f.crops[id].seed].get("buy", false)), "%s seed is sold" % id)
+		check(int(items[id].price) > int(items[f.crops[id].seed].price), "sells for more than a seed's value")
