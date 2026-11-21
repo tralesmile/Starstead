@@ -12,6 +12,7 @@ const ACTIONS := {
 	"inventory": [KEY_TAB, KEY_I],
 	"pause": [KEY_ESCAPE],
 	"sprint": [KEY_SHIFT],
+	"sneak": [KEY_CTRL],
 }
 const PAD := {
 	"interact": JOY_BUTTON_A,

@@ -320,7 +320,7 @@ func _ready() -> void:
 	legend.position = Vector2(8, 347)
 	legend.add_theme_font_size_override("font_size", 10)
 	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   C: craft  Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint"
+	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   C: craft  Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint  Ctrl: sneak"
 	var leg_layer := CanvasLayer.new()
 	leg_layer.add_child(legend)
 	goal_label = Label.new()

@@ -265,7 +265,7 @@ func _process(delta: float) -> void:
 					c["bite"] = 1.0
 					GameState.energy.value = maxf(0.0, GameState.energy.value - HuntModel.bite_damage(dist))
 					message.emit("The boar gores you!")
-			elif AnimalModel.should_flee(dist, tf):
+			elif AnimalModel.should_flee(dist, tf, HuntModel.scare_scale(player.sneaking, player.sprinting)):
 				move = AnimalModel.flee_dir(node.position, player.position) * spd * 0.8 * delta
 			else:
 				c["t"] -= delta

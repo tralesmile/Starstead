@@ -168,3 +168,10 @@ func test_day_tick_double_yield() -> void:
 		total0 += int(m.day_tick(b, d, 0).get("egg", 0))
 	check_eq(total0, 119, "daily egg without a bond")
 	check(total1 > total0, "bonded hen lays extra")
+
+func test_sneaking_lets_you_get_close() -> void:
+	check(AnimalModel.should_flee(60.0, 0.0), "walking up at 60px spooks it")
+	check(not AnimalModel.should_flee(60.0, 0.0, HuntModel.scare_scale(true, false)), "creeping does not")
+	check(AnimalModel.should_flee(100.0, 0.0, HuntModel.scare_scale(false, true)), "sprinting spooks from farther")
+	check(HuntModel.scare_scale(false, true) > HuntModel.scare_scale(false, false))
+	check(PlayerMath.sneak_mult(true) < 1.0 and PlayerMath.sneak_mult(false) == 1.0)

@@ -4,6 +4,8 @@ extends CharacterBody2D
 
 var facing: int = PlayerMath.Facing.DOWN
 var speed_mult := 1.0  # >1 while riding
+var sneaking := false  # Ctrl held: slow and quiet (wild animals spook from half the distance)
+var sprinting := false
 var zoom_step := TargetMath.DEFAULT_STEP     # user zoom step 1..4 (TargetMath.ZOOMS)
 var indoors := false   # inside a room or the mine: no shore slowdown, no water reflection
 var focus: Variant = null   # Vector2: room centre while indoors (camera leans toward it)
@@ -101,12 +103,14 @@ func _physics_process(delta: float) -> void:
 	if sp_t > 1.0:
 		GameState.energy.value = maxf(GameState.energy.value - PlayerMath.sprint_cost(delta), 0.0)
 	_sprint = PlayerMath.sprint_ease(_sprint, sp_t, delta)
+	sprinting = sp_t > 1.0
+	sneaking = Input.is_action_pressed("sneak") and not sprinting
 	var sp := _sprint
 	_skid_cd -= delta
 	if _skid_cd <= 0.0 and PlayerMath.is_skid(move_v, input):
 		skid.emit(PlayerMath.skid_dust_amount(move_v.length()))
 		_skid_cd = 0.25
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)), grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * PlayerMath.sneak_mult(sneaking) * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)), grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking

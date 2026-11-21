@@ -281,3 +281,4 @@ Houses, buildings, graphics (5, 10)
 - [x] Farming: tomato vines regrow (crops.json "regrow": 3; ripe again after 3 watered days; FarmModel.harvest, tested).
 - [x] Animals: bond (friendship) 0-100: pet once a day (E on a fed animal), feeding adds bond, bond >= 50 gives a chance of a double yield (AnimalModel.pet/bond_tier/bonus_roll, saved, tested).
 - [x] Weapons: 3-hit combo (CombatModel.chain_len/combo_next/combo_weapon: +25% damage per chained hit within 0.9 s, heavy finisher, tested; applies to townsfolk and wild animals).
+- [x] Hunting: Ctrl sneaks (0.55x speed) and wild animals spook from half the distance; sprinting spooks from 1.6x (HuntModel.scare_scale, AnimalModel.should_flee scare param, tested).

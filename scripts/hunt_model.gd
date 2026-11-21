@@ -28,3 +28,9 @@ static func roll_drops(animals: Dictionary, id: String, rng: RandomNumberGenerat
 static func bite_damage(dist: float) -> float:
 	## A cornered boar charges: 6 damage-as-energy within 18px, none farther.
 	return 6.0 if dist < 18.0 else 0.0
+
+static func scare_scale(sneaking: bool, sprinting: bool) -> float:
+	## Multiplier on how far away wild animals spook: creeping 0.5x, walking 1x, sprinting 1.6x.
+	if sneaking:
+		return 0.5
+	return 1.6 if sprinting else 1.0
