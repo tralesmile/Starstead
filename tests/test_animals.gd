@@ -12,7 +12,7 @@ func _tamed(m: AnimalModel, id: String) -> Dictionary:
 func test_data_valid() -> void:
 	var d: Dictionary = DataDB.load_json("animals")
 	var items = DataDB.load_json("items")
-	for id in ["chicken", "cow", "sheep", "horse"]:
+	for id in ["chicken", "cow", "sheep", "goat", "horse"]:
 		check(d["animals"].has(id), id)
 		var a: Dictionary = d["animals"][id]
 		for k in ["name", "wild_speed", "tame_difficulty", "resource", "rideable", "ride_speed_mult", "gear_slots"]:
@@ -119,7 +119,7 @@ func test_next_gear_fits_empty_slot_only() -> void:
 
 func test_grazers_eat_hay() -> void:
 	var m := AnimalModel.new(DataDB.load_json("animals"))
-	for id in ["cow", "sheep", "horse"]:
+	for id in ["cow", "sheep", "goat", "horse"]:
 		check("hay" in m.animals[id]["feed"], id)
 	check(not ("hay" in m.animals["chicken"]["feed"]), "chickens want turnips")
 	var st := {"id": "cow", "hunger": 80.0}
@@ -201,3 +201,14 @@ func test_pen_bonus_needs_stay_and_enclosure() -> void:
 	bag.add("wood", 200)
 	bm.stamp("pen", Vector2i(20, 20), bag)
 	check(bm.is_enclosed(Vector2i(22, 22)) and not bm.is_enclosed(Vector2i(40, 40)), "pen counts, open ground does not")
+
+func test_goat_gives_milk_every_two_days() -> void:
+	var m := _bm()
+	check_eq(m.animals["goat"]["resource"]["item"], "goat_milk")
+	check(DataDB.load_json("items").has("goat_milk"))
+	var st := {"id": "goat", "trust": 0.0, "hunger": 0.0, "gear": {}, "age": 0, "days": 0}
+	var got := 0
+	for d in range(1, 9):
+		st["hunger"] = 0.0   # fed every day
+		got += int(m.day_tick(st, d, 0).get("goat_milk", 0))
+	check(got >= 3 and got <= 4, "about every other day (%d)" % got)

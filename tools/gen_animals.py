@@ -79,3 +79,20 @@ for f in range(2):
         dx = lo if lx == 7 else -lo
         d.rectangle([ox+lx+dx, 13, ox+lx+dx+1, 16], fill=(86, 70, 60), outline=OUT)
 save(im, "sheep.png")
+
+# goat: 2 frames -> 44x18 sheet, lean grey-brown body, curved horns, little beard
+im = Image.new("RGBA", (44, 18), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+for f in range(2):
+    ox = f * 22; fur = (176, 156, 128); fd = (140, 120, 96); dark = (70, 54, 44)
+    d.rectangle([ox+4, 7, ox+16, 13], fill=fur, outline=OUT)                       # body
+    d.rectangle([ox+5, 11, ox+15, 12], fill=fd)                                    # belly shade
+    d.rectangle([ox+2, 6, ox+4, 8], fill=fur, outline=OUT)                         # tail
+    d.polygon([(ox+14, 8), (ox+19, 4), (ox+21, 7), (ox+19, 11), (ox+15, 12)], fill=fur, outline=OUT)   # neck+head
+    d.point((ox+19, 6), fill=(30, 20, 14))                                         # eye
+    d.line([ox+16, 3, ox+15, 1], fill=(222, 214, 190)); d.line([ox+18, 3, ox+19, 1], fill=(222, 214, 190))   # horns
+    d.line([ox+20, 10, ox+20, 12], fill=(236, 230, 216))                           # beard
+    lo = 1 if f else 0
+    for lx in (5, 8, 12, 15):
+        dx = lo if lx in (5, 12) else -lo
+        d.rectangle([ox+lx+dx, 13, ox+lx+dx+1, 17], fill=dark, outline=OUT)
+save(im, "goat.png")

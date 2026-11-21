@@ -567,5 +567,10 @@
   "price": 45,
   "stack": 99,
   "rarity": "gold"
+ },
+ "goat_milk": {
+  "name": "Goat Milk",
+  "price": 38,
+  "stack": 99
  }
 }

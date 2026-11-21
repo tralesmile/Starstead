@@ -154,6 +154,20 @@ def milk():
     i.rect(4, 13, 11, 14, "#c0d0d8")
     return i
 icons['milk'] = milk
+def goat_milk():
+    i = Ic()
+    i.rect(6, 1, 9, 2, "#6a8a3a")  # green cap
+    i.rect(6, 3, 9, 4, "#f4ecd8")  # neck
+    i.rect(4, 5, 11, 14, "#f4ecd8")
+    i.rect(4, 8, 11, 12, "#fffaf0")
+    i.rect(5, 9, 10, 11, "#b89a5a")  # label
+    i.px(7, 10, "#fffaf0"); i.px(8, 10, "#fffaf0")   # a little goat head mark
+    i.px(6, 9, "#7a5a2a"); i.px(9, 9, "#7a5a2a")
+    i.rect(10, 5, 11, 14, "#d8ccb0")
+    i.px(5, 6, "#fffaf0"); i.px(5, 7, "#fffaf0")
+    i.rect(4, 13, 11, 14, "#d8ccb0")
+    return i
+icons['goat_milk'] = goat_milk
 
 def fish_small():
     i = Ic()

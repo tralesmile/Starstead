@@ -3,7 +3,7 @@ extends BaseTest
 func test_hunt_data() -> void:
 	var a = DataDB.load_json("animals")["animals"]
 	var items = DataDB.load_json("items")
-	for id in ["deer", "rabbit", "boar", "chicken", "sheep"]:
+	for id in ["deer", "rabbit", "boar", "chicken", "sheep", "goat"]:
 		check(HuntModel.huntable(a, id), "%s is huntable" % id)
 		for d in a[id].hunt.drops:
 			check(items.has(d.item), "drop %s exists in items.json" % d.item)

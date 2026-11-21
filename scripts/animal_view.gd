@@ -10,13 +10,14 @@ const LOOK := {
 	"horse": {"y": 14, "shadow": 28},
 	"cow": {"y": 11, "shadow": 24},
 	"sheep": {"y": 9, "shadow": 18},
+	"goat": {"y": 9, "shadow": 18},
 	"deer": {"y": 12, "shadow": 24},
 	"rabbit": {"y": 6, "shadow": 10},
 	"boar": {"y": 9, "shadow": 20},
 }
 ## Wild herd the land keeps topped up (hunted ones return over the days). id -> [count, min radius, max radius] in tiles.
 const WILD := {
-	"chicken": [4, 4, 14], "horse": [1, 6, 14], "cow": [2, 6, 16], "sheep": [3, 6, 16],
+	"chicken": [4, 4, 14], "horse": [1, 6, 14], "cow": [2, 6, 16], "sheep": [3, 6, 16], "goat": [3, 8, 26],
 	"deer": [5, 10, 28], "rabbit": [7, 5, 22], "boar": [2, 14, 30],
 }
 const FEED_ITEM := "turnip"   # default treat; grazers also eat hay (feed_for)
