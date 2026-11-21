@@ -10,6 +10,8 @@ var charge := -1.0   # 0..1 while holding the cast button, -1 otherwise
 var cast_age := 99.0
 var bite_age := 99.0
 var _last_state := Fishing.State.IDLE
+var water_at: Callable = func(_c): return false
+var day := 0
 
 func setup(f: Fishing, p: Node2D) -> void:
 	fishing = f
@@ -64,8 +66,24 @@ func _draw_leaps() -> void:
 			for i in 3:
 				draw_rect(Rect2(p + Vector2(-6 + i * 6, 6 + i % 2 * 3) * (1.0 + k * 3.0), Vector2(1, 1)), Color(0.8, 0.95, 1.0, 0.9))
 
+func _draw_hot_spots() -> void:
+	## While you hold the cast button: slow ripples over the day's hot blocks (FishSpots) near you.
+	var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	for b in FishSpots.hot_blocks_near(pc, day):
+		for k in 3:
+			var c := b * FishSpots.BLOCK + Vector2i((k * 2 + 1) % FishSpots.BLOCK, (k * 3 + 2) % FishSpots.BLOCK)
+			if not bool(water_at.call(c)):
+				continue
+			var ph := fposmod(t * 0.7 + float(k) / 3.0 + float(b.x + b.y) * 0.13, 1.0)
+			var ctr := Vector2(c) * 32.0 + Vector2(16, 16)
+			_ellipse(ctr, 4.0 + ph * 14.0, (4.0 + ph * 14.0) * 0.45, Color(1, 1, 1, 0.85 * (1.0 - ph * 0.8)))
+			if ph < 0.3:
+				draw_rect(Rect2(ctr + Vector2(-1, -4 - ph * 12.0), Vector2(2, 2)), Color(0.9, 1.0, 1.0, 0.8 - ph * 2.0))
+
 func _draw() -> void:
 	_draw_leaps()
+	if charge >= 0.0:
+		_draw_hot_spots()
 	var casting := fishing.state != Fishing.State.IDLE and fishing.state != Fishing.State.CAUGHT
 	if charge >= 0.0 or casting or cast_age < 0.5:
 		_draw_rod(casting)

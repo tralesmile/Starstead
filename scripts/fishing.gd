@@ -97,7 +97,7 @@ func cast(sdf: float, table: Dictionary, season: int, bait: Dictionary = {}, ctx
 	if fish_id == "":
 		return false
 	difficulty = float(table[fish_id].difficulty)
-	timer = rng.randf_range(BITE_MIN, BITE_MAX) * float(bait.get("bite_mult", 1.0)) * bite_time_mult(float(ctx.get("hour", 12.0)), float(ctx.get("rain", 0.0)))
+	timer = rng.randf_range(BITE_MIN, BITE_MAX) * float(bait.get("bite_mult", 1.0)) * bite_time_mult(float(ctx.get("hour", 12.0)), float(ctx.get("rain", 0.0))) * (FishSpots.BITE_MULT if bool(ctx.get("hot", false)) else 1.0)
 	bar_size = BAR_SIZE + float(bait.get("bar_bonus", 0.0)) + (BEGINNER_BONUS if int(ctx.get("caught_count", 99)) < BEGINNER_CATCHES else 0.0)
 	state = State.WAITING
 	return true

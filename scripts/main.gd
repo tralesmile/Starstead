@@ -218,6 +218,7 @@ func _ready() -> void:
 	add_child(FishingView.new(fishing))
 	fish_fx = FishingWorldView.new()
 	fish_fx.setup(fishing, player)
+	fish_fx.water_at = func(c: Vector2i) -> bool: return world.gen.sdf_at(c.x, c.y) < -0.3
 	world.add_child(fish_fx)
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -353,6 +354,7 @@ func _process(delta: float) -> void:
 	if rod_charging:
 		rod_charge_t += delta
 	fish_fx.charge = CastMath.power(rod_charge_t) if rod_charging else -1.0
+	fish_fx.day = GameState.clock.day
 	demos.on_process()
 	_goal_t -= delta
 	if _goal_t <= 0.0:
@@ -840,7 +842,7 @@ func _fish_ctx() -> Dictionary:
 		if int(GameState.journal.entries[id].count) > 0:
 			caught.append(id)
 	var cc := _water_cell_ahead(CastMath.distance_tiles(CastMath.power(rod_charge_t)))
-	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "caught_count": GameState.journal.total_caught(), "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc)}
+	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "caught_count": GameState.journal.total_caught(), "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc), "hot": cc.x >= 0 and FishSpots.is_hot(cc, GameState.clock.day)}
 
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:

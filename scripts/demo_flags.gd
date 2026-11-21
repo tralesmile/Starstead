@@ -157,6 +157,22 @@ func on_process() -> void:
 		if f == 24 and m.fishing.state == Fishing.State.BITE:
 			m.fishing.fish_id = "perch"
 			m.fishing.hook()
+	if "--hotspot-demo" in OS.get_cmdline_user_args():   # screenshot helper: hold a cast and see the day's hot water ripple
+		var f2 := Engine.get_process_frames()
+		m.hotbar.selected = 6
+		m.player.facing = PlayerMath.Facing.DOWN
+		if f2 == 2:
+			var pc2 := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+			var best := 1
+			for d in range(1, 60):
+				if FishSpots.hot_blocks_near(pc2, d).size() > FishSpots.hot_blocks_near(pc2, best).size():
+					best = d
+			GameState.clock.day = best
+		if f2 == 3:
+			var ev2 := InputEventAction.new()
+			ev2.action = "use_tool"
+			ev2.pressed = true
+			m._unhandled_input(ev2)
 	if "--chop-demo" in OS.get_cmdline_user_args():
 		var f := Engine.get_process_frames()
 		m.hotbar.selected = 4

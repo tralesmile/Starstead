@@ -121,3 +121,32 @@ func test_bite_time_of_day() -> void:
 	f.rng.seed = 5
 	check(f.cast(-5.0, table, 0, {}, {"hour": 12.5}))
 	check(dawn < f.timer, "same roll, quicker at dawn")
+
+func test_hot_spots_bite_sooner() -> void:
+	var table: Dictionary = DataDB.load_json("fish")
+	var hot := Vector2i(-1, -1)
+	var cold := Vector2i(-1, -1)
+	for x in range(0, 200, FishSpots.BLOCK):
+		if FishSpots.is_hot(Vector2i(x, 0), 3):
+			hot = Vector2i(x, 0)
+		else:
+			cold = Vector2i(x, 0)
+	check(hot.x >= 0 and cold.x >= 0, "some blocks are hot and some are not")
+	var f := Fishing.new()
+	f.rng.seed = 9
+	f.cast(-5.0, table, 0, {}, {"hour": 22.0, "hot": false})
+	var t0 := f.timer
+	f.reset()
+	f.rng.seed = 9
+	f.cast(-5.0, table, 0, {}, {"hour": 22.0, "hot": true})
+	check(f.timer < t0 * 0.6, "hot water bites in about half the time")
+
+func test_hot_blocks_deterministic_and_about_one_in_seven() -> void:
+	var n := 0
+	for bx in 70:
+		for by in 70:
+			if FishSpots.is_hot(Vector2i(bx * 5, by * 5), 12):
+				n += 1
+	check(n > 4900 / 7 * 0.7 and n < 4900 / 7 * 1.3, "about 1/7 hot (%d)" % n)
+	check_eq(FishSpots.is_hot(Vector2i(13, 4), 5), FishSpots.is_hot(Vector2i(14, 3), 5), "same block, same answer")
+	check(FishSpots.hot_blocks_near(Vector2i(100, 100), 4).size() <= 16)
