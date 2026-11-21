@@ -27,3 +27,18 @@ func test_every_recipe_makes_a_hotbar_tool() -> void:
 			continue
 		check(String(recipes[id]["makes"]) in ToolUse.TOOLS, id)
 		check(not (String(recipes[id]["makes"]) in ToolKit.STARTER))
+
+func test_leather_boots_recipe_and_speed() -> void:
+	var rec: Dictionary = DataDB.load_json("crafting")["leather_boots"]
+	var bag := Inventory.new()
+	var owned: Array = []
+	check_eq(ToolKit.craft(owned, rec, bag), "Missing materials")
+	bag.add("hide", 4)
+	bag.add("fibre", 2)
+	check_eq(ToolKit.craft(owned, rec, bag), "")
+	check_eq(bag.count("leather_boots"), 1)
+	bag.add("hide", 4)
+	bag.add("fibre", 2)
+	check_eq(ToolKit.craft(owned, rec, bag), "You already have it", "one pair only")
+	check_eq(bag.count("hide"), 4, "materials kept")
+	check(PlayerMath.boots_mult(1) > 1.0 and PlayerMath.boots_mult(0) == 1.0)

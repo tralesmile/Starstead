@@ -16,6 +16,8 @@ static func craft(owned: Array, recipe: Dictionary, bag: Inventory) -> String:
 	## "" on success (wood spent, tool added); otherwise the reason.
 	var tool := String(recipe["makes"])
 	if bool(recipe.get("item", false)):   # repeatable item recipe (fertiliser): goes into the bag
+		if int(recipe.get("limit", 0)) > 0 and bag.count(tool) >= int(recipe["limit"]):
+			return "You already have it"
 		if not CookModel.can_cook(bag, recipe):
 			return "Missing materials"
 		for id in recipe["needs"]:

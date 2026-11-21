@@ -276,6 +276,8 @@ func _process(delta: float) -> void:
 				var d: Vector2 = c["target"] - node.position
 				if d.length() > 2.0:
 					move = d.normalized() * spd * 0.25 * delta
+		elif bool(c["st"].get("stay", false)) and AnimalModel.asleep(GameState.clock.hour(), false):
+			move = Vector2.ZERO   # bedded down for the night
 		elif bool(c["st"].get("stay", false)):
 			var home := Vector2(float(c["st"].get("hx", node.position.x)), float(c["st"].get("hy", node.position.y)))
 			c["t"] -= delta

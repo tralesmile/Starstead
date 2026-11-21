@@ -429,5 +429,10 @@
   "name": "Fertiliser",
   "price": 8,
   "stack": 99
+ },
+ "leather_boots": {
+  "name": "Leather Boots",
+  "price": 120,
+  "stack": 1
  }
 }

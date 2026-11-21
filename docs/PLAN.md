@@ -286,3 +286,5 @@ Houses, buildings, graphics (5, 10)
 - [x] Fishing: bite wait depends on time of day and rain (Fishing.bite_time_mult: dawn/dusk 0.75x, midday 1.15x, rain -15%; tested).
 - Pushing to dev/main is impossible from this session (git proxy 403, add_repo needs a linked GitHub account). The bundle/patch are the delivery.
 - [x] Building: blueprints Wood House (5x4, 3x2 floor, door) and Animal Pen (6x5 fence ring + gate); R cycles, H builds (BuildModel.BLUEPRINTS/next_blueprint, tested, screen blueprints).
+- [x] Animals: tame animals bed down 21:00-05:00 (AnimalModel.asleep, tested).
+- [x] Hunting: hide now has a use: Leather Boots (4 hide + 2 fibre, one pair, +8% walking speed while carried; recipe "limit", PlayerMath.boots_mult, new icon, tested).

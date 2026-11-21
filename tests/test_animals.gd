@@ -175,3 +175,10 @@ func test_sneaking_lets_you_get_close() -> void:
 	check(AnimalModel.should_flee(100.0, 0.0, HuntModel.scare_scale(false, true)), "sprinting spooks from farther")
 	check(HuntModel.scare_scale(false, true) > HuntModel.scare_scale(false, false))
 	check(PlayerMath.sneak_mult(true) < 1.0 and PlayerMath.sneak_mult(false) == 1.0)
+
+func test_tame_animals_sleep_at_night() -> void:
+	check(AnimalModel.asleep(23.0, false))
+	check(AnimalModel.asleep(3.0, false))
+	check(not AnimalModel.asleep(12.0, false))
+	check(not AnimalModel.asleep(23.0, true), "wild ones roam all night")
+	check(not AnimalModel.asleep(5.0, false) and AnimalModel.asleep(21.0, false), "edges")

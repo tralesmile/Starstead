@@ -157,6 +157,10 @@ static func ride_mult(ride_spd: float) -> float:
 	return 1.0 if ride_spd <= 0.0 else clampf(ride_spd / RIDE_REF, 1.0, 2.5)
 
 ## Wild animals bolt when you come close unless they already trust you (trust 0..1).
+static func asleep(hour: float, wild: bool) -> bool:
+	## Penned and tamed animals bed down between 21:00 and 05:00 (wild ones keep roaming).
+	return not wild and (hour >= 21.0 or hour < 5.0)
+
 static func should_flee(dist: float, trust_frac: float, scare: float = 1.0) -> bool:
 	return dist < lerpf(90.0, 30.0, clampf(trust_frac, 0.0, 1.0)) * scare and trust_frac < 0.6
 

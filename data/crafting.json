@@ -4,5 +4,6 @@
 	"club": {"name": "Wooden Club", "needs": {"wood": 2}, "makes": "club"},
 	"rod": {"name": "Fishing Rod", "needs": {"wood": 4}, "makes": "rod"},
 	"pickaxe": {"name": "Pickaxe", "needs": {"wood": 6}, "makes": "pickaxe"},
-	"fertiliser": {"name": "Fertiliser x3 (hay + fibre)", "needs": {"hay": 2, "fibre": 1}, "makes": "fertiliser", "item": true, "count": 3}
+	"fertiliser": {"name": "Fertiliser x3 (hay + fibre)", "needs": {"hay": 2, "fibre": 1}, "makes": "fertiliser", "item": true, "count": 3},
+	"leather_boots": {"name": "Leather Boots (+8% speed, carry them)", "needs": {"hide": 4, "fibre": 2}, "makes": "leather_boots", "item": true, "count": 1, "limit": 1}
 }

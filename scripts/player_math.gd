@@ -128,3 +128,9 @@ const SNEAK_MULT := 0.55
 static func sneak_mult(wants: bool, moving_or_not: bool = true) -> float:
 	## Holding Ctrl crouches: slower, but wild animals notice you from half as far (HuntModel.scare_scale).
 	return SNEAK_MULT if wants and moving_or_not else 1.0
+
+const BOOTS_MULT := 1.08
+
+static func boots_mult(boots_in_bag: int) -> float:
+	## Carrying leather boots (crafted from hide) is a flat +8% walking speed.
+	return BOOTS_MULT if boots_in_bag > 0 else 1.0

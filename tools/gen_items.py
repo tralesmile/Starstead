@@ -635,6 +635,18 @@ def feather():
     return i
 icons['feather'] = feather
 
+def leather_boots():
+    i = Ic()
+    for (x0, x1) in ((3, 7), (9, 13)):
+        i.rect(x0, 3, x1 - 1, 9, "#8a5a34")          # shaft
+        i.rect(x0, 9, x1 + 1, 12, "#a8743f")         # foot
+        i.rect(x0, 12, x1 + 1, 13, "#4a2c18")        # sole
+        i.rect(x0, 3, x1 - 1, 4, "#c8944f")          # cuff
+        i.px(x0 + 1, 6, "#c8944f"); i.px(x0 + 1, 7, "#6a4026")   # lace/stitch
+        i.px(x1 + 1, 10, "#c8944f")
+    return i
+icons['leather_boots'] = leather_boots
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def main():
