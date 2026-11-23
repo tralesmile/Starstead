@@ -30,7 +30,8 @@
       }
     ],
     "place": "barn",
-    "shift_hours": 4
+    "shift_hours": 4,
+    "game": "timing"
   },
   "delivery_driver": {
     "name": "Delivery Driver",
@@ -63,7 +64,8 @@
       }
     ],
     "place": "stall",
-    "shift_hours": 4
+    "shift_hours": 4,
+    "game": "balance"
   },
   "mechanic": {
     "name": "Mechanic",
@@ -96,7 +98,8 @@
       }
     ],
     "place": "workshop",
-    "shift_hours": 4
+    "shift_hours": 4,
+    "game": "sequence"
   },
   "rocket_tech": {
     "name": "Rocket Yard Tech",
@@ -129,7 +132,8 @@
       }
     ],
     "place": "vance_gate",
-    "shift_hours": 5
+    "shift_hours": 5,
+    "game": "sequence"
   },
   "chef": {
     "name": "Cafe Chef",
@@ -163,7 +167,8 @@
     ],
     "place": "city_cafe",
     "shift_hours": 4,
-    "perk": "food"
+    "perk": "food",
+    "game": "timing"
   },
   "builder": {
     "name": "Builder",
@@ -197,7 +202,8 @@
     ],
     "place": "city_house2",
     "shift_hours": 5,
-    "perk": "wood"
+    "perk": "wood",
+    "game": "timing"
   },
   "miner": {
     "name": "Miner",
@@ -231,7 +237,8 @@
     ],
     "place": "cave_mouth",
     "shift_hours": 5,
-    "perk": "ore"
+    "perk": "ore",
+    "game": "timing"
   },
   "police_officer": {
     "name": "Police Officer",
@@ -265,7 +272,8 @@
     ],
     "place": "city_police",
     "shift_hours": 4,
-    "perk": "wanted"
+    "perk": "wanted",
+    "game": "balance"
   },
   "doctor": {
     "name": "Hospital Doctor",
@@ -299,7 +307,8 @@
     ],
     "place": "city_hospital",
     "shift_hours": 4,
-    "perk": "heal"
+    "perk": "heal",
+    "game": "sequence"
   },
   "astronaut": {
     "name": "Astronaut Trainee",
@@ -337,6 +346,7 @@
       "job": "rocket_tech",
       "xp": 100
     },
-    "perk": "rocket"
+    "perk": "rocket",
+    "game": "balance"
   }
 }

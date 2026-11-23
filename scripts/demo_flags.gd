@@ -114,6 +114,25 @@ func on_process() -> void:
 		GameState.bag.add("coal", 2)
 		GameState.bag.add("iron_ore", 1)
 		m.smelt_view.open()
+	for a in OS.get_cmdline_user_args():   # screenshot helper: --shift-demo=timing|sequence|balance opens the job mini-game mid-play
+		if a.begins_with("--shift-demo=") and Engine.get_process_frames() == 3:
+			var k := a.get_slice("=", 1)
+			m.jobs.game_view.open("farmhand", k, 1, 40, 7)
+		if a.begins_with("--shift-demo=") and Engine.get_process_frames() == 14 and m.jobs.game_view.visible:
+			var g: ShiftGame = m.jobs.game_view.game
+			if g.kind == "timing":
+				g.t = 0.9 / ShiftGame.timing_speed(0) * 1.0
+				g.press_action()
+			elif g.kind == "sequence":
+				g.press_dir(g.seq[0])
+				g.press_dir(g.seq[1])
+	if "--crow-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 2:   # screenshot helper: ripe turnips with crows 5 tiles away (use --hour=9)
+		var pc2 := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+		for dx in 3:
+			var cell := pc2 + Vector2i(dx + 3, -2)
+			GameState.farm.till(cell)
+			GameState.farm.soil[cell].crop = "turnip"
+			GameState.farm.soil[cell].age = 99
 	if "--forge-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the anvil menu with bars in the bag
 		GameState.bag.add("iron_bar", 6)
 		GameState.bag.add("copper_bar", 4)

@@ -146,3 +146,9 @@ const BOOTS_MULT := 1.08
 static func boots_mult(boots_in_bag: int) -> float:
 	## Carrying leather boots (crafted from hide) is a flat +8% walking speed.
 	return BOOTS_MULT if boots_in_bag > 0 else 1.0
+
+## Exhaustion drag: below 25 energy you trudge, easing to 0.8x at empty (full speed above 25).
+static func tired_mult(energy: float) -> float:
+	if energy >= 25.0:
+		return 1.0
+	return lerpf(0.8, 1.0, clampf(energy / 25.0, 0.0, 1.0))

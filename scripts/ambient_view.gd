@@ -7,6 +7,10 @@ const LEAVES := 8
 var player: Player
 var t := 0.0
 var crow_tex: Texture2D = load("res://assets/sprites/crow.png")
+var _perch: Array = []     # ripe cells with a perched crow
+var _perch_t := 99.0
+var _fled := {}            # cell -> seconds since the crow was startled
+var _fled_day := -1
 var rain := 0.0   # current rain 0..1, set by main (cloud shadows vanish under overcast)
 
 func _ready() -> void:
@@ -77,7 +81,49 @@ func _draw() -> void:
 			var fr := CrowMath.frame(i, t)
 			draw_rect(Rect2(cp + Vector2(-4, 10), Vector2(8, 2)), Color(0, 0, 0, 0.12 * CrowMath.alpha(ca)))   # ground shadow
 			draw_texture_rect_region(crow_tex, Rect2(cp - Vector2(8, 8), Vector2(16, 16)), Rect2(fr * 16, 0, 16, 16), Color(1, 1, 1, CrowMath.alpha(ca)))
+	_draw_perched_crows(c, mins, t)
 	if night < 0.5:
 		for i in LEAVES:
 			var p := (c + AmbientMath.leaf_pos(i, t)).round()
 			draw_rect(Rect2(p, Vector2(2, 1)), Color(0.55, 0.65, 0.2, 0.8 * (1.0 - night * 2.0)))
+
+func _draw_perched_crows(c: Vector2, mins: float, tt: float) -> void:
+	if GameState.clock.day != _fled_day:
+		_fled.clear()
+		_fled_day = GameState.clock.day
+	var d := get_process_delta_time()
+	_perch_t += d
+	if not CrowMath.perch_window(mins) or rain > 0.6 or player.indoors:
+		return
+	if _perch_t > 0.6:
+		_perch_t = 0.0
+		var ripe: Array = []
+		var farm := GameState.farm
+		for cell in farm.soil:
+			if Vector2(cell * 32).distance_to(c) < 420.0 and farm.is_ripe(cell) and not farm.scared(cell):
+				ripe.append(cell)
+		_perch = CrowMath.perch_cells(ripe, GameState.clock.day)
+	var i := 0
+	for cell in _perch:
+		var base := (Vector2(cell) + Vector2(0.5, 0.55)) * 32.0
+		i += 1
+		if not _fled.has(cell) and CrowMath.startled(c, base):
+			_fled[cell] = 0.0
+		if _fled.has(cell):
+			_fled[cell] += d
+			var ft: float = _fled[cell]
+			if ft >= CrowMath.FLEE_TIME:
+				continue
+			var cp := (base + CrowMath.flee_offset(i, ft, base - c)).round()
+			var a := CrowMath.flee_alpha(ft)
+			draw_rect(Rect2(base + Vector2(-4, 4), Vector2(8, 2)), Color(0, 0, 0, 0.1 * a))
+			draw_texture_rect_region(crow_tex, Rect2(cp - Vector2(8, 8), Vector2(16, 16)), Rect2(CrowMath.frame(i, tt) * 16, 0, 16, 16), Color(1, 1, 1, a))
+			continue
+		var dip := roundf(CrowMath.peck(i, tt))
+		var p := base.round()
+		draw_rect(Rect2(p + Vector2(-4, 3), Vector2(9, 2)), Color(0, 0, 0, 0.18))      # shadow on the crop row
+		draw_rect(Rect2(p + Vector2(-4, -4), Vector2(8, 6)), Color(0.08, 0.08, 0.12))  # body
+		draw_rect(Rect2(p + Vector2(-5, -3), Vector2(3, 3)), Color(0.14, 0.14, 0.2))   # wing sheen
+		draw_rect(Rect2(p + Vector2(3, -6 + dip), Vector2(4, 4)), Color(0.08, 0.08, 0.12))   # head
+		draw_rect(Rect2(p + Vector2(7, -5 + dip), Vector2(3, 2)), Color(0.9, 0.65, 0.2))    # beak
+		draw_rect(Rect2(p + Vector2(5, -5 + dip), Vector2(1, 1)), Color(0.9, 0.9, 0.9))      # eye

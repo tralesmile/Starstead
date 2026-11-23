@@ -8,9 +8,13 @@ signal message(msg: String)
 var model := JobModel.new(DataDB.load_json("jobs"))
 var player: Node2D
 var spots := {}  # place -> Vector2
+var game_view := ShiftGameView.new()
+var _pending := ""
 
 func setup(p: Node2D, town_buildings: Array, stall_cell: Vector2i) -> void:
 	player = p
+	game_view.finished.connect(_on_game_done)
+	add_child(game_view)
 	for b in town_buildings:
 		spots[String(b["id"])] = TownModel.sprite_bottom_center(b) + Vector2(0, 14)
 	for b in CityModel.buildings():   # police, hospital, cafe, building site
@@ -39,6 +43,8 @@ func prompt() -> String:
 	return "J: Work as %s (%s) $%d" % [model.jobs[id]["name"], model.rank_name(id, xp), model.shift_pay(id, xp)]
 
 func work() -> bool:
+	if game_view.visible:
+		return true
 	var id := job_here()
 	if id == "":
 		return false
@@ -48,26 +54,52 @@ func work() -> bool:
 	if not r["ok"]:
 		message.emit(JobModel.reason_text(String(r["reason"]), String(model.jobs[id]["name"])))
 		return true
-	GameState.money += int(r["pay"])
+	_pending = id
+	player.velocity = Vector2.ZERO
+	player.set_physics_process(false)
+	game_view.open(id, String(model.jobs[id].get("game", "timing")), model.rank_index(id, xp), int(r["pay"]), GameState.clock.day * 7 + id.length())
+	return true
+
+## The mini-game ended: pay scaled by how well the shift went (Esc = normal pay).
+func _on_game_done(res: Dictionary) -> void:
+	player.set_physics_process(true)
+	var id := _pending
+	_pending = ""
+	if id == "" or not model.jobs.has(id):
+		return
+	var xp := int(GameState.job_xp.get(id, 0))
+	var hour := 6.0 + GameState.clock.minutes / 60.0
+	var r := model.work_shift(id, hour, {"honest": GameState.rep_honest, "street": GameState.rep_street}, GameState.energy.value, xp)
+	if not r["ok"]:
+		message.emit(JobModel.reason_text(String(r["reason"]), String(model.jobs[id]["name"])))
+		return
+	var mult := float(res.get("mult", 1.0))
+	var pay := int(round(float(r["pay"]) * mult))
+	var nxp := int(r["xp"]) + int(res.get("bonus_xp", 0))
+	GameState.money += pay
 	GameState.energy.value -= float(r["energy_cost"])
-	GameState.job_xp[id] = int(r["xp"])
+	GameState.job_xp[id] = nxp
 	GameState.clock.minutes = model.minutes_after_shift(id, GameState.clock.minutes)
 	if String(model.jobs[id]["rep"]["kind"]) == "street":
 		GameState.rep_street += 1
 	else:
 		GameState.rep_honest += 1
-	var perk := model.perk(id, model.rank_index(id, int(r["xp"])))
+	var perk := model.perk(id, model.rank_index(id, nxp))
 	GameState.energy.value = minf(GameState.energy.value + float(perk["energy_back"]), 100.0)
 	GameState.rep_honest += int(perk["rep_bonus"])
-	var msg := "Shift done: +$%d" % int(r["pay"])
+	var msg := "Shift done: +$%d" % pay
+	if not bool(res.get("skipped", false)):
+		msg = "%s! " % String(res.get("grade", "")).trim_suffix("!") + msg
+		if bool(res.get("perfect", false)):
+			GameState.bump("perfect_shifts")
 	if String(perk["item"]) != "":
-		GameState.add_item(String(perk["item"]), int(perk["qty"]))
-		msg += "  +%d %s" % [int(perk["qty"]), String(perk["item"]).replace("_", " ")]
-	if r["promoted"]:
+		var q := int(perk["qty"]) + (1 if bool(res.get("perfect", false)) else 0)
+		GameState.add_item(String(perk["item"]), q)
+		msg += "  +%d %s" % [q, String(perk["item"]).replace("_", " ")]
+	if model.rank_index(id, nxp) > model.rank_index(id, xp):
 		GameState.bump("promotions")
-		msg += "  PROMOTED to %s!" % r["rank"]
+		msg += "  PROMOTED to %s!" % model.rank_name(id, nxp)
 	message.emit(msg)
-	return true
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J:
