@@ -480,10 +480,39 @@ def dresser():
     save(im, "int_dresser.png")
 
 
+def anvil():
+    im, d = new(32, 32)
+    shadow(d, 3, 31, 29)
+    # wood stump
+    d.polygon([(8, 20), (24, 20), (26, 30), (6, 30)], fill=WOOD[1], outline=OUT)
+    d.line([9, 21, 9, 29], fill=WOOD[3])
+    d.line([22, 21, 24, 29], fill=WOOD[0])
+    d.line([13, 24, 13, 29], fill=WOOD[0]); d.line([17, 23, 18, 29], fill=WOOD[2])
+    d.ellipse([7, 18, 25, 22], fill=WOOD[3], outline=OUT)
+    d.arc([11, 19, 21, 21], 0, 360, fill=WOOD[1])
+    # anvil: waist, body, horn
+    box(d, 12, 12, 20, 18, IRON[1])
+    d.polygon([(7, 7), (25, 7), (26, 10), (20, 12), (12, 12), (6, 10)], fill=IRON[2], outline=OUT)
+    d.polygon([(6, 8), (1, 9), (6, 11)], fill=IRON[2], outline=OUT)       # horn
+    d.line([8, 8, 24, 8], fill=IRON[3])
+    d.line([8, 10, 12, 11], fill=IRON[1])
+    box(d, 10, 17, 22, 19, IRON[0])
+    # hot bar on the face
+    d.rectangle([9, 4, 20, 6], fill=(226, 100, 30), outline=OUT)
+    d.line([10, 5, 19, 5], fill=(255, 190, 70))
+    d.line([13, 5, 16, 5], fill=(255, 238, 150))
+    d.point([22, 5], fill=(255, 200, 80)); d.point([23, 3], fill=(255, 150, 50)); d.point([7, 3], fill=(255, 190, 70))
+    # hammer lying beside
+    d.rectangle([22, 25, 29, 26], fill=WOOD[2], outline=OUT)             # handle
+    d.rectangle([27, 22, 30, 27], fill=IRON[2], outline=OUT)             # head
+    d.line([28, 23, 29, 23], fill=IRON[3])
+    save(im, "int_anvil.png")
+
+
 def main():
     os.makedirs(SPR, exist_ok=True)
     for fn in (floor, wall, window, bed, table, chest, stove, shelf, rug, workbench,
-               hay, crate, mat, sack, toolrack, dresser):
+               hay, crate, mat, sack, toolrack, dresser, anvil):
         fn()
 
 

@@ -587,5 +587,30 @@
   "name": "Crab Shell",
   "price": 28,
   "stack": 99
+ },
+ "copper_vest": {
+  "name": "Copper Vest",
+  "price": 140,
+  "stack": 1
+ },
+ "iron_vest": {
+  "name": "Iron Vest",
+  "price": 260,
+  "stack": 1
+ },
+ "engine_kit": {
+  "name": "Engine Kit",
+  "price": 220,
+  "stack": 1
+ },
+ "grip_tyres": {
+  "name": "Grip Tyres",
+  "price": 180,
+  "stack": 1
+ },
+ "bumper_guard": {
+  "name": "Bumper Guard",
+  "price": 160,
+  "stack": 1
  }
 }

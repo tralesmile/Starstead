@@ -1,0 +1,7 @@
+{
+	"copper_vest": {"name": "Copper Vest (-15% damage taken)", "needs": {"copper_bar": 4}, "makes": "copper_vest", "item": true, "count": 1, "limit": 1},
+	"iron_vest": {"name": "Iron Vest (-30% damage taken)", "needs": {"iron_bar": 5}, "makes": "iron_vest", "item": true, "count": 1, "limit": 1},
+	"engine_kit": {"name": "Engine Kit (+12% car top speed)", "needs": {"iron_bar": 4, "copper_bar": 2}, "makes": "engine_kit", "item": true, "count": 1, "limit": 1},
+	"grip_tyres": {"name": "Grip Tyres (+20% car grip)", "needs": {"iron_bar": 2, "hide": 3}, "makes": "grip_tyres", "item": true, "count": 1, "limit": 1},
+	"bumper_guard": {"name": "Bumper Guard (-35% crash damage)", "needs": {"iron_bar": 3}, "makes": "bumper_guard", "item": true, "count": 1, "limit": 1}
+}

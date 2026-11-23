@@ -19,6 +19,7 @@ var _smoke_tile := 0
 var _smoke_sdf := 5.0
 var night := 0.0       # 0..1 from DayNight.lamp_strength, set by main
 var _smoke: CPUParticles2D
+var _engine_smoke: CPUParticles2D   # grey-black smoke from a battered engine (GearModel.smoke_rate)
 var _head: Array[PointLight2D] = []
 var _tail: Array[PointLight2D] = []
 var _tail_glow: Array[Sprite2D] = []
@@ -72,6 +73,19 @@ func _ready() -> void:
 	_smoke.scale_amount_max = 3.0
 	_smoke.color = Color(0.85, 0.85, 0.85, 0.5)
 	add_child(_smoke)
+	_engine_smoke = CPUParticles2D.new()
+	_engine_smoke.emitting = false
+	_engine_smoke.local_coords = false
+	_engine_smoke.lifetime = 1.1
+	_engine_smoke.direction = Vector2(0, -1)
+	_engine_smoke.spread = 35.0
+	_engine_smoke.gravity = Vector2(0, -14)
+	_engine_smoke.initial_velocity_min = 8.0
+	_engine_smoke.initial_velocity_max = 20.0
+	_engine_smoke.scale_amount_min = 2.5
+	_engine_smoke.scale_amount_max = 6.0
+	_engine_smoke.position = Vector2(12, 0)
+	add_child(_engine_smoke)
 	for sy in [-4.0, 4.0]:
 		var hl := PointLight2D.new()
 		hl.texture = cone_texture()
@@ -148,15 +162,15 @@ func _physics_process(delta: float) -> void:
 			if float(rb["shake"]) > 0.0:
 				grip_m *= float(rb["grip"])
 				player.shake(float(rb["shake"]), 0.1)
-		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m)
-		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * surf * slip)
+		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m * GearModel.grip_mult(GameState.bag), GearModel.top_speed_mult(GameState.bag))
+		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * GearModel.top_speed_mult(GameState.bag) * surf * slip)
 		heading = r["heading"]
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)
 	velocity = vel
 	move_and_slide()
 	if get_slide_collision_count() > 0:
-		var dmg := VehicleMath.crash_damage(vel.length())
+		var dmg := VehicleMath.crash_damage(vel.length()) * GearModel.crash_mult(GameState.bag)
 		if dmg > 0.0:
 			health = maxf(0.0, health - dmg)
 			drift.crash()
@@ -200,6 +214,13 @@ func _physics_process(delta: float) -> void:
 		_smoke.amount = int(ss["amount"])
 		_smoke.color = ss["color"]
 		_smoke.scale_amount_max = float(ss["size"])
+	var puffs := GearModel.smoke_rate(health)
+	_engine_smoke.emitting = puffs > 0.0
+	if puffs > 0.0:
+		var want := maxi(8, int(puffs * 2.0))
+		if want != _engine_smoke.amount:   # setting amount restarts the emitter: only on change
+			_engine_smoke.amount = want
+		_engine_smoke.color = Color(0.28, 0.27, 0.27, GearModel.smoke_alpha(health))
 	_smoke.position = -VehicleMath.forward(heading).rotated(-heading) * 10.0
 	if skid:
 		_skid_t -= delta

@@ -18,7 +18,7 @@ static func slip(vel: Vector2, heading: float) -> float:
 	## Sideways speed (px/s); > ~60 reads as a drift.
 	return vel.dot(forward(heading).orthogonal())
 
-static func step(vel: Vector2, heading: float, throttle: float, steer: float, handbrake: bool, delta: float, grip_mul: float = 1.0) -> Dictionary:
+static func step(vel: Vector2, heading: float, throttle: float, steer: float, handbrake: bool, delta: float, grip_mul: float = 1.0, top_mult: float = 1.0) -> Dictionary:
 	## throttle in [-1,1] (negative = brake/reverse), steer in [-1,1]. Returns {vel, heading}.
 	var f := forward(heading)
 	var side := f.orthogonal()
@@ -33,7 +33,7 @@ static func step(vel: Vector2, heading: float, throttle: float, steer: float, ha
 		else:
 			vf = maxf(-REVERSE_MAX, vf + ENGINE * 0.5 * throttle * delta)
 	vf *= maxf(0.0, 1.0 - DRAG * delta)
-	vf = clampf(vf, -REVERSE_MAX, MAX_SPEED)
+	vf = clampf(vf, -REVERSE_MAX, MAX_SPEED * top_mult)
 	if handbrake:
 		vf = move_toward(vf, 0.0, BRAKE * 0.5 * delta)
 	# lateral grip

@@ -775,7 +775,68 @@ def crab_shell():
     return i
 icons['crab_shell'] = crab_shell
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell']  # appended after the last old icon, in this order
+def vest_icon(base, light, dark, trim):
+    def f():
+        i = Ic()
+        i.rect(3, 3, 12, 13, base)
+        i.rect(3, 3, 5, 4, light); i.rect(10, 3, 12, 4, light)               # shoulders
+        i.rect(6, 3, 9, 5, (0, 0, 0, 0)) if False else None
+        for y in range(3, 6):
+            for x in (6, 7, 8, 9):
+                i.p.pop((x, y), None)                                        # neck hole
+        i.px(6, 6, trim); i.px(9, 6, trim); i.px(7, 5, dark); i.px(8, 5, dark)
+        i.line(7, 6, 7, 13, dark); i.line(8, 6, 8, 13, dark)                 # front opening
+        i.rect(3, 12, 12, 13, dark)                                          # hem
+        i.rect(11, 5, 12, 11, dark)                                          # shaded side
+        i.rect(3, 5, 4, 10, light)
+        for y in (8, 10):
+            i.px(6, y, trim); i.px(9, y, trim)                               # studs
+        return i
+    return f
+icons['copper_vest'] = vest_icon("#b8602c", "#e0904c", "#8a4420", "#f4c070")
+icons['iron_vest'] = vest_icon("#7a8494", "#c4ccd8", "#545e6c", "#e8eef6")
+
+def engine_kit():
+    i = Ic()
+    i.rect(4, 6, 11, 12, "#6a7280"); i.rect(4, 6, 11, 7, "#9aa4b4"); i.rect(4, 12, 11, 12, "#444c58")
+    i.rect(10, 7, 11, 11, "#545e6c")
+    for x in (5, 7, 9):
+        i.rect(x, 3, x + 1, 5, "#8a94a4"); i.px(x, 3, "#c4ccd8")             # cylinder heads
+    i.rect(1, 9, 3, 10, "#b8602c"); i.px(1, 9, "#e0904c")                     # side pipe
+    i.rect(12, 8, 14, 9, "#b8602c"); i.px(12, 8, "#e0904c")
+    i.rect(13, 10, 14, 12, "#b8602c")
+    i.px(6, 9, "#d8d0c0"); i.px(7, 9, "#d8d0c0"); i.px(6, 10, "#a89886")      # bolt/plate
+    i.px(8, 10, "#f0c040")
+    i.rect(5, 13, 10, 13, "#2a2e36")
+    return i
+icons['engine_kit'] = engine_kit
+
+def grip_tyres():
+    i = Ic()
+    i.ell(8, 8, 6.5, 6.5, "#2c2c34")
+    i.ell(8, 8, 3.6, 3.6, "#9aa4b4")
+    i.ell(8, 8, 2.2, 2.2, "#6a7280")
+    i.px(8, 8, "#c4ccd8")
+    for a in range(12):                                                       # tread blocks
+        import math
+        x = 8 + 5.6 * math.cos(a * math.pi / 6); y = 8 + 5.6 * math.sin(a * math.pi / 6)
+        i.px(round(x), round(y), "#5a5a66")
+    i.px(4, 4, "#4a4a56"); i.px(5, 3, "#4a4a56")                              # sidewall highlight
+    return i
+icons['grip_tyres'] = grip_tyres
+
+def bumper_guard():
+    i = Ic()
+    i.rect(1, 6, 14, 9, "#9aa4b4"); i.rect(1, 6, 14, 6, "#e8eef6"); i.rect(1, 9, 14, 9, "#545e6c")
+    i.rect(1, 7, 14, 8, "#7a8494")
+    i.rect(0, 7, 0, 8, "#7a8494"); i.rect(15, 7, 15, 8, "#545e6c")
+    i.rect(3, 10, 4, 13, "#6a7280"); i.rect(11, 10, 12, 13, "#6a7280")        # mounts
+    i.px(3, 10, "#9aa4b4"); i.px(11, 10, "#9aa4b4")
+    i.px(3, 7, "#e8eef6"); i.px(12, 7, "#e8eef6")                             # bolts
+    return i
+icons['bumper_guard'] = bumper_guard
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

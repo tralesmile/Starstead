@@ -17,6 +17,8 @@ func on_ready() -> void:
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the m.car and floor it
 		m.player.position = m.car.position
 		m.car.enter()
+		if "--battered" in OS.get_cmdline_user_args():   # screenshot helper: a smoking engine
+			m.car.health = 18.0
 		Input.action_press("move_up")
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
@@ -112,6 +114,11 @@ func on_process() -> void:
 		GameState.bag.add("coal", 2)
 		GameState.bag.add("iron_ore", 1)
 		m.smelt_view.open()
+	if "--forge-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the anvil menu with bars in the bag
+		GameState.bag.add("iron_bar", 6)
+		GameState.bag.add("copper_bar", 4)
+		GameState.bag.add("hide", 3)
+		m.forge_view.open()
 	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: stand inside the mine with a pickaxe
 		GameState.energy.value = 100.0
 		m.cave.enter(GameState.clock.day)

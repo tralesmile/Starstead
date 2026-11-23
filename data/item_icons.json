@@ -92,7 +92,12 @@
  "corn_gold": 74,
  "goat_milk": 75,
  "scarecrow": 76,
- "franchise_deed": 77,
  "slime_gel": 78,
- "crab_shell": 79
+ "crab_shell": 79,
+ "copper_vest": 80,
+ "iron_vest": 81,
+ "engine_kit": 82,
+ "grip_tyres": 83,
+ "bumper_guard": 84,
+ "franchise_deed": 77
 }

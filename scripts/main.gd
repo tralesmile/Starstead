@@ -31,6 +31,7 @@ var rod_charge_t := 0.0
 var interior: InteriorView
 var cave: CaveView
 var smelt_view: SmeltView
+var forge_view: ForgeView
 var craft_view: CraftView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
@@ -294,7 +295,16 @@ func _ready() -> void:
 		player.move_v = Vector2.ZERO
 		player.set_physics_process(false)
 		smelt_view.open())
+	interior.forge_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		forge_view.open())
 	add_child(interior)
+	forge_view = ForgeView.new()
+	forge_view.closed.connect(func(): player.set_physics_process(true))
+	forge_view.cooked.connect(func(n): _say("Forged " + n))
+	add_child(forge_view)
 	smelt_view = SmeltView.new()
 	smelt_view.closed.connect(func(): player.set_physics_process(true))
 	smelt_view.cooked.connect(func(n): _say("Smelted " + n))
@@ -312,7 +322,7 @@ func _ready() -> void:
 		if not dr.is_empty():
 			drops_view.spawn(dr[0], dr[1], p)
 		_say("%s down" % String(k).capitalize()))
-	cave.bitten.connect(func(a): GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("Bitten! -%d energy" % int(a)))
+	cave.bitten.connect(func(a): a = GearModel.soften(GameState.bag, a); GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("Bitten! -%d energy" % int(a)))
 	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
@@ -523,6 +533,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if garage_view.visible:
 		garage_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
+	if forge_view.visible:
+		forge_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if smelt_view.visible:

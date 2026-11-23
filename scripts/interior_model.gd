@@ -36,6 +36,7 @@ static func layout(kind: String) -> Dictionary:
 		"workshop":
 			return {"w": 8, "h": 5, "door_x": 3, "window_x": [5], "furniture": [
 				_f("furnace", "int_furnace", 5, 0, 1, 1, true, "smelt"),
+				_f("anvil", "int_anvil", 4, 0, 1, 1, true, "forge"),
 				_f("workbench", "int_workbench", 2, 1, 2, 1, true, "garage"),
 				_f("toolrack", "int_toolrack", 0, 0, 1, 1),
 				_f("shelf", "int_shelf", 6, 0, 1, 1),
