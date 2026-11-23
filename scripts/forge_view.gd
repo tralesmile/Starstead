@@ -16,7 +16,24 @@ func _try(i: int) -> void:
 	var r: Dictionary = recipes[ids[i]]
 	var err := ToolKit.craft(GameState.tools_owned, r, GameState.bag)
 	if err == "":
+		_spark_t = 0.0
 		msg = "%s %s!" % [done_word, r["name"]]
 		cooked.emit(String(r["name"]))
 	else:
 		msg = err
+
+var _spark_t := 99.0
+
+func _process(d: float) -> void:
+	super._process(d)
+	_spark_t += d
+
+func _draw_all() -> void:
+	super._draw_all()
+	if _spark_t > 0.7:
+		return
+	var o := ORIGIN + Vector2(170, -40)
+	for i in 14:
+		var p := GearModel.spark_pos(o, GearModel.spark_velocity(i, 14), _spark_t)
+		var a := clampf(1.0 - _spark_t / 0.7, 0.0, 1.0)
+		canvas.draw_rect(Rect2(p, Vector2(2, 2)), Color(1.0, 0.75 - 0.3 * (1.0 - a), 0.25, a))

@@ -43,3 +43,9 @@ func test_forge_recipes_are_valid_and_craftable() -> void:
 	check(b.count("bumper_guard") == 1 and b.count("iron_bar") == 0, "bars spent")
 	b.add("iron_bar", 3)
 	check(ToolKit.craft(owned, r["bumper_guard"], b) == "You already have it", "one only")
+
+func test_sparks_fan_up_and_fall() -> void:
+	for i in 14:
+		check(GearModel.spark_velocity(i, 14).y < 0.0, "spark %d goes up" % i)
+	var v := GearModel.spark_velocity(3, 14)
+	check(GearModel.spark_pos(Vector2.ZERO, v, 0.6).y > v.y * 0.6, "gravity bends the arc down")

@@ -33,3 +33,13 @@ static func smoke_rate(health: float) -> float:
 
 static func smoke_alpha(health: float) -> float:
 	return lerpf(0.25, 0.7, clampf((60.0 - health) / 60.0, 0.0, 1.0))
+
+## Forging sparks: n sparks fan upward; deterministic velocity for spark i (px/s).
+static func spark_velocity(i: int, n: int) -> Vector2:
+	var t := (float(i) + 0.5) / float(maxi(n, 1))
+	var ang := lerpf(-PI * 0.85, -PI * 0.15, t)
+	var sp := 70.0 + 50.0 * fposmod(float(i) * 0.618, 1.0)
+	return Vector2(cos(ang), sin(ang)) * sp
+
+static func spark_pos(origin: Vector2, vel: Vector2, age: float) -> Vector2:
+	return origin + vel * age + Vector2(0, 160.0 * age * age)   # gravity pulls them down
