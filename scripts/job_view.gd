@@ -13,13 +13,22 @@ func setup(p: Node2D, town_buildings: Array, stall_cell: Vector2i) -> void:
 	player = p
 	for b in town_buildings:
 		spots[String(b["id"])] = TownModel.sprite_bottom_center(b) + Vector2(0, 14)
+	for b in CityModel.buildings():   # police, hospital, cafe, building site
+		spots[String(b["id"])] = TownModel.sprite_bottom_center(b) + Vector2(0, 14)
 	spots["stall"] = (Vector2(stall_cell) + Vector2(0.5, 1.6)) * 32.0
 
 func job_here(radius: float = 60.0) -> String:
+	var hour := 6.0 + GameState.clock.minutes / 60.0
+	var rep := {"honest": GameState.rep_honest, "street": GameState.rep_street}
+	var done := {}
 	for id in model.ids():
 		var pl := model.place_of(id)
-		if spots.has(pl) and (spots[pl] as Vector2).distance_to(player.position) < radius:
-			return id
+		if done.has(pl) or not spots.has(pl) or (spots[pl] as Vector2).distance_to(player.position) >= radius:
+			continue
+		done[pl] = true
+		var pick := model.pick_at(pl, hour, rep, GameState.energy.value, GameState.job_xp)
+		if pick != "":
+			return pick
 	return ""
 
 func prompt() -> String:
@@ -47,7 +56,13 @@ func work() -> bool:
 		GameState.rep_street += 1
 	else:
 		GameState.rep_honest += 1
+	var perk := model.perk(id, model.rank_index(id, int(r["xp"])))
+	GameState.energy.value = minf(GameState.energy.value + float(perk["energy_back"]), 100.0)
+	GameState.rep_honest += int(perk["rep_bonus"])
 	var msg := "Shift done: +$%d" % int(r["pay"])
+	if String(perk["item"]) != "":
+		GameState.add_item(String(perk["item"]), int(perk["qty"]))
+		msg += "  +%d %s" % [int(perk["qty"]), String(perk["item"]).replace("_", " ")]
 	if r["promoted"]:
 		msg += "  PROMOTED to %s!" % r["rank"]
 	message.emit(msg)

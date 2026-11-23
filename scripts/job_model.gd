@@ -76,6 +76,47 @@ func work_shift(id: String, hour: float, rep: Dictionary, energy: float, xp: int
 func minutes_after_shift(id: String, minutes: float) -> float:
 	return minf(minutes + float(jobs[id].get("shift_hours", 4)) * 60.0, float(GameClock.DAY_LENGTH_MIN) - 1.0)
 
+## A job may need another job's xp first (astronaut trainee needs a Launch-pad career). {} when open.
+func requirement(id: String) -> Dictionary:
+	return jobs[id].get("requires", {})
+
+func unlocked(id: String, job_xp: Dictionary) -> bool:
+	var r := requirement(id)
+	if r.is_empty():
+		return true
+	return int(job_xp.get(String(r["job"]), 0)) >= int(r["xp"])
+
+## Extra reward per shift by job and rank: {item, qty, energy_back, rep_bonus}.
+func perk(id: String, rank_idx: int) -> Dictionary:
+	var out := {"item": "", "qty": 0, "energy_back": 0, "rep_bonus": 0}
+	match String(jobs[id].get("perk", "")):
+		"food":
+			out["item"] = "fried_egg" if rank_idx < 2 else "grilled_fish"
+			out["qty"] = 1 + rank_idx
+		"wood":
+			out["item"] = "wood"
+			out["qty"] = 2 + 2 * rank_idx
+		"ore":
+			out["item"] = ["coal", "copper_ore", "iron_ore"][clampi(rank_idx, 0, 2)]
+			out["qty"] = 1 + rank_idx
+		"heal":
+			out["energy_back"] = 6 + 4 * rank_idx
+		"wanted":
+			out["rep_bonus"] = 1 + rank_idx
+	return out
+
+## One job to offer at a workplace: the first one you can work right now, else the first unlocked, else "".
+func pick_at(place: String, hour: float, rep: Dictionary, energy: float, job_xp: Dictionary) -> String:
+	var first := ""
+	for id in ids():
+		if place_of(id) != place or not unlocked(id, job_xp):
+			continue
+		if first == "":
+			first = id
+		if can_work(id, hour, rep, energy) == "":
+			return id
+	return first
+
 func place_of(id: String) -> String:
 	return String(jobs[id].get("place", ""))
 

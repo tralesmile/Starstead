@@ -70,6 +70,18 @@ static func wet_speed(rain: float, on_path: bool) -> float:
 	## Mud also drags: paths lose their speed bonus in heavy rain.
 	return 1.0 - (0.12 if on_path else 0.04) * clampf(rain, 0.0, 1.0)
 
+static func snow_speed(season: int, on_path: bool) -> float:
+	## Winter snow drags on open ground (-8%); trodden paths are cleared a little (-3%).
+	if season % 4 != 3:
+		return 1.0
+	return 0.97 if on_path else 0.92
+
+static func snow_grip(season: int, on_path: bool) -> float:
+	## Frozen paths are icy: slower to start and stop. Powder on grass keeps most grip.
+	if season % 4 != 3:
+		return 1.0
+	return 0.8 if on_path else 0.93
+
 const SPRINT_MULT := 1.45
 const SPRINT_DRAIN := 3.0   # energy per second
 

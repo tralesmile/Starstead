@@ -130,5 +130,213 @@
     ],
     "place": "vance_gate",
     "shift_hours": 5
+  },
+  "chef": {
+    "name": "Cafe Chef",
+    "pay": 55,
+    "energy": 20,
+    "xp_per_shift": 10,
+    "hours": {
+      "start": 7,
+      "end": 15
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 0
+    },
+    "ranks": [
+      {
+        "name": "Dishwasher",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Line Cook",
+        "pay_mult": 1.3,
+        "xp": 50
+      },
+      {
+        "name": "Head Chef",
+        "pay_mult": 1.7,
+        "xp": 140
+      }
+    ],
+    "place": "city_cafe",
+    "shift_hours": 4,
+    "perk": "food"
+  },
+  "builder": {
+    "name": "Builder",
+    "pay": 75,
+    "energy": 35,
+    "xp_per_shift": 12,
+    "hours": {
+      "start": 6,
+      "end": 16
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 5
+    },
+    "ranks": [
+      {
+        "name": "Labourer",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Bricklayer",
+        "pay_mult": 1.3,
+        "xp": 60
+      },
+      {
+        "name": "Site Foreman",
+        "pay_mult": 1.7,
+        "xp": 160
+      }
+    ],
+    "place": "city_house2",
+    "shift_hours": 5,
+    "perk": "wood"
+  },
+  "miner": {
+    "name": "Miner",
+    "pay": 85,
+    "energy": 40,
+    "xp_per_shift": 14,
+    "hours": {
+      "start": 6,
+      "end": 18
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 10
+    },
+    "ranks": [
+      {
+        "name": "Digger",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Driller",
+        "pay_mult": 1.35,
+        "xp": 70
+      },
+      {
+        "name": "Shift Boss",
+        "pay_mult": 1.8,
+        "xp": 180
+      }
+    ],
+    "place": "cave_mouth",
+    "shift_hours": 5,
+    "perk": "ore"
+  },
+  "police_officer": {
+    "name": "Police Officer",
+    "pay": 80,
+    "energy": 25,
+    "xp_per_shift": 12,
+    "hours": {
+      "start": 8,
+      "end": 20
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 20
+    },
+    "ranks": [
+      {
+        "name": "Rookie",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Officer",
+        "pay_mult": 1.3,
+        "xp": 60
+      },
+      {
+        "name": "Sergeant",
+        "pay_mult": 1.7,
+        "xp": 160
+      }
+    ],
+    "place": "city_police",
+    "shift_hours": 4,
+    "perk": "wanted"
+  },
+  "doctor": {
+    "name": "Hospital Doctor",
+    "pay": 100,
+    "energy": 30,
+    "xp_per_shift": 14,
+    "hours": {
+      "start": 7,
+      "end": 19
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 30
+    },
+    "ranks": [
+      {
+        "name": "Orderly",
+        "pay_mult": 0.7,
+        "xp": 0
+      },
+      {
+        "name": "Nurse",
+        "pay_mult": 1.0,
+        "xp": 50
+      },
+      {
+        "name": "Doctor",
+        "pay_mult": 1.5,
+        "xp": 140
+      }
+    ],
+    "place": "city_hospital",
+    "shift_hours": 4,
+    "perk": "heal"
+  },
+  "astronaut": {
+    "name": "Astronaut Trainee",
+    "pay": 130,
+    "energy": 45,
+    "xp_per_shift": 18,
+    "hours": {
+      "start": 9,
+      "end": 17
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 25
+    },
+    "ranks": [
+      {
+        "name": "Trainee",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Crew",
+        "pay_mult": 1.4,
+        "xp": 90
+      },
+      {
+        "name": "Commander",
+        "pay_mult": 1.8,
+        "xp": 220
+      }
+    ],
+    "place": "vance_gate",
+    "shift_hours": 5,
+    "requires": {
+      "job": "rocket_tech",
+      "xp": 100
+    },
+    "perk": "rocket"
   }
 }

@@ -197,6 +197,9 @@ func _ready() -> void:
 	jobs.setup(player, town.buildings, world.stall_cell())
 	if vance_pos != Vector2.INF:
 		jobs.spots["vance_gate"] = vance_pos
+	var cm: Vector2i = world.stream.roads.cave_mouth
+	if cm.x != RoadNet.NO_CELL:
+		jobs.spots["cave_mouth"] = (Vector2(cm) + Vector2(0.5, 1.8)) * 32.0
 	jobs.message.connect(_say)
 	add_child(jobs)
 	animals = AnimalView.new()
