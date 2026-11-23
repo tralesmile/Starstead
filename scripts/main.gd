@@ -457,6 +457,8 @@ func _process(delta: float) -> void:
 		prompt.text = animals.prompt_for(an_near)
 	if animals.riding != null:
 		prompt.text = "E: Dismount"
+	if prompt.text == "" and not _indoors() and not shop.visible and not car.driving and animals.riding == null:
+		prompt.text = WorldHints.text(self)
 	if car.can_enter() and prompt.text == "":
 		prompt.text = "E: Drive"
 	elif car.driving:
