@@ -24,3 +24,12 @@ static func leaf_pos(i: int, t: float, wind: float = 1.0) -> Vector2:
 	var fall := fposmod(t * (14.0 + float(i % 4) * 3.0) + float(i) * 47.0, 300.0)
 	var x: float = fposmod(float(i) * 53.0, 300.0) - 150.0 + sin(t * 1.3 + float(i)) * 18.0 * wind + fall * 0.2 * wind
 	return Vector2(x, fall - 170.0)
+
+static func step_puffs(season: int, sprinting: bool) -> int:
+	## Dust bits kicked up by a footstep: more when sprinting, and a snow spray in winter.
+	var n := 3
+	if sprinting:
+		n += 2
+	if season % 4 == 3:
+		n += 3
+	return n
