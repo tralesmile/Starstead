@@ -4,7 +4,7 @@ extends RefCounted
 ## Old saves without a tool list own everything.
 
 const STARTER := ["hoe", "axe", "hand"]
-const ALWAYS := ["turnip_seed", "sprinkler", "crab_pot", "fertiliser", "hand"]   # seeds and placeables are gated by the bag count instead
+const ALWAYS := ["turnip_seed", "sprinkler", "crab_pot", "fertiliser", "scarecrow", "hand"]   # seeds and placeables are gated by the bag count instead
 
 static func start() -> Array:
 	return STARTER.duplicate()

@@ -43,3 +43,22 @@ static func swing_angle(t_left: float, total: float) -> float:
 		return 0.0
 	var k := 1.0 - t_left / total
 	return lerpf(-1.0, 0.9, k * k)
+
+static func hoe_angle(t_left: float, total: float) -> float:
+	## Hoe dig: lift high (-1.5), a fast chop into the soil (+1.1), then a short drag-back that breaks the clod (+0.55).
+	if t_left <= 0.0 or total <= 0.0:
+		return 0.0
+	var k := 1.0 - t_left / total
+	if k < 0.3:
+		return lerpf(-1.0, -1.5, k / 0.3)
+	if k < 0.55:
+		var u := (k - 0.3) / 0.25
+		return lerpf(-1.5, 1.1, u * u)
+	return lerpf(1.1, 0.55, (k - 0.55) / 0.45)
+
+static func clod_velocity(i: int, n: int, facing_dir: Vector2) -> Vector2:
+	## Initial velocity of clod i of n flicked away from the player in a fan around the facing direction.
+	var base := facing_dir.normalized() if facing_dir.length() > 0.01 else Vector2.DOWN
+	var t := 0.5 if n <= 1 else float(i) / float(n - 1)
+	var ang := lerpf(-0.7, 0.7, t)
+	return base.rotated(ang) * (40.0 + 14.0 * float(i % 3))

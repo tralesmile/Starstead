@@ -58,6 +58,17 @@ func _draw() -> void:
 			var p := (c + AmbientMath.firefly_pos(i, t)).round()
 			draw_rect(Rect2(p - Vector2(2, 2), Vector2(5, 5)), Color(1.0, 0.95, 0.4, 0.3 * g) * unlit)
 			draw_rect(Rect2(p - Vector2(1, 1), Vector2(3, 3)), Color(1.0, 0.98, 0.6, 0.5 + 0.5 * g) * unlit)
+	var cold := AmbientMath.breath_cold(GameState.clock.season(), mins)
+	var age := AmbientMath.breath_age(t)
+	if cold > 0.05 and age >= 0.0 and not player.indoors:
+		var fx: float = {PlayerMath.Facing.LEFT: -1.0, PlayerMath.Facing.RIGHT: 1.0}.get(player.facing, 0.0)
+		var mouth := c + Vector2(fx * 5.0, -28.0 if player.facing != PlayerMath.Facing.UP else -30.0)
+		for i in 3:
+			var bp := AmbientMath.breath_puff(age, i)
+			var sz := roundf(bp.z)
+			var fade := (1.0 - clampf(age - 0.12 * float(i), 0.0, 1.0)) * cold
+			var o := Vector2(bp.x * (fx if fx != 0.0 else 0.0), bp.y).round()
+			draw_rect(Rect2(mouth + o - Vector2(sz, sz) * 0.5, Vector2(sz, sz)), Color(0.93, 0.97, 1.0, 0.8 * fade) * unlit)
 	if night < 0.5:
 		for i in LEAVES:
 			var p := (c + AmbientMath.leaf_pos(i, t)).round()

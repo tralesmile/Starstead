@@ -89,6 +89,7 @@ static func layout(kind: String) -> Dictionary:
 		"city_cafe":
 			return {"w": 7, "h": 5, "door_x": 1, "window_x": [3, 5], "furniture": [
 				_f("counter", "int_counter", 4, 0, 2, 1, true, "coffee"),
+				_f("till", "int_counter", 2, 0, 2, 1, true, "business"),
 				_f("table1", "int_table", 1, 1, 2, 1), _f("table2", "int_table", 4, 3, 2, 1),
 				_f("stove", "int_stove", 6, 0, 1, 1),
 				_f("mat", "int_mat", 1, 4, 1, 1, false)]}

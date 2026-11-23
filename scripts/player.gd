@@ -188,5 +188,5 @@ func _update_held() -> void:
 	held.position = dir[facing]
 	held.flip_h = facing == PlayerMath.Facing.LEFT
 	held.z_index = -1 if facing == PlayerMath.Facing.UP else 1
-	var a := HitMath.swing_angle(tool_t, swing_total)
+	var a := HitMath.hoe_angle(tool_t, swing_total) if held_tool == "hoe" else HitMath.swing_angle(tool_t, swing_total)
 	held.rotation = -a if held.flip_h else a

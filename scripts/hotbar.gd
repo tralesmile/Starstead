@@ -8,7 +8,7 @@ const GAP := 2
 var selected := 0
 var seed_ids: Array = []   # every seed in crops.json; the seed slot plants the chosen one
 var seed_idx := 0
-const PLACEABLES := ["sprinkler", "crab_pot", "fertiliser"]   # slot 0 holds both; press its key again to switch
+const PLACEABLES := ["sprinkler", "crab_pot", "fertiliser", "scarecrow"]   # slot 0 holds both; press its key again to switch
 var place_idx := 0
 var canvas: Control
 var tool_tex: Texture2D = load("res://assets/sprites/held_tools.png")

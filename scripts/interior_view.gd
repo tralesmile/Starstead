@@ -14,7 +14,7 @@ signal loot_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "chest", "cook", "smelt", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence"]
+const ACTIONS := ["sleep", "loot", "chest", "cook", "smelt", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business"]
 var world: Node2D
 var player: Player
 var active := false
@@ -271,7 +271,7 @@ func interact() -> bool:
 		"loot":
 			loot_requested.emit(building)
 			return true
-		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence":
+		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business":
 			service_requested.emit(String(a["action"]))
 			return true
 	return true

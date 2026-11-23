@@ -47,6 +47,15 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 				inv.remove("sprinkler", 1)
 				return "Placed sprinkler"
 			return ""
+		"scarecrow":
+			if inv.count("scarecrow") < 1:
+				return "No scarecrow (craft it: C)"
+			if gen != null and gen.tile_at(cell.x, cell.y) >= WorldGen.PATH:
+				return ""
+			if farm.place_scarecrow(cell):
+				inv.remove("scarecrow", 1)
+				return "Scarecrow keeps crows off the crops"
+			return ""
 		"fertiliser":
 			if inv.count("fertiliser") < 1:
 				return "No fertiliser (craft it: C)"
@@ -62,6 +71,9 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 		"watering_can":
 			return "Watered" if farm.water(cell) else ""
 		"hand":
+			if farm.pick_up_scarecrow(cell):
+				_give(inv, drops, "scarecrow", 1)
+				return "Picked up scarecrow"
 			if farm.pick_up_sprinkler(cell):
 				_give(inv, drops, "sprinkler", 1)
 				return "Picked up sprinkler"

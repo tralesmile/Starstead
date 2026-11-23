@@ -6,6 +6,7 @@ var dry: Texture2D = load("res://assets/sprites/soil_dry.png")
 var wet: Texture2D = load("res://assets/sprites/soil_wet.png")
 var turnip: Texture2D = load("res://assets/sprites/crop_turnip.png")
 var weed_tex: Texture2D = load("res://assets/sprites/weed.png")
+var scarecrow_tex: Texture2D = load("res://assets/sprites/scarecrow.png")
 var sprinkler_tex: Texture2D = load("res://assets/sprites/sprinkler.png")
 var generic: Texture2D = load("res://assets/sprites/crop_generic.png")
 
@@ -44,5 +45,8 @@ func _draw() -> void:
 		draw_texture_rect_region(ct, Rect2(Vector2(cell) * 32.0 + Vector2(0, 2), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
 	for cell in farm.weeds:
 		draw_texture_rect_region(weed_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))
+	for cell in farm.scarecrows:
+		var sway := sin(Time.get_ticks_msec() * 0.0015 + float(cell.x)) * 1.0
+		draw_texture_rect(scarecrow_tex, Rect2(Vector2(cell) * 32.0 + Vector2(sway, -16), Vector2(32, 48)), false)
 	for cell in farm.sprinklers:
 		draw_texture_rect_region(sprinkler_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))

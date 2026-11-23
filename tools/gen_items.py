@@ -723,16 +723,55 @@ icons['club_iron'] = club_icon("#7a8494", "#c4ccd8")
 
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
+def scarecrow_icon():
+    i = Ic()
+    i.rect(7, 4, 8, 14, "#8a5a34"); i.px(7, 6, "#a8743f"); i.px(7, 9, "#a8743f")      # post
+    i.rect(2, 6, 13, 7, "#a8743f"); i.rect(2, 7, 13, 7, "#8a5a34")                     # crossbar
+    i.rect(5, 7, 10, 11, "#c8a45a"); i.rect(5, 7, 6, 11, "#e0c078"); i.rect(10, 8, 10, 11, "#a8843c")  # shirt
+    i.px(7, 9, "#8a6a2c"); i.px(8, 10, "#8a6a2c")
+    i.px(1, 7, "#f0d060"); i.px(1, 6, "#f0d060"); i.px(14, 7, "#f0d060"); i.px(14, 8, "#d8b040")  # straw hands
+    i.rect(6, 3, 9, 5, "#d8bc84"); i.px(6, 3, "#f0dca4")                               # sack head
+    i.px(7, 4, "#2a1a10"); i.px(9, 4, "#2a1a10")                                       # eyes
+    i.rect(5, 2, 10, 2, "#7a4a24"); i.rect(7, 0, 8, 1, "#8a5a34"); i.px(7, 0, "#a8743f")  # hat
+    i.px(4, 2, "#7a4a24"); i.px(11, 2, "#6a3c1c")
+    return i
+icons['scarecrow'] = scarecrow_icon
+
+def franchise_deed():
+    i = Ic()
+    i.rect(2, 3, 13, 12, "#f0e0b0"); i.rect(2, 3, 13, 4, "#fff4d0"); i.rect(2, 11, 13, 12, "#d0b87c")
+    i.rect(1, 2, 2, 13, "#d8b878"); i.rect(1, 2, 1, 13, "#f0d898")                      # left roll
+    i.rect(13, 2, 14, 13, "#c0a060"); i.rect(14, 3, 14, 12, "#a88848")                  # right roll
+    for y in (5, 7, 9):
+        i.line(4, y, 10, y, "#8a6a3c")                                                  # text lines
+    i.ell(9, 10, 2.6, 2.6, "#c8302c"); i.px(8, 9, "#f06858"); i.px(9, 9, "#f06858")     # wax seal
+    i.px(10, 11, "#8a1c1c"); i.px(9, 11, "#a02424")
+    i.px(8, 13, "#c8302c"); i.px(10, 13, "#a82424")                                     # ribbon tails
+    return i
+icons['franchise_deed'] = franchise_deed
+
+NEW_IDS = ['scarecrow', 'franchise_deed']  # appended after the last old icon, in this order
+
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())
     old_map = json.load(open(os.path.join(ROOT, "data", "item_icons.json")))
     old_img = Image.open(os.path.join(ROOT, "assets", "sprites", "items.png")).convert("RGBA")
     OLD = {k: old_img.crop((v * S, 0, v * S + S, S)) for k, v in old_map.items()}
-    strip = Image.new("RGBA", (S * len(keys), S), (0, 0, 0, 0))
-    mapping = {}
     frames = [k for k in keys if not k.endswith(('_silver', '_gold'))]
-    strip = Image.new("RGBA", (S * len(frames), S), (0, 0, 0, 0))
-    for n, k in enumerate(frames):
+    for k in NEW_IDS:
+        if k not in frames:
+            frames.append(k)
+    idx = {}
+    nxt = max([v for k, v in old_map.items() if not k.endswith(('_silver', '_gold'))] + [-1]) + 1
+    for k in frames:  # stable: ids keep their old index, new ids take the next free one
+        if k in old_map:
+            idx[k] = old_map[k]
+        else:
+            idx[k] = nxt; nxt += 1
+    strip = Image.new("RGBA", (S * nxt, S), (0, 0, 0, 0))
+    mapping = {}
+    for k in frames:
+        n = idx[k]
         if k in icons:
             strip.paste(icons[k]().image(GLOW.get(k)), (n * S, 0))
         elif k in OLD:  # icons made earlier by a one-off script: keep their pixels
@@ -741,7 +780,8 @@ def main():
     for k in keys:  # quality variants reuse the base icon (the rarity border shows the quality)
         if k.endswith(("_silver", "_gold")):
             mapping[k] = mapping[k.rsplit("_", 1)[0]]
-    mapping = {k: mapping[k] for k in keys}  # same order as items.json (new ids append at the end)
+    order = [k for k in keys] + [k for k in frames if k not in keys]
+    mapping = {k: mapping[k] for k in order}
     strip.save(os.path.join(ROOT, "assets", "sprites", "items.png"))
     with open(os.path.join(ROOT, "data", "item_icons.json"), "w") as f:
         json.dump(mapping, f, indent=1)

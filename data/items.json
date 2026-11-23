@@ -572,5 +572,10 @@
   "name": "Goat Milk",
   "price": 38,
   "stack": 99
+ },
+ "scarecrow": {
+  "name": "Scarecrow",
+  "price": 60,
+  "stack": 9
  }
 }

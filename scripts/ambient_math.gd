@@ -33,3 +33,25 @@ static func step_puffs(season: int, sprinting: bool) -> int:
 	if season % 4 == 3:
 		n += 3
 	return n
+
+const BREATH_PERIOD := 2.6
+const BREATH_LIFE := 1.0
+
+static func breath_cold(season: int, minutes: float) -> float:
+	## How visible your breath is 0..1: winter always (strongest at night), autumn mornings and late evenings, spring dawn.
+	var night := night_factor(minutes)
+	match season % 4:
+		3: return clampf(0.7 + 0.3 * night, 0.0, 1.0)
+		2: return clampf(0.55 - minutes / 330.0, 0.0, 0.55) + 0.3 * night
+		0: return clampf(0.35 - minutes / 250.0, 0.0, 0.35)
+	return 0.0
+
+static func breath_age(t: float) -> float:
+	## 0..1 through the visible exhale of the current breath, -1 between breaths.
+	var k := fposmod(t, BREATH_PERIOD)
+	return k / BREATH_LIFE if k < BREATH_LIFE else -1.0
+
+static func breath_puff(age: float, i: int) -> Vector3:
+	## Puff i of 3 as (dx, dy rise, size px): drifts forward and up, grows, the later ones trail behind.
+	var a := clampf(age - 0.12 * float(i), 0.0, 1.0)
+	return Vector3(a * (6.0 + 3.0 * float(i)), -a * 7.0, 2.0 + a * (3.0 + float(i)))

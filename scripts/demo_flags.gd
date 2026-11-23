@@ -203,6 +203,7 @@ func on_process() -> void:
 				if dy == 2 and dx % 2 == 1:
 					GameState.farm.weeds[c] = 0
 		GameState.farm.sprinklers[o + Vector2i(-1, 1)] = true
+		GameState.farm.scarecrows[o + Vector2i(-1, 3)] = true
 	if "--fx-demo" in OS.get_cmdline_user_args():  # screenshot helper: pickup floaters + level-up burst
 		var fr := Engine.get_process_frames()
 		if fr == 5:

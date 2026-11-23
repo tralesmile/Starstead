@@ -9,6 +9,7 @@ static func prompt(action: String) -> String:
 		"heal": return "E: Treatment ($%d)" % CityServices.heal_cost(GameState.energy.value)
 		"fine": return "E: Pay off the police (wanted)"
 		"coffee": return "E: Buy a coffee ($%d)" % CityServices.COFFEE_PRICE
+		"business": return CityActions.business_prompt()
 		"notice": return "E: Read the notice board"
 		"debt": return "E: Pay the Vance debt ($%d left; Shift+E pays all you can)" % GameState.story.debt_left(GameState.debt_paid) if GameState.story.debt_left(GameState.debt_paid) > 0 else "The Vance ledger is closed: debt cleared"
 		"hoops": return "E: Free throws (10 shots)"
@@ -17,8 +18,33 @@ static func prompt(action: String) -> String:
 		"pitch": return "E: Penalty shootout (5 kicks)"
 	return ""
 
+static func business_prompt() -> String:
+	var b: BusinessModel = GameState.business
+	if b.till > 0:
+		return "E: Collect the till ($%d)   Shift+E: %s" % [b.till, "upgrade ($%d)" % b.next_cost() if b.level < BusinessModel.MAX_LEVEL else "fully upgraded"]
+	if b.level == 0:
+		return "E: Buy the cafe franchise ($%d)" % b.next_cost()
+	return "E: %s: till empty%s" % [b.name_for_level(), "   Shift+E: upgrade ($%d)" % b.next_cost() if b.level < BusinessModel.MAX_LEVEL else ""]
+
 static func run(m, action: String) -> void:
 	match action:
+		"business":
+			var b: BusinessModel = GameState.business
+			if b.till > 0 and not Input.is_key_pressed(KEY_SHIFT):
+				var r := b.collect(GameState.money)
+				GameState.money = r["cash"]
+				GameState.bump("business_collects")
+				m._say("Collected $%d from the %s" % [r["got"], b.name_for_level()])
+				return
+			var r := b.buy(GameState.money, GameState.rep_honest)
+			if r["ok"]:
+				GameState.money = r["cash"]
+				m._say("%s ready! Takings now up to $%d a night" % [b.name_for_level(), BusinessModel.PROFIT[b.level]])
+			else:
+				match String(r["why"]):
+					"rep": m._say("The bank wants honest reputation %d for a franchise loan" % BusinessModel.MIN_HONEST_REP)
+					"cash": m._say("That costs $%d" % b.next_cost())
+					_: m._say("The cafe is already a grand cafe")
 		"shop":
 			m.player.velocity = Vector2.ZERO
 			m.player.move_v = Vector2.ZERO

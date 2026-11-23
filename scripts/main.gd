@@ -1083,6 +1083,26 @@ func _skill_gain(sk: String) -> bool:
 	return up
 
 func _dirt_puff(cell: Vector2i) -> void:
+	var fd: Vector2 = TargetMath.center_of(cell) - player.position
+	for i in 5:   # soil clods flicked away from the hoe in a fan
+		var clod := CPUParticles2D.new()
+		clod.position = TargetMath.center_of(cell) + Vector2(0, 4)
+		clod.emitting = true
+		clod.one_shot = true
+		clod.explosiveness = 1.0
+		clod.amount = 1
+		clod.lifetime = 0.45
+		var v := HitMath.clod_velocity(i, 5, fd)
+		clod.direction = v.normalized()
+		clod.spread = 4.0
+		clod.initial_velocity_min = v.length()
+		clod.initial_velocity_max = v.length()
+		clod.gravity = Vector2(0, 260)
+		clod.scale_amount_min = 2.0
+		clod.scale_amount_max = 3.0
+		clod.color = Color(0.36, 0.23, 0.13) if i % 2 == 0 else Color(0.5, 0.34, 0.2)
+		world.add_child(clod)
+		get_tree().create_timer(0.9).timeout.connect(clod.queue_free)
 	var p := CPUParticles2D.new()
 	p.position = TargetMath.center_of(cell) + Vector2(0, 6)
 	p.emitting = true
@@ -1109,6 +1129,9 @@ func _end_day() -> void:
 	var sprinkled := GameState.farm.sprinkle()
 	if sprinkled > 0:
 		_say("Sprinklers watered %d tiles" % sprinkled)
+	var crows := GameState.farm.crow_raid(GameState.clock.day)
+	if crows > 0:
+		_say("Crows ate %d crops (a scarecrow keeps them off)" % crows)
 	GameState.farm.next_day()
 	stall_stolen = 0
 	var rngp := RandomNumberGenerator.new()
@@ -1119,6 +1142,9 @@ func _end_day() -> void:
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
 	GameState.market.new_day()
+	var cafe_add := GameState.business.day_tick(GameState.clock.day, rain_today > 0.0)
+	if cafe_add > 0:
+		_say("Your cafe took $%d last night" % cafe_add)
 	animals.day_tick()
 	GameState.bank_balance += CityServices.daily_interest(GameState.bank_balance)
 	GameState.energy.new_day(false)

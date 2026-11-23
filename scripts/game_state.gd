@@ -28,6 +28,7 @@ var skill_xp: Dictionary = {}  # skill id -> xp (SkillModel)
 var world: String = "earth"
 var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var story := StoryModel.new(DataDB.load_json("story"))
+var business := BusinessModel.new()  # cafe franchise (own business)
 var market := MarketModel.new()  # sell pressure (E8)
 var tools_owned: Array = ToolKit.start()   # hotbar tools you have crafted or started with (ToolKit)
 var drift_board: Array = []       # best circuit drift scores (DriftBoard)
@@ -59,7 +60,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "drift_board": drift_board, "market": market.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -77,6 +78,7 @@ func from_dict(d: Dictionary) -> bool:
 	farm.from_array(d.get("farm", []))
 	farm.weeds_from_array(d.get("weeds", []))
 	farm.sprinklers_from_array(d.get("sprinklers", []))
+	farm.scarecrows_from_array(d.get("scarecrows", []))
 	pots.from_array(d.get("pots", []))
 	car_paint = int(d.get("car_paint", 0))
 	licence = bool(d.get("licence", false))
@@ -109,6 +111,7 @@ func from_dict(d: Dictionary) -> bool:
 	for k in yl:
 		yard_looted[int(k)] = int(yl[k])
 	market.from_dict(d.get("market", {}))
+	business.from_dict(d.get("business", {}))
 	if d.has("chest"):
 		chest.from_array(d["chest"])
 	if d.has("bag"):

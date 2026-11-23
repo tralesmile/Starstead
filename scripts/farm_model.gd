@@ -5,6 +5,7 @@ extends RefCounted
 
 var soil: Dictionary = {}
 var weeds: Dictionary = {}  # cell -> variant 0..2 (only on fallow tilled soil)
+var scarecrows: Dictionary = {}  # cell -> true; crows leave crops within SCARE_RADIUS alone
 var sprinklers: Dictionary = {}  # cell -> true; waters the 8 tiles around it each night
 var crops: Dictionary = {}  # crops.json: crop_id -> {seed, grow_days, season, yield}
 
@@ -145,6 +146,58 @@ func sprinkle() -> int:
 					soil[t].watered = true
 					n += 1
 	return n
+
+const SCARE_RADIUS := 6
+const CROW_CHANCE := 0.22      # per unprotected, nearly-ripe crop and night
+const CROW_CAP_FRACTION := 0.34  # crows never take more than a third of the crops in one night
+
+func place_scarecrow(cell: Vector2i) -> bool:
+	if scarecrows.has(cell) or sprinklers.has(cell) or soil.has(cell) or weeds.has(cell):
+		return false
+	scarecrows[cell] = true
+	return true
+
+func pick_up_scarecrow(cell: Vector2i) -> bool:
+	return scarecrows.erase(cell)
+
+func scared(cell: Vector2i) -> bool:
+	for c in scarecrows:
+		var d: Vector2i = c - cell
+		if d.x * d.x + d.y * d.y <= SCARE_RADIUS * SCARE_RADIUS:
+			return true
+	return false
+
+func crow_raid(day: int) -> int:
+	## Night: crows peck crops that are ripe or one day from ripe and not covered by a scarecrow. Returns crops lost.
+	var targets: Array = []
+	for cell in soil:
+		var s = soil[cell]
+		if s.crop == "" or scared(cell):
+			continue
+		var total := int(crops[s.crop].grow_days) if crops.has(s.crop) else 0
+		if total > 0 and int(s.age) >= total - 1 and weed_roll(cell, day + 5000) < CROW_CHANCE:
+			targets.append(cell)
+	var cap := int(floor(float(crops_planted()) * CROW_CAP_FRACTION))
+	targets.sort_custom(func(a, b): return weed_roll(a, day + 9000) < weed_roll(b, day + 9000))
+	var lost := 0
+	for cell in targets:
+		if lost >= cap:
+			break
+		soil[cell].crop = ""
+		soil[cell].age = 0
+		lost += 1
+	return lost
+
+func scarecrows_to_array() -> Array:
+	var out := []
+	for c in scarecrows:
+		out.append({"x": c.x, "y": c.y})
+	return out
+
+func scarecrows_from_array(a: Array) -> void:
+	scarecrows = {}
+	for e in a:
+		scarecrows[Vector2i(int(e.x), int(e.y))] = true
 
 func sprinklers_to_array() -> Array:
 	var out := []
