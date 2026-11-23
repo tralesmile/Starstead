@@ -88,6 +88,12 @@ func cond_ok(t: Dictionary, ctx: Dictionary) -> bool:
 		return int(ctx.get("debt_paid", 0)) >= int(t["debt_paid_min"])
 	if t.has("debt_clear"):
 		return debt_left(int(ctx.get("debt_paid", 0))) == 0
+	if t.has("stat_min"):
+		var st: Dictionary = ctx.get("stats", {})
+		for k in t["stat_min"]:
+			if int(st.get(k, 0)) < int(t["stat_min"][k]):
+				return false
+		return true
 	if t.has("rep_any_min"):
 		return maxi(int(ctx.get("rep_honest", 0)), int(ctx.get("rep_street", 0))) >= int(t["rep_any_min"])
 	return false
@@ -105,6 +111,12 @@ func late_fee() -> int:
 	if done.has("debt_free") or day <= due_day:
 		return 0
 	return mini(late_cap, ((day - due_day - 1) / 7 + 1) * late_fee_step)
+
+static func say_for(step: Dictionary, side_name: String) -> String:
+	## Beats can have a "say_street" variant for the street road.
+	if side_name == "street" and step.has("say_street"):
+		return str(step["say_street"])
+	return str(step.get("say", ""))
 
 static func side(rep_honest: int, rep_street: int) -> String:
 	return "street" if rep_street > rep_honest else "honest"
@@ -133,7 +145,19 @@ func pay_debt(cash: int, paid: int, all: bool = false) -> Dictionary:
 	var moved := mini(want, maxi(0, cash))
 	return {"cash": cash - moved, "paid": paid + moved, "moved": moved}
 
-func log_lines(paid: int) -> PackedStringArray:
+func progress_text(step: Dictionary, stats: Dictionary) -> String:
+	## " (1/2)" for stat steps that need more than one, so the log shows how far along you are.
+	var t: Dictionary = step.get("trigger", {})
+	if not t.has("stat_min"):
+		return ""
+	var have := 0
+	var need := 0
+	for k in t["stat_min"]:
+		need += int(t["stat_min"][k])
+		have += mini(int(stats.get(k, 0)), int(t["stat_min"][k]))
+	return "" if need <= 1 else " (%d/%d)" % [have, need]
+
+func log_lines(paid: int, stats: Dictionary = {}) -> PackedStringArray:
 	## Quest log rows: "[x] step" / "[ ] step" per quest; debt line at the end.
 	var out := PackedStringArray()
 	var a := active()
@@ -141,7 +165,7 @@ func log_lines(paid: int) -> PackedStringArray:
 		out.append(str(q["title"]))
 		for s in q["steps"]:
 			var mark := "[x] " if done.has(str(s["id"])) else ("[>] " if not a.is_empty() and a["step"] == s else "[ ] ")
-			out.append("  " + mark + str(s["text"]))
+			out.append("  " + mark + str(s["text"]) + (progress_text(s, stats) if not done.has(str(s["id"])) else ""))
 	if done.has("debt_free"):
 		out.append("Vance debt: cleared")
 	else:

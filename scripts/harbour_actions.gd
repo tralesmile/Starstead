@@ -17,6 +17,7 @@ static func run(m, kind: String) -> void:
 			var res := h.finish(day, hour)
 			if res["done"]:
 				GameState.money += int(res["prize"])
+				GameState.bump("contests")
 				m._say("Contest over: place %d with %d cm. Prize $%d" % [res["rank"], res["score"], res["prize"]])
 				m.toast_t = 4.0
 			elif h.entered(day):

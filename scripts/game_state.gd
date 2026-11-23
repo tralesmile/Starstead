@@ -13,6 +13,7 @@ var chest := Inventory.new(30, _limits())
 var pots := CrabPots.new()
 var car_paint := 0
 var licence := false              # Halden circuit licence (CircuitModel)
+var stats: Dictionary = {}   # lifetime counters for story beats: race_wins, contests, promotions (StoryModel stat_min)
 var sport_best: Dictionary = {}   # hoops / penalty best scores, bouts_won (SportsModel)
 var race_best: Dictionary = {}   # laps (as text) -> best time
 var energy := Energy.new()
@@ -35,6 +36,9 @@ var debt_paid: int = 0       # Vance debt repaid at the Town Hall ledger
 var rep_honest: int = 0
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
 
+func bump(stat: String, n: int = 1) -> void:
+	stats[stat] = int(stats.get(stat, 0)) + n
+
 static func _limits() -> Dictionary:
 	var out := {}
 	var items = DataDB.load_json("items")
@@ -55,7 +59,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "drift_board": drift_board, "market": market.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "drift_board": drift_board, "market": market.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -76,6 +80,9 @@ func from_dict(d: Dictionary) -> bool:
 	pots.from_array(d.get("pots", []))
 	car_paint = int(d.get("car_paint", 0))
 	licence = bool(d.get("licence", false))
+	stats = {}
+	for k in d.get("stats", {}):
+		stats[str(k)] = int(d["stats"][k])
 	sport_best = {}
 	for k in d.get("sport_best", {}):
 		sport_best[str(k)] = int(d["sport_best"][k])

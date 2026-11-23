@@ -80,6 +80,16 @@ static func crash_damage(impact_speed: float) -> float:
 	## Bumps under 90 px/s are free; harder hits hurt, capped at 60.
 	return clampf((impact_speed - 90.0) * 0.25, 0.0, 60.0)
 
+static func crash_response(vel: Vector2, normal: Vector2, heading: float) -> Dictionary:
+	## Wall hit: the part of the speed into the wall bounces back at 30%, the scrape along it keeps 80%,
+	## and the nose is shoved away from the wall (spin in radians, at most 0.5). Replaces the flat "vel *= 0.4".
+	var n := normal.normalized()
+	var into := maxf(0.0, -vel.dot(n))
+	var along := vel - n * vel.dot(n)
+	var out := along * 0.8 + n * maxf(vel.dot(n), into * 0.3)   # already moving away: keep that part
+	var spin := clampf(forward(heading).cross(n) * into / 260.0, -0.5, 0.5)
+	return {"vel": out, "spin": spin}
+
 static func speed_cap(health: float) -> float:
 	## Battered cars top out lower (never below 45%).
 	return MAX_SPEED * lerpf(0.45, 1.0, clampf(health / HEALTH_MAX, 0.0, 1.0))

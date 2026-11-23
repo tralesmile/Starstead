@@ -162,7 +162,9 @@ func _physics_process(delta: float) -> void:
 			toast.emit("Crash! Car health %d%%" % int(health))
 			if dmg >= 8.0 and driving:
 				crime.emit("hit_and_run", position)
-		vel *= 0.4  # bump
+		var cr := VehicleMath.crash_response(vel, get_slide_collision(0).get_normal(), heading)
+		vel = cr["vel"]
+		heading += float(cr["spin"])   # nose shoved off the wall, no more dead stop against it
 	rotation = heading
 	sprite.rotation = 0.0
 	var fwd_speed := vel.dot(VehicleMath.forward(heading))

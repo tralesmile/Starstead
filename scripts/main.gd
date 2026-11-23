@@ -383,6 +383,7 @@ func _process(delta: float) -> void:
 	fog_rect.color = Color(0.82, 0.86, 0.9, fog * 0.75)
 	storm_t += delta
 	player.rain = weather.now
+	ambient.rain = maxf(weather.now, fog * 0.8)
 	world.set_wet(weather.now)
 	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
 	flash_rect.size = fog_rect.size

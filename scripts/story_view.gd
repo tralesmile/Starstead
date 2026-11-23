@@ -38,7 +38,7 @@ var _fee_seen := -1
 
 func poll(planted: int) -> void:
 	_land(GameState.story.poll({"day": GameState.clock.day, "money": GameState.money, "planted": planted, "debt_paid": GameState.debt_paid,
-		"rep_honest": GameState.rep_honest, "rep_street": GameState.rep_street}))
+		"rep_honest": GameState.rep_honest, "rep_street": GameState.rep_street, "stats": GameState.stats}))
 	var fee: int = GameState.story.late_fee()
 	if _fee_seen >= 0 and fee > _fee_seen:
 		banner = "Vance's clerk sends a note: the debt is late. A $%d fee is added (pay at the Town Hall ledger)." % (fee - _fee_seen)
@@ -53,7 +53,7 @@ func _land(steps: Array) -> void:
 		if int(r.get("money", 0)) > 0:
 			GameState.money += int(r["money"])
 			extra = "  (+$%d)" % int(r["money"])
-		banner = str(s.get("say", "")) + extra
+		banner = StoryModel.say_for(s, StoryModel.side(GameState.rep_honest, GameState.rep_street)) + extra
 		banner_t = 7.0
 		said.emit(banner)
 
@@ -87,7 +87,7 @@ func _draw_all() -> void:
 		for i in lines.size():
 			canvas.draw_string(font, r.position + Vector2(8, 24 + i * 13), lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, a))
 	if _log:
-		var rows := GameState.story.log_lines(GameState.debt_paid)
+		var rows := GameState.story.log_lines(GameState.debt_paid, GameState.stats)
 		var panel := Rect2(90, 24, 460, 30.0 + rows.size() * 14.0)
 		canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
 		canvas.draw_rect(panel, Color(0.16, 0.18, 0.28, 0.97))

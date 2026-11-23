@@ -154,6 +154,8 @@ func _finish() -> void:
 	var best := model.is_finished("you") and (best_prev < 0.0 or t < best_prev)
 	if best:
 		GameState.race_best[key] = t
+	if place == 1:
+		GameState.bump("race_wins")
 	if place == 0:
 		message.emit("Race lost - out of time")
 	else:

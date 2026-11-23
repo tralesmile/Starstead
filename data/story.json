@@ -138,7 +138,82 @@
      "reward": {
       "money": 150
      }
+    }
+   ]
+  },
+  {
+   "id": "city_ties",
+   "title": "Act 2: City Ties",
+   "steps": [
+    {
+     "id": "first_win",
+     "text": "Win a race (1st place) from a start line or at the circuit",
+     "trigger": {
+      "stat_min": {
+       "race_wins": 1
+      }
+     },
+     "say": "The chequered flag is yours. Drivers in Port Halden start nodding at your car.",
+     "reward": {
+      "money": 100
+     }
     },
+    {
+     "id": "enter_contest",
+     "text": "Finish a weekly fishing contest at the harbour board",
+     "trigger": {
+      "stat_min": {
+       "contests": 1
+      }
+     },
+     "say": "The harbour crowd saw your catch. Someone mutters your name.",
+     "reward": {}
+    },
+    {
+     "id": "promoted",
+     "text": "Earn a promotion at any job (press J at a workplace)",
+     "trigger": {
+      "stat_min": {
+       "promotions": 1
+      }
+     },
+     "say": "A new badge and a bigger envelope. The honest town trusts you a little more.",
+     "say_street": "Your boss grins: 'Good hands. Better not to ask what else they do.'",
+     "reward": {
+      "money": 100
+     }
+    },
+    {
+     "id": "ring_win",
+     "text": "Win a boxing bout at the Sports Hall",
+     "trigger": {
+      "stat_min": {
+       "bouts": 1
+      }
+     },
+     "say": "KO. The Sports Hall will remember the new fighter from the farm.",
+     "reward": {
+      "money": 150
+     }
+    },
+    {
+     "id": "known_name",
+     "text": "Become known: 25 reputation on either road",
+     "trigger": {
+      "rep_any_min": 25
+     },
+     "say": "Honest Port Halden greets you by name; shopkeepers set aside the good stock.",
+     "say_street": "The back-alley crowd greets you by name; a fence promises better crates.",
+     "reward": {
+      "money": 250
+     }
+    }
+   ]
+  },
+  {
+   "id": "launch_pad",
+   "title": "Act 2: Launch Pad",
+   "steps": [
     {
      "id": "rocket_seat",
      "text": "Get onto the Vance launch pad: hold $5000 for a ticket, or fence a smuggled crate for a Vance keycard",

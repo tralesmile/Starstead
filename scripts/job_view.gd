@@ -64,6 +64,7 @@ func work() -> bool:
 		GameState.add_item(String(perk["item"]), int(perk["qty"]))
 		msg += "  +%d %s" % [int(perk["qty"]), String(perk["item"]).replace("_", " ")]
 	if r["promoted"]:
+		GameState.bump("promotions")
 		msg += "  PROMOTED to %s!" % r["rank"]
 	message.emit(msg)
 	return true

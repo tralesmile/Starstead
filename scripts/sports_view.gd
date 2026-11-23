@@ -185,6 +185,7 @@ func _finish(result: String = "") -> void:
 			var prize := SportsModel.bout_prize(tier)
 			GameState.money += prize
 			best["bouts_won"] = int(best.get("bouts_won", 0)) + 1
+			GameState.bump("bouts")
 			last_text = "KO! You win +$%d  (E to leave)" % prize
 		else:
 			last_text = "You lose the bout  (E to leave)"

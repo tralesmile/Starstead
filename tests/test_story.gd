@@ -59,7 +59,11 @@ func test_full_run_and_save() -> void:
 	m.notify("region_vance")
 	m.notify("vance_talk")
 	ctx["rep_honest"] = 12
-	m.poll(ctx)   # honest road + $5000 ticket finish Act 2 in one poll
+	m.poll(ctx)
+	check_eq(m.active()["step"]["id"], "first_win", "city ties follow the road choice")
+	ctx["stats"] = {"race_wins": 1, "contests": 1, "promotions": 1, "bouts": 1}
+	ctx["rep_honest"] = 30
+	m.poll(ctx)   # stats + reputation + $5000 ticket finish Act 2 in one poll
 	check(m.finished(), "acts 1 and 2 done")
 	check_eq(m.goal_text(), "")
 	var m2 := _m()
@@ -103,6 +107,10 @@ func test_act2_branches() -> void:
 	check_eq(m.notify("vance_talk").size(), 1)
 	check_eq(m.poll({"rep_honest": 4, "rep_street": 9}).size(), 0)
 	check_eq(m.poll({"rep_honest": 4, "rep_street": 10, "money": 100}).size(), 1, "street road")
+	for q in m.quests:
+		if q["id"] == "city_ties":
+			for st in q["steps"]:
+				m.done[st["id"]] = true
 	check_eq(m.active()["step"]["id"], "rocket_seat")
 	var street := m.notify("keycard")
 	check_eq(street.size(), 1, "keycard opens the pad")
@@ -127,3 +135,30 @@ func test_current_act() -> void:
 	check_eq(m.current_act(), "Act 1: Earth Homestead")
 	m.done["debt_free"] = true
 	check_eq(m.current_act(), "Act 2: Earth City")
+
+func test_city_ties_stats_and_side() -> void:
+	var m := _m()
+	var t := {"stat_min": {"race_wins": 2, "bouts": 1}}
+	check(not m.cond_ok(t, {"stats": {"race_wins": 2}}), "needs every stat")
+	check(m.cond_ok(t, {"stats": {"race_wins": 3, "bouts": 1}}))
+	var step := {"say": "a", "say_street": "b"}
+	check_eq(StoryModel.say_for(step, "honest"), "a")
+	check_eq(StoryModel.say_for(step, "street"), "b")
+	check_eq(StoryModel.say_for({"say": "a"}, "street"), "a", "falls back")
+
+func test_stats_saved() -> void:
+	var gs = load("res://scripts/game_state.gd").new()
+	gs.bump("race_wins"); gs.bump("race_wins")
+	var d: Dictionary = gs.to_dict()
+	var h = load("res://scripts/game_state.gd").new()
+	h.from_dict(JSON.parse_string(JSON.stringify(d)))
+	check_eq(int(h.stats.get("race_wins", 0)), 2)
+	gs.free(); h.free()
+
+func test_progress_text() -> void:
+	var m := _m()
+	var st := {"trigger": {"stat_min": {"race_wins": 3}}}
+	check_eq(m.progress_text(st, {"race_wins": 1}), " (1/3)")
+	check_eq(m.progress_text(st, {"race_wins": 9}), " (3/3)")
+	check_eq(m.progress_text({"trigger": {"stat_min": {"bouts": 1}}}, {}), "", "single steps stay plain")
+	check_eq(m.progress_text({"trigger": {"day_min": 3}}, {}), "")

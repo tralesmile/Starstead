@@ -6,6 +6,7 @@ const FIREFLIES := 14
 const LEAVES := 8
 var player: Player
 var t := 0.0
+var rain := 0.0   # current rain 0..1, set by main (cloud shadows vanish under overcast)
 
 func _ready() -> void:
 	z_index = 40
@@ -41,6 +42,14 @@ func _draw() -> void:
 	var c := player.position.round()
 	var tint := DayNight.tint(mins)
 	var unlit := Color(1.0 / maxf(tint.r, 0.2), 1.0 / maxf(tint.g, 0.2), 1.0 / maxf(tint.b, 0.2))  # cancel the night tint so the glow stays bright
+	var cs := CloudMath.strength(mins, rain, GameState.clock.season())
+	if cs > 0.02:
+		for i in CloudMath.COUNT:
+			var cp := CloudMath.pos(i, t, c)
+			var cr := CloudMath.radius(i)
+			for band in 3:   # stepped soft edge: three nested ellipses
+				var f := 1.0 - 0.28 * float(band)
+				draw_colored_polygon(CloudMath.ellipse(cp, cr * f), Color(0.05, 0.1, 0.18, 0.07 * cs))
 	if night > 0.05:
 		for i in FIREFLIES:
 			var g := AmbientMath.firefly_glow(i, t) * night
