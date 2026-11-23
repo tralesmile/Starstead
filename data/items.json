@@ -577,5 +577,15 @@
   "name": "Scarecrow",
   "price": 60,
   "stack": 9
+ },
+ "slime_gel": {
+  "name": "Slime Gel",
+  "price": 14,
+  "stack": 99
+ },
+ "crab_shell": {
+  "name": "Crab Shell",
+  "price": 28,
+  "stack": 99
  }
 }

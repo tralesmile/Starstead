@@ -11,6 +11,14 @@ const ORE_HP := {"copper": 3, "coal": 3, "iron": 5}
 const ORE_DROP := {"copper": ["copper_ore", 2], "coal": ["coal", 2], "iron": ["iron_ore", 1]}
 const BAT_HP := 12.0
 const BAT_CONTACT := 0.9   # seconds between bites
+const MAX_FLOOR := 5
+const SLIME_HP := 18.0
+const CRAB_HP := 36.0
+
+var floor_no := 1
+var ladder_down := Vector2i(-1, -1)   # deepest floor cell; (-1,-1) on the last floor
+var slime_spawns: Array[Vector2i] = []
+var crab_spawns: Array[Vector2i] = []
 
 var floor_cells: Dictionary = {}   # Vector2i -> true
 var entrance := Vector2i(W / 2, H - 4)
@@ -18,13 +26,58 @@ var ores: Dictionary = {}          # cell -> {"kind", "hp"}
 var torches: Array[Vector2i] = []  # wall cells that carry a torch
 var bat_spawns: Array[Vector2i] = []
 
-static func generate(day: int = 1, layout_seed: int = LAYOUT_SEED) -> CaveModel:
+static func generate(day: int = 1, floor_no: int = 1, layout_seed: int = LAYOUT_SEED) -> CaveModel:
+	## Floor 1 keeps the original layout; every floor below has its own seed, more ore and tougher monsters.
 	var m := CaveModel.new()
-	m._carve(layout_seed)
+	m.floor_no = clampi(floor_no, 1, MAX_FLOOR)
+	var sd := layout_seed + (m.floor_no - 1) * 977
+	m._carve(sd)
 	m._torches()
-	m._bats(layout_seed)
+	m._bats(sd)
+	m._ladder()
+	m._monsters(sd)
 	m.refill(day)
 	return m
+
+static func floor_bias(f: int) -> float:
+	## Added to the depth of a cell so deeper floors give iron-rich veins.
+	return (clampi(f, 1, MAX_FLOOR) - 1) * 0.18
+
+static func monster_counts(f: int) -> Dictionary:
+	## Bats from floor 1, slimes from floor 2, rock crabs from floor 3.
+	var fl := clampi(f, 1, MAX_FLOOR)
+	return {"bat": 5, "slime": 0 if fl < 2 else 2 + fl, "crab": 0 if fl < 3 else fl - 1}
+
+func has_ladder_down() -> bool:
+	return ladder_down.x >= 0
+
+func _ladder() -> void:
+	if floor_no >= MAX_FLOOR:
+		return
+	var best := entrance
+	var bd := -1.0
+	for c in floor_cells:
+		var d := Vector2(c - entrance).length()
+		if d > bd or (is_equal_approx(d, bd) and (c.y < best.y or (c.y == best.y and c.x < best.x))):
+			bd = d
+			best = c
+	ladder_down = best
+
+func _monsters(sd: int) -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = sd + 13
+	var cand: Array[Vector2i] = []
+	for c in floor_cells:
+		if depth(c) > 0.25 and Vector2(c - ladder_down).length() > 4.0:
+			cand.append(c)
+	cand.sort()
+	if cand.is_empty():
+		return
+	var cnt := monster_counts(floor_no)
+	for i in int(cnt["slime"]):
+		slime_spawns.append(cand[r.randi_range(0, cand.size() - 1)])
+	for i in int(cnt["crab"]):
+		crab_spawns.append(cand[r.randi_range(0, cand.size() - 1)])
 
 func is_floor(c: Vector2i) -> bool:
 	return floor_cells.has(c)
@@ -69,7 +122,7 @@ func depth(c: Vector2i) -> float:
 	return clampf(Vector2(c - entrance).length() / 34.0, 0.0, 1.0)
 
 func ore_kind_for(c: Vector2i, roll: float) -> String:
-	var d := depth(c)
+	var d := clampf(depth(c) + floor_bias(floor_no), 0.0, 1.0)
 	if d < 0.33:
 		return "copper" if roll < 0.75 else "coal"
 	if d < 0.62:
@@ -79,11 +132,11 @@ func ore_kind_for(c: Vector2i, roll: float) -> String:
 func refill(day: int) -> void:
 	## New ore each day (different rolls per day, same layout). Never blocks the way out.
 	var r := RandomNumberGenerator.new()
-	r.seed = LAYOUT_SEED * 31 + day
+	r.seed = (LAYOUT_SEED + (floor_no - 1) * 977) * 31 + day
 	ores.clear()
 	var cand: Array[Vector2i] = []
 	for c in floor_cells:
-		if Vector2(c - entrance).length() < 6.0:
+		if Vector2(c - entrance).length() < 6.0 or Vector2(c - ladder_down).length() < 3.0:
 			continue
 		var wall_n := 0
 		for o in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -97,7 +150,7 @@ func refill(day: int) -> void:
 		var t := cand[i]
 		cand[i] = cand[j]
 		cand[j] = t
-	var want := 22
+	var want := 22 + (floor_no - 1) * 3
 	for c in cand:
 		if ores.size() >= want:
 			break
@@ -194,3 +247,65 @@ static func bat_bite(bat: Dictionary, target: Vector2) -> float:
 
 static func new_bat(p: Vector2) -> Dictionary:
 	return {"pos": p, "vel": Vector2.ZERO, "hp": BAT_HP, "cd": 0.0, "down": 0.0, "t": p.x * 0.01}
+
+## --- slimes and rock crabs (pure steering, same dictionary shape as bats) ---
+static func new_slime(p: Vector2) -> Dictionary:
+	return {"pos": p, "vel": Vector2.ZERO, "hp": SLIME_HP, "cd": 0.0, "down": 0.0, "t": p.x * 0.013, "kind": "slime"}
+
+static func new_crab(p: Vector2) -> Dictionary:
+	return {"pos": p, "vel": Vector2.ZERO, "hp": CRAB_HP, "cd": 0.0, "down": 0.0, "t": p.y * 0.017, "kind": "crab"}
+
+static func crawler_speed(kind: String, t: float) -> float:
+	## Slimes lurch in hops (fast on the push, still on the landing); crabs scuttle slowly and steadily.
+	if kind == "slime":
+		var ph := fposmod(t * 2.2, 1.0)
+		return 62.0 * maxf(0.0, sin(ph * PI)) if ph < 0.7 else 0.0
+	return 34.0
+
+static func crawler_step(m: Dictionary, target: Vector2, dt: float) -> void:
+	m["cd"] = maxf(0.0, float(m["cd"]) - dt)
+	if float(m["down"]) > 0.0:
+		m["down"] = maxf(0.0, float(m["down"]) - dt)
+		m["pos"] = (m["pos"] as Vector2) + (m["vel"] as Vector2) * dt
+		m["vel"] = (m["vel"] as Vector2).move_toward(Vector2.ZERO, 500.0 * dt)
+		return
+	m["t"] = float(m["t"]) + dt
+	var to: Vector2 = target - m["pos"]
+	var want := Vector2.ZERO
+	if to.length() < 190.0 and to.length() > 0.5:
+		want = to.normalized() * crawler_speed(String(m["kind"]), float(m["t"]))
+	m["vel"] = (m["vel"] as Vector2).move_toward(want, 600.0 * dt)
+	m["pos"] = (m["pos"] as Vector2) + (m["vel"] as Vector2) * dt
+
+static func crawler_bite(m: Dictionary, target: Vector2) -> float:
+	if float(m["cd"]) > 0.0 or float(m["down"]) > 0.0:
+		return 0.0
+	if (m["pos"] as Vector2).distance_to(target) > 20.0:
+		return 0.0
+	m["cd"] = 1.2
+	return 4.0 if m["kind"] == "slime" else 7.0
+
+static func monster_drop(kind: String, roll: float) -> Array:
+	## [item, n] or [] ; slime gel is common, crab shell rarer.
+	if kind == "slime" and roll < 0.8:
+		return ["slime_gel", 1]
+	if kind == "crab" and roll < 0.55:
+		return ["crab_shell", 1]
+	return []
+
+static func crab_damage(base: float) -> float:
+	## Rock crab shells soak a third of every blow.
+	return base * 0.65
+
+static func bite_force(kind: String) -> float:
+	## Knockback strength on the player (HitMath.knockback force): crabs shove, bats flutter.
+	return {"bat": 0.45, "slime": 0.75, "crab": 1.2}.get(kind, 0.5)
+
+static func slime_squash(t: float) -> Vector2:
+	## Sprite scale over a hop cycle: squashed on the landing, stretched tall on the push (volume ~ kept).
+	var ph := fposmod(t * 2.2, 1.0)
+	var k := sin(ph * TAU)
+	return Vector2(1.0 - 0.18 * k, 1.0 + 0.22 * k)
+
+static func splat_color(kind: String) -> Color:
+	return {"slime": Color(0.45, 0.85, 0.35), "crab": Color(0.6, 0.58, 0.55), "bat": Color(0.35, 0.3, 0.4)}.get(kind, Color.WHITE)

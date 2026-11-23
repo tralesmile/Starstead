@@ -750,7 +750,32 @@ def franchise_deed():
     return i
 icons['franchise_deed'] = franchise_deed
 
-NEW_IDS = ['scarecrow', 'franchise_deed']  # appended after the last old icon, in this order
+def slime_gel():
+    i = Ic()
+    i.ell(8, 10, 6, 4.2, "#4aa84a")
+    i.ell(8, 8, 4.6, 3.6, "#6ccc5c")
+    i.ell(8, 7, 3, 2.4, "#8ee07a")
+    i.rect(3, 12, 13, 13, "#2f7a38")
+    i.px(6, 6, "#e8ffe0"); i.px(7, 6, "#e8ffe0"); i.px(5, 7, "#e8ffe0")
+    i.px(10, 10, "#3a9040"); i.px(11, 9, "#3a9040")
+    i.px(8, 4, "#6ccc5c"); i.px(8, 3, "#8ee07a")   # drip tip
+    return i
+icons['slime_gel'] = slime_gel
+
+def crab_shell():
+    i = Ic()
+    i.ell(8, 9, 6.5, 5, "#8a7a6c")
+    i.ell(7, 8, 5, 3.6, "#a89886")
+    i.rect(3, 12, 13, 13, "#5e5248")
+    i.rect(11, 6, 13, 12, "#6e6256")                   # shaded right edge
+    i.line(8, 5, 8, 12, "#6e6256")                     # centre ridge
+    i.line(4, 8, 7, 9, "#6e6256"); i.line(12, 8, 9, 9, "#6e6256")
+    i.px(5, 6, "#d8ccb8"); i.px(6, 6, "#d8ccb8"); i.px(4, 7, "#d8ccb8")
+    i.px(6, 11, "#c0b098"); i.px(10, 11, "#7a6c5e")
+    return i
+icons['crab_shell'] = crab_shell
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

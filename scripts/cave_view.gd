@@ -6,7 +6,10 @@ extends Node
 
 signal ore_broken(id: String, n: int, pos: Vector2, kind: String)
 signal bat_down(pos: Vector2)
+signal monster_down(kind: String, pos: Vector2)
+signal floor_changed(n: int)
 signal bitten(amount: float)
+var motes: CPUParticles2D
 signal message(msg: String)
 
 const ORIGIN := Vector2(30016, 30016)
@@ -17,6 +20,9 @@ var world: Node2D
 var player: Player
 var model: CaveModel
 var model_day := -1
+var models: Dictionary = {}      # floor -> CaveModel for the current day (mined ore stays mined)
+var floor_no := 1
+var ladder_lock := false
 var active := false
 var busy := false
 var outside_pos := Vector2.ZERO
@@ -55,9 +61,11 @@ func enter(day: int) -> void:
 	if active or busy:
 		return
 	busy = true
-	if model == null or model_day != day:
-		model = CaveModel.generate(day)
+	if model_day != day:
+		models.clear()
 		model_day = day
+	floor_no = 1
+	model = _floor_model(1)
 	_freeze(true)
 	var tw := create_tween()
 	tw.tween_property(fade, "color:a", 1.0, 0.25)
@@ -66,6 +74,47 @@ func enter(day: int) -> void:
 	tw.tween_callback(func():
 		busy = false
 		_freeze(false))
+
+func _floor_model(n: int) -> CaveModel:
+	if not models.has(n):
+		models[n] = CaveModel.generate(model_day, n)
+	return models[n]
+
+func change_floor(n: int, going_down: bool) -> void:
+	## Ladder: fade, rebuild the cavern for floor n, arrive at the entrance (going down) or beside the ladder (going up).
+	if not active or busy:
+		return
+	busy = true
+	_freeze(true)
+	var tw := create_tween()
+	tw.tween_property(fade, "color:a", 1.0, 0.2)
+	tw.tween_callback(func(): _do_change_floor(n, going_down))
+	tw.tween_property(fade, "color:a", 0.0, 0.2)
+	tw.tween_callback(func():
+		busy = false
+		_freeze(false))
+
+func _do_change_floor(n: int, going_down: bool) -> void:
+	_clear_nodes()
+	floor_no = n
+	model = _floor_model(n)
+	_build()
+	var spot: Vector2i = model.entrance if going_down else model.ladder_down + Vector2i(0, 1)
+	if not going_down and not model.is_floor(spot):
+		spot = model.ladder_down + Vector2i(0, -1)
+	player.position = px(spot) + Vector2(16, 16)
+	player.facing = PlayerMath.Facing.UP if going_down else PlayerMath.Facing.DOWN
+	ladder_lock = true
+	floor_changed.emit(n)
+
+func _clear_nodes() -> void:
+	for n in nodes:
+		if is_instance_valid(n):
+			n.queue_free()
+	nodes.clear()
+	ore_nodes.clear()
+	bats.clear()
+	torch_sprites.clear()
 
 func _freeze(on: bool) -> void:
 	player.set_physics_process(not on)
@@ -91,6 +140,7 @@ func _do_enter() -> void:
 	lamp.energy = 0.85
 	lamp.position = Vector2(0, -14)
 	player.add_child(lamp)
+	_make_motes()
 
 func leave() -> void:
 	if not active or busy:
@@ -107,15 +157,11 @@ func leave() -> void:
 
 func _do_leave() -> void:
 	active = false
-	for n in nodes:
-		if is_instance_valid(n):
-			n.queue_free()
-	nodes.clear()
-	ore_nodes.clear()
-	bats.clear()
-	torch_sprites.clear()
+	_clear_nodes()
 	if lamp != null and is_instance_valid(lamp):
 		lamp.queue_free()
+	if motes != null and is_instance_valid(motes):
+		motes.queue_free()
 	player.position = outside_pos
 	player.facing = PlayerMath.Facing.DOWN
 	var r := ChunkGrid.world_rect_px()
@@ -203,6 +249,11 @@ func _build() -> void:
 	bats.clear()
 	for sp in model.bat_spawns:
 		_make_bat(px(sp) + Vector2(16, 16))
+	for sp in model.slime_spawns:
+		_make_crawler(px(sp) + Vector2(16, 16), "slime")
+	for sp in model.crab_spawns:
+		_make_crawler(px(sp) + Vector2(16, 16), "crab")
+	_ladder_tiles()
 
 func _make_ore(c: Vector2i) -> void:
 	var kind: String = model.ores[c]["kind"]
@@ -223,6 +274,81 @@ func _make_ore(c: Vector2i) -> void:
 	b.add_child(sh)
 	_add(b)
 	ore_nodes[c] = b
+
+func _splat(pos: Vector2, kind: String) -> void:
+	var p := CPUParticles2D.new()
+	p.position = pos + Vector2(0, -8)
+	p.emitting = true
+	p.one_shot = true
+	p.explosiveness = 0.9
+	p.amount = 14 if kind != "bat" else 8
+	p.lifetime = 0.7
+	p.direction = Vector2(0, -1)
+	p.spread = 140.0
+	p.initial_velocity_min = 30.0
+	p.initial_velocity_max = 80.0
+	p.gravity = Vector2(0, 220)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.5
+	p.color = CaveModel.splat_color(kind)
+	_add(p)
+	get_tree().create_timer(1.2).timeout.connect(p.queue_free)
+
+func _make_motes() -> void:
+	## Dust drifting through the miner's lamp light.
+	motes = CPUParticles2D.new()
+	motes.amount = 26
+	motes.lifetime = 5.0
+	motes.preprocess = 5.0
+	motes.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	motes.emission_rect_extents = Vector2(210, 130)
+	motes.direction = Vector2(0.4, -1)
+	motes.spread = 60.0
+	motes.initial_velocity_min = 2.0
+	motes.initial_velocity_max = 7.0
+	motes.gravity = Vector2.ZERO
+	motes.scale_amount_min = 0.8
+	motes.scale_amount_max = 1.4
+	motes.color = Color(1.0, 0.9, 0.7, 0.35)
+	motes.local_coords = false
+	motes.z_index = 5
+	player.add_child(motes)
+
+func _ladder_tiles() -> void:
+	var up := Sprite2D.new()
+	up.texture = _t("cave_ladder_up")
+	up.centered = false
+	up.position = px(model.entrance + Vector2i(0, 1))
+	up.z_index = -18
+	_add(up)
+	if model.has_ladder_down():
+		var dn := Sprite2D.new()
+		dn.texture = _t("cave_ladder_down")
+		dn.centered = false
+		dn.position = px(model.ladder_down)
+		dn.z_index = -18
+		_add(dn)
+		var l := PointLight2D.new()
+		l.texture = Lantern.light_texture()
+		l.texture_scale = 1.6
+		l.color = Color(1.0, 0.8, 0.5)
+		l.energy = 0.8
+		l.position = px(model.ladder_down) + Vector2(16, 16)
+		_add(l)
+
+func _make_crawler(p: Vector2, kind: String) -> void:
+	var n := Node2D.new()
+	n.position = p
+	var s := Sprite2D.new()
+	s.texture = _t("cave_" + kind)
+	s.hframes = 4
+	s.offset = Vector2(0, -14)
+	n.add_child(s)
+	var sh := World.make_shadow(14.0)
+	sh.position = Vector2(0, 2)
+	n.add_child(sh)
+	_add(n)
+	bats.append({"data": CaveModel.new_slime(p) if kind == "slime" else CaveModel.new_crab(p), "node": n, "sprite": s})
 
 func _make_bat(p: Vector2) -> void:
 	var n := Node2D.new()
@@ -278,12 +404,17 @@ func club_swing(damage: float, reach: float, force: float) -> int:
 		if not CombatModel.in_swing(origin, face, bp, reach):
 			continue
 		hits += 1
-		d["hp"] = CombatModel.hit(float(d["hp"]), damage)
+		var dmg: float = CaveModel.crab_damage(damage) if d.get("kind", "bat") == "crab" else damage
+		d["hp"] = CombatModel.hit(float(d["hp"]), dmg)
 		d["vel"] = (bp - origin).normalized() * 220.0 * force
 		d["down"] = 0.35
 		(b["sprite"] as Sprite2D).modulate = Color(1.6, 1.6, 1.6)
 		if CombatModel.is_down(float(d["hp"])):
-			bat_down.emit(d["pos"])
+			_splat(d["pos"], String(d.get("kind", "bat")))
+			if d.get("kind", "bat") == "bat":
+				bat_down.emit(d["pos"])
+			else:
+				monster_down.emit(String(d["kind"]), d["pos"])
 			(b["node"] as Node).queue_free()
 			bats.erase(b)
 	return hits
@@ -294,7 +425,7 @@ func rel() -> Vector2i:
 func prompt() -> String:
 	if not active or busy:
 		return ""
-	return "Pickaxe: mine ore   Club: bats   Walk south / Esc: leave"
+	return "Floor %d/%d   Pickaxe: ore   Club: monsters   Ladder down: deeper   South / Esc: up" % [floor_no, CaveModel.MAX_FLOOR]
 
 func _process(d: float) -> void:
 	if not active or busy:
@@ -306,19 +437,39 @@ func _process(d: float) -> void:
 	for b in bats:
 		var data: Dictionary = b["data"]
 		var old: Vector2 = data["pos"]
-		CaveModel.bat_step(data, pp + Vector2(0, -10), d)
+		var kind: String = data.get("kind", "bat")
+		if kind == "bat":
+			CaveModel.bat_step(data, pp + Vector2(0, -10), d)
+		else:
+			CaveModel.crawler_step(data, pp, d)
 		var nc := model_cell(data["pos"])
-		if not model.is_floor(nc):
+		if not model.is_floor(nc) or (kind != "bat" and model.ores.has(nc)):
 			data["pos"] = old
 			data["vel"] = Vector2.ZERO
 		(b["node"] as Node2D).position = data["pos"]
 		var spr: Sprite2D = b["sprite"]
-		spr.frame = int(t * 12.0 + float(data["t"])) % 4
+		spr.frame = int(t * (12.0 if kind == "bat" else 7.0) + float(data["t"])) % 4
+		if kind == "slime":
+			spr.scale = CaveModel.slime_squash(float(data["t"]))
+		if kind != "bat" and (data["vel"] as Vector2).x != 0.0:
+			spr.flip_h = (data["vel"] as Vector2).x < 0.0
 		spr.modulate = spr.modulate.lerp(Color.WHITE, 0.2)
-		var dmg := CaveModel.bat_bite(data, pp + Vector2(0, -10))
+		var dmg: float = CaveModel.bat_bite(data, pp + Vector2(0, -10)) if kind == "bat" else CaveModel.crawler_bite(data, pp)
 		if dmg > 0.0:
 			bitten.emit(dmg)
+			player.push(data["pos"], CaveModel.bite_force(kind))
+			player.shake(0.6, 0.12)
 			data["vel"] = (data["pos"] - pp).normalized() * 160.0
 	var c := rel()
+	if model.has_ladder_down():
+		var near := Vector2(c - model.ladder_down).length()
+		if ladder_lock and near > 1.8:
+			ladder_lock = false
+		elif not ladder_lock and c == model.ladder_down:
+			change_floor(floor_no + 1, true)
+			return
 	if c.y >= model.entrance.y + 1 and absi(c.x - model.entrance.x) <= 3:
-		leave()
+		if floor_no > 1:
+			change_floor(floor_no - 1, false)
+		else:
+			leave()

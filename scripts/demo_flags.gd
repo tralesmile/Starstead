@@ -120,6 +120,19 @@ func on_process() -> void:
 		m.player.position = m.cave.px(ore) + Vector2(16, 70)
 		if "--cave-walls" in OS.get_cmdline_user_args():   # stand beside a torch and a wall edge
 			m.player.position = m.cave.px(m.cave.model.torches[1]) + Vector2(16, 70)
+	if m._arg_prefix("--cave-floor") and Engine.get_process_frames() == 40 and m.cave.active:   # screenshot helper: --cave-floor=3 goes down the ladders
+		var fl := 3
+		for a in OS.get_cmdline_user_args():
+			if a.begins_with("--cave-floor="):
+				fl = int(a.substr(13))
+		m.cave.busy = false
+		m.cave._do_change_floor(fl, true)
+	if m._arg_prefix("--cave-floor") and Engine.get_process_frames() == 60 and m.cave.active:
+		var spots: Array = m.cave.model.crab_spawns + m.cave.model.slime_spawns
+		if not spots.is_empty():
+			m.player.position = m.cave.px(spots[0]) + Vector2(16, 90)
+		if "--cave-ladder" in OS.get_cmdline_user_args() and m.cave.model.has_ladder_down():
+			m.player.position = m.cave.px(m.cave.model.ladder_down) + Vector2(16, -40)
 	if m._arg_prefix("--sports-demo") and Engine.get_process_frames() == 3:   # screenshot helper: --sports-demo=hoops|penalty|boxing
 		var mode := "hoops"
 		for a in OS.get_cmdline_user_args():

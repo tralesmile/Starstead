@@ -307,7 +307,12 @@ func _ready() -> void:
 	cave.setup(world, player, self)
 	cave.ore_broken.connect(_on_ore_broken)
 	cave.bat_down.connect(func(p): drops_view.spawn("bat_wing", 1, p) if randf() < 0.6 else null)
-	cave.bitten.connect(func(a): GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("A bat bites! -%d energy" % int(a)))
+	cave.monster_down.connect(func(k, p):
+		var dr := CaveModel.monster_drop(k, randf())
+		if not dr.is_empty():
+			drops_view.spawn(dr[0], dr[1], p)
+		_say("%s down" % String(k).capitalize()))
+	cave.bitten.connect(func(a): GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("Bitten! -%d energy" % int(a)))
 	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)

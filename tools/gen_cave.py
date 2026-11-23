@@ -303,6 +303,206 @@ def cave_bat():
     save(sheet, "cave_bat.png")
 
 
+# ---------------------------------------------------------------- slime
+def cave_slime():
+    sheet = Image.new("RGBA", (128, 32), (0, 0, 0, 0))
+    G = [(40, 112, 60), (62, 156, 78), (104, 204, 98), (170, 240, 150)]
+    # per frame: (half width, height, lift off ground) squash -> stretch -> airborne -> land
+    poses = [(12, 12, 0), (10, 17, 2), (9, 18, 6), (13, 11, 0)]
+    for f in range(4):
+        im, d = new(32, 32)
+        hw, hh, lift = poses[f]
+        base = 30 - lift
+        d.ellipse([16 - hw + 1, 28, 16 + hw - 1, 31], fill=(20, 14, 16, 70 if lift == 0 else 40))
+        top = base - hh
+        body = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        bp = body.load()
+        for y in range(32):
+            for x in range(32):
+                ny = (y - (top + hh * 0.55)) / (hh * 0.55)
+                nx = (x - 16) / hw
+                # dome on top, flatter bottom
+                if ny < 0:
+                    ok = nx * nx + ny * ny <= 1.0
+                else:
+                    ok = nx * nx + (ny * 0.95) ** 2 <= 1.0 and y <= base
+                if ok:
+                    t = 0.5 - 0.35 * nx - 0.45 * ((y - top) / hh)
+                    c = G[0] if t < 0.1 else G[1] if t < 0.45 else G[2]
+                    bp[x, y] = c + (215,)    # translucent jelly
+        im.alpha_composite(body)
+        px = im.load()
+        # inner darker core (suggests depth)
+        for y in range(top + hh // 2, base):
+            for x in range(16 - hw + 3, 16 + hw - 2):
+                if px[x, y][3] and (x + y) % 5 == 0 and y > base - 4:
+                    px[x, y] = G[0] + (215,)
+        # highlight top-left
+        hx, hy = 16 - hw // 2 - 1, top + 3
+        for (ox, oy) in ((0, 0), (1, 0), (2, 0), (-1, 1), (0, 1), (-1, 2)):
+            if px[hx + ox, hy + oy][3]:
+                px[hx + ox, hy + oy] = G[3] + (235,)
+        # bottom rim
+        for x in range(16 - hw + 1, 16 + hw):
+            if px[x, base][3]:
+                px[x, base] = G[0] + (235,)
+        outline_pass(im)
+        d = ImageDraw.Draw(im)
+        ey = top + hh // 2 - (1 if f in (1, 2) else 0)
+        for ex in (16 - 4, 16 + 2):
+            d.rectangle([ex, ey, ex + 2, ey + 2], fill=(250, 250, 240))
+            d.rectangle([ex + 1, ey + 1, ex + 2, ey + 2], fill=(24, 20, 30))
+            d.point([ex, ey], fill=(255, 255, 255))
+        d.line([16 - 1, ey + 5, 16 + 1, ey + 5], fill=(30, 80, 46))
+        sheet.paste(im, (f * 32, 0))
+    save(sheet, "cave_slime.png")
+
+
+# ---------------------------------------------------------------- crab
+def cave_crab():
+    sheet = Image.new("RGBA", (128, 32), (0, 0, 0, 0))
+    S = [(52, 50, 56), (84, 82, 88), (122, 120, 126), (168, 164, 166)]
+    legs = [(0, 1), (1, 0), (0, -1), (-1, 0)]       # alternating leg lift / sidestep
+    claw_dy = [0, -1, 0, 1]
+    for f in range(4):
+        im, d = new(32, 32)
+        sh = [-1, 0, 1, 0][f]                        # body sidestep
+        cx = 16 + sh
+        d.ellipse([4, 27, 28, 31], fill=(20, 14, 16, 80))
+        # legs (3 per side), alternating phase
+        for side in (-1, 1):
+            for k in range(3):
+                ph = (f + k + (1 if side > 0 else 0)) % 2
+                x0 = cx + side * (6 + k * 2)
+                y0 = 24
+                kx = x0 + side * 2
+                ky = 26 - ph * 2
+                fx = kx + side * 1
+                d.line([x0, y0, kx, ky], fill=OUT, width=2)
+                d.line([kx, ky, fx, 30 - ph], fill=OUT, width=2)
+                d.line([x0, y0, kx, ky], fill=S[1])
+                d.point([fx, 30 - ph], fill=S[0])
+        # claws (arms + pincers)
+        for side in (-1, 1):
+            dy = claw_dy[f] * (1 if side > 0 else -1)
+            ax, ay = cx + side * 8, 18
+            px_, py_ = cx + side * 10, 12 + dy
+            d.line([cx + side * 6, 20, ax, ay], fill=OUT, width=4)
+            d.line([cx + side * 6, 20, ax, ay], fill=S[1], width=2)
+            # pincer: big rock lump with a notch
+            d.ellipse([px_ - 4, py_ - 5, px_ + 4, py_ + 3], fill=S[2], outline=OUT)
+            d.ellipse([px_ - 3 + (1 if side < 0 else 0), py_ - 4, px_ + 1 + (1 if side < 0 else 0), py_ - 1], fill=S[3])
+            d.polygon([(px_, py_ - 5), (px_ + side * 1, py_ - 2), (px_ + side * 3, py_ - 5)], fill=(30, 22, 22))
+            d.point([px_ + side * 2, py_ + 1], fill=S[0])
+        # carapace: domed rock shell
+        body = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        bp = body.load()
+        n = Noise(71, 8)
+        for y in range(32):
+            for x in range(32):
+                dx, dy = (x - cx) / 10.5, (y - 21.5) / 7.5
+                if dx * dx + dy * dy <= 1.0 and y <= 27:
+                    k = 1.15 - 0.03 * ((x - cx) + (y - 16)) * 0.6
+                    c = shade(S[2], k * (0.85 + 0.3 * n.at(x * 2 % 32, y * 2 % 32)))
+                    bp[x, y] = c + (255,)
+        im.alpha_composite(body)
+        px = im.load()
+        r = random.Random(72)
+        for _ in range(16):                           # stone mottling / plates
+            x, y = r.randrange(cx - 9, cx + 9), r.randrange(16, 27)
+            if px[x, y][3] == 255:
+                px[x, y] = shade(px[x, y][:3], r.choice((0.75, 1.2))) + (255,)
+        for x in range(cx - 7, cx + 8):               # plate seams
+            if px[x, 22][3] == 255:
+                px[x, 22] = S[0] + (255,)
+        for y in range(16, 22):
+            if px[cx, y][3] == 255:
+                px[cx, y] = S[0] + (255,)
+        for x in range(cx - 8, cx + 3):               # top-left rim light
+            if px[x, 15][3] == 255:
+                px[x, 15] = S[3] + (255,)
+        outline_pass(im)
+        d = ImageDraw.Draw(im)
+        # eyestalks
+        for ex in (cx - 4, cx + 3):
+            d.line([ex + 1, 16, ex + 1, 11 - (1 if f % 2 else 0)], fill=OUT, width=3)
+            d.line([ex + 1, 16, ex + 1, 12 - (1 if f % 2 else 0)], fill=S[1])
+            ty = 9 - (1 if f % 2 else 0)
+            d.ellipse([ex - 1, ty, ex + 3, ty + 4], fill=(250, 240, 200), outline=OUT)
+            d.point([ex + 1, ty + 2], fill=(20, 10, 20))
+            d.point([ex, ty + 1], fill=(255, 255, 255))
+        sheet.paste(im, (f * 32, 0))
+    save(sheet, "cave_crab.png")
+
+
+# ---------------------------------------------------------------- ladders
+def _hole(im, lit):
+    d = ImageDraw.Draw(im)
+    rock_pixels(im, (0, 0, 31, 31), 11, (84, 76, 70), 1.18, 0.82, 0.07)   # same floor as cave_floor
+    d = ImageDraw.Draw(im)
+    box = [4, 5, 27, 27]
+    # raised rim
+    d.ellipse([3, 4, 28, 28], fill=(150, 138, 126) if lit else (104, 94, 86), outline=OUT)
+    d.ellipse([5, 6, 26, 27], fill=(10, 8, 14), outline=OUT)
+    # inner depth gradient
+    for y in range(8, 26):
+        for x in range(7, 25):
+            if ((x - 15.5) / 9.5) ** 2 + ((y - 16.5) / 9.5) ** 2 <= 1:
+                t = max(0.0, 1 - ((x - 15.5) ** 2 + (y - 16.5) ** 2) ** 0.5 / 9.5)
+                im.putpixel((x, y), mix((24, 20, 30), (6, 4, 10), t) + (255,))
+    if lit:
+        for x in range(7, 22):                     # warm rim light on the top-left lip
+            d.point([x, 5], fill=(236, 200, 120))
+        for (x, y) in ((6, 8), (5, 10), (5, 12), (6, 7), (8, 6)):
+            d.point([x, y], fill=(255, 226, 150))
+        d.arc([4, 5, 27, 27], 150, 300, fill=(255, 222, 140))
+    return d
+
+
+def cave_ladder_down():
+    im = Image.new("RGBA", (32, 32))
+    d = _hole(im, False)
+    # ladder descends into the hole: rails converge slightly, rungs get darker with depth
+    for rx in (11, 20):
+        d.rectangle([rx, 3, rx + 2, 22], fill=WOOD[1], outline=OUT)
+        d.line([rx + 1, 4, rx + 1, 21], fill=WOOD[3])
+    for i, y in enumerate((6, 10, 14, 18)):
+        col = WOOD[2] if i < 2 else WOOD[0]
+        d.rectangle([11, y, 22, y + 1], fill=col, outline=OUT)
+        d.line([12, y, 21, y], fill=shade(col, 1.2))
+    # darken lower part to read as going down
+    for y in range(15, 23):
+        for x in range(10, 24):
+            c = im.getpixel((x, y))
+            if c[:3] != OUT:
+                im.putpixel((x, y), shade(c[:3], 0.72) + (255,))
+    # rail tops poking over the lip
+    d.rectangle([11, 1, 13, 5], fill=WOOD[2], outline=OUT)
+    d.rectangle([20, 1, 22, 5], fill=WOOD[2], outline=OUT)
+    d.line([12, 2, 12, 4], fill=WOOD[3])
+    d.line([21, 2, 21, 4], fill=WOOD[3])
+    save(im, "cave_ladder_down.png")
+
+
+def cave_ladder_up():
+    im = Image.new("RGBA", (32, 32))
+    d = _hole(im, True)
+    # ladder leaning up out of the hole toward the top-left (light source)
+    for (x0, x1) in ((9, 13), (18, 22)):
+        pts = [(x0 + 2, 25), (x0 + 5, 25), (x1 + 3, 2), (x1, 2)]
+        d.polygon(pts, fill=WOOD[1], outline=OUT)
+        d.line([pts[0][0], 24, x1 + 1, 3], fill=WOOD[3])
+    for i, t in enumerate((0.16, 0.38, 0.6, 0.82)):
+        y = int(25 - t * 22)
+        xl = int(11 + (1 - (25 - y) / 23.0) * 4)
+        d.rectangle([xl - 1, y, xl + 13, y + 1], fill=WOOD[2], outline=OUT)
+        d.line([xl, y, xl + 12, y], fill=WOOD[3])
+    # shadow cast by the ladder inside the hole + lit floor spill
+    for (x, y) in ((8, 26), (9, 27), (23, 26), (24, 27)):
+        d.point([x, y], fill=(40, 34, 36))
+    save(im, "cave_ladder_up.png")
+
+
 # ---------------------------------------------------------------- mouth
 def cave_mouth():
     W, H = 96, 80
@@ -467,7 +667,7 @@ def int_furnace():
 def main():
     os.makedirs(SPR, exist_ok=True)
     for fn in (cave_floor, cave_wall, cave_wall_top, cave_ores, cave_torch, cave_bat,
-               cave_mouth, int_furnace):
+               cave_slime, cave_crab, cave_ladder_down, cave_ladder_up, cave_mouth, int_furnace):
         fn()
 
 

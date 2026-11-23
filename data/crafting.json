@@ -8,5 +8,7 @@
 	"scarecrow": {"name": "Scarecrow (wood + fibre + hay)", "needs": {"wood": 6, "fibre": 3, "hay": 2}, "makes": "scarecrow", "item": true, "count": 1},
 	"leather_boots": {"name": "Leather Boots (+8% speed, carry them)", "needs": {"hide": 4, "fibre": 2}, "makes": "leather_boots", "item": true, "count": 1, "limit": 1},
 	"club_copper": {"name": "Copper-Banded Club (+40% damage)", "needs": {"wood": 2, "copper_bar": 3}, "makes": "club_copper", "item": true, "count": 1, "limit": 1},
-	"club_iron": {"name": "Iron-Banded Club (+80% damage)", "needs": {"wood": 2, "iron_bar": 3}, "makes": "club_iron", "item": true, "count": 1, "limit": 1}
+	"club_iron": {"name": "Iron-Banded Club (+80% damage)", "needs": {"wood": 2, "iron_bar": 3}, "makes": "club_iron", "item": true, "count": 1, "limit": 1},
+	"pickaxe_copper": {"name": "Copper Pickaxe (power 2)", "needs": {"wood": 2, "copper_bar": 4}, "makes": "pickaxe_copper", "item": true, "count": 1, "limit": 1},
+	"pickaxe_iron": {"name": "Iron Pickaxe (power 3)", "needs": {"wood": 2, "iron_bar": 4}, "makes": "pickaxe_iron", "item": true, "count": 1, "limit": 1}
 }
