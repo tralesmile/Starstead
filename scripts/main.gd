@@ -169,6 +169,7 @@ func _ready() -> void:
 	car.position = _car_spot()
 	car.toast.connect(_say)
 	hud.car = car
+	car.impact.connect(func(at: Vector2, n: int): ambient.puff(at, n, 160.0))
 	car.drift_banked.connect(func(p):
 		var best: int = int(GameState.sport_best.get("drift", 0))
 		GameState.sport_best["drift"] = maxi(best, p)

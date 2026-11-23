@@ -126,6 +126,58 @@ static func layout(kind: String) -> Dictionary:
 		_f("chest", "int_chest", 6, 3, 1, 1, true, "loot"),
 		_f("mat", "int_mat", 3, 4, 1, 1, false)]}
 
+## Layout for a concrete building: city homes get a personal furnishing, everything else uses its kind.
+static func layout_for(building_id: String) -> Dictionary:
+	var k := kind_for(building_id)
+	if k != "house":
+		return layout(k)
+	match building_id:
+		"city_house1":   # the Okafor family: kids, toys, sofa and TV
+			return {"w": 8, "h": 5, "door_x": 3, "window_x": [1, 5], "furniture": [
+				_f("rug", "int_rug", 2, 2, 3, 2, false),
+				_f("bed", "int_bed", 0, 1, 1, 2),
+				_f("bed2", "int_bed", 1, 1, 1, 2),
+				_f("toys", "int_toys", 5, 3, 1, 1, false),
+				_f("tv", "int_tv", 5, 0, 1, 1),
+				_f("sofa", "int_sofa", 2, 2, 2, 1),
+				_f("fridge", "int_fridge", 7, 0, 1, 1, true, "loot"),
+				_f("dresser", "int_dresser", 3, 0, 1, 1, true, "loot"),
+				_f("plant", "int_plant", 7, 3, 1, 1),
+				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
+		"city_house2":   # Mrs. Lindqvist: piano, books, armchair
+			return {"w": 7, "h": 5, "door_x": 3, "window_x": [1, 5], "furniture": [
+				_f("rug", "int_rug", 2, 2, 3, 2, false),
+				_f("bed", "int_bed", 0, 1, 1, 2),
+				_f("piano", "int_piano", 2, 0, 2, 1, true, "loot"),
+				_f("bookcase", "int_bookcase", 4, 0, 1, 1, true, "loot"),
+				_f("armchair", "int_armchair", 5, 2, 1, 1),
+				_f("lamp", "int_lamp", 6, 0, 1, 1),
+				_f("plant", "int_plant", 6, 3, 1, 1),
+				_f("chest", "int_chest", 0, 3, 1, 1, true, "loot"),
+				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
+		"city_house3":   # Dev and Tamsin Rao: home office, kitchen
+			return {"w": 8, "h": 5, "door_x": 3, "window_x": [2, 6], "furniture": [
+				_f("rug", "int_rug", 2, 2, 3, 2, false),
+				_f("bed", "int_bed", 0, 1, 1, 2),
+				_f("deskpc", "int_deskpc", 5, 0, 2, 1, true, "loot"),
+				_f("fridge", "int_fridge", 7, 0, 1, 1),
+				_f("stove", "int_stove", 3, 0, 1, 1),
+				_f("sofa", "int_sofa", 0, 3, 2, 1),
+				_f("bookcase", "int_bookcase", 1, 0, 1, 1, true, "loot"),
+				_f("lamp", "int_lamp", 7, 3, 1, 1),
+				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
+		"city_apt_a", "city_apt_b":   # small flats
+			return {"w": 6, "h": 5, "door_x": 2, "window_x": [1, 4], "furniture": [
+				_f("rug", "int_rug", 1, 2, 3, 2, false),
+				_f("bed", "int_bed", 0, 1, 1, 2),
+				_f("tv", "int_tv", 3, 0, 1, 1),
+				_f("sofa", "int_sofa", 1, 2, 2, 1),
+				_f("fridge", "int_fridge", 5, 0, 1, 1, true, "loot"),
+				_f("dresser", "int_dresser", 1, 0, 1, 1, true, "loot"),
+				_f("plant", "int_plant", 5, 3, 1, 1, true, "loot"),
+				_f("mat", "int_mat", 2, 4, 1, 1, false)]}
+	return layout("house")
+
 ## Where the player appears when entering: just above the door mat, in pixels relative to the room origin.
 static func entrance(l: Dictionary) -> Vector2:
 	return Vector2((int(l["door_x"]) + 0.5) * 32.0, (int(l["h"]) - 1) * 32.0 + 8.0)

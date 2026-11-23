@@ -43,6 +43,7 @@ static func cone_texture() -> Texture2D:
 signal toast(msg: String)
 signal crime(kind: String, pos: Vector2)
 signal drift_banked(points: int)
+signal impact(pos: Vector2, bits: int)   # wall hit: dust and debris
 var drift := DriftScore.new()
 var _on_circuit := false
 
@@ -162,7 +163,11 @@ func _physics_process(delta: float) -> void:
 			toast.emit("Crash! Car health %d%%" % int(health))
 			if dmg >= 8.0 and driving:
 				crime.emit("hit_and_run", position)
-		var cr := VehicleMath.crash_response(vel, get_slide_collision(0).get_normal(), heading)
+		var cn := get_slide_collision(0).get_normal()
+		var bits := VehicleMath.crash_dust(vel, cn)
+		if bits > 0:
+			impact.emit(position - cn * 14.0, bits)
+		var cr := VehicleMath.crash_response(vel, cn, heading)
 		vel = cr["vel"]
 		heading += float(cr["spin"])   # nose shoved off the wall, no more dead stop against it
 	rotation = heading

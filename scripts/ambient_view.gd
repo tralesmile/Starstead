@@ -6,6 +6,7 @@ const FIREFLIES := 14
 const LEAVES := 8
 var player: Player
 var t := 0.0
+var crow_tex: Texture2D = load("res://assets/sprites/crow.png")
 var rain := 0.0   # current rain 0..1, set by main (cloud shadows vanish under overcast)
 
 func _ready() -> void:
@@ -69,6 +70,13 @@ func _draw() -> void:
 			var fade := (1.0 - clampf(age - 0.12 * float(i), 0.0, 1.0)) * cold
 			var o := Vector2(bp.x * (fx if fx != 0.0 else 0.0), bp.y).round()
 			draw_rect(Rect2(mouth + o - Vector2(sz, sz) * 0.5, Vector2(sz, sz)), Color(0.93, 0.97, 1.0, 0.8 * fade) * unlit)
+	var ca := CrowMath.age(mins)
+	if ca >= 0.0 and rain < 0.6 and not player.indoors:
+		for i in CrowMath.COUNT:
+			var cp := (c + CrowMath.pos(i, ca)).round()
+			var fr := CrowMath.frame(i, t)
+			draw_rect(Rect2(cp + Vector2(-4, 10), Vector2(8, 2)), Color(0, 0, 0, 0.12 * CrowMath.alpha(ca)))   # ground shadow
+			draw_texture_rect_region(crow_tex, Rect2(cp - Vector2(8, 8), Vector2(16, 16)), Rect2(fr * 16, 0, 16, 16), Color(1, 1, 1, CrowMath.alpha(ca)))
 	if night < 0.5:
 		for i in LEAVES:
 			var p := (c + AmbientMath.leaf_pos(i, t)).round()

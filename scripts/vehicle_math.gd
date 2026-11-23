@@ -90,6 +90,13 @@ static func crash_response(vel: Vector2, normal: Vector2, heading: float) -> Dic
 	var spin := clampf(forward(heading).cross(n) * into / 260.0, -0.5, 0.5)
 	return {"vel": out, "spin": spin}
 
+static func crash_dust(vel: Vector2, normal: Vector2) -> int:
+	## Dust/debris bits thrown by a wall hit: none for a graze (into-wall speed < 40 px/s), up to 14 for a full-speed smash.
+	var into := maxf(0.0, -vel.dot(normal.normalized()))
+	if into < 40.0:
+		return 0
+	return clampi(int(into / 25.0), 2, 14)
+
 static func speed_cap(health: float) -> float:
 	## Battered cars top out lower (never below 45%).
 	return MAX_SPEED * lerpf(0.45, 1.0, clampf(health / HEALTH_MAX, 0.0, 1.0))

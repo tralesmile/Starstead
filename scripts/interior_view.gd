@@ -51,7 +51,7 @@ func enter(b: Dictionary) -> void:
 		return
 	busy = true
 	building = b
-	layout = InteriorModel.layout(InteriorModel.kind_for(String(b["id"])))
+	layout = InteriorModel.layout_for(String(b["id"]))
 	_freeze(true)
 	var tw := create_tween()
 	tw.tween_property(fade, "color:a", 1.0, 0.22)
