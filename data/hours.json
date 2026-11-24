@@ -1,0 +1,10 @@
+{
+  "city_shop":   {"open": 8,  "close": 20, "lock": 2, "alarm": 0.25, "till": [60, 160]},
+  "city_cafe":   {"open": 7,  "close": 22, "lock": 1, "alarm": 0.1,  "till": [40, 110]},
+  "city_bank":   {"open": 9,  "close": 17, "lock": 4, "alarm": 0.7,  "till": [300, 650]},
+  "city_garage": {"open": 8,  "close": 18, "lock": 2, "alarm": 0.3,  "till": [80, 200]},
+  "city_hall":   {"open": 9,  "close": 17, "lock": 3, "alarm": 0.5,  "till": [120, 280]},
+  "circ_pit":    {"open": 8,  "close": 20, "lock": 2, "alarm": 0.2,  "till": [70, 180]},
+  "circ_hall":   {"open": 9,  "close": 21, "lock": 2, "alarm": 0.3,  "till": [90, 220]},
+  "rules": {"base_chance": 0.8, "per_level": 0.12, "per_skill": 0.04, "min": 0.05, "max": 0.9, "fail_heat": 4.0, "till_heat_mult": 0.5, "alarm_heat": 30.0, "till_skill_bonus": 0.03}
+}

@@ -14,6 +14,7 @@ signal service_requested(action: String)
 signal loot_requested(building: Dictionary)
 signal safe_requested(building: Dictionary)
 signal alarm_requested(building: Dictionary)
+signal till_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
@@ -374,7 +375,10 @@ func prompt() -> String:
 		"loot": return "E: Search the %s" % a["id"]
 		"safe": return "E: Crack the safe"
 		"alarm": return "E: Cut the alarm wire"
-	return CityActions.prompt(String(a.get("action", "")))
+	var act := ShopHours.counter_action(String(building.get("id", "")), String(a.get("action", "")), float(hour_cb.call()) if hour_cb.is_valid() else 12.0)
+	if act == "till":
+		return "E: Crack the till (closed shop)"
+	return CityActions.prompt(act)
 
 func interact() -> bool:
 	## E key inside a room; returns true when handled.
@@ -416,6 +420,9 @@ func interact() -> bool:
 			alarm_requested.emit(building)
 			return true
 		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business":
+			if ShopHours.counter_action(String(building.get("id", "")), String(a["action"]), float(hour_cb.call()) if hour_cb.is_valid() else 12.0) == "till":
+				till_requested.emit(building)
+				return true
 			service_requested.emit(String(a["action"]))
 			return true
 	return true

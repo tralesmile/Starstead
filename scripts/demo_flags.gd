@@ -224,6 +224,11 @@ func on_process() -> void:
 		m.dealer.open()
 	if "--alarm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:   # siren flash in the room
 		m.robbery.model.add_noise(50.0)
+	if "--till-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14 and m.interior.active:   # stand at the counter of a closed shop
+		for f in m.interior.layout["furniture"]:
+			if String(f["action"]) in ShopHours.TILL_ACTIONS:
+				m.player.position = InteriorView.ORIGIN + (Vector2(f["cell"]) + Vector2(0.5, float(f["size"].y) + 0.5)) * 32.0
+				break
 	if "--wake-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:   # residents wake and shove
 		m.robbery.model.add_noise(100.0)
 	if "--fish-demo" in OS.get_cmdline_user_args():

@@ -96,7 +96,11 @@ func _neighbours(inside: String, hr: float, delta: float) -> void:
 
 func _prompt(b: Dictionary) -> String:
 	if String(b["id"]) in InteriorModel.PUBLIC:
-		return "E: Enter %s" % b["name"]
+		var pid := String(b["id"])
+		var hr := NpcSchedule.hour_of(GameState.clock.minutes)
+		if ShopHours.is_open(pid, hr) or ShopHours.broken_in(GameState.after_hours, pid, GameState.clock.day):
+			return "E: Enter %s" % b["name"]
+		return "%s closed (%s). E: Pick the lock (%d%%)" % [b["name"], ShopHours.hours_text(pid), int(100.0 * ShopHours.pick_chance(pid, GameState.street_skill()))]
 	var h := model.house(str(b["id"]))
 	var lit := " - lights on" if Household.lights_on(str(b["id"]), NpcSchedule.hour_of(GameState.clock.minutes)) else ""
 	if h["locked"]:
@@ -112,6 +116,50 @@ func _alarm(id: String) -> void:
 	police.add_heat(float(model.cfg["alarm"]["heat"]))
 	alarm_rang.emit(id)
 	message.emit("ALARM! The siren is wailing")
+
+func is_closed(b: Dictionary) -> bool:
+	## true when this public building is shut and its lock is still intact tonight
+	var pid := String(b["id"])
+	return not ShopHours.is_open(pid, NpcSchedule.hour_of(GameState.clock.minutes)) and not ShopHours.broken_in(GameState.after_hours, pid, GameState.clock.day)
+
+func break_in(b: Dictionary) -> bool:
+	## Picks the lock of a closed shop. Failure makes noise and may trip the alarm; true = door open now.
+	var pid := String(b["id"])
+	var rules: Dictionary = ShopHours.cfg()["rules"]
+	if rng.randf() < ShopHours.pick_chance(pid, GameState.street_skill()):
+		ShopHours.mark(GameState.after_hours, pid, "in", GameState.clock.day)
+		GameState.rep_street += 1
+		message.emit("Click! You slip into the closed %s" % b["name"])
+		return true
+	police.add_heat(float(rules["fail_heat"]))
+	if rng.randf() < ShopHours.alarm_chance(pid):
+		police.add_heat(float(rules["alarm_heat"]))
+		alarm_rang.emit(pid)
+		message.emit("ALARM! The %s siren is wailing" % b["name"])
+	else:
+		message.emit("The pick snaps. Somebody may have heard")
+	return false
+
+func crack_till(b: Dictionary) -> void:
+	## After hours the counter is a till: once per night, cash for heat (the bank is the big, loud score).
+	var pid := String(b["id"])
+	var day: int = GameState.clock.day
+	if not ShopHours.till_ready(GameState.after_hours, pid, day):
+		message.emit("The till is already empty")
+		return
+	ShopHours.mark(GameState.after_hours, pid, "till", day)
+	var rules: Dictionary = ShopHours.cfg()["rules"]
+	var cash := ShopHours.till_cash(pid, rng) + int(float(GameState.street_skill()) * float(rules["till_skill_bonus"]) * 100.0)
+	GameState.money += cash
+	GameState.rep_street += 2
+	GameState.bump("after_hours_heists")
+	police.add_heat(WantedMath.crime_heat("robbery") * float(rules["till_heat_mult"]))
+	if rng.randf() < ShopHours.alarm_chance(pid):
+		police.add_heat(float(rules["alarm_heat"]))
+		alarm_rang.emit(pid)
+		message.emit("$%d from the till... and the ALARM goes off!" % cash)
+	else:
+		message.emit("Pop! $%d from the till" % cash)
 
 func crack_safe(b: Dictionary) -> void:
 	var id := str(b["id"])

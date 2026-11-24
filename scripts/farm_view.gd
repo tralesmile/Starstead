@@ -18,6 +18,7 @@ func _process(_d: float) -> void:
 
 func _draw() -> void:
 	var farm: FarmModel = GameState.farm
+	var t := Time.get_ticks_msec() * 0.001
 	var joins := {}
 	for cell in farm.soil:
 		joins[cell] = true
@@ -27,6 +28,11 @@ func _draw() -> void:
 		var m := Autotile.mask(joins, cell, [true])
 		var tex: Texture2D = wet if s.watered else dry
 		draw_texture_rect_region(tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(Autotile.atlas_index(m) * 32, 0, 32, 32))
+		if s.watered:   # wet soil catches the light: two tiny twinkles per tile
+			for gi in 2:
+				var g := CropMath.glint(cell, gi, t)
+				if float(g["a"]) > 0.05:
+					draw_rect(Rect2(Vector2(cell) * 32.0 + Vector2(float(g["x"]), float(g["y"])), Vector2(2, 1)), Color(0.78, 0.88, 0.95, 0.55 * float(g["a"])))
 		if bool(s.get("fert", false)) and not bool(s.get("fert_spent", false)):   # fertiliser: pale-green flecks in the furrows
 			var o := Vector2(cell) * 32.0
 			for i in 7:
@@ -42,7 +48,10 @@ func _draw() -> void:
 		var mod := Color.WHITE
 		if s.crop != "turnip" and f == 4 and farm.crops[s.crop].has("tint"):
 			mod = Color(String(farm.crops[s.crop].tint)).lerp(Color.WHITE, 0.25)  # ripe fruit takes the crop's colour
-		draw_texture_rect_region(ct, Rect2(Vector2(cell) * 32.0 + Vector2(0, 2), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
+		var foot := Vector2(cell) * 32.0 + Vector2(16, 30)   # shear around the plant's foot so the roots stay put
+		draw_set_transform_matrix(Transform2D(Vector2(1, 0), Vector2(CropMath.sway(cell, t, f), 1), foot))
+		draw_texture_rect_region(ct, Rect2(Vector2(-16, -28), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 	for cell in farm.weeds:
 		draw_texture_rect_region(weed_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))
 	for cell in farm.scarecrows:

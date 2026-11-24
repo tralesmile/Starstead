@@ -34,8 +34,9 @@ static func facing_tile(pos: Vector2, facing: int, tile: int = 32) -> Vector2i:
 
 static func accelerate(v: Vector2, input: Vector2, delta: float, speed: float = SPEED, grip: float = 1.0) -> Vector2:
 	## Smooth start/stop: move toward the target velocity with ACCEL, brake with FRICTION. grip < 1 = slippery.
+	## Letting go of the stick at sprint speed slides a few pixels (brake_slide) instead of stopping dead.
 	var target := velocity(input, speed)
-	var rate := (ACCEL if target.length() > 0.01 else FRICTION) * grip
+	var rate := (ACCEL if target.length() > 0.01 else FRICTION * brake_slide(v.length())) * grip
 	return v.move_toward(target, rate * delta)
 
 static func walk_frame_hd(t: float, moving: bool) -> int:
@@ -103,6 +104,13 @@ static func sprint_ease(cur: float, target: float, dt: float) -> float:
 	## Sprint builds up and winds down instead of snapping (inertia of effort).
 	var rate := SPRINT_RAMP_UP if target > cur else SPRINT_RAMP_DOWN
 	return move_toward(cur, target, rate * dt)
+
+const SLIDE_MIN_FRICTION := 0.4   # sprint-speed braking uses 40% of the normal friction
+static func brake_slide(speed: float) -> float:
+	## Friction multiplier while braking from `speed`: full friction at walking pace, down to 0.4x at a full sprint.
+	var lo := SPEED * 1.1
+	var hi := SPEED * SPRINT_MULT
+	return lerpf(1.0, SLIDE_MIN_FRICTION, clampf((speed - lo) / (hi - lo), 0.0, 1.0))
 
 const SKID_MIN_SPEED := 55.0
 

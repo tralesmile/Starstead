@@ -307,6 +307,7 @@ func _ready() -> void:
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
 	interior.safe_requested.connect(func(b): robbery.crack_safe(b))
 	interior.alarm_requested.connect(func(b): robbery.cut_alarm(b))
+	interior.till_requested.connect(func(b): robbery.crack_till(b))
 	robbery.alarm_rang.connect(func(_id): interior.ring_alarm())
 	interior.extras_cb = func(id: String) -> Dictionary:
 		var h: Dictionary = robbery.model.house(id)
@@ -696,7 +697,11 @@ func _unhandled_input(e: InputEvent) -> void:
 			var pc := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
 			var dcell := fc if not robbery.building_at(fc).is_empty() else pc
 			var bb := robbery.building_at(dcell)
-			if not bb.is_empty() and (String(bb["id"]) in InteriorModel.PUBLIC or not robbery.model.house(String(bb["id"]))["locked"]):
+			if not bb.is_empty() and String(bb["id"]) in InteriorModel.PUBLIC and robbery.is_closed(bb):
+				if robbery.break_in(bb):
+					interior.enter(bb)
+					story_view.event("enter_" + String(bb["id"]))
+			elif not bb.is_empty() and (String(bb["id"]) in InteriorModel.PUBLIC or not robbery.model.house(String(bb["id"]))["locked"]):
 				interior.enter(bb)
 				story_view.event("enter_" + String(bb["id"]))
 			else:
