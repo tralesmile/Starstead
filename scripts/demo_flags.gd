@@ -169,10 +169,18 @@ func on_process() -> void:
 		if mode == "boxing":
 			m.sports.tele = 1
 			m.sports.tele_t = 0.2
+	if "--ride-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: gallop a tamed horse
+		var st := {"id": "horse", "trust": 100.0, "hunger": 0.0, "gear": {}, "bond": 80}
+		GameState.animals.append(st)
+		m.animals._spawn("horse", m.player.position, st)
+		m.animals._mount(m.animals.critters[m.animals.critters.size() - 1])
+		Input.action_press("move_down")
+		Input.action_press("sprint")
 	if "--derby-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
-		GameState.money = maxi(GameState.money, 100)
+		GameState.money = maxi(GameState.money, 300)
 		m.derby.open()
 		m.derby.countdown = 0.0
+		m.derby.bet = 50
 		m.derby.force_gallop = true
 	if m._arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
 		var kind := "farmhouse"

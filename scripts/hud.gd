@@ -5,6 +5,8 @@ extends CanvasLayer
 var label: Label
 var bars: Control
 var car = null   # CarView, set by main (fuel gauge while driving)
+var legend_mode := "foot"   # KeyLegend mode, set by main each frame
+var legend_on := true       # F1 toggles
 var _t := 0.0
 
 func _init() -> void:
@@ -91,6 +93,21 @@ func _coin(c: Vector2) -> void:
 	bars.draw_circle(c, 3.0, Color(0.93, 0.74, 0.22))
 	bars.draw_rect(Rect2(c.x - 1, c.y - 2, 1, 2), Color(1.0, 0.95, 0.65))
 
+func _legend() -> void:
+	## Small bottom-right panel: the keys that matter right now (KeyLegend), dimmed so it never competes with the world.
+	var font := ThemeDB.fallback_font
+	var rows := KeyLegend.rows(legend_mode)
+	var sz := get_viewport().get_visible_rect().size
+	var w := KeyLegend.panel_width(legend_mode)
+	var h := 6.0 + rows.size() * 11.0
+	var r := Rect2(sz.x - w - 4, sz.y - h - 22, w, h)
+	bars.draw_rect(r.grow(1), Color(0.1, 0.06, 0.03, 0.55))
+	bars.draw_rect(r, Color(0.94, 0.87, 0.68, 0.55))
+	for i in rows.size():
+		var y := r.position.y + 11.0 + i * 11.0
+		bars.draw_string(font, Vector2(r.position.x + 4, y), String(rows[i][0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(0.42, 0.24, 0.05))
+		_rtext(Vector2(r.end.x - 4, y), String(rows[i][1]), 8, INK)
+
 func _draw_bars() -> void:
 	var font := ThemeDB.fallback_font
 	var c: GameClock = GameState.clock
@@ -102,6 +119,8 @@ func _draw_bars() -> void:
 	bars.draw_rect(Rect2(PANEL.position + Vector2(33, 19), Vector2(PANEL.size.x - 39, 1)), PAPER.darkened(0.2))
 	_coin(PANEL.position + Vector2(38, 27))
 	_rtext(PANEL.position + Vector2(PANEL.size.x - 6, 31), HudText.money_text(GameState.money), 11, Color(0.42, 0.28, 0.02))
+	if legend_on:
+		_legend()
 	var e: Energy = GameState.energy
 	_bar(PANEL.position + Vector2(6, 38), PANEL.size.x - 12, HudBars.frac(e.value, Energy.MAX), "EN", HudBars.text(e.value, Energy.MAX).replace("/" + str(Energy.MAX), ""))
 	if car != null and car.driving:

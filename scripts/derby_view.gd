@@ -20,6 +20,8 @@ var post_tex: Texture2D
 var dust: Array = []     # {lane, x, age}
 var dust_t := 0.0
 var spawn_dust := false
+var bet := 0
+var bet_paid := false
 var force_gallop := false     # demo helper
 const BOX := Rect2(50, 60, 540, 240)
 
@@ -56,9 +58,11 @@ func open() -> bool:
 		runners.append(DerbyModel.runner(bonus if i == 0 else 0.04 * skills[i]))
 	times = [-1.0, -1.0, -1.0, -1.0]
 	t = 0.0
-	countdown = 2.4
+	countdown = 4.0
+	bet = 0
+	bet_paid = false
 	finished = false
-	last_text = "%s at the gate. Hold Space to gallop, release to rest" % mount_name
+	last_text = "%s at the gate. Up/Down: bet on yourself. Hold Space to gallop" % mount_name
 	visible = true
 	return true
 
@@ -68,6 +72,9 @@ func close() -> void:
 
 func handle(e: InputEvent) -> bool:
 	if visible and e is InputEventKey and e.pressed and not e.echo:
+		if countdown > 0.0 and not finished and (e.keycode == KEY_UP or e.keycode == KEY_DOWN or e.keycode == KEY_W or e.keycode == KEY_S):
+			bet = DerbyModel.next_bet(bet, 1 if e.keycode == KEY_UP or e.keycode == KEY_W else -1, GameState.money)
+			return true
 		if e.keycode == KEY_ESCAPE or (finished and (e.keycode == KEY_E or e.keycode == KEY_SPACE)):
 			close()
 		return true
@@ -80,7 +87,11 @@ func _process(d: float) -> void:
 	if not finished:
 		if countdown > 0.0:
 			countdown -= d
-		else:
+		if countdown <= 0.0 and not bet_paid:
+			bet_paid = true
+			bet = mini(bet, GameState.money)
+			GameState.money -= bet   # the stake is taken as the gate opens
+		if countdown <= 0.0:
 			dust_t -= d
 			spawn_dust = dust_t <= 0.0
 			if spawn_dust:
@@ -114,7 +125,8 @@ func _finish() -> void:
 	# keep the others running to the line in rank order: rank the rest by position
 	var pl := DerbyModel.place(poss, times, 0)
 	var pay := DerbyModel.prize(pl)
-	GameState.money += pay
+	var win := DerbyModel.payout(bet, pl)
+	GameState.money += pay + win
 	GameState.bump("derbies_run")
 	if pl == 0:
 		GameState.bump("derbies_won")
@@ -122,7 +134,7 @@ func _finish() -> void:
 	var ms := int(t * 100.0)
 	if pl == 0 and (not GameState.sport_best.has(key) or ms < int(GameState.sport_best[key])):
 		GameState.sport_best[key] = ms
-	last_text = "%s place%s. %s   (Space: leave)" % [["1st", "2nd", "3rd", "4th"][pl], " - prize $%d" % pay if pay > 0 else "", "A clean run!" if pl == 0 else "Pace your gallop: rest when the bar runs low."]
+	last_text = "%s place%s%s. %s   (Space: leave)" % [["1st", "2nd", "3rd", "4th"][pl], " - prize $%d" % pay if pay > 0 else "", ", bet pays $%d" % win if bet > 0 and win > 0 else (", lost the $%d bet" % bet if bet > 0 else ""), "A clean run!" if pl == 0 else "Pace your gallop: rest when the bar runs low."]
 	message.emit("Derby: %s" % ["1st", "2nd", "3rd", "4th"][pl])
 
 func _draw_all() -> void:
@@ -157,5 +169,6 @@ func _draw_all() -> void:
 		canvas.draw_rect(Rect2(o.x, by, 200.0 * s, 10), Color(0.9, 0.35, 0.25) if runners[0]["winded"] else Color(0.4, 0.85, 0.4))
 		canvas.draw_string(font, Vector2(o.x + 210, by + 9), "WINDED" if runners[0]["winded"] else "stamina", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
 	if countdown > 0.0 and not finished:
-		canvas.draw_string(font, BOX.position + Vector2(230, 120), str(ceili(countdown)), HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color(1, 0.9, 0.3))
+		canvas.draw_string(font, BOX.position + Vector2(150, 100), "Bet on yourself: $%d  (Up/Down)  1st x3, 2nd x1.5" % bet, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.6))
+		canvas.draw_string(font, BOX.position + Vector2(230, 140), str(ceili(countdown)), HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color(1, 0.9, 0.3))
 	canvas.draw_string(font, Vector2(o.x, BOX.position.y + BOX.size.y - 8), last_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 0.7))

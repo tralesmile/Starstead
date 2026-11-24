@@ -78,3 +78,20 @@ static func prize(place_idx: int) -> int:
 ## Mount quality: bond 0..100 and gear speed add up to a small bonus (max +12%).
 static func bonus_for(bond: int, gear_speed: float = 0.0) -> float:
 	return clampf(float(bond) / 100.0 * 0.08 + gear_speed, 0.0, 0.12)
+
+## Betting on yourself: stake before the countdown ends; paid out by place (1st x3, 2nd x1.5, lower loses the stake).
+const BETS := [0, 25, 50, 100]
+const BET_MULT := [3.0, 1.5, 0.0, 0.0]
+
+static func next_bet(cur: int, dir: int, money: int) -> int:
+	## Step through BETS (dir +1/-1), never beyond what the player can pay on top of the entry fee.
+	var i := BETS.find(cur)
+	if i < 0:
+		i = 0
+	var j := clampi(i + dir, 0, BETS.size() - 1)
+	while j > 0 and int(BETS[j]) + FEE > money:
+		j -= 1
+	return int(BETS[j])
+
+static func payout(bet: int, place_idx: int) -> int:
+	return int(round(float(bet) * float(BET_MULT[clampi(place_idx, 0, BET_MULT.size() - 1)])))

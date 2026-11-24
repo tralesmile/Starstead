@@ -45,6 +45,7 @@ var chest_view: ChestView
 var cook_view: CookView
 var sports: SportsView
 var derby: DerbyView
+var hoof_t := 0.0
 var garage_view: GarageView
 var drops_view: DropsView
 var tree_fall: TreeFallView
@@ -503,6 +504,8 @@ func _process(delta: float) -> void:
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
 	player.indoors = _indoors()
+	hud.legend_mode = KeyLegend.mode_for(car.driving, animals.riding != null, _indoors())
+	_hoof_dust(delta)
 	player.zoom_bias = (0 if _indoors() else -1 if (car.driving or animals.riding != null) else 0)
 	weather.visible = not _indoors()
 	ambient.visible = not _indoors()
@@ -517,7 +520,22 @@ func _process(delta: float) -> void:
 		toast.text = ""
 	goal_label.visible = toast.text == ""   # both live at (8,72): a fresh message hides the goal line for 1.5 s
 
+func _hoof_dust(delta: float) -> void:
+	## A galloping mount kicks up ground-coloured dust behind it (rate by speed, MountMath.dust_rate).
+	var rate := MountMath.dust_rate(player.velocity.length()) if animals.riding != null and not _indoors() else 0.0
+	if rate <= 0.0:
+		hoof_t = 0.0
+		return
+	hoof_t += delta * rate
+	if hoof_t >= 1.0:
+		hoof_t = 0.0
+		var tile: int = world.gen.tile_at(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+		var back := -player.velocity.normalized() * 8.0
+		ambient.puff(player.position + back + Vector2(0, 4), 4, 70.0, AmbientMath.step_dust_color(tile, GameState.clock.season()))
+
 func _unhandled_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_F1:
+		hud.legend_on = not hud.legend_on
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
 		_rod_released()
 	if e is InputEventMouseMotion:
