@@ -169,6 +169,11 @@ func on_process() -> void:
 		if mode == "boxing":
 			m.sports.tele = 1
 			m.sports.tele_t = 0.2
+	if "--derby-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		GameState.money = maxi(GameState.money, 100)
+		m.derby.open()
+		m.derby.countdown = 0.0
+		m.derby.force_gallop = true
 	if m._arg_prefix("--enter-demo") and Engine.get_process_frames() == 3:
 		var kind := "farmhouse"
 		for a in OS.get_cmdline_user_args():

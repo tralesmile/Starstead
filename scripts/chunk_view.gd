@@ -284,6 +284,10 @@ func _circuit(world: World) -> void:
 		pit.position = Vector2(CircuitModel.PITCH_CELL) * 32.0
 		pit.z_index = -9
 		_add(world, pit)
+	var dc: Vector2i = CircuitModel.PITCH_CELL + Vector2i(7, 2)
+	if ChunkGrid.chunk_of_cell(dc) == chunk:
+		_add(world, world.make_prop("res://assets/sprites/pit_flag.png", dc, Vector2(6, 6), Vector2(0, -20)))
+		world.interactables.add(dc + Vector2i(0, 1), "derby", "E: Animal derby")
 	for p in CircuitModel.props():
 		var c: Vector2i = p["cell"]
 		if ChunkGrid.chunk_of_cell(c) != chunk:

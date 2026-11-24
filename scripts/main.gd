@@ -44,6 +44,7 @@ var hud: Hud
 var chest_view: ChestView
 var cook_view: CookView
 var sports: SportsView
+var derby: DerbyView
 var garage_view: GarageView
 var drops_view: DropsView
 var tree_fall: TreeFallView
@@ -272,6 +273,10 @@ func _ready() -> void:
 	sports.closed.connect(func(): player.set_physics_process(true))
 	sports.message.connect(_say)
 	add_child(sports)
+	derby = DerbyView.new()
+	derby.closed.connect(func(): player.set_physics_process(true))
+	derby.message.connect(_say)
+	add_child(derby)
 	garage_view = GarageView.new()
 	garage_view.car = car
 	garage_view.closed.connect(func(): player.set_physics_process(true))
@@ -591,6 +596,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if sports.visible:
 		sports.handle(e)
+		get_viewport().set_input_as_handled()
+		return
+	if derby.visible:
+		derby.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if cook_view.visible:
