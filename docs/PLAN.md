@@ -197,7 +197,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
 - [x] Basic combat: club tool (key 8), swing cone, NPC/cop health + knock-out + knockback + assault heat (CombatModel/CombatView)
-- [x] Stall theft (T at the market stall: 3 grabs/day, vendor may shout and raise heat; StallTheft tested). [ ] car theft and combat on animals/dogs
+- [x] Stall theft (T at the market stall: 3 grabs/day, vendor may shout and raise heat; StallTheft tested). [ ] car theft (CLAIMED 2026-11-24 run 24) and combat on animals/dogs
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
 - [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [x] pen: E on a fed tame animal toggles stay/follow, stayers wander within 56px of their spot and fences/walls block animals (AnimalModel.pen_target). [x] Animal gear (G next to a tamed animal wears/removes saddle, coat, armour from the bag; shop sells them; tint; AnimalModel.next_gear tested)
@@ -224,7 +224,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Mining caves, ore, smelting; forge/garage/workshop crafting (run 20: workshop anvil + ForgeView, data/forge.json: copper/iron vests -15%/-30% damage taken, engine kit +12% top speed, grip tyres +20% grip, bumper guard -35% crash damage; carried in the bag, GearModel tested). [ ] swords/spears, car body kits, armour for animals
 - [x] Residents at home (run 23): data/households.json routines (worker/homebody/kid/nightowl), Household pure model, sleepers (int_sleeper + zzz) and awake residents inside city homes, wake threshold by sleep depth/awake/empty house, suspicion meter (sneak halves range), woken residents shove you out, door prompt says 'lights on', home windows only glow when someone is awake. [x] E talks to awake residents (grudge-aware greeting, tested). [ ] residents answer the door, neighbours calling police, residents commuting visibly in the street
 - [ ] Full building system incl. shops, garages, sports venues, locks/alarms/dogs/safes [x] run 22: home safes (seeded per house, E cracks with a skill-based chance, cash $120-320, refill at 60% after a robbery), alarm panels (cut the wire or it trips at noise 35: siren, noise maxed, +30 heat; re-armed after a robbery, homes may install one), footstep noise indoors (sneak silent, walk 0.8/s, sprint 9/s; pauses decay), AlarmMath red siren flash. [ ] still open: dogs already done; shop/garage/sports locks + alarms on public buildings after hours
-- [ ] Animals: livestock resources (milk/wool/eggs/hides), taming, riding, animal clothing = gear
+- [ ] (CLAIMED 2026-11-24 car theft slice, run 24) Animals: livestock resources (milk/wool/eggs/hides), taming, riding, animal clothing = gear
 - [ ] Honest vs street reputation; economy and balance pass
 - [ ] Story Acts 1 and 2
 - [ ] Gate: Steam demo, then Early Access
