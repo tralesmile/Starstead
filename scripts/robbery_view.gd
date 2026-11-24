@@ -14,6 +14,9 @@ var player: Node2D
 var active := ""        # house id currently being robbed
 var alerted := false
 var indoors_cb: Callable   # () -> id of the home the player stands in ("" outside / public building)
+var hour_cb: Callable      # () -> hour of day
+var spotters_cb: Callable  # () -> Array of {name, pos} awake residents in the room (room pixels)
+var spotter := ""
 var sneaking_cb: Callable  # () -> Array[bool] [moving, sprinting, sneaking]
 
 func setup(t: TownView, w: Node2D, p: PoliceView, pl: Node2D) -> void:
@@ -41,26 +44,51 @@ func _process(delta: float) -> void:
 		active = inside
 		var st: Array = sneaking_cb.call() if sneaking_cb.is_valid() else [false, false, false]
 		model.tick_steps(inside, delta, bool(st[0]), bool(st[1]), bool(st[2]))
+		var hr: float = float(hour_cb.call()) if hour_cb.is_valid() else 12.0
+		model.wake_override = Household.wake_threshold(float(model.cfg["noise"]["wake_threshold"]), inside, hr)
+		_watch(inside, delta, bool(st[2]))
 		if model.alarm_check(inside):
 			_alarm(inside)
+	if inside == "":
+		model.wake_override = -1.0
+		model.suspicion = 0.0
 	model.tick(active if active != "" else "none", delta, false, false)
 	if active != "" and model.residents_awake() and not alerted:
 		alerted = true
 		police.add_heat(WantedMath.crime_heat("trespass"))
-		message.emit("A light turns on! Residents saw you")
+		message.emit("%s: Who's there?!" % spotter if spotter != "" else "A light turns on! Residents saw you")
 	if model.noise <= 0.0:
 		alerted = false
+		spotter = ""
 	for b in town.buildings:
 		world.interactables.cells[b["door"]]["prompt"] = _prompt(b)
+
+func _watch(id: String, delta: float, sneaking: bool) -> void:
+	## Awake residents in the room notice you: suspicion climbs while one of them can see you.
+	if not spotters_cb.is_valid():
+		return
+	var best := -0.5
+	var who := ""
+	for r in spotters_cb.call():
+		var rate := Household.suspicion_rate((r["pos"] as Vector2).distance_to(player.position) / 32.0, sneaking)
+		if rate > best:
+			best = rate
+			who = String(r["name"])
+	model.suspicion = clampf(model.suspicion + best * delta, 0.0, 1.0)
+	if model.suspicion >= 1.0 and not model.residents_awake():
+		spotter = who
+		model.suspicion = 0.3
+		model.add_noise(100.0)
 
 func _prompt(b: Dictionary) -> String:
 	if String(b["id"]) in InteriorModel.PUBLIC:
 		return "E: Enter %s" % b["name"]
 	var h := model.house(str(b["id"]))
+	var lit := " - lights on" if Household.lights_on(str(b["id"]), NpcSchedule.hour_of(GameState.clock.minutes)) else ""
 	if h["locked"]:
-		return "E: Pick lock %s (%d%%)" % [b["name"], int(100.0 * model.pick_chance(int(h["lock_level"]), GameState.rep_street / 10))]
+		return "E: Pick lock %s (%d%%)%s" % [b["name"], int(100.0 * model.pick_chance(int(h["lock_level"]), GameState.rep_street / 10)), lit]
 	if not h["locked"] and not (String(b["id"]) in InteriorModel.PUBLIC) and not (h["looted"] or h["loot"].is_empty()):
-		return "E: Enter %s (unlocked)" % b["name"]
+		return "E: Enter %s (unlocked)%s" % [b["name"], lit]
 	if h["looted"] or h["loot"].is_empty():
 		return "%s: nothing left" % b["name"]
 	return "E: Loot %s (%d left)  noise %d" % [b["name"], h["loot"].size(), int(model.noise)]

@@ -1,0 +1,36 @@
+{
+  "routines": {
+    "worker":    [{"from": 22.0, "to": 6.0, "state": "sleep"}, {"from": 8.0, "to": 17.0, "state": "away"}],
+    "homebody":  [{"from": 21.0, "to": 7.0, "state": "sleep"}],
+    "kid":       [{"from": 21.0, "to": 7.0, "state": "sleep"}, {"from": 8.0, "to": 15.0, "state": "away"}],
+    "nightowl":  [{"from": 3.0, "to": 11.0, "state": "sleep"}, {"from": 19.0, "to": 23.0, "state": "away"}]
+  },
+  "sleep_depth": {"worker": 1.0, "homebody": 0.8, "kid": 0.7, "nightowl": 1.2},
+  "away_threshold_mult": 1.6,
+  "see_range_cells": 5.0,
+  "sneak_range_cells": 2.5,
+  "suspicion_secs": 2.5,
+  "sneak_suspicion_mult": 0.4,
+  "homes": {
+    "city_house1": [
+      {"name": "Mr. Okafor", "routine": "worker", "outfit": "citizen_b", "bed": "bed", "spots": ["sofa", "tv"]},
+      {"name": "Mrs. Okafor", "routine": "homebody", "outfit": "citizen_c", "bed": "bed", "spots": ["fridge", "sofa"]},
+      {"name": "Ife Okafor", "routine": "kid", "outfit": "citizen_a", "bed": "bed2", "spots": ["toys", "tv"]}
+    ],
+    "city_house2": [
+      {"name": "Mrs. Lindqvist", "routine": "homebody", "outfit": "citizen_c", "bed": "bed", "spots": ["piano", "armchair", "bookcase"]}
+    ],
+    "city_house3": [
+      {"name": "Dev Rao", "routine": "worker", "outfit": "citizen_b", "bed": "bed", "spots": ["deskpc", "sofa"]},
+      {"name": "Tamsin Rao", "routine": "worker", "outfit": "citizen_a", "bed": "bed", "spots": ["stove", "sofa"]}
+    ],
+    "city_apt_a": [
+      {"name": "a tenant", "routine": "worker", "outfit": "citizen_a", "bed": "bed", "spots": ["tv", "sofa"]},
+      {"name": "a night-shift tenant", "routine": "nightowl", "outfit": "citizen_c", "bed": "bed", "spots": ["sofa"]}
+    ],
+    "city_apt_b": [
+      {"name": "Odette Delacroix", "routine": "homebody", "outfit": "citizen_c", "bed": "bed", "spots": ["sofa", "tv"]},
+      {"name": "Margaux Delacroix", "routine": "worker", "outfit": "citizen_a", "bed": "bed", "spots": ["tv"]}
+    ]
+  }
+}

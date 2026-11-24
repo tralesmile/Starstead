@@ -12,10 +12,55 @@ const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(
 	"town_hall": [Vector2(36, 92), Vector2(124, 92)], "cafe_building": [Vector2(20, 70), Vector2(76, 70)], "garage_building": [Vector2(14, 70)], "pit_building": [Vector2(14, 72)], "sports_hall": [Vector2(30, 70), Vector2(126, 70)]}
 const CHIMNEYS := {"house": Vector2(70, 4), "workshop": Vector2(82, 3)}
 
-func set_night(k: float) -> void:
+var panes: Array = []   # dark glass over home windows nobody is lit behind: {node, light, home, idx, n}
+
+func set_night(k: float, hour: float = -1.0) -> void:
 	for l in lights:
-		(l as PointLight2D).energy = 0.9 * k
-		(l as PointLight2D).visible = k > 0.01
+		if not l.has_meta("home"):
+			(l as PointLight2D).energy = 0.9 * k
+			(l as PointLight2D).visible = k > 0.01
+	if hour < 0.0:
+		return
+	for p in panes:
+		var lit := Household.window_lit(String(p["home"]), int(p["idx"]), int(p["n"]), hour)
+		(p["node"] as Node2D).visible = not lit
+		var l := p["light"] as PointLight2D
+		l.energy = 0.9 * k if lit else 0.0
+		l.visible = lit and k > 0.01
+
+func _pane(t: Texture2D, wp: Vector2, origin: Vector2) -> Node2D:
+	## Dark sky-blue glass drawn over a baked-lit window (bounds found from the bright pixels around wp).
+	var img := t.get_image()
+	var x0 := 999
+	var x1 := -1
+	var y0 := 999
+	var y1 := -1
+	for i in range(int(wp.x) - 12, int(wp.x) + 14):
+		for j in range(int(wp.y) - 10, int(wp.y) + 16):
+			if i < 0 or j < 0 or i >= img.get_width() or j >= img.get_height():
+				continue
+			var c := img.get_pixel(i, j)
+			if c.a > 0.5 and c.r > 0.9 and c.g > 0.66 and c.b < 0.56:
+				x0 = mini(x0, i)
+				x1 = maxi(x1, i)
+				y0 = mini(y0, j)
+				y1 = maxi(y1, j)
+	var n := Node2D.new()
+	if x1 < 0:
+		return n
+	var r := ColorRect.new()
+	r.position = origin + Vector2(x0, y0)
+	r.size = Vector2(x1 - x0 + 1, y1 - y0 + 1)
+	r.color = Color(0.22, 0.30, 0.40)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	n.add_child(r)
+	var hl := ColorRect.new()   # sky glint along the top-left of the glass
+	hl.position = r.position
+	hl.size = Vector2(maxf(r.size.x * 0.5, 2.0), 2.0)
+	hl.color = Color(0.5, 0.62, 0.74)
+	hl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	n.add_child(hl)
+	return n
 
 func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	var npcs: Dictionary = DataDB.load_json("npcs")
@@ -131,6 +176,12 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 		l.visible = false
 		body.add_child(l)
 		lights.append(l)
+		if Household.members(String(b["id"])).size() > 0:   # homes: glow and bright panes only with someone awake inside
+			l.set_meta("home", String(b["id"]))
+			var wlist: Array = WINDOWS.get(b["sprite"], [])
+			var pane := _pane(s.texture, wp, origin)
+			body.add_child(pane)
+			panes.append({"node": pane, "light": l, "home": String(b["id"]), "idx": wlist.find(wp), "n": wlist.size()})
 	if CHIMNEYS.has(b["sprite"]):
 		var sm := CPUParticles2D.new()
 		sm.position = origin + CHIMNEYS[b["sprite"]]

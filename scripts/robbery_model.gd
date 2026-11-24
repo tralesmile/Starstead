@@ -6,6 +6,8 @@ extends RefCounted
 var cfg: Dictionary
 var houses: Dictionary = {}   ## id -> state dict
 var noise: float = 0.0
+var wake_override: float = -1.0   # household-aware wake threshold (Household.wake_threshold); <0 = config default
+var suspicion: float = 0.0
 var _stepping := false   # footsteps this frame pause the decay
 
 func _init(data: Dictionary = {}) -> void:
@@ -151,7 +153,8 @@ func tick_steps(id: String, dt: float, moving: bool, sprinting: bool, sneaking: 
 		_stepping = true
 
 func residents_awake() -> bool:
-	return noise > float(cfg["noise"]["wake_threshold"])
+	var th := wake_override if wake_override > 0.0 else float(cfg["noise"]["wake_threshold"])
+	return noise > th
 
 func loot_item(id: String) -> String:
 	## Takes the next loot item (and its noise burst); "" when empty/locked. Marks looted when emptied.

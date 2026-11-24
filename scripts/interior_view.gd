@@ -35,6 +35,10 @@ var alarm_sprite: Sprite2D
 var dog_cb: Callable    # (building id) -> true when this house keeps a guard dog (RobberyModel memory)
 var bark_cb: Callable   # () -> called on every bark (noise toward waking the residents)
 var dog: Node2D = null
+var hour_cb: Callable    # () -> hour of day 0..24 (residents follow Household routines)
+var woke_cb: Callable    # () -> true once the noise woke the house
+var residents: Array = []   # {node, sprite, zzz, state, name, outfit, home_pos}
+var res_t := 0.0
 var dog_state := {"awake": false, "timer": DogMath.BARK_EVERY, "chew": 0.0, "t": 0.0}
 
 func setup(w: Node2D, p: Player, host: Node) -> void:
@@ -113,6 +117,7 @@ func _do_leave() -> void:
 		if is_instance_valid(n):
 			n.queue_free()
 	nodes.clear()
+	residents.clear()
 	player.position = outside_pos
 	player.facing = PlayerMath.Facing.DOWN
 	player.focus = null
@@ -181,6 +186,7 @@ func _build() -> void:
 	]
 	rects.append_array(InteriorModel.solid_rects(layout))
 	_spawn_dog(w)
+	_spawn_residents()
 	for r in rects:
 		var cs := CollisionShape2D.new()
 		var rs := RectangleShape2D.new()
@@ -189,6 +195,105 @@ func _build() -> void:
 		cs.position = r.position + r.size * 0.5
 		body.add_child(cs)
 	_add(body)
+
+func _spawn_residents() -> void:
+	residents.clear()
+	var id := String(building.get("id", ""))
+	if not hour_cb.is_valid() or id in InteriorModel.PUBLIC:
+		return
+	var hour: float = float(hour_cb.call())
+	var beds := {}
+	for m in Household.present(id, hour):
+		var n := Node2D.new()
+		var r := {"node": n, "name": String(m["name"]), "state": String(m["state"]), "outfit": String(m["outfit"]), "m": m}
+		if String(m["state"]) == "sleep":
+			var bp := Household.spot_cell(layout, String(m["bed"]))
+			if bp.x < 0.0 or beds.has(String(m["bed"])):
+				n.queue_free()
+				continue
+			beds[String(m["bed"])] = true
+			var t := _t("int_sleeper")
+			var s := Sprite2D.new()
+			s.texture = t
+			s.hframes = 8
+			s.frame = (absi(String(m["name"]).hash()) % 4) * 2
+			s.offset = Vector2(0, -32)
+			s.position = Vector2.ZERO
+			n.add_child(s)
+			n.position = ORIGIN + Vector2(bp.x, bp.y - 14.0)   # bed footprint bottom centre
+			n.z_index = 1
+			var z := Sprite2D.new()
+			z.texture = _t("zzz")
+			z.hframes = 3
+			z.position = Vector2(8, -52)
+			n.add_child(z)
+			r["sprite"] = s
+			r["zzz"] = z
+			r["base"] = s.frame
+		else:
+			var sp := NpcLook.make_sprite(NpcLook.outfit_of(String(m["outfit"])))
+			n.add_child(sp)
+			n.position = ORIGIN + Household.stand_pos(layout, m, hour)
+			r["sprite"] = sp
+			var sh := World.make_shadow(18.0)
+			sh.position = Vector2(0, -2)
+			n.add_child(sh)
+		_add(n)
+		residents.append(r)
+
+func resident_awake_positions() -> Array:
+	var out: Array = []
+	for r in residents:
+		if r["state"] != "sleep" and is_instance_valid(r["node"]):
+			out.append({"name": r["name"], "pos": (r["node"] as Node2D).position})
+	return out
+
+func _wake_residents() -> void:
+	for r in residents:
+		if r["state"] != "sleep" or not is_instance_valid(r["node"]):
+			continue
+		r["state"] = "woke"
+		var n: Node2D = r["node"]
+		(r["zzz"] as Sprite2D).queue_free()
+		(r["sprite"] as Sprite2D).queue_free()
+		var sp := NpcLook.make_sprite(NpcLook.outfit_of(String(r["outfit"])))
+		n.add_child(sp)
+		n.position += Vector2(24, 18)   # steps out of bed
+		r["sprite"] = sp
+		var l := Label.new()
+		l.text = "!"
+		l.position = Vector2(-4, -54)
+		l.add_theme_font_size_override("font_size", 14)
+		l.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+		l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+		l.add_theme_constant_override("outline_size", 3)
+		n.add_child(l)
+
+func _residents_tick(d: float) -> void:
+	if residents.is_empty():
+		return
+	res_t += d
+	if woke_cb.is_valid() and bool(woke_cb.call()):
+		_wake_residents()
+	for r in residents:
+		if not is_instance_valid(r["node"]):
+			continue
+		var n: Node2D = r["node"]
+		if r["state"] == "sleep":
+			(r["sprite"] as Sprite2D).frame = int(r["base"]) + (int(res_t * 0.8) % 2)
+			(r["zzz"] as Sprite2D).frame = int(res_t * 1.2) % 3
+			(r["zzz"] as Sprite2D).modulate.a = 0.55 + 0.4 * sin(res_t * 2.0)
+		else:
+			var f := NpcSchedule.facing_of(player.position - n.position, 0)
+			(r["sprite"] as Sprite2D).frame = NpcLook.frame(NpcLook.outfit_of(String(r["outfit"])), f, 0)
+			if r["state"] == "woke":   # an angry step toward the intruder, then a shove out
+				var sv := Household.shove(n.position.distance_to(player.position), float(r.get("cd", 0.0)), d)
+				r["cd"] = sv["cooldown"]
+				if sv["hit"]:
+					player.push(n.position, Household.SHOVE_FORCE)
+					GameState.energy.value = maxf(GameState.energy.value - Household.SHOVE_ENERGY, 0.0)
+					message.emit("%s shoves you!" % r["name"])
+				n.position = NpcSchedule.step_toward(n.position, player.position, 26.0, d) if n.position.distance_to(player.position) > 44.0 else n.position
 
 func _spawn_dog(w: int) -> void:
 	dog = null
@@ -327,5 +432,6 @@ func _process(_d: float) -> void:
 	_alarm_tick(_d)
 	if active and not busy:
 		_dog_tick(_d)
+		_residents_tick(_d)
 	if active and not busy and InteriorModel.left_through_door(layout, rel()):
 		leave()

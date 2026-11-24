@@ -296,6 +296,11 @@ func _ready() -> void:
 		if not interior.active or String(interior.building.get("id", "")) in InteriorModel.PUBLIC:
 			return ""
 		return String(interior.building.get("id", ""))
+	var hour_now := func() -> float: return NpcSchedule.hour_of(GameState.clock.minutes)
+	robbery.hour_cb = hour_now
+	interior.hour_cb = hour_now
+	robbery.spotters_cb = func() -> Array: return interior.resident_awake_positions()
+	interior.woke_cb = func() -> bool: return robbery.model.residents_awake()
 	robbery.sneaking_cb = func() -> Array: return [player.velocity.length() > 8.0, player.sprinting, player.sneaking]
 	interior.dog_cb = func(id: String) -> bool: return bool(robbery.model.house(id)["dog"])
 	interior.bark_cb = func() -> void:
@@ -434,7 +439,7 @@ func _process(delta: float) -> void:
 		_sun_applied = GameState.clock.minutes
 		World.apply_sun(get_tree(), _sun_applied)
 	var lamp_k := 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
-	town.set_night(lamp_k)
+	town.set_night(lamp_k, NpcSchedule.hour_of(GameState.clock.minutes))
 	for l in get_tree().get_nodes_in_group("night_lights"):   # streamed-chunk lights (Vance yard floodlights)
 		(l as PointLight2D).energy = 1.3 * lamp_k
 		(l as PointLight2D).visible = lamp_k > 0.01

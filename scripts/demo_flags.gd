@@ -188,6 +188,8 @@ func on_process() -> void:
 				m.interior.enter(b)
 	if "--alarm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:   # siren flash in the room
 		m.robbery.model.add_noise(50.0)
+	if "--wake-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:   # residents wake and shove
+		m.robbery.model.add_noise(100.0)
 	if "--fish-demo" in OS.get_cmdline_user_args():
 		var f := Engine.get_process_frames()
 		m.hotbar.selected = 6
