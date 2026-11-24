@@ -53,3 +53,9 @@ func test_window_lit() -> void:
 	check(not Household.window_lit("city_house2", 0, 2, 23.0))
 	check(Household.window_lit("nobody_lives_here", 0, 2, 23.0))   # public buildings keep their lights
 	check(Household.window_lit("city_apt_a", 0, 4, 18.0) and not Household.window_lit("city_apt_a", 3, 4, 18.0) or Household.window_lit("city_apt_a", 3, 4, 18.0))
+
+func test_greeting() -> void:
+	check(Household.greeting("Mrs. Lindqvist", true, 12.0).contains("police"))
+	check(Household.greeting("Dev", false, 8.0).contains("Morning"))
+	check(Household.greeting("Dev", false, 22.0).contains("late"))
+	check(Household.greeting("Dev", false, 14.0).contains("hello"))

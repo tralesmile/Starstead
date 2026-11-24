@@ -300,6 +300,7 @@ func _ready() -> void:
 	robbery.hour_cb = hour_now
 	interior.hour_cb = hour_now
 	robbery.spotters_cb = func() -> Array: return interior.resident_awake_positions()
+	interior.grudge_cb = func(id: String) -> bool: return bool(robbery.model.house(id)["grudge"])
 	interior.woke_cb = func() -> bool: return robbery.model.residents_awake()
 	robbery.sneaking_cb = func() -> Array: return [player.velocity.length() > 8.0, player.sprinting, player.sneaking]
 	interior.dog_cb = func(id: String) -> bool: return bool(robbery.model.house(id)["dog"])

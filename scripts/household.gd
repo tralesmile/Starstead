@@ -110,3 +110,13 @@ static func shove(dist_px: float, cooldown: float, dt: float) -> Dictionary:
 	if dist_px <= SHOVE_REACH and cd <= 0.0:
 		return {"hit": true, "cooldown": SHOVE_EVERY}
 	return {"hit": false, "cooldown": cd}
+
+static func greeting(name: String, grudge: bool, hour: float) -> String:
+	## What an awake resident says when you talk to them (grudge after a robbery).
+	if grudge:
+		return "%s: You again! Get out before I call the police." % name
+	if hour >= 19.0 or hour < 6.0:
+		return "%s: It's late... but come in, I suppose." % name
+	if hour < 11.0:
+		return "%s: Morning! Mind the mat." % name
+	return "%s: Oh, hello. Make yourself at home." % name

@@ -36,6 +36,7 @@ var dog_cb: Callable    # (building id) -> true when this house keeps a guard do
 var bark_cb: Callable   # () -> called on every bark (noise toward waking the residents)
 var dog: Node2D = null
 var hour_cb: Callable    # () -> hour of day 0..24 (residents follow Household routines)
+var grudge_cb: Callable  # (building id) -> true when this house remembers a robbery
 var woke_cb: Callable    # () -> true once the noise woke the house
 var residents: Array = []   # {node, sprite, zzz, state, name, outfit, home_pos}
 var res_t := 0.0
@@ -359,6 +360,10 @@ func prompt() -> String:
 	if not active or busy:
 		return ""
 	var a := InteriorModel.action_near(layout, rel(), ACTIONS)
+	if a.is_empty():
+		for r in residents:
+			if r["state"] != "sleep" and is_instance_valid(r["node"]) and (r["node"] as Node2D).position.distance_to(player.position) < 52.0:
+				return "E: Talk to %s" % r["name"]
 	match String(a.get("action", "")):
 		"garage": return "E: Garage services"
 		"cook": return "E: Cook at the stove"
@@ -376,6 +381,12 @@ func interact() -> bool:
 	if not active or busy:
 		return false
 	var a := InteriorModel.action_near(layout, rel(), ACTIONS)
+	if a.is_empty():
+		for r in residents:
+			if r["state"] != "sleep" and is_instance_valid(r["node"]) and (r["node"] as Node2D).position.distance_to(player.position) < 52.0:
+				var g: bool = grudge_cb.is_valid() and bool(grudge_cb.call(String(building.get("id", ""))))
+				message.emit(Household.greeting(String(r["name"]), g, float(hour_cb.call()) if hour_cb.is_valid() else 12.0))
+				return true
 	match String(a.get("action", "")):
 		"garage":
 			garage_requested.emit()
