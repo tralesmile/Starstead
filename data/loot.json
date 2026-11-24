@@ -9,5 +9,8 @@
   "loot_count": [2, 4],
   "lock": {"max_level": 5, "base_chance": 0.85, "per_level": 0.15, "per_skill": 0.05, "min": 0.05, "max": 0.95, "initial_locked_chance": 0.6, "initial_level_max": 2},
   "noise": {"max": 100.0, "wake_threshold": 60.0, "decay": 8.0, "loot_rate": 6.0, "run_rate": 14.0, "pick_burst": 5.0, "fail_burst": 10.0},
+  "safe": {"chance": 0.4, "cash_min": 120, "cash_max": 320, "base_chance": 0.4, "per_skill": 0.04, "min": 0.1, "max": 0.9, "crack_noise": 18.0, "fail_noise": 12.0},
+  "alarm": {"chance": 0.3, "trigger_noise": 35.0, "cut_base": 0.5, "cut_per_skill": 0.04, "cut_min": 0.15, "cut_max": 0.9, "after_robbery_chance": 0.5, "heat": 30.0},
+  "step_noise": {"walk": 0.8, "sprint": 9.0, "sneak": 0.0},
   "memory": {"dog_after_robberies": 2, "dog_chance": 0.5, "dog_noise_mult": 1.5}
 }

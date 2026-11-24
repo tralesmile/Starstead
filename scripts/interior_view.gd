@@ -12,10 +12,12 @@ signal chest_requested
 signal sleep_requested
 signal service_requested(action: String)
 signal loot_requested(building: Dictionary)
+signal safe_requested(building: Dictionary)
+signal alarm_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "chest", "cook", "smelt", "forge", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business"]
+const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business"]
 var world: Node2D
 var player: Player
 var active := false
@@ -26,6 +28,10 @@ var outside_pos := Vector2.ZERO
 var nodes: Array = []
 var fade: ColorRect
 var tex := {}
+var extras_cb: Callable  # (building id) -> {safe, safe_open, alarm, armed} robbery state to furnish
+var alarm_t := -1.0      # seconds since the siren started (-1 = quiet)
+var alarm_flash: ColorRect
+var alarm_sprite: Sprite2D
 var dog_cb: Callable    # (building id) -> true when this house keeps a guard dog (RobberyModel memory)
 var bark_cb: Callable   # () -> called on every bark (noise toward waking the residents)
 var dog: Node2D = null
@@ -40,6 +46,10 @@ func setup(w: Node2D, p: Player, host: Node) -> void:
 	fade.color = Color(0, 0, 0, 0)
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(fade)
+	alarm_flash = ColorRect.new()
+	alarm_flash.color = Color(0.9, 0.05, 0.05, 0.0)
+	alarm_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(alarm_flash)
 	host.add_child(layer)
 
 func _t(name: String) -> Texture2D:
@@ -53,6 +63,9 @@ func enter(b: Dictionary) -> void:
 	busy = true
 	building = b
 	layout = InteriorModel.layout_for(String(b["id"]))
+	if extras_cb.is_valid() and not (String(b["id"]) in InteriorModel.PUBLIC):
+		var e: Dictionary = extras_cb.call(String(b["id"]))
+		layout = InteriorModel.with_extras(layout, bool(e.get("safe", false)), bool(e.get("safe_open", false)), bool(e.get("alarm", false)), bool(e.get("armed", false)))
 	_freeze(true)
 	var tw := create_tween()
 	tw.tween_property(fade, "color:a", 1.0, 0.22)
@@ -145,6 +158,8 @@ func _build() -> void:
 		var size: Vector2i = f["size"]
 		var foot_bottom := ORIGIN + Vector2(cell.x * 32.0 + size.x * 16.0, (cell.y + size.y) * 32.0)
 		s.offset = Vector2(0, -t.get_height() / 2.0)
+		if f["id"] == "alarm":
+			alarm_sprite = s
 		s.position = foot_bottom
 		if not f["solid"]:
 			s.z_index = -17  # rugs and mats lie on the floor
@@ -247,6 +262,8 @@ func prompt() -> String:
 		"chest": return "E: Open the storage chest"
 		"sleep": return "E: Sleep until morning"
 		"loot": return "E: Search the %s" % a["id"]
+		"safe": return "E: Crack the safe"
+		"alarm": return "E: Cut the alarm wire"
 	return CityActions.prompt(String(a.get("action", "")))
 
 func interact() -> bool:
@@ -276,12 +293,38 @@ func interact() -> bool:
 		"loot":
 			loot_requested.emit(building)
 			return true
+		"safe":
+			safe_requested.emit(building)
+			return true
+		"alarm":
+			alarm_requested.emit(building)
+			return true
 		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business":
 			service_requested.emit(String(a["action"]))
 			return true
 	return true
 
+func ring_alarm() -> void:
+	alarm_t = 0.0
+	if alarm_sprite != null and is_instance_valid(alarm_sprite):
+		alarm_sprite.texture = _t("int_alarm_ring")
+
+func _alarm_tick(d: float) -> void:
+	if alarm_t < 0.0:
+		return
+	alarm_t += d
+	if alarm_flash != null:
+		alarm_flash.size = alarm_flash.get_viewport_rect().size
+		alarm_flash.color = Color(0.9, 0.05, 0.05, AlarmMath.pulse(alarm_t))
+	if not AlarmMath.ringing(alarm_t):
+		alarm_t = -1.0
+		if alarm_flash != null:
+			alarm_flash.color.a = 0.0
+		if alarm_sprite != null and is_instance_valid(alarm_sprite):
+			alarm_sprite.texture = _t("int_alarm")
+
 func _process(_d: float) -> void:
+	_alarm_tick(_d)
 	if active and not busy:
 		_dog_tick(_d)
 	if active and not busy and InteriorModel.left_through_door(layout, rel()):

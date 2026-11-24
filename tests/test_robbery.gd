@@ -94,3 +94,106 @@ func test_serialize_roundtrip() -> void:
 	check_eq(n.house("b")["lock_level"], m.house("b")["lock_level"])
 	check_eq(n.house("a")["loot"], m.house("a")["loot"])
 	check(n.house("b")["grudge"])
+
+func _force(m: RobberyModel, id: String, safe: bool, alarm: bool) -> Dictionary:
+	var h := m.house(id)
+	h["locked"] = false
+	h["safe"] = safe
+	h["safe_cash"] = 200
+	h["safe_open"] = false
+	h["alarm"] = alarm
+	h["alarm_armed"] = alarm
+	return h
+
+func test_safe_crack() -> void:
+	var m := _m()
+	_force(m, "s1", true, false)
+	check(m.safe_chance(10) > m.safe_chance(0))
+	var got := -1
+	var r := _rng(3)
+	for i in 60:
+		got = m.crack_safe("s1", 5, r)
+		if got >= 0:
+			break
+	check_eq(got, 200)
+	check_eq(m.crack_safe("s1", 5, r), -1)   # already open
+	check(m.noise > 0.0)
+	var none := _force(m, "s2", false, false)
+	check_eq(m.crack_safe("s2", 5, r), -1)
+
+func test_safe_refills_smaller() -> void:
+	var m := _m()
+	var h := _force(m, "s3", true, false)
+	h["safe_open"] = true
+	m.finish_robbery("s3", _rng(1))
+	check(not h["safe_open"])
+	check_eq(h["safe_cash"], 120)
+
+func test_alarm_trigger_and_cut() -> void:
+	var m := _m()
+	var h := _force(m, "a1", false, true)
+	check(not m.alarm_check("a1"))
+	m.add_noise(40.0)
+	check(m.alarm_check("a1"))
+	check(not m.alarm_check("a1"))   # fires once
+	check(h["alarm_fired"] and m.noise >= 100.0)
+	var h2 := _force(m, "a2", false, true)
+	var ok := false
+	var r := _rng(9)
+	for i in 80:
+		h2["alarm_armed"] = true
+		h2["alarm_fired"] = false
+		if m.cut_alarm("a2", 8, r):
+			ok = true
+			break
+	check(ok)
+	check(not h2["alarm_armed"])
+	check(m.cut_chance(8) > m.cut_chance(0))
+
+func test_step_noise() -> void:
+	var st: Dictionary = DataDB.load_json("loot")["step_noise"]
+	check_eq(RobberyModel.step_noise_rate(st, false, true, false), 0.0)
+	check_eq(RobberyModel.step_noise_rate(st, true, false, true), 0.0)
+	check(RobberyModel.step_noise_rate(st, true, true, false) > RobberyModel.step_noise_rate(st, true, false, false))
+	var m := _m()
+	m.add_noise(10.0)
+	m.tick_steps("x", 1.0, true, false, false)
+	m.tick("x", 1.0, false, false)   # stepping pauses the decay
+	check(m.noise > 10.0)
+	m.tick("x", 1.0, false, false)
+	check(m.noise < 10.9)
+
+func test_save_keeps_safe_alarm() -> void:
+	var m := _m()
+	_force(m, "z", true, true)
+	var m2 := _m()
+	m2.deserialize(m.serialize())
+	check(m2.house("z")["safe"] and m2.house("z")["alarm_armed"])
+	m2.deserialize({"noise": 0, "houses": {"old": {"locked": false, "loot": []}}})
+	check(not m2.house("old")["safe"])
+
+func test_extras_layout() -> void:
+	for id in ["city_house1", "city_house2", "city_house3", "city_apt_a", "farm_house_x"]:
+		var l := InteriorModel.with_extras(InteriorModel.layout_for(id), true, false, true, true)
+		var ids := []
+		for f in l["furniture"]:
+			ids.append(f["id"])
+		check("safe" in ids and "alarm" in ids, id)
+		var rects := InteriorModel.solid_rects(l)
+		for i in rects.size():
+			for j in range(i + 1, rects.size()):
+				check(not rects[i].intersects(rects[j]), "%s overlap %s %s" % [id, rects[i], rects[j]])
+		var door := Rect2((int(l["door_x"]) - 0.5) * 32.0, (int(l["h"]) - 2) * 32.0, 64.0, 64.0)
+		for r in rects:
+			check(not r.intersects(door.grow(-4.0)), id + " blocks door")
+
+func test_alarm_math() -> void:
+	check_eq(AlarmMath.pulse(-1.0), 0.0)
+	check_eq(AlarmMath.pulse(7.0), 0.0)
+	var peak := 0.0
+	for i in 100:
+		peak = maxf(peak, AlarmMath.pulse(i * 0.02))
+	check(peak > 0.2 and peak <= 0.28)
+	check(AlarmMath.pulse(5.9) < 0.06)
+	check(AlarmMath.ringing(1.0) and not AlarmMath.ringing(6.5))
+	check(AlarmMath.shake(0.0) > AlarmMath.shake(0.4) and AlarmMath.shake(1.0) == 0.0)

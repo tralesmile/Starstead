@@ -179,6 +179,39 @@ static func layout_for(building_id: String) -> Dictionary:
 				_f("mat", "int_mat", 2, 4, 1, 1, false)]}
 	return layout("house")
 
+## Adds a floor safe and/or an alarm panel (robbery state of a home) in free cells of a copy of the layout.
+static func with_extras(l: Dictionary, safe: bool, safe_open: bool, alarm: bool, armed: bool) -> Dictionary:
+	var out := l.duplicate(true)
+	var fur: Array = out["furniture"]
+	var w := int(out["w"])
+	var h := int(out["h"])
+	if alarm:
+		var c := _free_cell(fur, w, h, range(0, w), [0])
+		if c.x >= 0:
+			fur.append(_f("alarm", "int_alarm", c.x, c.y, 1, 1, true, "alarm"))
+	if safe:
+		var xs: Array = range(w - 1, -1, -1)
+		var c := _free_cell(fur, w, h, xs, [0, 1, 2, h - 2])
+		if c.x >= 0:
+			fur.append(_f("safe", "int_safe_open" if safe_open else "int_safe", c.x, c.y, 1, 1, true, "safe"))
+	return out
+
+static func _free_cell(fur: Array, w: int, h: int, xs: Array, ys: Array) -> Vector2i:
+	for y in ys:
+		if y < 0 or y >= h - 1:
+			continue
+		for x in xs:
+			var free := true
+			for f in fur:
+				var c: Vector2i = f["cell"]
+				var sz: Vector2i = f["size"]
+				if x >= c.x and x < c.x + sz.x and y >= c.y and y < c.y + sz.y and (f["solid"] or f["id"] == "rug"):
+					free = false
+					break
+			if free:
+				return Vector2i(x, y)
+	return Vector2i(-1, -1)
+
 ## Where the player appears when entering: just above the door mat, in pixels relative to the room origin.
 static func entrance(l: Dictionary) -> Vector2:
 	return Vector2((int(l["door_x"]) + 0.5) * 32.0, (int(l["h"]) - 1) * 32.0 + 8.0)

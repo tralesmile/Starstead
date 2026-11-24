@@ -3,6 +3,7 @@ extends Node
 ## Break into town buildings: E picks the lock, then E loots one item at a time. Noise wakes residents (police heat).
 
 signal message(msg: String)
+signal alarm_rang(id: String)
 
 var model := RobberyModel.new()
 var rng := RandomNumberGenerator.new()
@@ -12,6 +13,8 @@ var police: PoliceView
 var player: Node2D
 var active := ""        # house id currently being robbed
 var alerted := false
+var indoors_cb: Callable   # () -> id of the home the player stands in ("" outside / public building)
+var sneaking_cb: Callable  # () -> Array[bool] [moving, sprinting, sneaking]
 
 func setup(t: TownView, w: Node2D, p: PoliceView, pl: Node2D) -> void:
 	town = t
@@ -33,6 +36,13 @@ func _process(delta: float) -> void:
 		if b.is_empty() or str(b["id"]) != active:
 			if model.noise <= 0.0:
 				active = ""
+	var inside: String = String(indoors_cb.call()) if indoors_cb.is_valid() else ""
+	if inside != "":
+		active = inside
+		var st: Array = sneaking_cb.call() if sneaking_cb.is_valid() else [false, false, false]
+		model.tick_steps(inside, delta, bool(st[0]), bool(st[1]), bool(st[2]))
+		if model.alarm_check(inside):
+			_alarm(inside)
 	model.tick(active if active != "" else "none", delta, false, false)
 	if active != "" and model.residents_awake() and not alerted:
 		alerted = true
@@ -54,6 +64,38 @@ func _prompt(b: Dictionary) -> String:
 	if h["looted"] or h["loot"].is_empty():
 		return "%s: nothing left" % b["name"]
 	return "E: Loot %s (%d left)  noise %d" % [b["name"], h["loot"].size(), int(model.noise)]
+
+func _alarm(id: String) -> void:
+	alerted = true
+	police.add_heat(float(model.cfg["alarm"]["heat"]))
+	alarm_rang.emit(id)
+	message.emit("ALARM! The siren is wailing")
+
+func crack_safe(b: Dictionary) -> void:
+	var id := str(b["id"])
+	var h := model.house(id)
+	if not h["safe"] or h["safe_open"]:
+		message.emit("The safe is empty")
+		return
+	var cash := model.crack_safe(id, GameState.rep_street / 10, rng)
+	if cash < 0:
+		message.emit("The dial slips (%d%% chance). Noise!" % int(100.0 * model.safe_chance(GameState.rep_street / 10)))
+		return
+	GameState.money += cash
+	GameState.rep_street += 3
+	message.emit("Click-click-clunk! $%d from the safe" % cash)
+
+func cut_alarm(b: Dictionary) -> void:
+	var id := str(b["id"])
+	var h := model.house(id)
+	if not h["alarm_armed"]:
+		message.emit("The alarm is already dead")
+		return
+	var sk: int = GameState.rep_street / 10
+	if model.cut_alarm(id, sk, rng):
+		message.emit("Snip. The alarm goes quiet")
+	else:
+		_alarm(id)
 
 func interact(cell: Vector2i) -> void:
 	var b := building_at(cell)

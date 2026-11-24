@@ -176,10 +176,18 @@ func on_process() -> void:
 				kind = a.substr(13)
 		if "--dog-demo" in OS.get_cmdline_user_args():   # screenshot helper: this house keeps a guard dog
 			m.robbery.model.house(kind)["dog"] = true
+		if "--safe-demo" in OS.get_cmdline_user_args():   # screenshot helper: this house has a safe and an armed alarm
+			var hh: Dictionary = m.robbery.model.house(kind)
+			hh["locked"] = false
+			hh["safe"] = true
+			hh["alarm"] = true
+			hh["alarm_armed"] = true
 		for b in m.town.buildings:
 			if b["id"] == kind:
 				m.player.position = TownModel.sprite_bottom_center(b) + Vector2(0, 40)
 				m.interior.enter(b)
+	if "--alarm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:   # siren flash in the room
+		m.robbery.model.add_noise(50.0)
 	if "--fish-demo" in OS.get_cmdline_user_args():
 		var f := Engine.get_process_frames()
 		m.hotbar.selected = 6

@@ -286,6 +286,17 @@ func _ready() -> void:
 		chest_view.open())
 	interior.service_requested.connect(func(a): CityActions.run(self, a))
 	interior.loot_requested.connect(func(b): robbery.interact(b["door"]))
+	interior.safe_requested.connect(func(b): robbery.crack_safe(b))
+	interior.alarm_requested.connect(func(b): robbery.cut_alarm(b))
+	robbery.alarm_rang.connect(func(_id): interior.ring_alarm())
+	interior.extras_cb = func(id: String) -> Dictionary:
+		var h: Dictionary = robbery.model.house(id)
+		return {"safe": h["safe"], "safe_open": h["safe_open"], "alarm": h["alarm"], "armed": h["alarm_armed"]}
+	robbery.indoors_cb = func() -> String:
+		if not interior.active or String(interior.building.get("id", "")) in InteriorModel.PUBLIC:
+			return ""
+		return String(interior.building.get("id", ""))
+	robbery.sneaking_cb = func() -> Array: return [player.velocity.length() > 8.0, player.sprinting, player.sneaking]
 	interior.dog_cb = func(id: String) -> bool: return bool(robbery.model.house(id)["dog"])
 	interior.bark_cb = func() -> void:
 		robbery.active = String(interior.building.get("id", ""))
