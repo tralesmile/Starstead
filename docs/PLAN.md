@@ -22,6 +22,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders)
 
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
+- [x] Run 24: Graphics: footstep dust takes the ground colour (green flecks on grass, tan on dirt/path, grey on asphalt, white in snow; AmbientMath.step_dust_color, tested; before: always tan). Feel/physics: a nearly full bag slows you to 0.9x (PlayerMath.load_mult from Inventory.fill_fraction, tested). [ ] next: residents seen in windows, porches art, crows with scarecrow reaction, car thieves leave a hot-car trail (police recognise hot cars)
 - [x] Run 23: Graphics: city home windows are dark sky-blue glass unless someone is awake at home (Household.window_lit; before: every window baked orange all day; screenshots 19:35 lit vs 23:35 dark at 180,9). Feel/physics: woken residents shove the intruder out (Household.shove, HitMath knockback, -3 energy, tested). [ ] next: dust on sand, residents seen in windows, porches art
 - [x] Run 22: Graphics: red siren flash + glowing alarm panel + screen pulse when a home alarm trips (AlarmMath, tested; before: silent rooms). Feel/physics: footstep noise indoors, sneaking (Ctrl) is silent and sprinting loud (RobberyModel.step_noise_rate, tested). [ ] next: porches art, dust on sand, crows with scarecrow reaction
 - [x] Run 21: Graphics: crows perch on ripe uncovered crops by day (CrowMath.perch_cells/peck/flee_offset, tested) and flap off when you come within 72px; before: empty ripe fields all day. Feel/physics: exhaustion drag below 25 energy (PlayerMath.tired_mult 1.0->0.8, tested). [ ] next: crows with scarecrow reaction, dust on sand, rest-sit when tired, car crumple smoke
@@ -197,7 +198,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Wanted-level model (WantedMath: heat, stars, decay, police count, fine; tested)
 - [x] Wanted HUD stars + police NPC spawn + chase + arrest/fine (PoliceModel/PoliceView; car hit-and-run is the first crime)
 - [x] Basic combat: club tool (key 8), swing cone, NPC/cop health + knock-out + knockback + assault heat (CombatModel/CombatView)
-- [x] Stall theft (T at the market stall: 3 grabs/day, vendor may shout and raise heat; StallTheft tested). [ ] car theft (CLAIMED 2026-11-24 run 24) and combat on animals/dogs
+- [x] Stall theft (T at the market stall: 3 grabs/day, vendor may shout and raise heat; StallTheft tested). [x] car theft (run 24: CarTheft/CarTheftView, parked cars on Port Halden kerbs, E hot-wires by lock and street skill, alarms/owner witness add heat, sell at the garage chop shop; tested) [ ] combat on animals/dogs
 - [x] Animal model (AnimalModel, data/animals.json: taming trust, production, riding, gear slots; tested)
 - [x] Animal in play: wild chickens+horse roam/flee, feed turnips to tame (E), tamed follow + daily eggs, ride horse (AnimalView, saved)
 - [x] cow and sheep roam, tame and give milk/wool (sprites, LOOK table). [x] pen: E on a fed tame animal toggles stay/follow, stayers wander within 56px of their spot and fences/walls block animals (AnimalModel.pen_target). [x] Animal gear (G next to a tamed animal wears/removes saddle, coat, armour from the bag; shop sells them; tint; AnimalModel.next_gear tested)
@@ -224,7 +225,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Mining caves, ore, smelting; forge/garage/workshop crafting (run 20: workshop anvil + ForgeView, data/forge.json: copper/iron vests -15%/-30% damage taken, engine kit +12% top speed, grip tyres +20% grip, bumper guard -35% crash damage; carried in the bag, GearModel tested). [ ] swords/spears, car body kits, armour for animals
 - [x] Residents at home (run 23): data/households.json routines (worker/homebody/kid/nightowl), Household pure model, sleepers (int_sleeper + zzz) and awake residents inside city homes, wake threshold by sleep depth/awake/empty house, suspicion meter (sneak halves range), woken residents shove you out, door prompt says 'lights on', home windows only glow when someone is awake. [x] E talks to awake residents (grudge-aware greeting, tested). [ ] residents answer the door, neighbours calling police, residents commuting visibly in the street
 - [ ] Full building system incl. shops, garages, sports venues, locks/alarms/dogs/safes [x] run 22: home safes (seeded per house, E cracks with a skill-based chance, cash $120-320, refill at 60% after a robbery), alarm panels (cut the wire or it trips at noise 35: siren, noise maxed, +30 heat; re-armed after a robbery, homes may install one), footstep noise indoors (sneak silent, walk 0.8/s, sprint 9/s; pauses decay), AlarmMath red siren flash. [ ] still open: dogs already done; shop/garage/sports locks + alarms on public buildings after hours
-- [ ] (CLAIMED 2026-11-24 car theft slice, run 24) Animals: livestock resources (milk/wool/eggs/hides), taming, riding, animal clothing = gear
+- [ ] Animals: livestock resources (milk/wool/eggs/hides), taming, riding, animal clothing = gear
 - [ ] Honest vs street reputation; economy and balance pass
 - [ ] Story Acts 1 and 2
 - [ ] Gate: Steam demo, then Early Access
@@ -260,6 +261,9 @@ Houses, buildings, graphics (5, 10)
 - Weakest part vs comparables (2026-11-16 run 4): world is empty of life: no NPCs, animals or goals beyond farming/fishing; next priority NPCs + town. Earlier note: everything (no playable yet); priority is Phase 1 walk+farm loop for a 10-minute fun gate.
 - Wanted\/heat system design: heat decays faster out of sight, unwitnessed crimes weigh less | https://bugnet.io/blog/how-to-design-a-wanted-or-heat-system , https://gta.fandom.com/wiki/GTA_2_Wanted_Level | 2026-11-17
 - GTA-style solo Godot 4 systems showcase (police AI, wanted, chase) for reference | https://forum.godotengine.org/t/building-an-gta-inspired-open-world-crime-game-solo-showcasing-the-systems-ive-built-in-godot-4-6/137378 | 2026-11-17
+
+## Backlog additions (2026-11-24 run 24, research)
+- Weakest part vs GTA 2 / Citizen Life (run 24): the city had cars you could only look at; fixed with parked-car theft. Next weakness: hot cars are not recognised by police. Ideas: hot-wire minigame UI instead of a dice roll | https://www.gta5-mods.com/scripts/hotwire-v | 2026-11-24
 
 ## Backlog additions (2026-11-18 run 5, research)
 - Onboarding: Stardew-style first-days guidance (what to do first, a gentle quest log). Weakest part vs Stardew was no visible goal; GoalText hint added. Next: a real quest log screen (J tab) fed by data/story.json. Source: https://gamerant.com/stardew-valley-first-things-to-do/ , https://www.thegamer.com/stardew-valley-common-mistakes-new/ (2026-11-18, titles only)

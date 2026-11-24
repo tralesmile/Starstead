@@ -24,3 +24,4 @@
 - Push can fail when the session has no linked GitHub account (proxy 403): keep committing locally and hand over a git bundle; never lose the work.
 - Setting CPUParticles2D.amount every frame restarts the emitter (no particles ever show): assign it only when the value changes.
 - A parse error in a new view script is invisible to unit tests that never load it; always run a --xyz-demo screenshot (SCRIPT ERROR lines) before trusting a green test run. `var x := {...}[key]` cannot infer a type: write `var x: String = ...`.
+- A ternary like `a.emit() if x else b.emit()` fails at runtime ("return value of a method that returns void") and a demo that never took that branch hid it: use if/else, and make demo flags force the success path (set the odds) so the screenshot exercises it.

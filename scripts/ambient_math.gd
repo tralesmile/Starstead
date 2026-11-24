@@ -34,6 +34,16 @@ static func step_puffs(season: int, sprinting: bool) -> int:
 		n += 3
 	return n
 
+## Colour of the dust a footstep kicks up by ground: green flecks on grass, tan on dirt and paths, grey on asphalt, white in winter snow.
+static func step_dust_color(tile: int, season: int) -> Color:
+	if season % 4 == 3 and tile <= 2:
+		return Color(0.93, 0.96, 1.0, 0.75)
+	if tile == 11:
+		return Color(0.62, 0.62, 0.66, 0.45)
+	if tile <= 2:
+		return Color(0.5, 0.68, 0.3, 0.6)
+	return Color(0.8, 0.7, 0.55, 0.55)
+
 const BREATH_PERIOD := 2.6
 const BREATH_LIFE := 1.0
 

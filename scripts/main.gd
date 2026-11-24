@@ -21,6 +21,7 @@ var prints: PrintView
 var vance_pos := Vector2.INF   # Mr. Vance at his yard gate (also the Rocket Yard Tech job spot)
 var dialogue: DialogueView
 var car: CarView
+var car_theft: CarTheftView
 var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
@@ -139,7 +140,7 @@ func _ready() -> void:
 	ambient = AmbientView.new()
 	ambient.player = player
 	world.add_child(ambient)
-	player.footstep.connect(func(): ambient.puff(player.position, AmbientMath.step_puffs(GameState.clock.season(), player.sprinting)))
+	player.footstep.connect(func(): ambient.puff(player.position, AmbientMath.step_puffs(GameState.clock.season(), player.sprinting), 60.0, AmbientMath.step_dust_color(world.gen.tile_at(floori(player.position.x / 32.0), floori(player.position.y / 32.0)), GameState.clock.season())))
 	player.skid.connect(func(n: int): ambient.puff(player.position + Vector2(0, 2), n, 120.0))
 	var fp := FootprintView.new()
 	fp.player = player
@@ -192,6 +193,12 @@ func _ready() -> void:
 	race = RaceView.new()
 	race.setup(car, world, world.gen, self)
 	race.message.connect(_say)
+	car_theft = CarTheftView.new()
+	car_theft.car = car
+	car_theft.player = player
+	car_theft.toast.connect(_say)
+	car_theft.crime.connect(police.commit)
+	world.add_child(car_theft)
 	race.add_gate(car.position)   # homestead track start line where the car is parked
 	race.add_gate(CircuitModel.start_px(), false, false)   # the circuit's own chequered line is already painted
 	add_child(race)
@@ -387,6 +394,7 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _process(delta: float) -> void:
+	car_theft.refresh(GameState.clock.day)
 	if rod_charging:
 		rod_charge_t += delta
 	fish_fx.charge = CastMath.power(rod_charge_t) if rod_charging else -1.0
@@ -476,8 +484,12 @@ func _process(delta: float) -> void:
 		prompt.text = "E: Dismount"
 	if prompt.text == "" and not _indoors() and not shop.visible and not car.driving and animals.riding == null:
 		prompt.text = WorldHints.text(self)
+	if prompt.text == "" and not _indoors() and not shop.visible:
+		prompt.text = car_theft.prompt()
 	if car.can_enter() and prompt.text == "":
 		prompt.text = "E: Drive"
+	elif car.driving and _near_chop():
+		prompt.text = "E: Sell this stolen car to the chop shop"
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
 	player.indoors = _indoors()
@@ -612,6 +624,12 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_T and not car.driving and not shop.visible and not _indoors():
 		_steal_from_stall()
+		return
+	if e.is_action_pressed("interact") and car.driving and _near_chop():
+		car_theft.sell()
+		return
+	if e.is_action_pressed("interact") and not car.driving and not _indoors() and car_theft.near_slot() != {} and not car.can_enter():
+		car_theft.try_steal(_folk_near(player.position), fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0))
 		return
 	if e.is_action_pressed("interact") and car.driving:
 		if car.leave() and _near_workshop(car.position):
@@ -1037,6 +1055,21 @@ func _car_spot() -> Vector2:
 				if clear:
 					return (Vector2(c) + Vector2(0.5, 0.6)) * 32.0
 	return player.position + Vector2(64, 0)
+
+func _folk_near(p: Vector2) -> int:
+	var n := 0
+	for a in npcs.actors:
+		if (a["node"] as Node2D).position.distance_to(p) < 200.0:
+			n += 1
+	return n
+
+func _near_chop() -> bool:
+	if not car_theft.can_sell():
+		return false
+	for b in CityModel.buildings():
+		if b["kind"] == "garage":
+			return car.position.distance_to((Vector2(b["door"]) + Vector2(0.5, 0.5)) * 32.0) < 110.0
+	return false
 
 func _near_workshop(p: Vector2) -> bool:
 	for b in town.buildings:

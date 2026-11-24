@@ -186,6 +186,12 @@ func on_process() -> void:
 			if b["id"] == kind:
 				m.player.position = TownModel.sprite_bottom_center(b) + Vector2(0, 40)
 				m.interior.enter(b)
+	if "--steal-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 10 and not m.car_theft.slots.is_empty():   # screenshot helper: stand beside the first parked car and hot-wire it
+		var sl: Dictionary = m.car_theft.slots[0]
+		m.player.position = (Vector2(sl["cell"]) + Vector2(0.5, 1.5)) * 32.0
+	if "--steal-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:
+		GameState.rep_street = 200   # odds 90%
+		m.car_theft.try_steal(0, 12.0)
 	if "--alarm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:   # siren flash in the room
 		m.robbery.model.add_noise(50.0)
 	if "--wake-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:   # residents wake and shove

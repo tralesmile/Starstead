@@ -31,6 +31,13 @@ func add(id: String, n: int = 1) -> int:
 			n -= put
 	return n
 
+func fill_fraction() -> float:
+	var used := 0
+	for s in slots:
+		if s != null:
+			used += 1
+	return float(used) / maxf(float(slots.size()), 1.0)
+
 func count(id: String) -> int:
 	var c := 0
 	for s in slots:

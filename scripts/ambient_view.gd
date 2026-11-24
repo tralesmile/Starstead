@@ -16,7 +16,7 @@ var rain := 0.0   # current rain 0..1, set by main (cloud shadows vanish under o
 func _ready() -> void:
 	z_index = 40
 
-func puff(at: Vector2, amount: int = 3, spread: float = 60.0) -> void:
+func puff(at: Vector2, amount: int = 3, spread: float = 60.0, tint: Color = Color(0.8, 0.7, 0.55, 0.55)) -> void:
 	var p := CPUParticles2D.new()
 	p.position = at + Vector2(0, -1)
 	p.emitting = true
@@ -31,7 +31,7 @@ func puff(at: Vector2, amount: int = 3, spread: float = 60.0) -> void:
 	p.gravity = Vector2(0, -8)
 	p.scale_amount_min = 1.0
 	p.scale_amount_max = 2.0
-	p.color = Color(0.8, 0.7, 0.55, 0.55)
+	p.color = tint
 	add_child(p)
 	get_tree().create_timer(0.8).timeout.connect(p.queue_free)
 

@@ -152,3 +152,9 @@ static func tired_mult(energy: float) -> float:
 	if energy >= 25.0:
 		return 1.0
 	return lerpf(0.8, 1.0, clampf(energy / 25.0, 0.0, 1.0))
+
+## Heavy pack: a bag under 80% full costs nothing, a full bag slows you to 0.9x (fraction = used slots / all slots).
+static func load_mult(fraction: float) -> float:
+	if fraction <= 0.8:
+		return 1.0
+	return lerpf(1.0, 0.9, clampf((fraction - 0.8) / 0.2, 0.0, 1.0))
