@@ -12,6 +12,7 @@ const WINDOWS := {"house": [Vector2(20, 70), Vector2(68, 70)], "barn": [Vector2(
 	"town_hall": [Vector2(36, 92), Vector2(124, 92)], "cafe_building": [Vector2(20, 70), Vector2(76, 70)], "garage_building": [Vector2(14, 70)], "pit_building": [Vector2(14, 72)], "sports_hall": [Vector2(30, 70), Vector2(126, 70)]}
 const CHIMNEYS := {"house": Vector2(70, 4), "workshop": Vector2(82, 3)}
 
+var bench_cell := Vector2i(-9999, -9999)   # carpenter bench beside the farmhouse
 var panes: Array = []   # dark glass over home windows nobody is lit behind: {node, light, home, idx, n}
 
 func set_night(k: float, hour: float = -1.0) -> void:
@@ -89,7 +90,26 @@ func setup(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	for b in CircuitModel.buildings():   # Halden circuit pit office + Sports Hall (far west)
 		buildings.append(b)
 		_make(world, gen, b)
+	_workbench(world, gen)
 	CityView.build(world, lights)
+
+func _workbench(world: World, gen: WorldGen) -> void:
+	## A carpenter's bench beside the farmhouse: E opens the craft menu (same as C).
+	for b in buildings:
+		if String(b["id"]) != "farmhouse":
+			continue
+		var taken := {}
+		for ob in buildings:
+			for c in TownModel.footprint_cells(ob):
+				taken[c] = true
+		for off in [Vector2i(3, 1), Vector2i(-3, 1), Vector2i(3, 2), Vector2i(-3, 2), Vector2i(0, 3), Vector2i(4, 1)]:
+			var c: Vector2i = (b["door"] as Vector2i) + off
+			if taken.has(c) or gen.sdf_at(c.x, c.y) < 2.0 or c in gen.trees or c in gen.rocks or c in gen.bushes or GameState.farm.soil.has(c):
+				continue
+			world.make_prop("res://assets/sprites/workbench.png", c, Vector2(40, 12), Vector2(0, -18))
+			world.interactables.add(c, "bench", "E: Craft at the bench (C)")
+			bench_cell = c
+			return
 
 func _village(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	## A fenced paddock beside the barn, then worn dirt footpaths from every village door to the market stall
@@ -150,6 +170,14 @@ func _village(world: World, gen: WorldGen, stall: Vector2i) -> void:
 	if not cells.is_empty():
 		world.refresh_ground()
 
+func _porch(body: Node2D, tex_h: float) -> void:
+	## Steps, mat, railings and flower pots drawn over the bottom of a townhouse-style front.
+	var p := Sprite2D.new()
+	p.texture = load("res://assets/sprites/porch_house.png")
+	p.offset = Vector2(0, -p.texture.get_height() / 2.0)
+	p.z_index = 0
+	body.add_child(p)
+
 func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	var body := StaticBody2D.new()
 	body.position = TownModel.sprite_bottom_center(b)
@@ -158,6 +186,8 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	s.offset = Vector2(0, -s.texture.get_height() / 2.0)
 	body.add_child(s)
 	body.add_child(World.make_shadow(s.texture.get_width() * 0.8))
+	if String(b["sprite"]) == "house":
+		_porch(body, s.texture.get_height())
 	var cs := CollisionShape2D.new()
 	var rs := RectangleShape2D.new()
 	rs.size = Vector2(float(b["w"]) * 32.0 - 6.0, 36.0)

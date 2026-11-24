@@ -17,6 +17,8 @@ var indoors_cb: Callable   # () -> id of the home the player stands in ("" outsi
 var hour_cb: Callable      # () -> hour of day
 var spotters_cb: Callable  # () -> Array of {name, pos} awake residents in the room (room pixels)
 var spotter := ""
+var report := 0.0         # neighbours' phone-the-police meter (Neighbours)
+var reported := false
 var sneaking_cb: Callable  # () -> Array[bool] [moving, sprinting, sneaking]
 
 func setup(t: TownView, w: Node2D, p: PoliceView, pl: Node2D) -> void:
@@ -47,9 +49,12 @@ func _process(delta: float) -> void:
 		var hr: float = float(hour_cb.call()) if hour_cb.is_valid() else 12.0
 		model.wake_override = Household.wake_threshold(float(model.cfg["noise"]["wake_threshold"]), inside, hr)
 		_watch(inside, delta, bool(st[2]))
+		_neighbours(inside, hr, delta)
 		if model.alarm_check(inside):
 			_alarm(inside)
 	if inside == "":
+		report = maxf(report - 0.15 * delta, 0.0)
+		reported = reported and report > 0.0
 		model.wake_override = -1.0
 		model.suspicion = 0.0
 	model.tick(active if active != "" else "none", delta, false, false)
@@ -79,6 +84,15 @@ func _watch(id: String, delta: float, sneaking: bool) -> void:
 		spotter = who
 		model.suspicion = 0.3
 		model.add_noise(100.0)
+
+func _neighbours(inside: String, hr: float, delta: float) -> void:
+	## Awake people in the OTHER homes hear loud noise through the walls and phone the police once.
+	var awake := Neighbours.awake_neighbours(inside, hr, Household.cfg()["homes"].keys())
+	report = Neighbours.step(report, model.noise, awake, delta)
+	if Neighbours.calls(report) and not reported:
+		reported = true
+		police.add_heat(Neighbours.heat())
+		message.emit("A neighbour heard the racket and called the police!")
 
 func _prompt(b: Dictionary) -> String:
 	if String(b["id"]) in InteriorModel.PUBLIC:

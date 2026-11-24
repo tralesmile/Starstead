@@ -12,7 +12,7 @@ func _init(main) -> void:
 
 func on_ready() -> void:
 	for a in OS.get_cmdline_user_args():   # demos and QA flags want the full toolbelt
-		if a.ends_with("-demo") or a.begins_with("--sports-demo") or a.begins_with("--enter-demo") or a == "--allgear":
+		if a.ends_with("-demo") or a.begins_with("--sports-demo") or a.begins_with("--enter-demo") or a.begins_with("--arrow-demo") or a == "--allgear":
 			GameState.tools_owned = ToolKit.all_tools()
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the m.car and floor it
 		m.player.position = m.car.position
@@ -23,6 +23,15 @@ func on_ready() -> void:
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
 			m.race.start()
+	for a in OS.get_cmdline_user_args():   # screenshot helper: day-1 tutorial arrow (--arrow-demo=tree or bed)
+		if a.begins_with("--arrow-demo"):
+			var apc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+			GameState.farm.till(apc + Vector2i(2, 1))
+			GameState.farm.plant(apc + Vector2i(2, 1), "turnip_seed", 0)
+			if a.ends_with("=tree"):
+				GameState.tools_owned.erase("watering_can")
+	if "--bench-demo" in OS.get_cmdline_user_args() and m.town.bench_cell.x > -9000:   # screenshot helper: stand in front of the carpenter bench
+		m.player.position = Vector2(m.town.bench_cell) * 32.0 + Vector2(16, 48)
 	if "--fert-demo" in OS.get_cmdline_user_args():   # screenshot helper: a fertilised row beside a plain one
 		var pc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
 		for dx in 4:
@@ -143,9 +152,9 @@ func on_process() -> void:
 		m.cave.enter(GameState.clock.day)
 	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 40 and m.cave.active:
 		var ore: Vector2i = m.cave.model.ores.keys()[0]
-		m.player.position = m.cave.px(ore) + Vector2(16, 70)
+		m.player.position = m.cave.px(ore) + Vector2(16, 48)
 		if "--cave-walls" in OS.get_cmdline_user_args():   # stand beside a torch and a wall edge
-			m.player.position = m.cave.px(m.cave.model.torches[1]) + Vector2(16, 70)
+			m.player.position = m.cave.px(m.cave.model.torches[1]) + Vector2(16, 48)
 	if m._arg_prefix("--cave-floor") and Engine.get_process_frames() == 40 and m.cave.active:   # screenshot helper: --cave-floor=3 goes down the ladders
 		var fl := 3
 		for a in OS.get_cmdline_user_args():

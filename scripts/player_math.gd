@@ -164,3 +164,10 @@ static func load_mult(fraction: float) -> float:
 	if fraction <= 0.8:
 		return 1.0
 	return lerpf(1.0, 0.9, clampf((fraction - 0.8) / 0.2, 0.0, 1.0))
+
+const SURFACE_EASE := 7.0   # 1/s: ground speed changes blend over ~0.15 s instead of snapping
+
+static func surface_ease(cur: float, target: float, dt: float) -> float:
+	## Speed multiplier from the ground blends toward the new surface (no jolt stepping onto path, wet bank or mud).
+	var k := 1.0 - exp(-SURFACE_EASE * maxf(dt, 0.0))
+	return cur + (target - cur) * k

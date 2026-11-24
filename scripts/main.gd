@@ -53,6 +53,7 @@ var float_fx: FloatFx
 var mouse_aim := false
 var legend: Label
 var goal_label: Label
+var goal_arrow: GoalArrowView
 var city_seen := false
 var _goal_t := 0.0
 var jobs: JobView
@@ -348,6 +349,9 @@ func _ready() -> void:
 	craft_view.closed.connect(func(): player.set_physics_process(true))
 	craft_view.cooked.connect(func(n): _say("Crafted " + n))
 	add_child(craft_view)
+	goal_arrow = GoalArrowView.new()
+	goal_arrow.setup(player, world.gen, town)
+	add_child(goal_arrow)
 	cave = CaveView.new()
 	cave.setup(world, player, self)
 	cave.ore_broken.connect(_on_ore_broken)
@@ -420,6 +424,7 @@ func _process(delta: float) -> void:
 		world.refresh_gate_props()
 		if VanceYard.gate_open(GameState.story.done):
 			get_tree().call_group("vance_gate", "queue_free")   # Act 2 seat earned: the yard gate rolls away
+		goal_arrow.set_kind(GoalArrow.kind(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, "watering_can" in GameState.tools_owned))
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
 	if GameState.clock.advance(delta):
 		_end_day()
@@ -604,10 +609,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if craft_view.visible or (e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_C and not car.driving and not shop.visible and not dialogue.visible and not inv_view.visible and not journal_view.visible and not interior.active):
 		if not craft_view.visible:
-			player.velocity = Vector2.ZERO
-			player.move_v = Vector2.ZERO
-			player.set_physics_process(false)
-			craft_view.open()
+			_open_craft()
 		else:
 			craft_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -740,6 +742,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.get("kind", "") == "sign":
 			_say(String(it.get("text", "")))
 			toast_t = 4.0
+			return
+		if it.get("kind", "") == "bench":
+			_open_craft()
 			return
 		if it.get("kind", "") == "dealer":
 			player.velocity = Vector2.ZERO
@@ -1108,6 +1113,12 @@ func _near_chop() -> bool:
 		if b["kind"] == "garage":
 			return car.position.distance_to((Vector2(b["door"]) + Vector2(0.5, 0.5)) * 32.0) < 110.0
 	return false
+
+func _open_craft() -> void:
+	player.velocity = Vector2.ZERO
+	player.move_v = Vector2.ZERO
+	player.set_physics_process(false)
+	craft_view.open()
 
 func _near_workshop(p: Vector2) -> bool:
 	for b in town.buildings:
