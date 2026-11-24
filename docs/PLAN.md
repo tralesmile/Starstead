@@ -116,7 +116,7 @@ Owner choices: mouse+keyboard like Stardew; houses are enterable (yours, NPCs', 
 Controls + camera (1, 9)
 - [x] Mouse support: tile cursor (yellow in reach), left-click uses the tool on that tile, right-click interacts, wheel changes slot, Ctrl+wheel or +/- zoom (TargetMath, CursorView, legend line)
 - [x] Tab/I opens the inventory screen
-- [x] Context action (partly): E talks/opens doors/enters/rides already, and now harvests a ripe crop on the faced or underfoot tile with any tool in hand (ContextAction, tested). [ ] pick up drops/open chest; also on-screen key hints shown in a small bottom-right legend, rebindable later
+- [x] Context action (partly): E talks/opens doors/enters/rides already, and now harvests a ripe crop on the faced or underfoot tile with any tool in hand (ContextAction, tested). [ ] pick up drops/open chest; also on-screen key hints shown in a small bottom-right legend, rebindable later (CLAIMED 2026-11-24 run 27: key legend + E picks up drops + derby betting)
 - [x] Camera zoom 1-3 (Ctrl+wheel, +/-) with a quick glide; look-ahead, pixel snap, shake and edge limits kept
 - [x] Camera dead-zone follow (small free box before the camera moves), softer map-edge clamp
 - [x] Camera zooms out one step while driving the car or riding the horse
