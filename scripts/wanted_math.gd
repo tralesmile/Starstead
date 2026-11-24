@@ -19,8 +19,8 @@ static func add(heat: float, kind: String, witnessed: bool) -> float:
 static func stars(heat: float) -> int:
 	return clampi(ceili(heat / STAR_STEP), 0, 5)
 
-static func decay(heat: float, dt: float, seen: bool) -> float:
-	return maxf(heat - (DECAY_SEEN if seen else DECAY_HIDDEN) * dt, 0.0)
+static func decay(heat: float, dt: float, seen: bool, mult: float = 1.0) -> float:
+	return maxf(heat - (DECAY_SEEN if seen else DECAY_HIDDEN) * dt * mult, 0.0)
 
 static func police_count(star_n: int) -> int:
 	return [0, 1, 2, 4, 6, 8][clampi(star_n, 0, 5)]

@@ -11,6 +11,7 @@ const PIER := Rect2i(223, 106, 4, 16)      # x 223..226, y 106..121
 const HEAD := Rect2i(216, 119, 18, 3)      # x 216..233, y 119..121
 const BOARD := Vector2i(219, 99)           # contest board on the quay
 const CRATE_CELL := Vector2i(231, 120)     # night crate at the pier head
+const DEALER_CELL := Vector2i(183, 18)    # back-alley dealer beside the buyer (street tier Known)
 const FENCE_CELL := Vector2i(180, 18)      # buyer in a Port Halden back alley
 const ENTRY_FEE := 25
 const CONTEST_START := 8.0

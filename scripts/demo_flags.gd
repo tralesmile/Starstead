@@ -192,6 +192,14 @@ func on_process() -> void:
 	if "--steal-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:
 		GameState.rep_street = 200   # odds 90%
 		m.car_theft.try_steal(0, 12.0)
+	if "--dealer-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 6:   # screenshot helper: the alley dealer window with a street name
+		GameState.rep_street = 35
+		GameState.rep_honest = 32
+		GameState.money = 400
+		m.police.add_heat(50.0)
+		m.player.position = (Vector2(HarbourModel.DEALER_CELL) + Vector2(0.5, 1.6)) * 32.0
+	if "--dealer-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 12:
+		m.dealer.open()
 	if "--alarm-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 20:   # siren flash in the room
 		m.robbery.model.add_noise(50.0)
 	if "--wake-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:   # residents wake and shove

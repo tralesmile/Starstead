@@ -836,7 +836,20 @@ def bumper_guard():
     return i
 icons['bumper_guard'] = bumper_guard
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard']  # appended after the last old icon, in this order
+def lockpick_set():
+    i = Ic()
+    i.rect(2, 7, 13, 13, "#8a5a32"); i.rect(2, 7, 13, 7, "#b88050"); i.rect(2, 13, 13, 13, "#5e3c20")   # leather roll
+    i.rect(2, 7, 2, 13, "#b88050"); i.rect(13, 8, 13, 13, "#5e3c20")
+    i.rect(2, 10, 13, 10, "#6e4626")                                          # pocket seam
+    i.rect(6, 6, 7, 14, "#d8c8a0"); i.px(6, 6, "#f0e4c4"); i.px(7, 14, "#a89870")   # tie strap
+    i.px(7, 10, "#a89870")
+    i.line(4, 6, 4, 2, "#c4ccd8"); i.px(3, 2, "#e8eef6"); i.px(4, 1, "#e8eef6")      # pick with hook
+    i.line(8, 6, 8, 1, "#9aa4b4"); i.px(9, 1, "#e8eef6"); i.px(8, 0, "#e8eef6")
+    i.line(11, 6, 11, 3, "#c4ccd8"); i.px(11, 2, "#e8eef6"); i.px(12, 2, "#e8eef6")
+    return i
+icons['lockpick_set'] = lockpick_set
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

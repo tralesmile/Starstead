@@ -12,6 +12,7 @@ var _season_applied := -1
 var stall_stolen := 0   # grabs from the stall today (resets at day end)
 var highlighted: Sprite2D = null
 var shop: ShopView
+var dealer: DealerView
 var build_view: BuildView
 var ambient: AmbientView
 var npcs: NpcView
@@ -239,6 +240,10 @@ func _ready() -> void:
 	shop = ShopView.new()
 	shop.closed.connect(func(): player.set_physics_process(true))
 	add_child(shop)
+	dealer = DealerView.new()
+	dealer.police = police
+	dealer.closed.connect(func(): player.set_physics_process(true))
+	add_child(dealer)
 	dialogue = DialogueView.new()
 	dialogue.gossip_cb = func(n: int) -> String: return Dialogue.gate_gossip(gate_keeper.gates if gate_keeper.enabled else {}, GameState.story.done, n)
 	add_child(dialogue)
@@ -450,7 +455,7 @@ func _process(delta: float) -> void:
 	var lamp_k := 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	town.set_night(lamp_k, NpcSchedule.hour_of(GameState.clock.minutes))
 	for l in get_tree().get_nodes_in_group("night_lights"):   # streamed-chunk lights (Vance yard floodlights)
-		(l as PointLight2D).energy = 1.3 * lamp_k
+		(l as PointLight2D).energy = 1.3 * lamp_k * float(l.get_meta("dim", 1.0))
 		(l as PointLight2D).visible = lamp_k > 0.01
 	world.part_reeds(player.position, delta)
 	if not _indoors():
@@ -465,7 +470,7 @@ func _process(delta: float) -> void:
 			_gate_bounce(gr)
 	var near := world.interactables.near(player.position, _target_cell())
 	var npc_near := npcs.near(player.position + Vector2(0, -8))
-	prompt.text = "" if shop.visible else String(near.get("prompt", ""))
+	prompt.text = "" if shop.visible or dealer.visible else String(near.get("prompt", ""))
 	if prompt.text == "" and not shop.visible and not npc_near.is_empty():
 		prompt.text = "E: Talk to " + String(npc_near["name"])
 		var jp := jobs.prompt()   # Vance's gate is also a workplace (Rocket Yard Tech)
@@ -615,7 +620,7 @@ func _unhandled_input(e: InputEvent) -> void:
 	if dialogue.handle(e):
 		get_viewport().set_input_as_handled()
 		return
-	if shop.visible:
+	if shop.visible or dealer.visible:
 		return
 	if build_view.handle_key(e):
 		return
@@ -708,6 +713,12 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.get("kind", "") == "sign":
 			_say(String(it.get("text", "")))
 			toast_t = 4.0
+			return
+		if it.get("kind", "") == "dealer":
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+			dealer.open()
 			return
 		if it.get("kind", "") == "shop":
 			player.velocity = Vector2.ZERO

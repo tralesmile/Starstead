@@ -26,6 +26,7 @@ func open() -> void:
 	menu.world = GameState.world
 	menu.market = GameState.market
 	menu.day = GameState.clock.day
+	menu.rep_honest = GameState.rep_honest
 	menu.tab = ShopMenu.Tab.SELL
 	menu.cursor = 0
 	msg = ""

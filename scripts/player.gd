@@ -99,7 +99,7 @@ func _physics_process(delta: float) -> void:
 		mult = PlayerMath.terrain_factor(gen.sdf_at(c.x, c.y), on_path) * PlayerMath.wet_speed(rain, on_path)
 		grip = PlayerMath.wet_grip(rain, on_path) * PlayerMath.snow_grip(GameState.clock.season(), on_path)
 		mult *= PlayerMath.snow_speed(GameState.clock.season(), on_path)
-	grip *= PlayerMath.ride_grip(speed_mult)
+	grip *= PlayerMath.ride_grip(speed_mult) * PlayerMath.load_grip(GameState.bag.fill_fraction())
 	var sp_t := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
 	if sp_t > 1.0:
 		GameState.energy.value = maxf(GameState.energy.value - PlayerMath.sprint_cost(delta), 0.0)

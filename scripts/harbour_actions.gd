@@ -43,7 +43,7 @@ static func run(m, kind: String) -> void:
 				m._say("Too hot. Lose the cops first")
 			else:
 				GameState.bag.remove("smuggle_crate", 1)
-				var pay := HarbourModel.crate_pay(day)
+				var pay := int(round(HarbourModel.crate_pay(day) * ReputationModel.fence_mult(GameState.rep_street)))
 				GameState.money += pay
 				GameState.rep_street += 2
 				var a: Dictionary = GameState.story.active()

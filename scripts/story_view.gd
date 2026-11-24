@@ -96,4 +96,5 @@ func _draw_all() -> void:
 			var t := str(rows[i])
 			var col := Color(0.7, 0.95, 0.7) if t.contains("[x]") else (Color(1, 0.95, 0.5) if t.contains("[>]") else (Color(1, 1, 1) if not t.begins_with("  ") else Color(0.75, 0.78, 0.85)))
 			canvas.draw_string(font, panel.position + Vector2(10, 32 + i * 14), t, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, col)
+		canvas.draw_string(font, panel.position + Vector2(10, panel.size.y - 16), ReputationModel.summary(GameState.rep_honest, GameState.rep_street), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.7, 1.0, 0.8))
 		canvas.draw_string(font, panel.position + Vector2(10, panel.size.y - 4), "K or Esc to close", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.7))

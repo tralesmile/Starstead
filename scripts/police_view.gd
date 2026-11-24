@@ -59,6 +59,10 @@ func _make_cop(p: Vector2) -> Node2D:
 	world.add_child(n)
 	return n
 
+func clear_heat() -> void:
+	heat = 0.0
+	_sync_cops()
+
 func _sync_cops() -> void:
 	var want := WantedMath.police_count(stars())
 	while cops.size() < want:
@@ -71,7 +75,7 @@ func _process(delta: float) -> void:
 	var cp: Array = []
 	for c in cops:
 		cp.append((c as Node2D).position)
-	heat = WantedMath.decay(heat, delta, PoliceModel.any_sees(cp, player.position))
+	heat = WantedMath.decay(heat, delta, PoliceModel.any_sees(cp, player.position), ReputationModel.decay_mult(GameState.rep_honest, GameState.rep_street))
 	var n := stars()
 	hud.heat = heat
 	hud.seen = PoliceModel.any_sees(cp, player.position)
@@ -99,7 +103,7 @@ func _animate(cn: Node2D, d: Vector2, delta: float) -> void:
 		s.frame = NpcLook.frame(NpcLook.POLICE, face, PlayerMath.walk_frame_hd(t, moving))
 
 func _arrest() -> void:
-	var fine := mini(WantedMath.fine(stars()), GameState.money)
+	var fine := mini(ReputationModel.apply_fine(WantedMath.fine(stars()), GameState.rep_honest), GameState.money)
 	GameState.money -= fine
 	GameState.rep_honest = maxi(GameState.rep_honest - stars(), 0)
 	heat = 0.0

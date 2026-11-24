@@ -226,6 +226,7 @@ func _harbour(world: World) -> void:
 	var items: Array = HarbourModel.props()
 	items.append({"kind": "crate", "cell": HarbourModel.CRATE_CELL})
 	items.append({"kind": "fence", "cell": HarbourModel.FENCE_CELL})
+	items.append({"kind": "dealer", "cell": HarbourModel.DEALER_CELL})
 	for p in items:
 		var c: Vector2i = p["cell"]
 		if ChunkGrid.chunk_of_cell(c) != chunk:
@@ -237,6 +238,19 @@ func _harbour(world: World) -> void:
 			b.add_to_group("harbour_crate")
 			b.visible = false
 			world.interactables.add(c, "crate", "E: Open the sealed crate")
+		elif kind == "dealer":
+			b = world.make_prop("res://assets/sprites/dealer.png", c, Vector2(20, 8), Vector2(0, -20))
+			world.interactables.add(c, "dealer", "E: Talk to the dealer")
+			var dl := PointLight2D.new()   # dim green alley glow after dark (night_lights group, dimmer than street lamps)
+			dl.texture = Lantern.light_texture()
+			dl.texture_scale = 1.6
+			dl.color = Color(0.55, 1.0, 0.65)
+			dl.position = Vector2(0, -30)
+			dl.energy = 0.0
+			dl.visible = false
+			dl.set_meta("dim", 0.6)
+			dl.add_to_group("night_lights")
+			b.add_child(dl)
 		elif kind == "fence":
 			b = world.make_prop("res://assets/sprites/barrel.png", c, Vector2(18, 8), Vector2(0, -10))
 			world.interactables.add(c, "fence", "E: Talk to the buyer")

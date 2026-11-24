@@ -612,5 +612,10 @@
   "name": "Bumper Guard",
   "price": 160,
   "stack": 1
+ },
+ "lockpick_set": {
+  "name": "Lockpick Set",
+  "price": 40,
+  "stack": 9
  }
 }

@@ -68,7 +68,7 @@ static func run(m, action: String) -> void:
 				m._say("Treated for $%d. Energy %d" % [r["paid"], int(GameState.energy.value)])
 		"fine":
 			var st: int = m.police.stars()
-			var r := CityServices.pay_fine(GameState.money, st)
+			var r := CityServices.pay_fine(GameState.money, st, GameState.rep_honest)
 			if st == 0:
 				m._say("The desk sergeant has nothing on you")
 			elif r["cleared"]:

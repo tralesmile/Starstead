@@ -35,6 +35,9 @@ var drift_board: Array = []       # best circuit drift scores (DriftBoard)
 var yard_looted: Dictionary = {}   # Vance yard crate index -> day last cleared
 var debt_paid: int = 0       # Vance debt repaid at the Town Hall ledger
 var rep_honest: int = 0
+func street_skill() -> int:
+	return ReputationModel.skill(rep_street, bag.count("lockpick_set") > 0)
+
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
 
 func bump(stat: String, n: int = 1) -> void:

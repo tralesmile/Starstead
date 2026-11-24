@@ -86,7 +86,7 @@ func _prompt(b: Dictionary) -> String:
 	var h := model.house(str(b["id"]))
 	var lit := " - lights on" if Household.lights_on(str(b["id"]), NpcSchedule.hour_of(GameState.clock.minutes)) else ""
 	if h["locked"]:
-		return "E: Pick lock %s (%d%%)%s" % [b["name"], int(100.0 * model.pick_chance(int(h["lock_level"]), GameState.rep_street / 10)), lit]
+		return "E: Pick lock %s (%d%%)%s" % [b["name"], int(100.0 * model.pick_chance(int(h["lock_level"]), GameState.street_skill())), lit]
 	if not h["locked"] and not (String(b["id"]) in InteriorModel.PUBLIC) and not (h["looted"] or h["loot"].is_empty()):
 		return "E: Enter %s (unlocked)%s" % [b["name"], lit]
 	if h["looted"] or h["loot"].is_empty():
@@ -105,9 +105,9 @@ func crack_safe(b: Dictionary) -> void:
 	if not h["safe"] or h["safe_open"]:
 		message.emit("The safe is empty")
 		return
-	var cash := model.crack_safe(id, GameState.rep_street / 10, rng)
+	var cash := model.crack_safe(id, GameState.street_skill(), rng)
 	if cash < 0:
-		message.emit("The dial slips (%d%% chance). Noise!" % int(100.0 * model.safe_chance(GameState.rep_street / 10)))
+		message.emit("The dial slips (%d%% chance). Noise!" % int(100.0 * model.safe_chance(GameState.street_skill())))
 		return
 	GameState.money += cash
 	GameState.rep_street += 3
@@ -119,7 +119,7 @@ func cut_alarm(b: Dictionary) -> void:
 	if not h["alarm_armed"]:
 		message.emit("The alarm is already dead")
 		return
-	var sk: int = GameState.rep_street / 10
+	var sk: int = GameState.street_skill()
 	if model.cut_alarm(id, sk, rng):
 		message.emit("Snip. The alarm goes quiet")
 	else:
@@ -133,7 +133,7 @@ func interact(cell: Vector2i) -> void:
 	active = id
 	var h := model.house(id)
 	if h["locked"]:
-		if model.attempt_pick(id, GameState.rep_street / 10, rng):
+		if model.attempt_pick(id, GameState.street_skill(), rng):
 			message.emit("Click! The lock gives")
 		else:
 			message.emit("The pick snaps. Noise!")

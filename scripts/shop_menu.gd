@@ -11,6 +11,7 @@ var planets: Dictionary = {}
 var world := "earth"
 var market: MarketModel = null   # optional sell pressure (E8)
 var day := 1
+var rep_honest := 0   # honest tier discounts and sell bonus (ReputationModel)
 
 func _init(items_db: Dictionary) -> void:
 	items = items_db
@@ -25,12 +26,16 @@ func entries(inv: Inventory) -> Array:
 		if tab == Tab.SELL and n > 0:
 			out.append({"id": id, "name": items[id].name, "price": _sell_now(id), "count": n, "trend": "" if market == null else market.trend(id, day)})
 		elif tab == Tab.BUY and bool(items[id].get("buy", false)):
-			out.append({"id": id, "name": items[id].name, "price": Shop.buy_price(items, id, planets, world), "count": n})
+			out.append({"id": id, "name": items[id].name, "price": _buy_now(id), "count": n})
 	return out
 
 func _sell_now(id: String) -> int:
 	var base := Shop.sell_price(items, id, planets, world)
-	return base if market == null else market.price(base, id, day)
+	var p := base if market == null else market.price(base, id, day)
+	return int(round(p * ReputationModel.sell_mult(rep_honest)))
+
+func _buy_now(id: String) -> int:
+	return int(round(Shop.buy_price(items, id, planets, world) * ReputationModel.buy_mult(rep_honest)))
 
 func switch_tab() -> void:
 	tab = Tab.BUY if tab == Tab.SELL else Tab.SELL
@@ -55,7 +60,9 @@ func confirm(inv: Inventory, money: int) -> Dictionary:
 			if market != null:
 				market.record(id, 1)
 	else:
-		m = Shop.buy(inv, items, id, 1, money, planets, world)
+		var cost := _buy_now(id)
+		if cost <= money and inv.add(id, 1) == 0:
+			m = money - cost
 	if m < 0:
 		return {"money": money, "msg": "Cannot afford" if tab == Tab.BUY else "Cannot sell"}
 	cursor = clampi(cursor, 0, maxi(entries(inv).size() - 1, 0))

@@ -32,11 +32,11 @@ static func clinic(cash: int, energy: float, max_energy: float = 100.0) -> Dicti
 	var healed := float(paid) / HEAL_PER_ENERGY
 	return {"cash": cash - paid, "energy": minf(max_energy, energy + healed), "paid": paid}
 
-static func pay_fine(cash: int, stars: int) -> Dictionary:
+static func pay_fine(cash: int, stars: int, honest: int = 0) -> Dictionary:
 	## Settling at the desk costs the arrest fine (WantedMath.fine). {cash, paid, cleared}.
 	if stars <= 0:
 		return {"cash": cash, "paid": 0, "cleared": false}
-	var fine := WantedMath.fine(stars)
+	var fine := ReputationModel.apply_fine(WantedMath.fine(stars), honest)
 	if cash < fine:
 		return {"cash": cash, "paid": 0, "cleared": false}
 	return {"cash": cash - fine, "paid": fine, "cleared": true}

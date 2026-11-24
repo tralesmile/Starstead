@@ -153,6 +153,12 @@ static func tired_mult(energy: float) -> float:
 		return 1.0
 	return lerpf(0.8, 1.0, clampf(energy / 25.0, 0.0, 1.0))
 
+## A heavy pack also makes starts and turns sluggish: full bag = 0.8x grip (same 80%..100% ramp as load_mult).
+static func load_grip(fraction: float) -> float:
+	if fraction <= 0.8:
+		return 1.0
+	return lerpf(1.0, 0.8, clampf((fraction - 0.8) / 0.2, 0.0, 1.0))
+
 ## Heavy pack: a bag under 80% full costs nothing, a full bag slows you to 0.9x (fraction = used slots / all slots).
 static func load_mult(fraction: float) -> float:
 	if fraction <= 0.8:
