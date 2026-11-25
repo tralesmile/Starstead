@@ -42,3 +42,20 @@ static func glint(cell: Vector2i, i: int, t: float) -> Dictionary:
 	var ph := fposmod(t / period + float((h >> 8) % 100) / 100.0, 1.0)
 	var a := clampf(1.0 - absf(ph - 0.5) * 9.0, 0.0, 1.0)   # flash window ~ 22% of the period
 	return {"x": 4.0 + float(h % 24), "y": 4.0 + float((h >> 5) % 24), "a": a}
+
+## Rain puddle on a tilled tile (a sky-coloured sheen in the furrows): {"on", "x", "y", "rx", "ry", "a"} or on=false.
+## More tiles hold a puddle the harder it rains; wet (watered) soil drains slower so it puddles first.
+static func puddle(cell: Vector2i, rain: float) -> Dictionary:
+	var r := clampf(rain, 0.0, 1.0)
+	var h: int = (cell.x * 2654435 + cell.y * 40503 + 977) & 0xffff
+	var roll := float(h % 1000) / 1000.0
+	if r < 0.3 or roll > r * 0.75:
+		return {"on": false}
+	var k := clampf((r - 0.3) / 0.7, 0.0, 1.0)
+	return {"on": true, "x": 9.0 + float((h >> 4) % 14), "y": 12.0 + float((h >> 8) % 12), "rx": 5.0 + 4.0 * k + float(h % 3), "ry": 2.0 + 1.5 * k, "a": 0.25 + 0.3 * k}
+
+## Raindrop ripple ring inside a puddle: radius fraction 0..1 and fade for the i-th ring at time t.
+static func puddle_ring(cell: Vector2i, i: int, t: float) -> Dictionary:
+	var h: int = (cell.x * 31 + cell.y * 17 + i * 53) & 0xff
+	var ph := fposmod(t * 1.3 + float(h) / 255.0, 1.0)
+	return {"r": ph, "a": (1.0 - ph) * 0.8}

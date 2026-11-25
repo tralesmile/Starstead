@@ -51,3 +51,20 @@ func test_rain_darkens_dry_soil_more() -> void:
 	check_eq(CropMath.rain_darken(0.0, false), 1.0)
 	check(CropMath.rain_darken(1.0, false) < CropMath.rain_darken(1.0, true))
 	check(CropMath.rain_darken(1.0, true) > 0.85 and CropMath.rain_darken(2.0, false) >= 0.7)
+
+func test_puddles_follow_rain() -> void:
+	var n_light := 0
+	var n_heavy := 0
+	for x in 40:
+		for y in 10:
+			if bool(CropMath.puddle(Vector2i(x, y), 0.2)["on"]):
+				n_light += 1
+			if bool(CropMath.puddle(Vector2i(x, y), 1.0)["on"]):
+				n_heavy += 1
+	check_eq(n_light, 0)
+	check(n_heavy > 100 and n_heavy < 400)
+	var p := CropMath.puddle(Vector2i(3, 3), 1.0)
+	if bool(p["on"]):
+		check(float(p["x"]) < 32.0 and float(p["y"]) < 32.0)
+	var ring := CropMath.puddle_ring(Vector2i(1, 1), 0, 0.3)
+	check(float(ring["r"]) >= 0.0 and float(ring["r"]) <= 1.0)

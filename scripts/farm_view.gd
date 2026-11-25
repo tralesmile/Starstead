@@ -32,6 +32,18 @@ func _draw() -> void:
 		var tex: Texture2D = wet if s.watered else dry
 		var dk := CropMath.rain_darken(rain, s.watered)
 		draw_texture_rect_region(tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(Autotile.atlas_index(m) * 32, 0, 32, 32), Color(dk, dk, dk * 1.02))
+		var pd := CropMath.puddle(cell, rain)
+		if bool(pd["on"]):   # rain puddle: pale sky sheen with a lit rim and a ripple ring
+			var pc := Vector2(cell) * 32.0 + Vector2(float(pd["x"]), float(pd["y"]))
+			var prx := float(pd["rx"])
+			var pry := float(pd["ry"])
+			var pa := float(pd["a"])
+			draw_set_transform(pc, 0.0, Vector2(1.0, pry / prx))
+			draw_circle(Vector2.ZERO, prx, Color(0.62, 0.78, 0.9, pa))
+			draw_circle(Vector2(-1.0, -1.0), prx * 0.55, Color(0.85, 0.93, 1.0, pa * 0.7))
+			var ring := CropMath.puddle_ring(cell, 0, t)
+			draw_arc(Vector2.ZERO, prx * float(ring["r"]), 0.0, TAU, 16, Color(0.92, 0.97, 1.0, float(ring["a"]) * 0.8), 1.0)
+			draw_set_transform_matrix(Transform2D.IDENTITY)
 		if s.watered:   # wet soil catches the light: two tiny twinkles per tile
 			for gi in 2:
 				var g := CropMath.glint(cell, gi, t)

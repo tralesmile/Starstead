@@ -436,7 +436,11 @@ func _process(delta: float) -> void:
 		goal_arrow.set_kind(GoalArrow.kind(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, "watering_can" in GameState.tools_owned))
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
 	if GameState.clock.advance(delta):
-		_end_day()
+		_pass_out("late", true)
+	elif PassOut.exhausted(GameState.energy.value) and not _passing_out:
+		_pass_out("exhausted", false)
+	else:
+		_late_warning()
 	if rain_day != GameState.clock.day:
 		rain_day = GameState.clock.day
 		rain_today = WeatherMath.rain_for_day(1, rain_day, GameState.clock.season())
@@ -1259,6 +1263,74 @@ func _dirt_puff(cell: Vector2i) -> void:
 	p.color = Color(0.45, 0.3, 0.18)
 	world.add_child(p)
 	get_tree().create_timer(0.8).timeout.connect(p.queue_free)
+
+var _passing_out := false
+var _warn_level := 0
+
+func _late_warning() -> void:
+	var lv := PassOut.warning_level(GameState.clock.minutes)
+	if lv != _warn_level:
+		_warn_level = lv
+		if lv > 0:
+			_say(PassOut.warning(GameState.clock.minutes))
+			toast_t = 3.0
+
+func _pass_out(cause: String, clock_rolled: bool) -> void:
+	## Collapse (zero energy or 2am): lose some cash, wake at the farmhouse or the Port Halden hospital.
+	_passing_out = true
+	_warn_level = 0
+	var cell := Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))
+	if interior.active:
+		interior._do_leave()
+		interior.busy = false
+		interior._freeze(false)
+	if cave.active:
+		cave._do_leave()
+		cave.busy = false
+		cave._freeze(false)
+	if car.driving:
+		car.driving = false
+		car.vel = Vector2.ZERO
+	var home_door := Vector2i(32, 34)
+	for b in town.buildings:
+		if String(b["id"]) == "farmhouse":
+			home_door = b["door"]
+	var hosp_door := Vector2i(198, -2)
+	for b in CityModel.buildings():
+		if String(b["id"]) == "city_hospital":
+			hosp_door = b["door"]
+	var spot := PassOut.wake_spot(cell, home_door, hosp_door)
+	var loss := PassOut.money_loss(GameState.money)
+	GameState.money -= loss
+	var fee := PassOut.bill(spot, GameState.money)
+	GameState.money -= fee
+	if not clock_rolled:
+		GameState.clock.new_day()
+	_end_day()
+	GameState.energy.value = PassOut.wake_energy(cause)
+	var door: Vector2i = home_door if spot == "home" else hosp_door
+	player.position = (Vector2(door) + Vector2(0.5, 1.6)) * 32.0
+	player.facing = PlayerMath.Facing.DOWN
+	GameState.stats["pass_outs"] = int(GameState.stats.get("pass_outs", 0)) + 1
+	_say(PassOut.summary(cause, loss, spot, fee))
+	toast_t = 5.0
+	_pass_out_fade()
+	GameState.save_game()
+	_passing_out = false
+
+func _pass_out_fade() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 90
+	var r := ColorRect.new()
+	r.color = Color(0, 0, 0, 1)
+	r.set_anchors_preset(Control.PRESET_FULL_RECT)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(r)
+	add_child(layer)
+	var tw := create_tween()
+	tw.tween_interval(0.5)
+	tw.tween_property(r, "color:a", 0.0, 1.4)
+	tw.tween_callback(layer.queue_free)
 
 func _end_day() -> void:
 	## Bedtime / pass-out / sleeping in a bed: crops grow, rain waters, energy refills, autosave.

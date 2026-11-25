@@ -229,6 +229,9 @@ func on_process() -> void:
 			if String(f["action"]) in ShopHours.TILL_ACTIONS:
 				m.player.position = InteriorView.ORIGIN + (Vector2(f["cell"]) + Vector2(0.5, float(f["size"].y) + 0.5)) * 32.0
 				break
+	if "--passout-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 8:   # collapse far from home
+		GameState.money = 900
+		GameState.energy.value = 0.0
 	if "--wake-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14:   # residents wake and shove
 		m.robbery.model.add_noise(100.0)
 	if "--fish-demo" in OS.get_cmdline_user_args():

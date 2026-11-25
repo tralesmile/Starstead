@@ -186,3 +186,30 @@ static func surface_ease(cur: float, target: float, dt: float) -> float:
 	## Speed multiplier from the ground blends toward the new surface (no jolt stepping onto path, wet bank or mud).
 	var k := 1.0 - exp(-SURFACE_EASE * maxf(dt, 0.0))
 	return cur + (target - cur) * k
+
+const BUMP_MIN_SPEED := SPEED * 1.4   # only a real sprint stumbles
+const BUMP_MIN_LOSS := 0.6            # share of speed lost in one frame (head-on, not a glancing slide)
+
+## Speed shed against an obstacle this frame: `pre` is the intended velocity, `post` what move_and_slide left.
+## Returns 0 for glancing slides or walking pace; otherwise the lost speed (px/s).
+static func bump_impact(pre: Vector2, post: Vector2) -> float:
+	var ps := pre.length()
+	if ps < BUMP_MIN_SPEED:
+		return 0.0
+	var lost := ps - post.length()
+	if lost < ps * BUMP_MIN_LOSS:
+		return 0.0
+	return lost
+
+## Stumble after a head-on bump: {"stagger": seconds of slowed legs, "slow": speed floor, "shake": camera px, "dust": puffs}.
+static func stumble(impact: float) -> Dictionary:
+	if impact <= 0.0:
+		return {"stagger": 0.0, "slow": 1.0, "shake": 0.0, "dust": 0}
+	var k := clampf((impact - BUMP_MIN_SPEED * BUMP_MIN_LOSS) / (SPEED * 1.5), 0.0, 1.0)
+	return {"stagger": 0.25 + 0.3 * k, "slow": 0.55, "shake": 0.8 + 1.2 * k, "dust": 2 + int(3.0 * k)}
+
+## Leg speed factor while staggering: floor right after the hit, easing back to 1 as the timer runs out.
+static func stagger_mult(left: float, total: float, floor_mult: float = 0.55) -> float:
+	if left <= 0.0 or total <= 0.0:
+		return 1.0
+	return lerpf(1.0, floor_mult, clampf(left / total, 0.0, 1.0))

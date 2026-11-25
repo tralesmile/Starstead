@@ -18,6 +18,8 @@ var tool_t := 0.0
 var gen: WorldGen = null      # set by main: terrain speed lookup
 var move_v := Vector2.ZERO    # input-driven velocity (knockback is added on top)
 var knock := Vector2.ZERO
+var _stagger_left := 0.0
+var _stagger_total := 0.0
 var squash_left := 0.0
 var shake_left := 0.0
 var shake_total := 0.2
@@ -117,11 +119,23 @@ func _physics_process(delta: float) -> void:
 	elif _skid_cd <= 0.0 and PlayerMath.slide_dust_amount(move_v.length(), input.length()) > 0:
 		skid.emit(PlayerMath.slide_dust_amount(move_v.length(), input.length()))
 		_skid_cd = 0.12
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * PlayerMath.sneak_mult(sneaking) * PlayerMath.boots_mult(GameState.bag.count("leather_boots")) * PlayerMath.tired_mult(GameState.energy.value) * PlayerMath.load_mult(GameState.bag.fill_fraction()) * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)), grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * PlayerMath.sneak_mult(sneaking) * PlayerMath.boots_mult(GameState.bag.count("leather_boots")) * PlayerMath.tired_mult(GameState.energy.value) * PlayerMath.load_mult(GameState.bag.fill_fraction()) * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)) * PlayerMath.stagger_mult(_stagger_left, _stagger_total), grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
+	var pre_v := velocity
 	move_and_slide()
+	_stagger_left = maxf(_stagger_left - delta, 0.0)
+	if _stagger_left <= 0.0 and speed_mult <= 1.0:
+		var imp := PlayerMath.bump_impact(pre_v - knock, get_real_velocity() - knock)
+		if imp > 0.0:   # sprinted head-on into a tree, rock or wall: stagger, dust, shake
+			var st := PlayerMath.stumble(imp)
+			_stagger_total = float(st["stagger"])
+			_stagger_left = _stagger_total
+			squash_left = 0.18
+			shake(float(st["shake"]), 0.18)
+			skid.emit(int(st["dust"]))
+			move_v *= float(st["slow"])
 	var moving := velocity.length() > 8.0
 	_t = _t + delta if moving else 0.0
 	tool_t -= delta
