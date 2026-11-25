@@ -224,5 +224,20 @@ static func mud_load(cur: float, rain: float, on_path: bool, moving: bool, dt: f
 	var shed := (1.0 / 8.0) if (on_path and moving) else (1.0 / 40.0)
 	return clampf(cur - dt * shed, 0.0, 1.0)
 
+const MUD_SPECKS := [Vector2i(-6, -1), Vector2i(4, -1), Vector2i(-4, -3), Vector2i(2, -4), Vector2i(-7, -5), Vector2i(6, -3), Vector2i(0, -2), Vector2i(-2, -6)]
+
+static func mud_specks(load: float) -> Array:
+	## Dried-on mud splashes on the boots and shins, in feet-origin pixels: [{x, y, w, a}]. None below 5% load,
+	## more and bigger as the load rises (up to all 8), and the oldest specks fade first as it wears off.
+	var out: Array = []
+	if load < 0.05:
+		return out
+	var n := clampi(int(ceil(load * float(MUD_SPECKS.size()))), 1, MUD_SPECKS.size())
+	for i in n:
+		var p: Vector2i = MUD_SPECKS[i]
+		var fade := clampf((load * float(MUD_SPECKS.size()) - float(i)) / 1.0, 0.0, 1.0)
+		out.append({"x": p.x, "y": p.y, "w": 2 + (1 if load > 0.6 and i < 4 else 0), "a": 0.55 + 0.4 * fade})
+	return out
+
 static func mud_speed(load: float) -> float:
 	return 1.0 - MUD_MAX_SPEED_LOSS * clampf(load, 0.0, 1.0)

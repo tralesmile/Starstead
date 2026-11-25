@@ -35,6 +35,7 @@ var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whol
 signal footstep
 signal skid(amount: int)
 var _sprint := 1.0
+var mud_view: MudBootsView
 var _mud := 0.0    # mud on the boots (PlayerMath.mud_load)
 var _surf := 1.0   # eased ground speed multiplier (PlayerMath.surface_ease)
 var _sprint_lvl := 0.0
@@ -50,6 +51,8 @@ func _ready() -> void:
 	sprite.vframes = 4
 	sprite.offset = Vector2(0, -22)  # feet (y=46 of the 48px frame) on the body origin
 	add_child(sprite)
+	mud_view = MudBootsView.new()
+	add_child(mud_view)
 	var sh := World.make_shadow(20)
 	sh.scale = Vector2(0.6, 0.7)
 	add_child(sh)
@@ -111,6 +114,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		_mud = maxf(_mud - delta / 40.0, 0.0)
 	mult *= PlayerMath.mud_speed(_mud)
+	mud_view.load = _mud
 	grip *= PlayerMath.ride_grip(speed_mult) * PlayerMath.load_grip(GameState.bag.fill_fraction())
 	var sp_t := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
 	if sp_t > 1.0:

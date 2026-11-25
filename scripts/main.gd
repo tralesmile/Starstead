@@ -23,6 +23,7 @@ var vance_pos := Vector2.INF   # Mr. Vance at his yard gate (also the Rocket Yar
 var dialogue: DialogueView
 var car: CarView
 var car_theft: CarTheftView
+var traffic: RoadTrafficView
 var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
@@ -207,6 +208,14 @@ func _ready() -> void:
 	car_theft.toast.connect(_say)
 	car_theft.crime.connect(police.commit)
 	world.add_child(car_theft)
+	traffic = RoadTrafficView.new()   # ambient cars + hikers on the open roads (E11)
+	traffic.setup(world, player, car, world.stream.roads)
+	traffic.open_cb = func(pos: Vector2) -> bool:
+		if not gate_keeper.enabled:
+			return true
+		var rid := String(world.stream.region_at(ChunkGrid.chunk_of_cell(Vector2i(floori(pos.x / 32.0), floori(pos.y / 32.0)))).get("id", ""))
+		return StoryGate.lock_message(gate_keeper.gates, rid, GameState.story.done) == ""
+	world.add_child(traffic)
 	race.add_gate(car.position)   # homestead track start line where the car is parked
 	race.add_gate(CircuitModel.start_px(), false, false)   # the circuit's own chequered line is already painted
 	add_child(race)
@@ -473,6 +482,7 @@ func _process(delta: float) -> void:
 	_update_fishing(delta)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
 	car.night = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
+	traffic.night = car.night
 	if GameState.clock.season() != _season_applied:
 		_season_applied = GameState.clock.season()
 		world.set_season(_season_applied)

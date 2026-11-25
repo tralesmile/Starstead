@@ -23,6 +23,11 @@ func on_ready() -> void:
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
 			m.race.start()
+	if "--mud-demo" in OS.get_cmdline_user_args():   # screenshot helper: boots caked in mud
+		m.player._mud = 1.0
+	if "--traffic-demo" in OS.get_cmdline_user_args():   # screenshot helper: cars and a hiker close to the camera on the open road
+		m.traffic.ring = Vector2(70.0, 230.0)
+		m.traffic.spawn_cd = 0.0
 	for a in OS.get_cmdline_user_args():   # screenshot helper: day-1 tutorial arrow (--arrow-demo=tree or bed)
 		if a.begins_with("--arrow-demo"):
 			var apc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
@@ -78,6 +83,8 @@ func on_ready() -> void:
 		m.build_view.setup(m.world, m.world.gen, m.player)
 
 func on_process() -> void:
+	if "--traffic-debug" in OS.get_cmdline_user_args() and Engine.get_process_frames() % 40 == 0:
+		print("TRAFFIC ", m.player.position, "\n", m.traffic.debug_text())
 	if "--treasure-demo" in OS.get_cmdline_user_args() and m.fishing.state == Fishing.State.REELING and not m.fishing.treasure_on:  # screenshot helper: a chest in the reel track
 		m.fishing.treasure_on = true
 		m.fishing.treasure_pos = 0.75
