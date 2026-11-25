@@ -22,9 +22,11 @@ func _draw() -> void:
 		return
 	var origin := player.position.round() - Vector2(180, 140)
 	var n := int(DROPS * now)
+	var k := WeatherMath.slant(now, PlayerMath.wind_angle(GameState.clock.day))
+	var sv := WeatherMath.streak(k)
 	for i in n:
-		var p := (origin + WeatherMath.drop_pos(i, t)).round()
-		draw_line(p, p + Vector2(-2, 5), Color(0.75, 0.85, 1.0, 0.55), 1.0)
+		var p := (origin + WeatherMath.drop_pos(i, t, 260.0, k)).round()
+		draw_line(p, p + sv, Color(0.75, 0.85, 1.0, 0.55), 1.0)
 		if i % 6 == 0 and gen != null and _is_water(p):  # ring ripple on the pond instead of a land splash
 			continue
 		if i % 6 == 0:  # splash

@@ -54,3 +54,13 @@ func test_fog_rules() -> void:
 		if f > 0.0:
 			any = true
 	check(any, "autumn should have some fog days")
+
+func test_rain_slant_follows_wind() -> void:
+	check_eq(WeatherMath.slant(0.4, 0.0), 0.18, "calm rain keeps the default lean")
+	check(WeatherMath.slant(1.0, 0.0) < 0.0, "east wind leans streaks right")
+	check(WeatherMath.slant(1.0, PI) > 0.5, "west wind leans streaks left")
+	check(WeatherMath.streak(WeatherMath.slant(1.0, 0.0)).x > 0.0)
+	check_eq(WeatherMath.streak(0.18).x, -2.0)
+	var a := WeatherMath.drop_pos(5, 1.0)
+	var b := WeatherMath.drop_pos(5, 1.0, 260.0, 0.18)
+	check_eq(a, b)

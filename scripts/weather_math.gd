@@ -27,11 +27,20 @@ static func darken(rain: float) -> Color:
 	var k := 1.0 - 0.28 * rain
 	return Color(k, k, 1.0 - 0.18 * rain)
 
-static func drop_pos(i: int, t: float, speed: float = 260.0) -> Vector2:
+static func slant(rain: float, wind_angle: float) -> float:
+	## Horizontal lean of falling rain per pixel fallen (+ = drifts left). Calm rain leans 0.18; in a storm the daily wind
+	## (PlayerMath.wind_angle) pushes the streaks with it, up to 0.55 each way.
+	var storm := clampf((rain - 0.6) / 0.4, 0.0, 1.0)
+	return 0.18 - 0.55 * storm * cos(wind_angle)
+
+static func streak(k: float) -> Vector2:
+	return Vector2(roundf(-k * 11.0), 5.0)
+
+static func drop_pos(i: int, t: float, speed: float = 260.0, k: float = 0.18) -> Vector2:
 	## Raindrop i position in a 360x280 box (origin top-left), wraps vertically; slanted.
 	var x := fposmod(float(i) * 37.7 + t * 40.0 * 0.0, 360.0)
 	var y := fposmod(float(i) * 61.3 + t * speed, 280.0)
-	return Vector2(fposmod(x - y * 0.18, 360.0), y)
+	return Vector2(fposmod(x - y * k, 360.0), y)
 
 static func ripple(i: int, t: float, period: float = 1.1) -> Dictionary:
 	## Rain ripple i: {pos (in the 360x280 box), age 0..1}. Respawns at a new spot every cycle.

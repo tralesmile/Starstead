@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Dock props sheet 224x32 (7 frames of 32x32, original, CC0). Deterministic.
-0 barrel, 1 two stacked crates, 2 coiled rope, 3 fish drying rack, 4 fisherman's basket, 5 net on stakes, 6 mooring bollard."""
+"""Dock props sheet 320x32 (10 frames of 32x32, original, CC0). Deterministic.
+0 barrel, 1 two stacked crates, 2 coiled rope, 3 fish drying rack, 4 fisherman's basket, 5 net on stakes, 6 mooring bollard, 7 lobster pots, 8 gull on barrel, 9 bollard lamp."""
 import os
 from PIL import Image, ImageDraw
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -157,8 +157,54 @@ def bollard():
     d.point([28, 25], fill=OUT); d.point([27, 25], fill=ROPE[0])
     return im
 
+def lobster_pots():
+    im, d = new(); shadow(im, 3, 29); d = ImageDraw.Draw(im)
+    CANE = [(124, 88, 44), (180, 138, 72), (214, 176, 100)]
+    def pot(x0, y0, x1, y1):
+        d.rectangle([x0, y0, x1, y1], fill=CANE[1], outline=OUT)
+        d.line([x0 + 1, y0 + 1, x1 - 1, y0 + 1], fill=CANE[2])
+        for x in range(x0 + 3, x1, 4):
+            d.line([x, y0 + 2, x, y1 - 1], fill=CANE[0])
+        for y in range(y0 + 4, y1, 4):
+            d.line([x0 + 1, y, x1 - 1, y], fill=CANE[0])
+        d.rectangle([x0 + 1, y1 - 1, x1 - 1, y1 - 1], fill=WOOD[0])
+        d.arc([x0 + 3, y0 + 3, x0 + 9, y0 + 9], 0, 360, fill=OUT)
+    pot(3, 17, 18, 29)
+    pot(14, 18, 29, 30)
+    pot(8, 5, 23, 17)
+    d.line([24, 8, 29, 14], fill=OUT); d.line([25, 8, 30, 14], fill=ROPE[1])   # float line
+    d.ellipse([26, 3, 31, 8], fill=(200, 70, 50), outline=OUT); d.point([27, 4], fill=(240, 150, 120))
+    return im
+
+def gull_barrel():
+    im = barrel(); d = ImageDraw.Draw(im)
+    W = (238, 238, 232); G = (170, 176, 184); B = (236, 170, 50)
+    d.ellipse([11, 0, 21, 8], fill=W, outline=OUT)        # body on the lid
+    d.ellipse([17, -1, 22, 4], fill=W, outline=OUT) if False else None
+    d.rectangle([12, 2, 17, 6], fill=W)
+    d.line([12, 2, 16, 2], fill=(255, 255, 255))
+    d.polygon([(10, 3), (15, 7), (19, 5), (12, 1)], fill=G, outline=OUT)   # folded wing
+    d.rectangle([18, 0, 21, 3], fill=W, outline=OUT)      # head
+    d.point([20, 1], fill=OUT)
+    d.polygon([(22, 1), (25, 2), (22, 3)], fill=B, outline=OUT)    # beak
+    d.line([14, 7, 14, 8], fill=B); d.line([17, 7, 17, 8], fill=B)
+    return im
+
+def bollard_lamp():
+    im, d = new(); shadow(im, 8, 24); d = ImageDraw.Draw(im)
+    d.ellipse([10, 25, 22, 30], fill=IRON[1], outline=OUT)
+    d.rectangle([14, 10, 18, 27], fill=IRON[1], outline=OUT)
+    d.line([15, 11, 15, 26], fill=IRON[3]); d.line([17, 11, 17, 26], fill=IRON[0])
+    d.rectangle([11, 8, 21, 11], fill=IRON[2], outline=OUT)
+    d.rectangle([12, 0, 20, 8], fill=(255, 214, 120), outline=OUT)      # glass
+    d.rectangle([13, 1, 15, 7], fill=(255, 244, 190))
+    d.line([18, 2, 18, 7], fill=(236, 170, 50)); d.line([14, 4, 18, 4], fill=OUT) if False else None
+    d.polygon([(10, 1), (22, 1), (19, -1), (13, -1)], fill=IRON[0], outline=OUT) if False else None
+    d.line([11, 0, 21, 0], fill=OUT)
+    return im
+
 def main():
-    frames = [barrel(), crates(), rope(), fish_rack(), basket(), net_stakes(), bollard()]
+    frames = [barrel(), crates(), rope(), fish_rack(), basket(), net_stakes(), bollard(), lobster_pots(), gull_barrel(), bollard_lamp()]
     sheet = Image.new("RGBA", (32 * len(frames), 32), (0, 0, 0, 0))
     for i, f in enumerate(frames):
         sheet.paste(f, (i * 32, 0))

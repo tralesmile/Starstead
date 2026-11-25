@@ -29,6 +29,9 @@ func build(world: World, g: WorldGen) -> void:
 	_gates(world)
 	_cave_mouth(world)
 	_harbour(world)
+	for it in HarbourProps.items():
+		if ChunkGrid.chunk_of_cell(it["cell"]) == chunk:
+			_add(world, HarbourProps.sprite(it, load("res://assets/sprites/dock_props.png")))
 	_circuit(world)
 	_vance_yard(world)
 	_fish(world)
@@ -371,6 +374,9 @@ func _vance_yard(world: World) -> void:
 			b2.add_child(l)
 		if String(p["kind"]) == "rocket":
 			world.interactables.add(c + Vector2i(0, 1), "rocket", "E: Look at the Vance rocket")
+			sign_cells.append(c + Vector2i(0, 1))
+		if String(p["kind"]) == "hangar":
+			world.interactables.add(c + Vector2i(0, 1), "hangar", "E: Break into the Vance hangar")
 			sign_cells.append(c + Vector2i(0, 1))
 		if String(p["kind"]) == "crates":
 			var ci := YardHeist.crate_cells().find(c + Vector2i(0, 1))

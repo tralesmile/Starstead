@@ -51,6 +51,7 @@ var upgrade_view: UpgradeView
 var farm_view: FarmView
 var sports: SportsView
 var derby: DerbyView
+var hangar: HangarView
 var hoof_t := 0.0
 var garage_view: GarageView
 var drops_view: DropsView
@@ -307,6 +308,9 @@ func _ready() -> void:
 	sports.closed.connect(func(): player.set_physics_process(true))
 	sports.message.connect(_say)
 	add_child(sports)
+	hangar = HangarView.new()
+	hangar.finished.connect(_hangar_done)
+	add_child(hangar)
 	derby = DerbyView.new()
 	derby.closed.connect(func(): player.set_physics_process(true))
 	derby.message.connect(_say)
@@ -678,6 +682,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		sports.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if hangar.visible:
+		get_viewport().set_input_as_handled()
+		return
 	if derby.visible:
 		derby.handle(e)
 		get_viewport().set_input_as_handled()
@@ -802,6 +809,18 @@ func _unhandled_input(e: InputEvent) -> void:
 			police.add_heat(WantedMath.crime_heat("theft"))
 			_say("You lift Vance stock: $%d%s. Quiet!" % [int(yl["cash"]), (" + %d %s" % [int(yl["n"]), String(yl["item"]).replace("_", " ")]) if String(yl["item"]) != "" else ""])
 			toast_t = 4.0
+			return
+		if it.get("kind", "") == "hangar":
+			var hd: int = GameState.clock.day
+			if not HangarHeist.ready(GameState.hangar_day, hd):
+				_say("The hangar is locked down. Security resets in %d days" % HangarHeist.days_left(GameState.hangar_day, hd))
+				toast_t = 3.0
+				return
+			player.velocity = Vector2.ZERO
+			player.move_v = Vector2.ZERO
+			player.set_physics_process(false)
+			GameState.hangar_day = hd
+			hangar.open()
 			return
 		if it.get("kind", "") == "rocket":
 			_say("Your seat on the Vance rocket is waiting. The Moon (Act 3) is not built yet." if VanceYard.gate_open(GameState.story.done) else "Half-built, white and red, scaffolding up one side. Grandmother beat this to the Moon?")
@@ -1470,6 +1489,28 @@ func _end_day() -> void:
 	GameState.energy.new_day(false)
 	world.sync_props(GameState.nodes)
 	GameState.save_game()
+
+func _hangar_done(r: Dictionary) -> void:
+	player.set_physics_process(true)
+	if bool(r["alarm"]):
+		police.add_heat(WantedMath.crime_heat("robbery"))
+		_say("The hangar alarm trips! Vance security throws you out.")
+		toast_t = 4.0
+		return
+	var opened: Array = r["opened"]
+	if opened.is_empty():
+		_say("You slip out of the hangar with nothing.")
+		toast_t = 3.0
+		return
+	GameState.money += int(r["cash"])
+	for it in r["items"]:
+		GameState.bag.add(String(it["item"]), int(it["n"]))
+	for i in opened:
+		GameState.rep_street += int(HangarHeist.CASES[int(i)]["rep"])
+	GameState.stats["hangar_heists"] = int(GameState.stats.get("hangar_heists", 0)) + 1
+	police.add_heat(WantedMath.crime_heat("theft"))
+	_say("Hangar raid: $%d from %d case(s). Clean getaway!" % [int(r["cash"]), opened.size()])
+	toast_t = 5.0
 
 func _sleep() -> void:
 	GameState.clock.new_day()

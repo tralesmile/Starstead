@@ -204,6 +204,10 @@ func on_process() -> void:
 		m.animals._mount(m.animals.critters[m.animals.critters.size() - 1])
 		Input.action_press("move_down")
 		Input.action_press("sprint")
+	if "--hangar-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		m.hangar.open()
+		m.hangar.demo_pos = Vector2(6.5 * 32.0, 6.5 * 32.0)
+		m.hangar.opened = [0]
 	if "--derby-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.money = maxi(GameState.money, 300)
 		m.derby.open()
