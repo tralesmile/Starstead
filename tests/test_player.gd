@@ -40,3 +40,10 @@ func test_walk_frame_hd() -> void:
 		seen[PlayerMath.walk_frame_hd(i * 0.1, true)] = true
 	check_eq(seen.size(), 6, "all six walk frames used")
 	check(not seen.has(0) and not seen.has(7), "walk never shows idle/tool frames")
+
+func test_slide_dust() -> void:
+	var sprint := PlayerMath.SPEED * PlayerMath.SPRINT_MULT
+	check(PlayerMath.slide_dust_amount(sprint, 0.0) >= 1)
+	check_eq(PlayerMath.slide_dust_amount(sprint, 1.0), 0, "still pushing: no slide")
+	check_eq(PlayerMath.slide_dust_amount(PlayerMath.SPEED, 0.0), 0, "walking pace stops cleanly")
+	check(PlayerMath.slide_dust_amount(sprint, 0.0) >= PlayerMath.slide_dust_amount(PlayerMath.SPEED * 1.3, 0.0))

@@ -19,7 +19,7 @@ Rule: one pillar at a time; every new feature must connect to at least one other
 - [x] Prop reflections/darkening in water; dock shadow on water (soft dark silhouette under the planks, 2026-11-18)
 - [x] Higher-detail player (more frames, tool-use poses) and NPC base (player_hd 32x48; NPC base = tools/gen_npcs.py villager sheet, run 14)
 - [x] Bank height: raised grass edge over shore stones (3/4 depth illusion) (done in the Ongoing list; ticked run 14)
-- [ ] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders) (CLAIMED 2026-11-25: verify hotbar/HUD art, tick)
+- [x] Farm soil, crops and HUD/hotbar art in the same style (replace rect placeholders) (hotbar/HUD framed art done in runs 14/29; remaining crop art folded into Ongoing)
 
 ## Ongoing: Graphics & Physics polish (2+ items EVERY run, never finished; see RUNBOOK 5b)
 - [x] Run 24: Graphics: footstep dust takes the ground colour (green flecks on grass, tan on dirt/path, grey on asphalt, white in snow; AmbientMath.step_dust_color, tested; before: always tan). Feel/physics: a nearly full bag slows you to 0.9x (PlayerMath.load_mult from Inventory.fill_fraction, tested). [ ] next: residents seen in windows, porches art, crows with scarecrow reaction, car thieves leave a hot-car trail (police recognise hot cars)
@@ -317,6 +317,9 @@ Houses, buildings, graphics (5, 10)
 - [x] Animals: Goat: wild herd (tameable, hay/turnip, gives Goat Milk every 2 fed days, huntable for meat and hide), new sprite and milk icon (tested).
 
 ## Run 30 (playtest run) queue
-- [ ] Money sinks (playtest worst no, runs 20/25): Home upgrade ladder at the Town Hall desk (HomeUpgrades pure model + data/home_upgrades.json: bag rows, farmhouse kitchen/cellar, bigger chest, porch light, garden plot) + UpgradeView (CLAIMED 2026-11-25)
-- [ ] Graphics: rain-darkened soil + crops brush aside when the player walks through (CLAIMED 2026-11-25)
-- [ ] Physics/feel: slide dust puff when braking from sprint, tested (CLAIMED 2026-11-25)
+- [x] Money sinks (run 30): HomeUpgrades + data/home_upgrades.json (pack straps 30->40->50 slots, farm kitchen x1.25/x1.5 energy, root cellar +4/+8% sell; $6400 total) + UpgradeView at the Town Hall 'plans' desk, saved, tested. [ ] next: chest slots, porch light, garden plot, bed (pass-out never happens: wire exhaustion pass-out first)
+- [x] Graphics (run 30): rain-darkened soil (CropMath.rain_darken) + crops lean away when you walk through (CropMath.brush), tested. [ ] next: puddle shine on dry soil, brush rustle particles
+- [x] Physics/feel (run 30): slide dust puffs while braking from sprint (PlayerMath.slide_dust_amount, tested). [ ] next: stumble on rocks, tyre squeal
+
+## Backlog additions (2026-11-25 run 30, research)
+- Weakest vs Stardew Valley: late-game money sinks (Robin's house tiers, Stardew's cost ladder). Fixed with Town Hall farmhouse upgrades. Sources (titles only): https://studio-asv.pages.dev/blog/stardew-valley/stardew-valley-house-upgrade-design-guide , https://www.pcgamer.com/what-to-do-in-stardew-valleys-endgame | 2026-11-25

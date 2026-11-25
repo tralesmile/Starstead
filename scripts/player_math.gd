@@ -112,6 +112,13 @@ static func brake_slide(speed: float) -> float:
 	var hi := SPEED * SPRINT_MULT
 	return lerpf(1.0, SLIDE_MIN_FRICTION, clampf((speed - lo) / (hi - lo), 0.0, 1.0))
 
+static func slide_dust_amount(speed: float, input_len: float) -> int:
+	## Letting go of the stick at sprint pace kicks a small puff for each ~0.1 s of the slide (0 when walking or still pushing).
+	var lo := SPEED * 1.15
+	if input_len > 0.1 or speed < lo:
+		return 0
+	return clampi(1 + int((speed - lo) / 25.0), 1, 4)
+
 const SKID_MIN_SPEED := 55.0
 
 static func is_skid(v: Vector2, input: Vector2) -> bool:

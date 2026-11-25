@@ -14,6 +14,27 @@ static func sway(cell: Vector2i, t: float, stage: int, wind: float = 1.0) -> flo
 	var wave := sin(t * 1.7 + phase) * 0.7 + sin(t * 2.9 + phase * 1.7) * 0.3
 	return clampf(wave * gust * wind * MAX_SKEW * float(stage) / 4.0, -MAX_SKEW, MAX_SKEW)
 
+const BRUSH_R := 28.0
+const BRUSH_LEAN := 0.3
+## Extra shear when the player walks through a plant: it bends away from them, strongest right at the plant.
+## `plant` and `player` are world positions of the plant's foot and the player's feet; the player's pushing reads as a lean.
+static func brush(plant: Vector2, player: Vector2, stage: int) -> float:
+	if stage <= 0:
+		return 0.0
+	var d := plant - player
+	if absf(d.y) > BRUSH_R * 0.7 or absf(d.x) > BRUSH_R:
+		return 0.0
+	var k := 1.0 - clampf(d.length() / BRUSH_R, 0.0, 1.0)
+	if k <= 0.0:
+		return 0.0
+	var dir := 1.0 if d.x >= 0.0 else -1.0
+	return dir * k * BRUSH_LEAN * minf(float(stage) / 2.0, 1.0)
+
+## Soil colour multiplier in rain: dry soil soaks up water and darkens a lot, wet soil only a little (0.74..1).
+static func rain_darken(rain: float, watered: bool) -> float:
+	var r := clampf(rain, 0.0, 1.0)
+	return 1.0 - r * (0.1 if watered else 0.26)
+
 ## Twinkle of the i-th glint on a watered tile: x, y (0..32 px inside the tile) and alpha 0..1 (mostly dark, brief flash).
 static func glint(cell: Vector2i, i: int, t: float) -> Dictionary:
 	var h: int = (cell.x * 73856093 + cell.y * 19349663 + i * 83492791) & 0xffffff

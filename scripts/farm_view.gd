@@ -10,6 +10,9 @@ var scarecrow_tex: Texture2D = load("res://assets/sprites/scarecrow.png")
 var sprinkler_tex: Texture2D = load("res://assets/sprites/sprinkler.png")
 var generic: Texture2D = load("res://assets/sprites/crop_generic.png")
 
+var rain := 0.0        # 0..1, set by Main
+var walker: Node2D     # the player: crops bend away when brushed past
+
 func _ready() -> void:
 	z_index = -9
 
@@ -27,7 +30,8 @@ func _draw() -> void:
 		var s = farm.soil[cell]
 		var m := Autotile.mask(joins, cell, [true])
 		var tex: Texture2D = wet if s.watered else dry
-		draw_texture_rect_region(tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(Autotile.atlas_index(m) * 32, 0, 32, 32))
+		var dk := CropMath.rain_darken(rain, s.watered)
+		draw_texture_rect_region(tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(Autotile.atlas_index(m) * 32, 0, 32, 32), Color(dk, dk, dk * 1.02))
 		if s.watered:   # wet soil catches the light: two tiny twinkles per tile
 			for gi in 2:
 				var g := CropMath.glint(cell, gi, t)
@@ -49,7 +53,7 @@ func _draw() -> void:
 		if s.crop != "turnip" and f == 4 and farm.crops[s.crop].has("tint"):
 			mod = Color(String(farm.crops[s.crop].tint)).lerp(Color.WHITE, 0.25)  # ripe fruit takes the crop's colour
 		var foot := Vector2(cell) * 32.0 + Vector2(16, 30)   # shear around the plant's foot so the roots stay put
-		draw_set_transform_matrix(Transform2D(Vector2(1, 0), Vector2(CropMath.sway(cell, t, f), 1), foot))
+		draw_set_transform_matrix(Transform2D(Vector2(1, 0), Vector2(CropMath.sway(cell, t, f) + (CropMath.brush(foot, walker.position + Vector2(0, 14), f) if walker != null else 0.0), 1), foot))
 		draw_texture_rect_region(ct, Rect2(Vector2(-16, -28), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
 	for cell in farm.weeds:

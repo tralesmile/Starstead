@@ -36,3 +36,18 @@ func test_glint_inside_tile_and_flashes_briefly() -> void:
 		if g["a"] > 0.5:
 			lit += 1
 	check(lit > 10 and lit < 200)
+
+func test_brush_bends_away() -> void:
+	var plant := Vector2(100, 100)
+	check_eq(CropMath.brush(plant, Vector2(300, 100), 3), 0.0, "far away: no bend")
+	check_eq(CropMath.brush(plant, plant, 0), 0.0, "seeds do not bend")
+	var right := CropMath.brush(plant, Vector2(90, 100), 3)   # player left of plant: plant leans right
+	var left := CropMath.brush(plant, Vector2(110, 100), 3)
+	check(right > 0.1 and left < -0.1)
+	check(absf(CropMath.brush(plant, Vector2(80, 100), 3)) < absf(right), "falls off with distance")
+	check(absf(CropMath.brush(plant, Vector2(90, 100), 4)) <= CropMath.BRUSH_LEAN)
+
+func test_rain_darkens_dry_soil_more() -> void:
+	check_eq(CropMath.rain_darken(0.0, false), 1.0)
+	check(CropMath.rain_darken(1.0, false) < CropMath.rain_darken(1.0, true))
+	check(CropMath.rain_darken(1.0, true) > 0.85 and CropMath.rain_darken(2.0, false) >= 0.7)

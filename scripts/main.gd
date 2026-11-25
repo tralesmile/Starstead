@@ -44,6 +44,7 @@ var hud: Hud
 var chest_view: ChestView
 var cook_view: CookView
 var upgrade_view: UpgradeView
+var farm_view: FarmView
 var sports: SportsView
 var derby: DerbyView
 var hoof_t := 0.0
@@ -84,7 +85,8 @@ func _ready() -> void:
 	world = World.new()
 	add_child(world)
 	world.build(1)
-	add_child(FarmView.new())
+	farm_view = FarmView.new()
+	add_child(farm_view)
 	world.add_child(CrabPotView.new())
 	town = TownView.new()
 	town.setup(world, world.gen, world.stall_cell())
@@ -94,6 +96,7 @@ func _ready() -> void:
 	for c in world.gen.rocks:
 		GameState.nodes.add("rock", c)
 	player = Player.new()
+	farm_view.walker = player
 	player.gen = world.gen
 	for lp in world.lily_pads:
 		lp.player = player
@@ -440,6 +443,7 @@ func _process(delta: float) -> void:
 		if "--rain" in OS.get_cmdline_user_args():
 			rain_today = 1.0
 		weather.intensity = rain_today
+		farm_view.rain = rain_today
 	var fog := WeatherMath.fog_now(WeatherMath.fog_for_day(1, rain_day, GameState.clock.season(), rain_today), GameState.clock.minutes)
 	if "--fog" in OS.get_cmdline_user_args():
 		fog = 0.6
