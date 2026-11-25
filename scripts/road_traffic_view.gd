@@ -139,6 +139,14 @@ func _add_car(ri: int, d: float, fwd: bool, lp: Dictionary) -> void:
 	light.energy = 0.0
 	light.visible = false
 	body.add_child(light)
+	var tail := PointLight2D.new()   # red brake glow, lit while the car is braking or stopped
+	tail.texture = CarView.cone_texture()
+	tail.texture_scale = 0.5
+	tail.rotation = PI
+	tail.offset = Vector2(36, 0)
+	tail.color = Color(1.0, 0.2, 0.15)
+	tail.energy = 0.0
+	body.add_child(tail)
 	var honk := Label.new()
 	honk.text = "BEEP!"
 	honk.add_theme_font_size_override("font_size", 10)
@@ -153,7 +161,7 @@ func _add_car(ri: int, d: float, fwd: bool, lp: Dictionary) -> void:
 	world.add_child(body)
 	var cruise := RoadTraffic.cruise_speed(_serial)
 	cars.append({"node": body, "sprite": sp, "road": ri, "dist": d, "fwd": fwd, "speed": cruise, "cruise": cruise,
-		"blocked": 0.0, "stall": 0.0, "shove": Vector2.ZERO, "light": light, "honk": honk, "honk_t": 0.0})
+		"blocked": 0.0, "stall": 0.0, "shove": Vector2.ZERO, "light": light, "tail": tail, "honk": honk, "honk_t": 0.0})
 
 func _add_hiker(ri: int, d: float, fwd: bool, lp: Dictionary) -> void:
 	var body := Node2D.new()
@@ -205,6 +213,9 @@ func _step_car(v: Dictionary, delta: float) -> void:
 	body.rotation = lerp_angle(body.rotation, float(np["heading"]), clampf(delta * 6.0, 0.0, 1.0))
 	(v["honk"] as Label).rotation = -body.rotation
 	var light: PointLight2D = v["light"]
+	var braking := target < float(v["speed"]) - 2.0 or (float(v["speed"]) < 3.0 and target < 3.0)
+	(v["tail"] as PointLight2D).energy = 1.4 if braking else 0.35 * night
+	(v["tail"] as PointLight2D).visible = braking or night > 0.05
 	light.energy = 1.2 * night
 	light.visible = night > 0.05
 	if RoadTraffic.should_despawn(body.position.distance_to(player.position), float(v["dist"]), len):
