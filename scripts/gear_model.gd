@@ -2,7 +2,7 @@ class_name GearModel
 extends RefCounted
 ## Forged gear carried in the bag: vests soften bites and hits, car parts tune the car. Pure rules, no nodes.
 
-const VEST_TAKEN := {"copper_vest": 0.85, "iron_vest": 0.7}   # share of damage you still take (best vest counts)
+const VEST_TAKEN := {"leather_vest": 0.9, "copper_vest": 0.85, "iron_vest": 0.7}   # share of damage you still take (best vest counts)
 const ENGINE_KIT_SPEED := 1.12
 const GRIP_TYRES_GRIP := 1.2
 const BUMPER_TAKEN := 0.65   # share of crash damage the car still takes

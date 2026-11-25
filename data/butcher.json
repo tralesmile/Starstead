@@ -1,0 +1,6 @@
+{
+	"jerky": {"name": "Smoked Jerky", "needs": {"raw_meat": 2}, "makes": "jerky", "item": true, "count": 1},
+	"leather": {"name": "Tanned Leather", "needs": {"hide": 2}, "makes": "leather", "item": true, "count": 1},
+	"snare_bait": {"name": "Snare Bait x2 (+catch chance)", "needs": {"raw_meat": 1, "feather": 1}, "makes": "snare_bait", "item": true, "count": 2},
+	"leather_vest": {"name": "Leather Vest (-10% damage taken)", "needs": {"leather": 3}, "makes": "leather_vest", "item": true, "count": 1, "limit": 1}
+}

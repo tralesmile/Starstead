@@ -862,7 +862,59 @@ def lockpick_set():
     return i
 icons['lockpick_set'] = lockpick_set
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare']  # appended after the last old icon, in this order
+def leather():
+    i = Ic()
+    i.rect(3, 4, 12, 12, "#c8955a")
+    i.rect(3, 4, 12, 5, "#e0b077")                    # lit top fold
+    i.rect(3, 10, 12, 12, "#a4733f")                  # shaded lower fold
+    i.rect(11, 5, 12, 12, "#a4733f")
+    i.line(4, 8, 11, 8, "#a4733f")                    # fold crease
+    i.line(4, 7, 11, 7, "#dcaa70")
+    i.px(2, 6, "#c8955a"); i.px(13, 9, "#a4733f"); i.px(13, 10, "#a4733f")
+    for x in (5, 7, 9):
+        i.px(x, 11, "#8a5c30")                        # grain flecks
+    i.px(4, 4, "#f4d29a"); i.px(5, 4, "#f4d29a")
+    return i
+icons['leather'] = leather
+
+def jerky():
+    i = Ic()
+    for (x0, y0, x1, y1, c, h) in ((2, 11, 12, 4, "#7a3a2c", "#a85a44"), (4, 13, 14, 6, "#6a3026", "#965040"), (1, 8, 9, 2, "#85402f", "#b46048")):
+        i.line(x0, y0, x1, y1, c); i.line(x0, y0 + 1, x1, y1 + 1, c); i.line(x0 + 1, y0 - 1, x1 + 1, y1 - 1, h)
+    for (x, y) in ((6, 8), (9, 7), (8, 11), (11, 9)):
+        i.px(x, y, "#4a201a")                         # dark dried streaks
+    i.px(4, 10, "#d08a70"); i.px(7, 6, "#d08a70"); i.px(10, 8, "#d08a70")
+    return i
+icons['jerky'] = jerky
+
+def snare_bait():
+    i = Ic()
+    i.ell(8, 10, 5.2, 4.2, "#d8c498")                 # pouch
+    i.rect(4, 12, 12, 13, "#b09c72")
+    i.ell(6.5, 9, 2.6, 2, "#ece0bc")
+    i.rect(6, 5, 10, 6, "#d8c498")                    # gathered neck
+    i.rect(6, 6, 10, 6, "#b09c72")
+    i.rect(6, 7, 10, 7, "#9a4a38")                    # cord tie
+    i.px(11, 7, "#9a4a38"); i.px(11, 8, "#9a4a38"); i.px(5, 8, "#9a4a38")
+    i.px(10, 4, "#d8c498"); i.px(6, 4, "#d8c498")
+    i.line(8, 4, 10, 0, "#f4f0e4"); i.line(8, 4, 9, 1, "#c8c4b4")   # feather
+    i.px(7, 3, "#c84a4a"); i.px(6, 3, "#a83838")                    # meat bit
+    i.px(9, 10, "#b09c72"); i.px(8, 12, "#ece0bc")
+    return i
+icons['snare_bait'] = snare_bait
+
+def leather_vest():
+    f = vest_icon("#9a6234", "#c48a50", "#6a4022", "#e8d8a8")()
+    f.rect(11, 6, 11, 11, "#6a4022")
+    for y in (7, 9, 11):
+        f.px(4, y, "#e8d8a8")                         # stitching down the side
+    f.line(3, 12, 12, 12, "#e8d8a8") if False else None
+    for x in (4, 6, 9, 11):
+        f.px(x, 12, "#e8d8a8")                        # hem stitching
+    return f
+icons['leather_vest'] = leather_vest
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

@@ -8,6 +8,7 @@ signal garage_requested
 signal cook_requested
 signal smelt_requested
 signal forge_requested
+signal butcher_requested
 signal chest_requested
 signal sleep_requested
 signal service_requested(action: String)
@@ -18,7 +19,7 @@ signal till_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade"]
+const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade"]
 var world: Node2D
 var player: Player
 var active := false
@@ -370,6 +371,7 @@ func prompt() -> String:
 		"cook": return "E: Cook at the stove"
 		"smelt": return "E: Smelt ore at the furnace"
 		"forge": return "E: Forge gear at the anvil"
+		"butcher": return "E: Butcher and tan at the block"
 		"chest": return "E: Open the storage chest"
 		"sleep": return "E: Sleep until morning"
 		"loot": return "E: Search the %s" % a["id"]
@@ -400,6 +402,9 @@ func interact() -> bool:
 			return true
 		"smelt":
 			smelt_requested.emit()
+			return true
+		"butcher":
+			butcher_requested.emit()
 			return true
 		"forge":
 			forge_requested.emit()

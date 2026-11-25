@@ -625,5 +625,27 @@
   "buy": true,
   "buy_price": 55,
   "rarity": "bronze"
+ },
+ "leather": {
+  "name": "Leather",
+  "price": 62,
+  "stack": 99
+ },
+ "jerky": {
+  "name": "Smoked Jerky",
+  "price": 58,
+  "stack": 20,
+  "energy": 30,
+  "rarity": "bronze"
+ },
+ "snare_bait": {
+  "name": "Snare Bait",
+  "price": 9,
+  "stack": 99
+ },
+ "leather_vest": {
+  "name": "Leather Vest",
+  "price": 110,
+  "stack": 1
  }
 }

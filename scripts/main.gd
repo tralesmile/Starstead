@@ -35,6 +35,7 @@ var interior: InteriorView
 var cave: CaveView
 var smelt_view: SmeltView
 var forge_view: ForgeView
+var butcher_view: ButcherView
 var craft_view: CraftView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
@@ -353,6 +354,11 @@ func _ready() -> void:
 		player.move_v = Vector2.ZERO
 		player.set_physics_process(false)
 		smelt_view.open())
+	interior.butcher_requested.connect(func():
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		butcher_view.open())
 	interior.forge_requested.connect(func():
 		player.velocity = Vector2.ZERO
 		player.move_v = Vector2.ZERO
@@ -363,6 +369,10 @@ func _ready() -> void:
 	forge_view.closed.connect(func(): player.set_physics_process(true))
 	forge_view.cooked.connect(func(n): _say("Forged " + n))
 	add_child(forge_view)
+	butcher_view = ButcherView.new()
+	butcher_view.closed.connect(func(): player.set_physics_process(true))
+	butcher_view.cooked.connect(func(n): _say("Made " + n))
+	add_child(butcher_view)
 	smelt_view = SmeltView.new()
 	smelt_view.closed.connect(func(): player.set_physics_process(true))
 	smelt_view.cooked.connect(func(n): _say("Smelted " + n))
@@ -633,6 +643,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		forge_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if butcher_view.visible:
+		butcher_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if smelt_view.visible:
 		smelt_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -824,6 +838,17 @@ func _unhandled_input(e: InputEvent) -> void:
 				_say("Crab pot placed - check it tomorrow")
 			else:
 				_say("Needs open water, half a tile out")
+			return
+		if hotbar.current() == "snare" and GameState.snares.snares.has(cell):
+			if GameState.snares.is_ready(cell):
+				_say("Empty it first (hand)")
+			elif GameState.bag.count("snare_bait") < 1:
+				_say("No bait - make it at the butcher block in the workshop")
+			elif GameState.snares.bait(cell):
+				GameState.bag.remove("snare_bait", 1)
+				_say("Baited - a better catch tomorrow")
+			else:
+				_say("Already baited")
 			return
 		if hotbar.current() == "snare":
 			if GameState.bag.count("snare") < 1:

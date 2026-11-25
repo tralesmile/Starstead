@@ -13,7 +13,25 @@ static func habitat_for(chunk: Vector2i) -> String:
 		return "forest"
 	return "meadow"
 
-static func catch_for(roll: float, habitat: String) -> Array:
+static func night_chance(raining: bool, baited: bool) -> float:
+	## Chance that something walks into a free snare overnight; bait lifts it (rain still hurts).
+	var base := 0.35 if raining else 0.7
+	return minf(0.95, base + (0.2 if baited else 0.0))
+
+func bait(cell: Vector2i) -> bool:
+	## Loads bait onto an empty, unbaited snare. False if there is no snare, it is sprung or already baited.
+	if not snares.has(cell) or is_ready(cell) or bool(snares[cell].get("bait", false)):
+		return false
+	snares[cell]["bait"] = true
+	return true
+
+func is_baited(cell: Vector2i) -> bool:
+	return snares.has(cell) and bool(snares[cell].get("bait", false))
+
+static func catch_for(roll: float, habitat: String, baited: bool = false) -> Array:
+	## Bait pulls the roll toward the rich end: hares slip out less and doubles come up more often.
+	if baited:
+		roll = minf(0.999, roll * 0.6 + 0.4)
 	## Item ids caught for roll in 0..1 (an empty array = the hare slipped out).
 	if habitat == "forest":
 		if roll < 0.15:
@@ -47,8 +65,10 @@ func night_tick(rng: RandomNumberGenerator, raining: bool) -> int:
 		var s: Dictionary = snares[c]
 		if not (s["ready"] as Array).is_empty():
 			continue
-		if rng.randf() < (0.35 if raining else 0.7):
-			var got := catch_for(rng.randf(), String(s["habitat"]))
+		var baited := bool(s.get("bait", false))
+		s["bait"] = false   # the bait is eaten whether or not something comes
+		if rng.randf() < night_chance(raining, baited):
+			var got := catch_for(rng.randf(), String(s["habitat"]), baited)
 			if not got.is_empty():
 				s["ready"] = got
 				s["uses"] = int(s["uses"]) + 1
@@ -78,7 +98,7 @@ func pick_up(cell: Vector2i) -> bool:
 func to_array() -> Array:
 	var out := []
 	for c in snares:
-		out.append({"x": c.x, "y": c.y, "ready": snares[c]["ready"], "habitat": snares[c]["habitat"], "uses": snares[c]["uses"]})
+		out.append({"x": c.x, "y": c.y, "ready": snares[c]["ready"], "habitat": snares[c]["habitat"], "uses": snares[c]["uses"], "bait": bool(snares[c].get("bait", false))})
 	return out
 
 func from_array(a: Array) -> void:
@@ -87,4 +107,4 @@ func from_array(a: Array) -> void:
 		var r: Array = []
 		for x in e.get("ready", []):
 			r.append(str(x))
-		snares[Vector2i(int(e.x), int(e.y))] = {"ready": r, "habitat": str(e.get("habitat", "meadow")), "uses": int(e.get("uses", 0))}
+		snares[Vector2i(int(e.x), int(e.y))] = {"ready": r, "habitat": str(e.get("habitat", "meadow")), "uses": int(e.get("uses", 0)), "bait": bool(e.get("bait", false))}

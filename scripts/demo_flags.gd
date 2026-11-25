@@ -154,6 +154,12 @@ func on_process() -> void:
 		GameState.bag.add("copper_bar", 4)
 		GameState.bag.add("hide", 3)
 		m.forge_view.open()
+	if "--butcher-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the butcher block menu with game in the bag
+		GameState.bag.add("raw_meat", 4)
+		GameState.bag.add("hide", 5)
+		GameState.bag.add("feather", 2)
+		GameState.bag.add("leather", 3)
+		m.butcher_view.open()
 	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: stand inside the mine with a pickaxe
 		GameState.energy.value = 100.0
 		m.cave.enter(GameState.clock.day)

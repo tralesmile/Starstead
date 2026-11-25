@@ -100,6 +100,10 @@
  "grip_tyres": 83,
  "bumper_guard": 84,
  "lockpick_set": 85,
- "franchise_deed": 77,
- "snare": 86
+ "snare": 86,
+ "leather": 87,
+ "jerky": 88,
+ "snare_bait": 89,
+ "leather_vest": 90,
+ "franchise_deed": 77
 }
