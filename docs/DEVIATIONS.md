@@ -21,3 +21,4 @@
 2026-11-23 | Run 16: Vance keycard (smuggling route to the launch pad) is only offered once the City Ties quest is done, since the keycard step comes last; research skipped | Intended: pacing, the pad is the Act 2 finale.
 - 2026-11-24 residents: shoved intruders keep being arrested fast by cops when --wake-demo runs 40+ frames (heat from alarm+trespass); left as-is, check screen stops at 26 frames.
 2026-11-25 | Run 31 finished with 3 items (pass-out, puddles, stumble) instead of 4; no Phase 3 slice taken (E1 leftovers need a bigger run) | Next run: E1 neighbour-chunk awareness + fish shadows, brush rustle, tyre squeal.
+2026-11-25 | Run 32 finished with 3 items (wildlife+fish, rustle, mud) not 4; push remote reports repo moved to Starstead (capital S) | Pushed anyway; next run: NPC/car awareness outside homestead, saved streamed state.

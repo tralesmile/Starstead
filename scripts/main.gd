@@ -225,6 +225,8 @@ func _ready() -> void:
 	animals.setup(world, player, world.gen)
 	animals.message.connect(_say)
 	world.add_child(animals)
+	world.chunk_built.connect(func(ch: Vector2i) -> void: animals.populate_chunk(ch, String(world.stream.region_at(ch).get("id", "")), world.stream, GameState.clock.day))
+	world.chunk_dropped.connect(func(_ch: Vector2i) -> void: animals.drop_far(player.position))
 	combat = CombatView.new()
 	combat.setup(world, player, npcs, police)
 	combat.message.connect(_say)

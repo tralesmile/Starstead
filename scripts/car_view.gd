@@ -17,6 +17,8 @@ var _prev_cap := 1.0
 var _skid_a := 0.7
 var _smoke_tile := 0
 var _smoke_sdf := 5.0
+var _mud := 0.0
+var _mud_fx: CPUParticles2D
 var night := 0.0       # 0..1 from DayNight.lamp_strength, set by main
 var _smoke: CPUParticles2D
 var _engine_smoke: CPUParticles2D   # grey-black smoke from a battered engine (GearModel.smoke_rate)
@@ -86,6 +88,20 @@ func _ready() -> void:
 	_engine_smoke.scale_amount_max = 6.0
 	_engine_smoke.position = Vector2(12, 0)
 	add_child(_engine_smoke)
+	_mud_fx = CPUParticles2D.new()   # dark wet-earth flecks flung up by wheels on soaked grass
+	_mud_fx.emitting = false
+	_mud_fx.local_coords = false
+	_mud_fx.amount = 12
+	_mud_fx.lifetime = 0.55
+	_mud_fx.direction = Vector2(0, -1)
+	_mud_fx.spread = 70.0
+	_mud_fx.gravity = Vector2(0, 160)
+	_mud_fx.initial_velocity_min = 30.0
+	_mud_fx.initial_velocity_max = 70.0
+	_mud_fx.scale_amount_min = 1.0
+	_mud_fx.scale_amount_max = 2.2
+	_mud_fx.color = Color(0.25, 0.17, 0.1, 0.9)
+	add_child(_mud_fx)
 	for sy in [-4.0, 4.0]:
 		var hl := PointLight2D.new()
 		hl.texture = cone_texture()
@@ -147,6 +163,7 @@ func _physics_process(delta: float) -> void:
 			var tt: int = g.tile_at(cc.x, cc.y)
 			surf = VehicleMath.surface_cap(WorldGen.is_road(tt), g.sdf_at(cc.x, cc.y), player.rain, CityModel.is_sidewalk(cc) or HarbourModel.is_quay(cc))
 			grip_m = VehicleMath.surface_grip(tt, g.sdf_at(cc.x, cc.y), player.rain)
+			_mud = VehicleMath.mud_drag(tt, g.sdf_at(cc.x, cc.y), player.rain)
 			_smoke_tile = tt
 			_smoke_sdf = g.sdf_at(cc.x, cc.y)
 			_skid_a = VehicleMath.skid_alpha(tt, g.sdf_at(cc.x, cc.y), player.rain)
@@ -165,6 +182,8 @@ func _physics_process(delta: float) -> void:
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m * GearModel.grip_mult(GameState.bag), GearModel.top_speed_mult(GameState.bag))
 		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * GearModel.top_speed_mult(GameState.bag) * surf * slip)
 		heading = r["heading"]
+		if _mud > 0.0:
+			vel *= exp(-_mud * delta)
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)
 	velocity = vel
@@ -221,6 +240,11 @@ func _physics_process(delta: float) -> void:
 		if want != _engine_smoke.amount:   # setting amount restarts the emitter: only on change
 			_engine_smoke.amount = want
 		_engine_smoke.color = Color(0.28, 0.27, 0.27, GearModel.smoke_alpha(health))
+	var splash := VehicleMath.mud_splash(vel.length(), _mud) if driving else 0
+	_mud_fx.emitting = splash > 0
+	_mud_fx.position = -VehicleMath.forward(heading).rotated(-heading) * 12.0
+	if splash > 0 and splash != _mud_fx.amount:
+		_mud_fx.amount = splash
 	_smoke.position = -VehicleMath.forward(heading).rotated(-heading) * 10.0
 	if skid:
 		_skid_t -= delta

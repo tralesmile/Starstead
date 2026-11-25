@@ -129,6 +129,21 @@ static func surface_grip(tile: int, sdf: float, rain: float = 0.0) -> float:
 		return 0.95 * (1.0 - 0.15 * r)
 	return 0.7 * (1.0 - 0.15 * r)
 
+const MUD_DRAG := 1.1   # 1/s extra rolling resistance on soaked grass at full rain
+
+static func mud_drag(tile: int, sdf: float, rain: float) -> float:
+	## Extra drag (1/s) while driving on rain-soaked loose ground: roads, sidewalks and the water bank stay clean,
+	## grass bogs down (needs rain > 0.2). Applied as vel *= exp(-drag * dt).
+	if sdf < 0.9 or WorldGen.is_road(tile) or rain <= 0.2:
+		return 0.0
+	return MUD_DRAG * clampf((rain - 0.2) / 0.8, 0.0, 1.0)
+
+static func mud_splash(speed: float, drag: float) -> int:
+	## Mud flecks per second thrown up by the wheels (none when dry or crawling).
+	if drag <= 0.0 or speed < 40.0:
+		return 0
+	return clampi(int(speed / 20.0 * clampf(drag / MUD_DRAG, 0.0, 1.0)), 1, 14)
+
 static func kerb_bump(speed: float, cap_before: float, cap_after: float) -> Dictionary:
 	## Driving off the street onto a sidewalk/quay (the surface cap drops to the sidewalk cap) at speed:
 	## the car loses up to 25% speed and the camera jolts. Slow rolls (< 60 px/s) cross the kerb quietly.

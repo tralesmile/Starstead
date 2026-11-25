@@ -20,3 +20,14 @@ func test_moving_away_is_untouched() -> void:
 	var r := VehicleMath.crash_response(Vector2(-50, 0), Vector2(-1, 0), PI)
 	check(absf((r["vel"] as Vector2).x - -50.0) < 0.01)
 	check(absf(float(r["spin"]) - 0.0) < 0.001)
+
+func test_mud_drag() -> void:
+	var grass := WorldGen.GRASS if "GRASS" in WorldGen else 0
+	check_eq(VehicleMath.mud_drag(grass, 5.0, 0.0), 0.0)            # dry grass: clean
+	check_eq(VehicleMath.mud_drag(grass, 5.0, 0.2), 0.0)            # drizzle: still clean
+	check(VehicleMath.mud_drag(grass, 5.0, 1.0) > VehicleMath.mud_drag(grass, 5.0, 0.6))
+	check_eq(VehicleMath.mud_drag(grass, 0.5, 1.0), 0.0)            # the bank stays out of it
+	check_eq(VehicleMath.mud_drag(WorldGen.ASPHALT, 5.0, 1.0), 0.0) # roads shed water
+	check_eq(VehicleMath.mud_splash(20.0, 1.0), 0)
+	check(VehicleMath.mud_splash(200.0, VehicleMath.MUD_DRAG) > VehicleMath.mud_splash(60.0, VehicleMath.MUD_DRAG))
+	check_eq(VehicleMath.mud_splash(200.0, 0.0), 0)

@@ -68,6 +68,9 @@ func _draw() -> void:
 		draw_set_transform_matrix(Transform2D(Vector2(1, 0), Vector2(CropMath.sway(cell, t, f) + (CropMath.brush(foot, walker.position + Vector2(0, 14), f) if walker != null else 0.0), 1), foot))
 		draw_texture_rect_region(ct, Rect2(Vector2(-16, -28), Vector2(32, 32)), Rect2(f * 32, 0, 32, 32), mod)
 		draw_set_transform_matrix(Transform2D.IDENTITY)
+		if walker != null and "velocity" in walker:
+			for lf in CropMath.rustle(foot, walker.position + Vector2(0, 14), f, (walker.velocity as Vector2).length(), t, cell.x * 7 + cell.y):
+				draw_rect(Rect2(foot + Vector2(float(lf["x"]), float(lf["y"])), Vector2(2, 1)), Color(0.45, 0.72, 0.28, float(lf["a"])))
 	for cell in farm.weeds:
 		draw_texture_rect_region(weed_tex, Rect2(Vector2(cell) * 32.0, Vector2(32, 32)), Rect2(0, 0, 32, 32))
 	for cell in farm.scarecrows:

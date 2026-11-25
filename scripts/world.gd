@@ -25,6 +25,8 @@ var tufts_by_cell: Dictionary = {}   # world cell -> Sprite2D (homestead + strea
 var _reed_push: Dictionary = {}
 var interactables := Interactables.new()
 var stream: ChunkStream
+signal chunk_built(ch: Vector2i)
+signal chunk_dropped(ch: Vector2i)
 var chunk_views: Dictionary = {}   # chunk -> ChunkView
 var chunk_mats: Array = []
 var player_ref: Node2D = null
@@ -530,11 +532,13 @@ func stream_update(player_px: Vector2) -> void:
 		if chunk_views.has(ch):
 			(chunk_views[ch] as ChunkView).unload(self)
 			chunk_views.erase(ch)
+			chunk_dropped.emit(ch)
 	var built := 0
 	for ch in ChunkGrid.to_load(loaded, center):
 		var v := ChunkView.new()
 		v.build(self, stream.gen_for(ch))
 		chunk_views[ch] = v
+		chunk_built.emit(ch)
 		built += 1
 		if built >= stream_budget:
 			break

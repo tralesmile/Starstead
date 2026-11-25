@@ -203,6 +203,47 @@ func _kill(c: Dictionary) -> void:
 	(c["node"] as Node2D).queue_free()
 	critters.erase(c)
 
+func populate_chunk(ch: Vector2i, region_id: String, stream: ChunkStream, day: int) -> void:
+	## A streamed chunk brings its region's herd (data/wildlife.json); animals walk the chunk like the homestead ones.
+	var want := RegionWildlife.wanted(_wildlife_table(), region_id)
+	if want.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = RegionWildlife.chunk_seed(stream.seed_value, ch, day)
+	var o := ChunkGrid.origin_cell(ch)
+	for id in want:
+		for i in RegionWildlife.room(_streamed_alive(), int(want[id])):
+			for tries in 30:
+				var c := o + Vector2i(rng.randi_range(2, WorldGen.SIZE - 3), rng.randi_range(2, WorldGen.SIZE - 3))
+				if stream.sdf_at(c) >= 2.0 and AnimalModel.wild_ok(c) and not GameState.nodes.is_solid(c):
+					var p := (Vector2(c) + Vector2(0.5, 0.6)) * 32.0
+					_spawn(String(id), p, null)
+					critters[-1]["streamed"] = true
+					break
+
+func drop_far(player_px: Vector2) -> void:
+	## Streamed wildlife left behind goes away (the herd is rebuilt when the chunk streams in again).
+	var chunk_px := float(WorldGen.SIZE * 32)
+	for i in range(critters.size() - 1, -1, -1):
+		var c: Dictionary = critters[i]
+		if c.get("streamed", false) and c != riding and not RegionWildlife.should_keep((c["node"] as Node2D).position.distance_to(player_px), chunk_px):
+			(c["node"] as Node2D).queue_free()
+			critters.remove_at(i)
+
+func _streamed_alive() -> int:
+	var n := 0
+	for c in critters:
+		if c.get("streamed", false):
+			n += 1
+	return n
+
+var _wl_table: Dictionary = {}
+func _wildlife_table() -> Dictionary:
+	if _wl_table.is_empty():
+		var t = DataDB.load_json("wildlife")
+		_wl_table = t if t is Dictionary else {}
+	return _wl_table
+
 func respawn_wild(rng: RandomNumberGenerator) -> void:
 	## Overnight the land restocks hunted game, out of sight of the player.
 	for id in WILD:

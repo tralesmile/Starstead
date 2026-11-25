@@ -31,6 +31,7 @@ func build(world: World, g: WorldGen) -> void:
 	_harbour(world)
 	_circuit(world)
 	_vance_yard(world)
+	_fish(world)
 
 func _add(world: World, n: Node) -> void:
 	world.add_child(n)
@@ -135,6 +136,25 @@ func _decor(world: World) -> void:
 		_add(world, s)
 		world.tufts_by_cell[origin + c] = s
 		tuft_cells.append(origin + c)
+
+func _fish(world: World) -> void:
+	## Fish shadows drift in the deep water of neighbour chunks too (same sprite as the homestead lake).
+	var deep: Array[Vector2i] = []
+	for y in WorldGen.SIZE:
+		for x in WorldGen.SIZE:
+			if gen.sdf_at(x, y) < -1.2:
+				deep.append(Vector2i(x, y))
+	var n := RegionWildlife.fish_count(deep.size())
+	if n == 0:
+		return
+	var r := RandomNumberGenerator.new()
+	r.seed = gen.seed_value + 91 + chunk.x * 53 + chunk.y * 389
+	var tex := load("res://assets/sprites/fish.png")
+	for i in n:
+		var f := FishShadow.new()
+		f.origin = origin
+		f.setup(tex, gen, origin + deep[r.randi() % deep.size()], r.randi())
+		_add(world, f)
 
 func _flowers(world: World) -> void:
 	var noise := FastNoiseLite.new()

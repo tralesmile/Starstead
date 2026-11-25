@@ -3,6 +3,7 @@ extends Sprite2D
 ## A fish shadow that wanders inside water (stays where sdf < -0.8), tail animated.
 
 var gen: WorldGen
+var origin := Vector2i.ZERO   # chunk origin cell (streamed chunks query their own local sdf)
 var target := Vector2.ZERO
 var rng := RandomNumberGenerator.new()
 var _t := 0.0
@@ -20,7 +21,7 @@ func _pick() -> void:
 	for i in 10:
 		var p := position + Vector2(rng.randf_range(-80, 80), rng.randf_range(-60, 60))
 		var c := Vector2i(floori(p.x / 32), floori(p.y / 32))
-		if gen.sdf_at(c.x, c.y) < -0.8:
+		if gen.sdf_at(c.x - origin.x, c.y - origin.y) < -0.8:
 			target = p
 			return
 	target = position

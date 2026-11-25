@@ -68,3 +68,14 @@ func test_puddles_follow_rain() -> void:
 		check(float(p["x"]) < 32.0 and float(p["y"]) < 32.0)
 	var ring := CropMath.puddle_ring(Vector2i(1, 1), 0, 0.3)
 	check(float(ring["r"]) >= 0.0 and float(ring["r"]) <= 1.0)
+
+func test_rustle() -> void:
+	var plant := Vector2(100, 100)
+	check(CropMath.rustle(plant, plant + Vector2(-6, 0), 3, 0.0, 1.0, 1).is_empty())      # standing still
+	check(CropMath.rustle(plant, plant + Vector2(-6, 0), 1, 100.0, 1.0, 1).is_empty())    # seedling
+	check(CropMath.rustle(plant, plant + Vector2(-200, 0), 3, 100.0, 1.0, 1).is_empty())  # far away
+	var l := CropMath.rustle(plant, plant + Vector2(-6, 0), 3, 100.0, 1.0, 1)
+	check_eq(l.size(), CropMath.RUSTLE_LEAVES)
+	for lf in l:
+		check(float(lf["x"]) >= 0.0)   # flung away from a walker on the left
+		check(float(lf["a"]) >= 0.0 and float(lf["a"]) <= 1.0)

@@ -30,6 +30,19 @@ static func brush(plant: Vector2, player: Vector2, stage: int) -> float:
 	var dir := 1.0 if d.x >= 0.0 else -1.0
 	return dir * k * BRUSH_LEAN * minf(float(stage) / 2.0, 1.0)
 
+const RUSTLE_LEAVES := 3
+## Green flecks shaken off a plant you walk through. Returns [{x, y, a}] offsets from the plant's foot (px, alpha);
+## empty when you are not moving, not touching it, or it is a seedling. Leaves tumble out away from the walker.
+static func rustle(plant: Vector2, player: Vector2, stage: int, speed: float, t: float, seed: int) -> Array:
+	var out: Array = []
+	if stage < 2 or speed < 20.0 or brush(plant, player, stage) == 0.0:
+		return out
+	var dir := 1.0 if plant.x >= player.x else -1.0
+	for i in RUSTLE_LEAVES:
+		var age := fposmod(t * 2.4 + float(i) / RUSTLE_LEAVES + float((seed * 31 + i * 17) % 10) * 0.1, 1.0)
+		out.append({"x": dir * age * (10.0 + 6.0 * i), "y": -10.0 - age * 12.0 + age * age * 26.0 - 4.0 * i, "a": 1.0 - age})
+	return out
+
 ## Soil colour multiplier in rain: dry soil soaks up water and darkens a lot, wet soil only a little (0.74..1).
 static func rain_darken(rain: float, watered: bool) -> float:
 	var r := clampf(rain, 0.0, 1.0)

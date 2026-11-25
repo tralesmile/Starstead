@@ -1,0 +1,10 @@
+{
+	"farmland": {"cow": 3, "sheep": 3, "horse": 1, "chicken": 2, "rabbit": 2},
+	"pine_forest": {"deer": 4, "boar": 2, "rabbit": 3},
+	"highlands": {"goat": 4, "deer": 1},
+	"harbour": {"chicken": 2},
+	"homestead": {},
+	"port_halden": {},
+	"vance": {},
+	"circuit": {"rabbit": 1}
+}
