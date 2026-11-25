@@ -36,6 +36,8 @@ var cave: CaveView
 var smelt_view: SmeltView
 var forge_view: ForgeView
 var butcher_view: ButcherView
+var bus_view: BusView
+var bus_stops: BusStopsView
 var craft_view: CraftView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
@@ -272,6 +274,14 @@ func _ready() -> void:
 	inv_view.closed.connect(func(): player.set_physics_process(true))
 	inv_view.ate.connect(func(n, g): _say("Ate %s (+%d energy)" % [n, g]))
 	add_child(inv_view)
+	bus_stops = BusStopsView.new()
+	bus_stops.player = player
+	bus_stops.stops = BusModel.make_stops(world.stream.roads.cave_mouth, world.stream.roads.hubs, _workshop_door())
+	world.add_child(bus_stops)
+	bus_view = BusView.new()
+	bus_view.closed.connect(func(): player.set_physics_process(true))
+	bus_view.ride.connect(_bus_ride)
+	add_child(bus_view)
 	map_view = MapView.new().setup(player, world.gen, _workshop_door())
 	map_view.locked_cb = func() -> Dictionary: return MapModel.locked_regions(gate_keeper.gates if gate_keeper.enabled else {}, GameState.story.done)
 	add_child(map_view)
@@ -542,6 +552,8 @@ func _process(delta: float) -> void:
 		prompt.text = WorldHints.text(self)
 	if prompt.text == "" and not _indoors() and not shop.visible:
 		prompt.text = car_theft.prompt()
+	if prompt.text == "" and not _indoors() and not car.driving and animals.riding == null and not shop.visible and not bus_stops.near().is_empty():
+		prompt.text = "E: Take the bus (next in %d min)" % BusModel.wait_minutes(GameState.clock.minutes) if BusModel.in_service(GameState.clock.minutes) else "Bus stop: no buses after 23:00"
 	if car.can_enter() and prompt.text == "":
 		prompt.text = "E: Drive"
 	elif car.driving and _near_chop():
@@ -643,6 +655,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		forge_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
+	if bus_view.visible:
+		bus_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if butcher_view.visible:
 		butcher_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -726,6 +742,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		return  # hands on the wheel: no tools
 	if e.is_action_pressed("interact") and animals.riding != null:
 		animals.dismount()
+		return
+	if e.is_action_pressed("interact") and not _indoors() and not car.driving and animals.riding == null and not bus_stops.near().is_empty():
+		_open_bus(bus_stops.near())
 		return
 	if e.is_action_pressed("interact"):
 		var it := world.interactables.near(player.position, _target_cell())
@@ -1379,6 +1398,31 @@ func _pass_out(cause: String, clock_rolled: bool) -> void:
 	_pass_out_fade()
 	GameState.save_game()
 	_passing_out = false
+
+func _bus_open_cb(cell: Vector2i) -> bool:
+	if not gate_keeper.enabled:
+		return true
+	var rid := String(world.stream.region_at(ChunkGrid.chunk_of_cell(cell)).get("id", ""))
+	return StoryGate.lock_message(gate_keeper.gates, rid, GameState.story.done) == ""
+
+func _open_bus(stop: Dictionary) -> void:
+	if not BusModel.in_service(GameState.clock.minutes):
+		_say("The last bus has gone - buses run 06:00-23:00")
+		return
+	player.velocity = Vector2.ZERO
+	player.move_v = Vector2.ZERO
+	player.set_physics_process(false)
+	bus_view.open(stop, BusModel.options(bus_stops.stops, String(stop["id"]), GameState.money, _bus_open_cb), BusModel.wait_minutes(GameState.clock.minutes))
+
+func _bus_ride(stop: Dictionary, fare: int, minutes: int) -> void:
+	GameState.money -= fare
+	GameState.clock.minutes = minf(GameState.clock.minutes + float(minutes), float(GameClock.DAY_LENGTH_MIN) - 1.0)
+	player.position = (Vector2(stop["cell"]) + Vector2(1.0, 1.8)) * 32.0
+	player.facing = PlayerMath.Facing.DOWN
+	GameState.stats["bus_rides"] = int(GameState.stats.get("bus_rides", 0)) + 1
+	_say("Bus to %s: $%d, %d min. Arrived %s" % [stop["name"], fare, minutes, GameState.clock.time_string()])
+	toast_t = 4.0
+	_pass_out_fade()
 
 func _pass_out_fade() -> void:
 	var layer := CanvasLayer.new()

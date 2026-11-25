@@ -154,6 +154,12 @@ func on_process() -> void:
 		GameState.bag.add("copper_bar", 4)
 		GameState.bag.add("hide", 3)
 		m.forge_view.open()
+	if "--bus-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the bus stop menu at the homestead stop
+		GameState.money = maxi(GameState.money, 60)
+		var st: Dictionary = m.bus_stops.stops[0]
+		m.player.position = (Vector2(st["cell"]) + Vector2(1.0, 1.8)) * 32.0
+	if "--bus-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 8:
+		m._open_bus(m.bus_stops.near())
 	if "--butcher-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the butcher block menu with game in the bag
 		GameState.bag.add("raw_meat", 4)
 		GameState.bag.add("hide", 5)
