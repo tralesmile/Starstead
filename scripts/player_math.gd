@@ -213,3 +213,16 @@ static func stagger_mult(left: float, total: float, floor_mult: float = 0.55) ->
 	if left <= 0.0 or total <= 0.0:
 		return 1.0
 	return lerpf(1.0, floor_mult, clampf(left / total, 0.0, 1.0))
+
+const MUD_MAX_SPEED_LOSS := 0.07   # fully caked boots cost 7% walking speed
+
+static func mud_load(cur: float, rain: float, on_path: bool, moving: bool, dt: float) -> float:
+	## Mud on the boots (0..1): builds up while walking on rain-soaked grass (rain > 0.2), 1 per ~25 s of heavy rain;
+	## wears off on paved/dirt paths (~8 s) and slowly everywhere else, so it vanishes soon after the rain stops.
+	if moving and not on_path and rain > 0.2:
+		return clampf(cur + dt * (rain - 0.2) / 0.8 / 25.0, 0.0, 1.0)
+	var shed := (1.0 / 8.0) if (on_path and moving) else (1.0 / 40.0)
+	return clampf(cur - dt * shed, 0.0, 1.0)
+
+static func mud_speed(load: float) -> float:
+	return 1.0 - MUD_MAX_SPEED_LOSS * clampf(load, 0.0, 1.0)

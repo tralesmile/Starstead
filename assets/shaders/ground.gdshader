@@ -181,6 +181,16 @@ void fragment() {
 			dc = mix(dc, mix(STONE_M, STONE_L, step(pv.x, 0.07)), peb);
 			dc = mix(dc, DIRT_D, (1.0 - smoothstep(0.5, 0.54, pe)) * 0.45);  // soft darker rim
 			col = dc;
+			if (!city_cell && wet > 0.05) {
+				// rain on dirt paths: darker mud and glossy sky-coloured puddles in the ruts, with a bright rim and a few ripple glints
+				float pm = fbm(tile * 2.2 + 31.0);
+				float pd = smoothstep(0.55, 0.64, pm) * smoothstep(0.52, 0.62, pe) * wet;
+				col = mix(col, col * 0.72, 0.5 * wet);
+				col = mix(col, vec3(0.42, 0.52, 0.64) * (0.88 + 0.25 * fbm(tile * 6.0 + TIME * 0.15)), pd * 0.7);
+				float rim = smoothstep(0.55, 0.58, pm) * (1.0 - smoothstep(0.58, 0.62, pm)) * wet;
+				col = mix(col, DIRT_L, rim * 0.35);
+				col += vec3(0.45) * step(0.975, hash(floor(px / 2.0) + floor(TIME * 3.0) + 17.0)) * pd;
+			}
 			if (city_cell) {
 				// ---- Port Halden: asphalt (a=0) and paved sidewalk (a=0.5)
 				vec2 cp = floor(px / 2.0);

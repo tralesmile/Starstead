@@ -35,6 +35,7 @@ var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whol
 signal footstep
 signal skid(amount: int)
 var _sprint := 1.0
+var _mud := 0.0    # mud on the boots (PlayerMath.mud_load)
 var _surf := 1.0   # eased ground speed multiplier (PlayerMath.surface_ease)
 var _sprint_lvl := 0.0
 var _punch := 0.0
@@ -104,6 +105,12 @@ func _physics_process(delta: float) -> void:
 		mult *= PlayerMath.snow_speed(GameState.clock.season(), on_path)
 	_surf = PlayerMath.surface_ease(_surf, mult, delta)
 	mult = _surf
+	if gen != null and not indoors:
+		var mc := Vector2i(floori(position.x / 32.0), floori(position.y / 32.0))
+		_mud = PlayerMath.mud_load(_mud, rain, WorldGen.is_road(gen.tile_at(mc.x, mc.y)), input.length() > 0.1, delta)
+	else:
+		_mud = maxf(_mud - delta / 40.0, 0.0)
+	mult *= PlayerMath.mud_speed(_mud)
 	grip *= PlayerMath.ride_grip(speed_mult) * PlayerMath.load_grip(GameState.bag.fill_fraction())
 	var sp_t := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)
 	if sp_t > 1.0:

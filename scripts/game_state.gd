@@ -65,7 +65,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -118,6 +118,7 @@ func from_dict(d: Dictionary) -> bool:
 	var yl: Dictionary = d.get("yard_looted", {})
 	for k in yl:
 		yard_looted[int(k)] = int(yl[k])
+	nodes.from_array(d.get("nodes", []))
 	market.from_dict(d.get("market", {}))
 	business.from_dict(d.get("business", {}))
 	home.from_dict(d.get("home", {}))
