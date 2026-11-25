@@ -89,6 +89,7 @@ func _ready() -> void:
 	farm_view = FarmView.new()
 	add_child(farm_view)
 	world.add_child(CrabPotView.new())
+	world.add_child(SnareView.new())
 	town = TownView.new()
 	town.setup(world, world.gen, world.stall_cell())
 	world.add_child(town)
@@ -229,6 +230,7 @@ func _ready() -> void:
 	jobs.message.connect(_say)
 	add_child(jobs)
 	animals = AnimalView.new()
+	ambient.animals = animals
 	for pc in town.paddock_cells:
 		animals.extra_solid[pc] = true
 	animals.setup(world, player, world.gen)
@@ -483,6 +485,8 @@ func _process(delta: float) -> void:
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
 	car.night = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	traffic.night = car.night
+	traffic.rain = weather.now
+	traffic.fog = fog
 	if GameState.clock.season() != _season_applied:
 		_season_applied = GameState.clock.season()
 		world.set_season(_season_applied)
@@ -820,6 +824,27 @@ func _unhandled_input(e: InputEvent) -> void:
 				_say("Crab pot placed - check it tomorrow")
 			else:
 				_say("Needs open water, half a tile out")
+			return
+		if hotbar.current() == "snare":
+			if GameState.bag.count("snare") < 1:
+				_say("No snares - buy them at the shop")
+			elif GameState.snares.place(cell, world.gen.sdf_at(cell.x, cell.y), Snares.habitat_for(ChunkGrid.chunk_of_cell(cell))):
+				GameState.bag.remove("snare", 1)
+				_say("Snare set - check it tomorrow (rain spoils the scent)")
+			else:
+				_say("Set snares on dry ground away from the water")
+			return
+		if hotbar.current() == "hand" and GameState.snares.snares.has(cell):
+			if GameState.snares.is_ready(cell):
+				var worn := GameState.snares.worn(cell)
+				var loot: Array = GameState.snares.collect(cell)
+				for id in loot:
+					drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
+				_say("The snare caught game (%d)%s" % [loot.size(), " - it frayed and broke" if not GameState.snares.snares.has(cell) else ""])
+			else:
+				GameState.snares.pick_up(cell)
+				GameState.bag.add("snare", 1)
+				_say("Picked up the snare")
 			return
 		if hotbar.current() == "hand" and GameState.pots.pots.has(cell):
 			var got: Array = GameState.pots.collect(cell)
@@ -1359,6 +1384,9 @@ func _end_day() -> void:
 	stall_stolen = 0
 	var rngp := RandomNumberGenerator.new()
 	rngp.seed = GameState.clock.day * 31 + 5
+	var snared := GameState.snares.night_tick(rngp, rain_today > 0.0)
+	if snared > 0:
+		_say("Something is caught in your snares")
 	var caught := GameState.pots.day_tick(rngp)
 	if caught > 0:
 		_say("Your crab pots caught something")

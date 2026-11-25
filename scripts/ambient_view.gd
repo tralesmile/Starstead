@@ -5,6 +5,7 @@ extends Node2D
 const FIREFLIES := 14
 const LEAVES := 8
 var player: Player
+var animals: AnimalView   # wild and tame critters breathe steam in the cold too
 var t := 0.0
 var crow_tex: Texture2D = load("res://assets/sprites/crow.png")
 var _perch: Array = []     # ripe cells with a perched crow
@@ -74,6 +75,24 @@ func _draw() -> void:
 			var fade := (1.0 - clampf(age - 0.12 * float(i), 0.0, 1.0)) * cold
 			var o := Vector2(bp.x * (fx if fx != 0.0 else 0.0), bp.y).round()
 			draw_rect(Rect2(mouth + o - Vector2(sz, sz) * 0.5, Vector2(sz, sz)), Color(0.93, 0.97, 1.0, 0.8 * fade) * unlit)
+	if cold > 0.15 and animals != null and not player.indoors:
+		var ci := 0
+		for cr in animals.critters:
+			ci += 1
+			var node: Node2D = cr["node"]
+			if node == null or node.position.distance_to(c) > 340.0:
+				continue
+			var big: float = 1.0 if cr["id"] in ["cow", "horse", "deer", "boar"] else 0.6
+			var aa := AmbientMath.animal_breath_age(t, ci, big)
+			if aa < 0.0:
+				continue
+			var sp: Sprite2D = cr["sprite"]
+			var dirx := -1.0 if sp.flip_h else 1.0
+			var mp: Vector2 = node.position + Vector2(dirx * 9.0 * big, -14.0 * big)
+			var bsz := AmbientMath.animal_breath_size(big, aa)
+			for k in 2:
+				var ak := clampf(aa - 0.15 * float(k), 0.0, 1.0)
+				draw_rect(Rect2((mp + Vector2(dirx * ak * 7.0, -ak * 5.0)).round() - Vector2(bsz, bsz) * 0.5, Vector2(bsz, bsz)), Color(0.93, 0.97, 1.0, 0.7 * (1.0 - ak) * cold) * unlit)
 	var ca := CrowMath.age(mins)
 	if ca >= 0.0 and rain < 0.6 and not player.indoors:
 		for i in CrowMath.COUNT:

@@ -102,7 +102,7 @@ Physics / feel:
 - [x] K quest log did not close (stale canvas redraw after close; StoryView now redraws on toggle)
 - [x] Camera too close: default zoom 1.5x (TargetMath.ZOOMS 1/1.5/2/3, +/- cycles; tested)
 - [x] Wanted HUD looked bad: drawn badge with 5 stars that fill with heat + red/blue siren strip when seen (WantedHud, tested); cops lighter police-blue instead of black faces
-- [x] Hunting: club hits wild animals (HuntModel + AnimalView.hunt), drops raw meat / hide / feathers, boar fights back, game restocks overnight; new deer, rabbit, boar sprites (gen_wildlife.py), more wildlife around the start (WILD table), Grilled Meat recipe. [ ] bow/traps (CLAIMED 2026-11-25 run 35), butcher/tannery, fists on the hand slot, hunting licence/ranger heat
+- [x] Hunting: club hits wild animals (HuntModel + AnimalView.hunt), drops raw meat / hide / feathers, boar fights back, game restocks overnight; new deer, rabbit, boar sprites (gen_wildlife.py), more wildlife around the start (WILD table), Grilled Meat recipe. [x] run 35: snares (Snares pure model, SnareView, shop 55, hotbar slot 0 cycles to it, forest/meadow catches overnight, rain halves them, wear out after 6 catches, saved, tested) [ ] bow, butcher/tannery, fists on the hand slot, hunting licence/ranger heat
 - [x] First 30 seconds: new game starts with hoe, axe, hand and seeds; C opens the craft menu (wood -> can, scythe, club, rod, pickaxe; ToolKit/CraftView, data/crafting.json, saved, old saves own everything), unowned hotbar slots dim, goal line says chop wood + craft the can. [x] run 28: carpenter bench beside the farmhouse (E opens the craft menu) and a gold tutorial arrow on the screen edge pointing at the nearest tree, then the farmhouse bed (GoalArrow tested). [ ] stone/iron tool tiers via smelting
 - [x] Crops: show growth time (days left / stage bar on hover), and redo hoed-dirt, crop and watering art (they look bad) (CropInfo hover label + stage bar, new soil rows and sprout art; tested)
 - [x] Fishing: character visibly holds the rod (RodMath: leans back while charging, whips forward on release, tip dips on a bite, flexes while reeling; line starts at the tip). [x] fish jumping out of the water (run 14, LeapMath). [ ] cast/reel player pose frames
@@ -342,3 +342,8 @@ Houses, buildings, graphics (5, 10)
 ## Run 34 queue
 - [x] Graphics (run 34): mud splashes on the player's boots and shins (PlayerMath.mud_specks, MudBootsView, tested; before/after --mud-demo --rain --zoom=4). Also headlights on night traffic. [ ] next: puddle reflections of props, breath steam for streamed deer
 - [x] Physics/feel (run 34): traffic cars you hit stall with hazards and are shoved away (RoadTraffic.hit_response/shove_decay, tested), brake hard and pull away gently (ease_speed). [ ] next: tyre squeal pitch by surface (needs audio), skid marks for traffic braking
+
+## Run 35 queue
+- [x] Hunting snares (run 35): see Hunting item above; --snare-demo + check screen 'snares'. [ ] next: bait for better catches, butcher/tannery
+- [x] Graphics (run 35): breath steam from wild and tame animals in the cold (AmbientMath.animal_breath_age/size, tested; before: only the player breathed steam; closer to ART_TARGET living world). [ ] next: puddle reflections of props
+- [x] Physics/feel (run 35): road traffic drives slower in rain/fog and brakes earlier on wet roads (RoadTraffic.weather_cruise/weather_brake, tested). [ ] next: skid marks for traffic

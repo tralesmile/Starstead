@@ -323,6 +323,12 @@ func on_process() -> void:
 			var c := pc + Vector2i(dx, 1)
 			if GameState.pots.place(c, m.world.gen.sdf_at(c.x, c.y)):
 				GameState.pots.pots[c]["ready"] = ["crab"] if dx == -2 else []
+	if "--snare-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		var sc := TargetMath.cell_of(m.player.position)
+		for dx in range(1, 4):
+			var c := sc + Vector2i(dx, 0)
+			if GameState.snares.place(c, 4.0, "meadow"):
+				GameState.snares.snares[c]["ready"] = ["raw_meat"] if dx == 2 else []
 	if "--chest-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.chest.add("wood", 30)
 		GameState.chest.add("egg", 6)

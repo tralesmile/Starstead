@@ -65,3 +65,12 @@ static func breath_puff(age: float, i: int) -> Vector3:
 	## Puff i of 3 as (dx, dy rise, size px): drifts forward and up, grows, the later ones trail behind.
 	var a := clampf(age - 0.12 * float(i), 0.0, 1.0)
 	return Vector3(a * (6.0 + 3.0 * float(i)), -a * 7.0, 2.0 + a * (3.0 + float(i)))
+
+static func animal_breath_age(t: float, idx: int, size: float) -> float:
+	## Animals breathe on their own rhythm: bigger animals slower, each critter out of phase. Same -1..1 meaning as breath_age.
+	var rate := clampf(1.6 - size * 0.5, 0.9, 1.6)
+	return breath_age(t * rate + float(idx) * 0.77)
+
+static func animal_breath_size(size: float, age: float) -> float:
+	## Puff pixel size for an animal of relative size (0.5 rabbit .. 1.6 horse) at breath age 0..1.
+	return roundf((1.5 + age * 2.5) * clampf(size, 0.6, 1.5))

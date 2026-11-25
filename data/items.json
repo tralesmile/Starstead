@@ -617,5 +617,13 @@
   "name": "Lockpick Set",
   "price": 40,
   "stack": 9
+ },
+ "snare": {
+  "name": "Snare",
+  "price": 20,
+  "stack": 99,
+  "buy": true,
+  "buy_price": 55,
+  "rarity": "bronze"
  }
 }

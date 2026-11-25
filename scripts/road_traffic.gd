@@ -127,3 +127,11 @@ static func hit_response(impact_speed: float, away: Vector2) -> Dictionary:
 
 static func shove_decay(shove: Vector2, delta: float) -> Vector2:
 	return shove * exp(-3.0 * delta)
+
+static func weather_cruise(cruise: float, rain: float, fog: float) -> float:
+	## Careful drivers: rain trims up to 25% off the cruise speed, fog up to another 20%; never below 55% of normal.
+	return cruise * clampf(1.0 - 0.25 * clampf(rain, 0.0, 1.0) - 0.2 * clampf(fog, 0.0, 1.0), 0.55, 1.0)
+
+static func weather_brake(rain: float) -> float:
+	## Braking distance factor on wet roads (1.0 dry .. 1.6 in a downpour): gaps open earlier.
+	return 1.0 + 0.6 * clampf(rain, 0.0, 1.0)

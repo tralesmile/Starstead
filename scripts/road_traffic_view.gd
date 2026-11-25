@@ -10,6 +10,8 @@ var car: Node2D
 var open_cb: Callable = Callable()   # Vector2 -> bool: false inside a story-locked region (no traffic there)
 var night := 0.0
 var roads: Array = []                # PackedVector2Array per road, in px
+var rain := 0.0   # set by main: rain 0..1 and fog 0..1 slow careful drivers
+var fog := 0.0
 var cars: Array = []                 # {node, body, sprite, road, dist, fwd, speed, cruise, blocked, light, honk}
 var hikers: Array = []               # {node, sprite, outfit, road, dist, fwd, speed, t, face, wait}
 var rng := RandomNumberGenerator.new()
@@ -185,7 +187,7 @@ func _step_car(v: Dictionary, delta: float) -> void:
 	var lp := RoadTraffic.lane_point(pts, along, bool(v["fwd"]))
 	var heading := float(lp["heading"])
 	var gap := RoadTraffic.gap_ahead(body.position, heading, _obstacles(body))
-	var target := RoadTraffic.follow_speed(float(v["cruise"]), gap)
+	var target := RoadTraffic.follow_speed(RoadTraffic.weather_cruise(float(v["cruise"]), rain, fog), gap / RoadTraffic.weather_brake(rain))
 	if car != null and float(v["stall"]) <= 0.0 and car.position.distance_to(body.position) < 28.0 and (car.get("vel") as Vector2).length() > 45.0:
 		var hit := RoadTraffic.hit_response((car.get("vel") as Vector2).length(), body.position - car.position)
 		v["stall"] = hit["stall"]

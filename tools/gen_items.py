@@ -593,6 +593,19 @@ def crab_pot():
     return i
 icons['crab_pot'] = crab_pot
 
+def snare():
+    i = Ic()
+    i.line(2, 13, 14, 13, "#4c7a34")                 # grass strip
+    i.rect(3, 6, 4, 12, "#8a5a32"); i.px(3, 6, "#c08a54")     # left stake
+    i.rect(11, 6, 12, 12, "#6e4626"); i.px(11, 6, "#a8743e")  # right stake
+    i.line(4, 6, 11, 6, "#d8c8a0")                  # cord between stakes
+    i.px(7, 5, "#f0e4c4"); i.px(8, 5, "#f0e4c4")
+    for (x, y) in ((6, 7), (5, 8), (5, 9), (6, 10), (7, 11), (8, 11), (9, 10), (10, 9), (10, 8), (9, 7)):
+        i.px(x, y, "#c4ccd8")                         # wire noose loop
+    i.px(6, 7, "#e8eef6"); i.px(5, 8, "#e8eef6")
+    return i
+icons['snare'] = snare
+
 def crab():
     i = Ic()
     i.ell(8, 9, 5.5, 3.6, "#d8583a"); i.ell(8, 8, 4, 2.4, "#ee7a58")
@@ -849,7 +862,7 @@ def lockpick_set():
     return i
 icons['lockpick_set'] = lockpick_set
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set']  # appended after the last old icon, in this order
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

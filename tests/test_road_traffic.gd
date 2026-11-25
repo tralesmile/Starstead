@@ -78,3 +78,10 @@ func test_shove_eases_out() -> void:
 	for i in 30:
 		s = RoadTraffic.shove_decay(s, 0.1)
 	check(s.length() < 1.0)
+
+func test_weather_slows_drivers() -> void:
+	check_eq(RoadTraffic.weather_cruise(100.0, 0.0, 0.0), 100.0)
+	check(RoadTraffic.weather_cruise(100.0, 1.0, 0.0) < 80.0)
+	check(RoadTraffic.weather_cruise(100.0, 1.0, 1.0) >= 55.0)
+	check(RoadTraffic.weather_brake(1.0) > RoadTraffic.weather_brake(0.3))
+	check_eq(RoadTraffic.weather_brake(0.0), 1.0)
