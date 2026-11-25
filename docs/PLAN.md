@@ -323,3 +323,8 @@ Houses, buildings, graphics (5, 10)
 
 ## Backlog additions (2026-11-25 run 30, research)
 - Weakest vs Stardew Valley: late-game money sinks (Robin's house tiers, Stardew's cost ladder). Fixed with Town Hall farmhouse upgrades. Sources (titles only): https://studio-asv.pages.dev/blog/stardew-valley/stardew-valley-house-upgrade-design-guide , https://www.pcgamer.com/what-to-do-in-stardew-valleys-endgame | 2026-11-25
+
+## Run 31 queue
+- [ ] Pass-out (CLAIMED 2026-11-25): 2am / zero energy collapse: lose up to 10% cash (max $1000), wake at home or the Port Halden hospital (bill), 50 energy, late-night warnings; PassOut pure model + test. 
+- [ ] Graphics (run 31): puddle shine on dry soil after rain, brush rustle particles
+- [ ] Physics/feel (run 31): stumble on rocks / tyre squeal
