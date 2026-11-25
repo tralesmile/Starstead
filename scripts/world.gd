@@ -67,6 +67,7 @@ func build(seed_value: int = 1) -> void:
 	_build_flowers()
 	_build_stall()
 	_build_lanterns()
+	_build_dock_props()
 	_build_world_wall()
 
 static func _city_alpha(t: int, wc: Vector2i) -> float:
@@ -419,6 +420,31 @@ func _build_stall() -> void:
 	props.erase(c)  # not a ResourceNodes prop
 	interactables.add(c, "shop", "E: Shop")
 	interactables.add(c + Vector2i(1, 0), "shop", "E: Shop")
+
+func _build_dock_props() -> void:
+	## Working-quay clutter on the land beside the spawn dock: crates, barrel, rope, drying rack, basket, net, bollard.
+	if gen.dock.size() < 2:
+		return
+	var d0: Vector2i = gen.dock[0]
+	var d1: Vector2i = gen.dock[1]
+	var dir := d1 - d0
+	var land := d0 - dir
+	var back := Vector2(-dir.x, 0.0)   # away from the water along the dock axis
+	var sheet: Texture2D = load("res://assets/sprites/dock_props.png")
+	# frame, offset in cells from the landing cell (along back / across)
+	var spec := [[1, 0.9, -1.0], [0, 0.5, -0.3], [3, 1.6, 1.3], [4, 0.7, 1.4], [5, 2.2, -1.2], [2, 0.0, 0.9], [6, -0.2, -0.95]]
+	for sp in spec:
+		var pos := (Vector2(land) + Vector2(0.5, 0.5) + back * float(sp[1]) + Vector2(0.0, float(sp[2]))) * 32.0
+		var cell := Vector2i(floori(pos.x / 32.0), floori(pos.y / 32.0))
+		if gen.sdf_at(cell.x, cell.y) < 1.2 or cell in gen.trees or cell in gen.rocks or cell in gen.bushes:
+			continue
+		var sp2 := Sprite2D.new()
+		sp2.texture = sheet
+		sp2.region_enabled = true
+		sp2.region_rect = Rect2(32.0 * int(sp[0]), 0, 32, 32)
+		sp2.offset = Vector2(0, -14)
+		sp2.position = Vector2(pos.x, pos.y + 8.0)
+		add_child(sp2)
 
 func _build_lanterns() -> void:
 	## Lantern posts: one each side of the dock landing and one by the stall.

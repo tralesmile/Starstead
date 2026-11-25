@@ -114,6 +114,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		_mud = maxf(_mud - delta / 40.0, 0.0)
 	mult *= PlayerMath.mud_speed(_mud)
+	if not indoors:
+		mult *= PlayerMath.wind_mult(rain, PlayerMath.wind_angle(GameState.clock.day), input)
 	mud_view.load = _mud
 	grip *= PlayerMath.ride_grip(speed_mult) * PlayerMath.load_grip(GameState.bag.fill_fraction())
 	var sp_t := PlayerMath.sprint_mult(Input.is_action_pressed("sprint"), input.length() > 0.1, GameState.energy.value)

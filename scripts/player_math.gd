@@ -241,3 +241,14 @@ static func mud_specks(load: float) -> Array:
 
 static func mud_speed(load: float) -> float:
 	return 1.0 - MUD_MAX_SPEED_LOSS * clampf(load, 0.0, 1.0)
+
+## Storm wind: above rain 0.6 a daily wind blows; walking into it costs up to 6% speed, walking with it adds up to 3%.
+static func wind_angle(day: int) -> float:
+	return fposmod(float(day) * 2.399963, TAU)
+
+static func wind_mult(rain: float, angle: float, input: Vector2) -> float:
+	if rain <= 0.6 or input.length() < 0.1:
+		return 1.0
+	var storm := clampf((rain - 0.6) / 0.4, 0.0, 1.0)
+	var along := input.normalized().dot(Vector2.from_angle(angle))   # +1 with the wind, -1 into it
+	return 1.0 + storm * (0.03 * along if along > 0.0 else 0.06 * along)
