@@ -51,7 +51,7 @@ func handle(e: InputEvent) -> bool:
 		var ri := _slot_under_mouse()
 		if ri >= 0 and GameState.bag.slots[ri] != null:
 			var id: String = GameState.bag.slots[ri].id
-			var gained := CookModel.eat(GameState.bag, items, GameState.energy, id)
+			var gained := CookModel.eat(GameState.bag, items, GameState.energy, id, GameState.home.eat_mult())
 			if gained >= 0:
 				ate.emit(String(items[id].name), gained)
 		return true

@@ -326,6 +326,10 @@ func on_process() -> void:
 		for id in ["potato", "egg", "turnip", "tomato", "pumpkin", "milk"]:
 			GameState.bag.add(id, 2)
 		m.cook_view.open()
+	if "--upgrade-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		GameState.money = 1200
+		GameState.home.buy("kitchen", 9999)
+		m.upgrade_view.open()
 	if "--bag-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		for id in ["wood", "stone", "egg", "milk", "minnow", "perch", "golden_koi", "wool", "worm_bait", "pike", "axe_copper"]:
 			GameState.bag.add(id, 7)

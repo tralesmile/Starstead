@@ -60,6 +60,11 @@ func remove(id: String, n: int = 1) -> bool:
 				slots[i] = null
 	return true
 
+func ensure_size(n: int) -> void:
+	## Grows the grid (never shrinks, so nothing is lost).
+	if slots.size() < n:
+		slots.resize(n)
+
 func to_array() -> Array:
 	return slots.duplicate(true)
 

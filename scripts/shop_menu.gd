@@ -11,6 +11,7 @@ var planets: Dictionary = {}
 var world := "earth"
 var market: MarketModel = null   # optional sell pressure (E8)
 var day := 1
+var sell_bonus := 1.0   # root cellar (HomeUpgrades.sell_mult)
 var rep_honest := 0   # honest tier discounts and sell bonus (ReputationModel)
 
 func _init(items_db: Dictionary) -> void:
@@ -32,7 +33,7 @@ func entries(inv: Inventory) -> Array:
 func _sell_now(id: String) -> int:
 	var base := Shop.sell_price(items, id, planets, world)
 	var p := base if market == null else market.price(base, id, day)
-	return int(round(p * ReputationModel.sell_mult(rep_honest)))
+	return int(round(p * ReputationModel.sell_mult(rep_honest) * sell_bonus))
 
 func _buy_now(id: String) -> int:
 	return int(round(Shop.buy_price(items, id, planets, world) * ReputationModel.buy_mult(rep_honest)))

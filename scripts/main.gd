@@ -43,6 +43,7 @@ var map_view: MapView
 var hud: Hud
 var chest_view: ChestView
 var cook_view: CookView
+var upgrade_view: UpgradeView
 var sports: SportsView
 var derby: DerbyView
 var hoof_t := 0.0
@@ -271,6 +272,10 @@ func _ready() -> void:
 	cook_view.closed.connect(func(): player.set_physics_process(true))
 	cook_view.cooked.connect(func(n): _say("Cooked " + n))
 	add_child(cook_view)
+	upgrade_view = UpgradeView.new()
+	upgrade_view.closed.connect(func(): player.set_physics_process(true))
+	upgrade_view.bought.connect(func(n): _say("Built: " + n))
+	add_child(upgrade_view)
 	sports = SportsView.new()
 	sports.closed.connect(func(): player.set_physics_process(true))
 	sports.message.connect(_say)
@@ -621,6 +626,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if derby.visible:
 		derby.handle(e)
+		get_viewport().set_input_as_handled()
+		return
+	if upgrade_view.visible:
+		upgrade_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if cook_view.visible:

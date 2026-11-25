@@ -1,0 +1,5 @@
+{
+	"bag": {"name": "Pack straps", "desc": "More bag slots", "base": 30, "costs": [600, 1500], "values": [40, 50], "fmt": "%d slots"},
+	"kitchen": {"name": "Farm kitchen", "desc": "Meals restore more energy", "base": 1.0, "costs": [500, 1400], "values": [1.25, 1.5], "fmt": "x%.2f energy"},
+	"cellar": {"name": "Root cellar", "desc": "Crops sell for more", "base": 1.0, "costs": [800, 2200], "values": [1.04, 1.08], "fmt": "x%.2f sell price"}
+}

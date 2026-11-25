@@ -3,7 +3,7 @@ extends RefCounted
 ## Opening hours of public buildings (data/hours.json). Closed doors can be picked; closed counters become a till to crack.
 ## Pure rules: no autoloads, so tests can run them.
 
-const TILL_ACTIONS := ["shop", "bank", "coffee", "notice", "debt", "hoops", "ring", "licence"]
+const TILL_ACTIONS := ["shop", "bank", "coffee", "notice", "debt", "hoops", "ring", "licence", "upgrade"]
 static var _cfg: Dictionary = {}
 
 static func cfg() -> Dictionary:

@@ -21,9 +21,11 @@ static func cook(inv: Inventory, recipe: Dictionary) -> bool:
 	inv.slots = probe.slots
 	return true
 
-static func eat(inv: Inventory, items: Dictionary, energy: Energy, id: String) -> int:
+static func eat(inv: Inventory, items: Dictionary, energy: Energy, id: String, mult: float = 1.0) -> int:
 	## Eats one `id`: restores its energy value (capped at MAX). Returns the energy gained, or -1 if not edible/not carried.
 	var e := int(items.get(id, {}).get("energy", 0))
+	if e > 0:
+		e = int(round(e * mult))
 	if e <= 0 or inv.count(id) < 1:
 		return -1
 	var before := energy.value
