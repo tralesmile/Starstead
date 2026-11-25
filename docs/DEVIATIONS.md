@@ -20,3 +20,4 @@
 2026-11-20 | E9 claim from 2026-11-19 had no work behind it (over 24 h old) | Took the item over. Pedestrians are visual only (no collision, no car hits yet); split car hits and NPC homes into a new unchecked part of E9.
 2026-11-23 | Run 16: Vance keycard (smuggling route to the launch pad) is only offered once the City Ties quest is done, since the keycard step comes last; research skipped | Intended: pacing, the pad is the Act 2 finale.
 - 2026-11-24 residents: shoved intruders keep being arrested fast by cops when --wake-demo runs 40+ frames (heat from alarm+trespass); left as-is, check screen stops at 26 frames.
+2026-11-25 | Run 31 finished with 3 items (pass-out, puddles, stumble) instead of 4; no Phase 3 slice taken (E1 leftovers need a bigger run) | Next run: E1 neighbour-chunk awareness + fish shadows, brush rustle, tyre squeal.
