@@ -368,3 +368,8 @@ Houses, buildings, graphics (5, 10)
 ## Backlog additions (2026-11-26 run 40, research)
 - Top-down football feel: Sensible Soccer is remembered for a small zoomed-out pitch, a ball that is not glued to the feet and shots you can bend (search returned titles only): https://medium.com/@iain.mew/sensible-soccer-sensible-software-renegade-amiga-1992-fc3b72899b9c , https://readonlymemory.com/?p=1024 . Done: touch-ahead dribbling, curl. Ideas: aftertouch (bend after the ball leaves the foot), instant replay of goals.
 - Weakest vs GTA 2 / Citizen Life / Stardew this run: no team sport (sports were timing meters; fixed with the league) and menus that look like debug text (shop fixed; craft/garage/cook next).
+
+## Run 41 queue
+- [ ] Phase 3 slice: artisan goods + animal gear that matters (barn/workshop machines turn milk, wool, crops into cheese, cloth, preserves over days; coats/armour/saddles are visible on the animal and have real effects) (CLAIMED 2026-11-26)
+- [ ] Graphics: one wooden style for the craft, kitchen and garage menus (playtest run 40 "ugliest") (CLAIMED 2026-11-26)
+- [ ] Physics/feel: car engine note with gears + tyre squeal by surface, procedural audio (CLAIMED 2026-11-26)
