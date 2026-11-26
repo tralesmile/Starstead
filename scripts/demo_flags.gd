@@ -425,6 +425,20 @@ func on_process() -> void:
 			var c := sc + Vector2i(dx, 0)
 			if GameState.snares.place(c, 4.0, "meadow"):
 				GameState.snares.snares[c]["ready"] = ["raw_meat"] if dx == 2 else []
+	if "--artisan-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper (with --enter-demo=barn): two machines ready, two working
+		GameState.artisan.slots = {"press": {"out": "cheese", "days_left": 0}, "jar1": {"out": "jam", "days_left": 2}, "jar2": {"out": "pickles", "days_left": 0}, "loom": {"out": "cloth", "days_left": 1}}
+		GameState.bag.add("milk", 2)
+	if "--artisan-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 14 and m.interior.active:
+		m.player.position = InteriorView.ORIGIN + Vector2(2.5 * 32.0, 1.6 * 32.0)
+		m.player.facing = PlayerMath.Facing.UP
+	if "--gear-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: tamed animals in their gear beside the player
+		var worn := {"horse": {"coat": "fur_coat", "saddle": "saddle", "armour": "armour"}, "cow": {"coat": "fur_coat", "saddle": "saddle"}, "goat": {"coat": "fur_coat"}, "sheep": {"armour": "armour"}, "chicken": {"armour": "armour"}}
+		var i := 0
+		for id in worn:
+			var at: Vector2 = m.player.position + Vector2(-96.0 + 48.0 * i, 30.0 + 14.0 * (i % 2))
+			var st := {"id": id, "trust": 100.0, "hunger": 0.0, "gear": worn[id], "bond": 0, "stay": true, "hx": at.x, "hy": at.y}
+			m.animals._spawn(id, at, st)
+			i += 1
 	if "--chest-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.chest.add("wood", 30)
 		GameState.chest.add("egg", 6)

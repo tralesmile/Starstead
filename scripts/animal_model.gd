@@ -89,13 +89,26 @@ func is_fed(st: Dictionary) -> bool:
 	return float(st["hunger"]) < float(cfg.get("hunger_max", 100))
 
 ## Advance one day: hunger rises; fed animals (before the rise) produce. Returns {item: count}.
-func day_tick(st: Dictionary, day: int = 0, salt: int = 0) -> Dictionary:
+func shivers(st: Dictionary, cold: bool, sheltered: bool) -> bool:
+	## Winter: an animal that could wear a coat but has none, outside a closed pen. Hardy (woolly) animals never mind.
+	var a: Dictionary = animals.get(st["id"], {})
+	if not cold or sheltered or bool(a.get("hardy", false)) or not ("coat" in a.get("gear_slots", [])):
+		return false
+	return not st.get("gear", {}).has("coat")
+
+## Share of a bite that gets through while riding a mount with this much armour defense.
+static func guard_mult(defense: float) -> float:
+	return clampf(1.0 - 0.1 * defense, 0.3, 1.0)
+
+func day_tick(st: Dictionary, day: int = 0, salt: int = 0, cold: bool = false, sheltered: bool = false) -> Dictionary:
 	var out := {}
 	var a: Dictionary = animals.get(st["id"], {})
 	var res: Dictionary = a.get("resource", {})
 	var fed := is_fed(st)
 	st["hunger"] = minf(float(cfg.get("hunger_max", 100)), float(st["hunger"]) + float(cfg.get("hunger_per_day", 50)))
 	var days := int(res.get("days", 0))
+	if shivers(st, cold, sheltered):
+		days += 1   # a cold animal needs an extra fed day for its produce
 	var item := String(res.get("item", ""))
 	if fed and item != "" and days > 0:
 		st["days_fed"] = int(st.get("days_fed", 0)) + 1

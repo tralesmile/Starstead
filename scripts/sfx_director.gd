@@ -77,6 +77,7 @@ func _process(delta: float) -> void:
 		play("coin", 0.8, 1.0 if GameState.money > _money else 0.82)
 		_money = GameState.money
 	var open := _menu_open()
+	Sfx.vehicles_hushed = open or m._indoors()
 	if open != _menu:
 		_menu = open
 		play("ui_open" if open else "ui_close", 0.7)

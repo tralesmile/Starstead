@@ -89,6 +89,8 @@ func _spawn(id: String, pos: Vector2, st) -> void:
 		st["gear"] = {}
 	critters.append({"st": st if st != null else {}, "id": id, "node": node, "sprite": s, "wild": wild, "prog": model.new_approach(id),
 		"target": pos, "t": randf() * 3.0, "step": 0.0, "hp": HuntModel.hp_for(model.animals, id), "rage": 0.0, "bite": 0.0})
+	if not wild:
+		_dress(critters[-1])
 
 func near(pos: Vector2, radius: float = 36.0) -> Dictionary:
 	var best := {}
@@ -294,7 +296,11 @@ func day_tick() -> void:
 		var salt := critters.find(c)
 		var hc := Vector2i(floori(float(c["st"].get("hx", c["node"].position.x)) / 32.0), floori(float(c["st"].get("hy", c["node"].position.y)) / 32.0))
 		model.pen_bonus(c["st"], GameState.build.is_enclosed(hc))
-		var out := model.day_tick(c["st"], GameState.clock.day, salt)
+		var cold := GameState.clock.season() == 3
+		var sheltered: bool = bool(c["st"].get("stay", false)) and GameState.build.is_enclosed(hc)
+		if model.shivers(c["st"], cold, sheltered):
+			message.emit("%s shivers: a fur coat or a closed pen would help" % model.animals[c["id"]]["name"])
+		var out := model.day_tick(c["st"], GameState.clock.day, salt, cold, sheltered)
 		for item in out:
 			GameState.bag.add(item, int(out[item]))
 			message.emit("%s gave %s%s" % [model.animals[c["id"]]["name"], item, (" x%d (a happy one!)" % int(out[item])) if int(out[item]) > 1 else ""])
@@ -311,6 +317,12 @@ func _pop_heart(node: Node2D) -> void:
 	tw.tween_callback(h.queue_free)
 
 func _process(delta: float) -> void:
+	_move_critters(delta)
+	for c in critters:
+		if not (c.get("layers", []) as Array).is_empty():
+			_sync_gear(c)
+
+func _move_critters(delta: float) -> void:
 	for c in critters:
 		var node: Node2D = c["node"]
 		var s: Sprite2D = c["sprite"]
@@ -337,8 +349,9 @@ func _process(delta: float) -> void:
 				move = (player.position - node.position).normalized() * spd * 0.9 * delta
 				if float(c["bite"]) <= 0.0 and HuntModel.bite_damage(dist) > 0.0:
 					c["bite"] = 1.0
-					GameState.energy.value = maxf(0.0, GameState.energy.value - HuntModel.bite_damage(dist))
-					message.emit("The boar gores you!")
+					var guard := 1.0 if riding == null else AnimalModel.guard_mult(model.gear_total(riding["st"], "defense"))
+					GameState.energy.value = maxf(0.0, GameState.energy.value - HuntModel.bite_damage(dist) * guard)
+					message.emit("The boar gores you!" if guard >= 1.0 else "Your mount's armour takes most of the boar's charge")
 			elif float(c.get("spooked", 0.0)) > 0.0 or AnimalModel.should_flee(dist, tf, HuntModel.scare_scale(player.sneaking, player.sprinting)):
 				c["spooked"] = maxf(0.0, float(c.get("spooked", 0.0)) - delta)
 				move = AnimalModel.flee_dir(node.position, player.position) * spd * 0.8 * delta
@@ -432,13 +445,33 @@ func gear_action() -> void:
 		message.emit("%s's gear is back in your bag" % nm)
 	else:
 		message.emit("No gear to put on %s (saddle, fur coat, armour: buy at the shop)" % nm)
-	_tint(c)
+	_dress(c)
 
-func _tint(c: Dictionary) -> void:
-	var g: Dictionary = c["st"]["gear"]
-	var col := Color.WHITE
-	if g.has("coat"):
-		col = col.lerp(Color(1.0, 0.85, 0.7), 0.5)
-	if g.has("armour"):
-		col = col.lerp(Color(0.8, 0.88, 1.0), 0.6)
-	(c["sprite"] as Sprite2D).modulate = col
+const GEAR_LAYERS := ["coat", "armour", "saddle"]   # draw order, bottom to top
+
+func _dress(c: Dictionary) -> void:
+	## One overlay sprite per worn piece (tools/gen_gear.py), a child of the animal sprite.
+	var base: Sprite2D = c["sprite"]
+	for old in c.get("layers", []):
+		(old as Sprite2D).queue_free()
+	var layers := []
+	for slot in GEAR_LAYERS:
+		if not (c["st"] as Dictionary).get("gear", {}).has(slot):
+			continue
+		var path := "res://assets/sprites/gear_%s_%s.png" % [c["id"], slot]
+		if not ResourceLoader.exists(path):
+			continue
+		var l := Sprite2D.new()
+		l.texture = load(path)
+		l.hframes = base.hframes
+		base.add_child(l)
+		layers.append(l)
+	c["layers"] = layers
+	_sync_gear(c)
+
+func _sync_gear(c: Dictionary) -> void:
+	var base: Sprite2D = c["sprite"]
+	for l in c.get("layers", []):
+		(l as Sprite2D).frame = base.frame
+		(l as Sprite2D).flip_h = base.flip_h
+		(l as Sprite2D).offset = base.offset

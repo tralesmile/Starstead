@@ -15,6 +15,8 @@ const MIN_INTERVAL := {
 const NO_JITTER: Array[String] = ["coin", "bow_perfect", "ui_open", "ui_close", "error", "ship_horn"]
 
 var muted := false
+static var all_muted := false        # mirrors `muted` for players outside this node (car engine, tyre squeal)
+static var vehicles_hushed := false  # set by SfxDirector while a menu is open or the player is indoors
 var play_counts: Dictionary = {}       # name -> times played
 var ambience: Dictionary = {}          # loop name -> current eased level 0..1
 
@@ -29,6 +31,8 @@ var _rng := RandomNumberGenerator.new()
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # menu clicks still sound while the game is paused
 	_rng.randomize()
+	all_muted = false
+	vehicles_hushed = false
 	for i in POOL_SIZE:
 		var p := AudioStreamPlayer.new()
 		add_child(p)
@@ -78,6 +82,7 @@ func set_ambience(levels: Dictionary, delta: float) -> void:
 
 func set_muted(value: bool) -> void:
 	muted = value
+	all_muted = value
 	if muted:
 		for p in _pool:
 			p.stop()

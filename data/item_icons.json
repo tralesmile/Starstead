@@ -106,9 +106,15 @@
  "snare_bait": 89,
  "leather_vest": 90,
  "arrow": 91,
- "franchise_deed": 77,
  "shell": 92,
+ "kelp": 95,
  "sea_glass": 93,
  "pearl": 94,
- "kelp": 95
+ "cheese": 96,
+ "goat_cheese": 97,
+ "cloth": 98,
+ "pickles": 99,
+ "jam": 100,
+ "pumpkin_butter": 101,
+ "franchise_deed": 77
 }

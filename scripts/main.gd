@@ -385,6 +385,10 @@ func _ready() -> void:
 	interior.bark_cb = func() -> void:
 		robbery.active = String(interior.building.get("id", ""))
 		robbery.model.add_noise(DogMath.BARK_NOISE)
+	var artisan_view := ArtisanView.new()
+	artisan_view.setup(world, interior)
+	artisan_view.message.connect(_say)
+	artisan_view.collected.connect(func(_id): sfx_director.play("pickup"))
 	interior.smelt_requested.connect(func():
 		player.velocity = Vector2.ZERO
 		player.move_v = Vector2.ZERO
@@ -1545,6 +1549,8 @@ func _end_day() -> void:
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
 	GameState.market.new_day()
+	if GameState.artisan.day_tick() > 0:
+		_say("Something is ready in the barn")
 	var cafe_add := GameState.business.day_tick(GameState.clock.day, rain_today > 0.0)
 	if cafe_add > 0:
 		_say("Your cafe took $%d last night" % cafe_add)

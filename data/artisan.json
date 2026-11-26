@@ -1,0 +1,23 @@
+{
+	"machines": {
+		"press": {"name": "Cheese press", "recipes": [
+			{"in": "milk", "count": 1, "out": "cheese", "days": 1},
+			{"in": "goat_milk", "count": 1, "out": "goat_cheese", "days": 1}
+		]},
+		"jar1": {"name": "Preserve jar", "kind": "jar"},
+		"jar2": {"name": "Preserve jar", "kind": "jar"},
+		"jar": {"name": "Preserve jar", "recipes": [
+			{"in": "pumpkin", "count": 1, "out": "pumpkin_butter", "days": 3},
+			{"in": "strawberry", "count": 2, "out": "jam", "days": 2},
+			{"in": "tomato", "count": 2, "out": "jam", "days": 2},
+			{"in": "turnip", "count": 2, "out": "pickles", "days": 2},
+			{"in": "radish", "count": 2, "out": "pickles", "days": 2},
+			{"in": "potato", "count": 2, "out": "pickles", "days": 2},
+			{"in": "kale", "count": 2, "out": "pickles", "days": 2},
+			{"in": "corn", "count": 2, "out": "pickles", "days": 2}
+		]},
+		"loom": {"name": "Loom", "recipes": [
+			{"in": "wool", "count": 1, "out": "cloth", "days": 1}
+		]}
+	}
+}

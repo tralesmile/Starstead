@@ -5,6 +5,7 @@ extends CookView
 func _init() -> void:
 	super._init()
 	recipes = DataDB.load_json("smelting")
+	trim = WoodUI.Trim.EMBER
 	title = "Furnace - click a bar or press its number"
 	footer = "Ore and coal come from the Highlands cave.   E / Esc: leave"
 	done_word = "Smelted"

@@ -9,6 +9,7 @@ signal cook_requested
 signal smelt_requested
 signal forge_requested
 signal butcher_requested
+signal artisan_requested(slot: String)
 signal chest_requested
 signal sleep_requested
 signal service_requested(action: String)
@@ -19,7 +20,7 @@ signal till_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence"]
+const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence", "artisan"]
 var world: Node2D
 var player: Player
 var active := false
@@ -30,6 +31,7 @@ var outside_pos := Vector2.ZERO
 var nodes: Array = []
 var fade: ColorRect
 var tex := {}
+var artisan_prompt_cb: Callable   # (machine slot) -> prompt text (ArtisanView)
 var extras_cb: Callable  # (building id) -> {safe, safe_open, alarm, armed} robbery state to furnish
 var alarm_t := -1.0      # seconds since the siren started (-1 = quiet)
 var alarm_flash: ColorRect
@@ -372,6 +374,7 @@ func prompt() -> String:
 		"smelt": return "E: Smelt ore at the furnace"
 		"forge": return "E: Forge gear at the anvil"
 		"butcher": return "E: Butcher and tan at the block"
+		"artisan": return String(artisan_prompt_cb.call(String(a["id"]))) if artisan_prompt_cb.is_valid() else ""
 		"chest": return "E: Open the storage chest"
 		"sleep": return "E: Sleep until morning"
 		"loot": return "E: Search the %s" % a["id"]
@@ -402,6 +405,9 @@ func interact() -> bool:
 			return true
 		"smelt":
 			smelt_requested.emit()
+			return true
+		"artisan":
+			artisan_requested.emit(String(a["id"]))
 			return true
 		"butcher":
 			butcher_requested.emit()

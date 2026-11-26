@@ -370,6 +370,9 @@ Houses, buildings, graphics (5, 10)
 - Weakest vs GTA 2 / Citizen Life / Stardew this run: no team sport (sports were timing meters; fixed with the league) and menus that look like debug text (shop fixed; craft/garage/cook next).
 
 ## Run 41 queue
-- [ ] Phase 3 slice: artisan goods + animal gear that matters (barn/workshop machines turn milk, wool, crops into cheese, cloth, preserves over days; coats/armour/saddles are visible on the animal and have real effects) (CLAIMED 2026-11-26)
-- [ ] Graphics: one wooden style for the craft, kitchen and garage menus (playtest run 40 "ugliest") (CLAIMED 2026-11-26)
-- [ ] Physics/feel: car engine note with gears + tyre squeal by surface, procedural audio (CLAIMED 2026-11-26)
+- [x] Phase 3 slice (run 41): barn artisan goods + animal gear that matters. ArtisanModel + data/artisan.json (cheese press, 2 preserve jars, loom; overnight timers; plain crops used before silver/gold; saved), ArtisanView (steam while working, product bubble when ready), 6 goods + icons; worn coats/armour/saddles drawn on the animal (tools/gen_gear.py, 11 overlays); coats stop the winter produce delay (woolly sheep and chickens exempt, closed pens count); armoured mounts halve boar bites; saddle and coat crafted at the butcher block, animal armour at the anvil. Tested. [ ] next: more jars/machines to buy, quality-aware product prices, artisan story beat
+- [x] Graphics (run 41): one wooden style (WoodUI) for craft, kitchen, anvil, furnace, butcher, garage (health/fuel gauges, paint swatch) and builder menus; fixed the 10-dish kitchen list running off screen (CraftGrid.list_rect, layout test). [ ] next: wooden chest/bag/bus/journal windows, puddle reflections of props
+- [x] Physics/feel (run 41): engine note with a 4-gear automatic (EngineMath: shift hysteresis, load loudness, shift cut, misfire when battered); engine and the existing tyre squeal now obey N mute and hush indoors/in menus. Tested. [ ] next: hands-on listen, traffic engine sounds, animal calls
+
+## Backlog additions (2026-11-26 run 41, research)
+- Artisan goods are Stardew's main value ladder: process raw produce over time for roughly 2x value, machines as the late-game investment (search returned titles only): https://stardewvalleywiki.com/Artisan_Goods , https://carlsguides.com/stardewvalley/artisan-goods.php . Done: first four machines. Ideas: keg/drinks, aging cellar, buyable extra jars placed in sheds | 2026-11-26

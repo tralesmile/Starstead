@@ -13,6 +13,7 @@ var msg := ""
 var title := "Kitchen - click a dish or press its number"
 var footer := "Right-click a dish in your bag (Tab) to eat it.   E / Esc: leave"
 var done_word := "Cooked"
+var trim := WoodUI.Trim.GINGHAM
 const ORIGIN := Vector2(150, 60)
 const ROW := 34.0
 
@@ -52,9 +53,7 @@ func _try(i: int) -> void:
 		msg = "Missing ingredients"
 
 func _try_at(at: Vector2) -> void:
-	var p := at - ORIGIN
-	if p.x >= 0.0 and p.x < 340.0 and p.y >= 0.0:
-		_try(int(p.y / ROW))
+	_try(CraftGrid.list_index_at(at, recipes.size()))
 
 func handle(e: InputEvent) -> bool:
 	if not visible:
@@ -71,19 +70,27 @@ func handle(e: InputEvent) -> bool:
 	return true
 
 func _draw_all() -> void:
-	var font := ThemeDB.fallback_font
 	var ids := recipes.keys()
-	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(360, 60.0 + ids.size() * ROW))
-	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
-	canvas.draw_rect(panel, Color(0.36, 0.24, 0.14, 0.97))
-	canvas.draw_string(font, ORIGIN + Vector2(0, -16), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
-	var hover := int((canvas.get_local_mouse_position() - ORIGIN).y / ROW) if canvas.get_local_mouse_position().x > ORIGIN.x else -1
-	for i in ids.size():
+	var n := ids.size()
+	var panel := CraftGrid.list_panel(n)
+	WoodUI.panel(canvas, panel, title, trim)
+	var hover := CraftGrid.list_index_at(canvas.get_local_mouse_position(), n)
+	var narrow := n > CraftGrid.LIST_MAX
+	for i in n:
 		var r: Dictionary = recipes[ids[i]]
-		var y := ORIGIN.y + i * ROW
+		var cr := CraftGrid.list_rect(i, n)
+		var o := cr.position
 		var ok := CookModel.can_cook(GameState.bag, r)
-		canvas.draw_rect(Rect2(ORIGIN.x, y, 340, ROW - 3), Color(0.3, 0.2, 0.12, 0.95) if i != hover else Color(0.42, 0.29, 0.17, 0.95))
-		canvas.draw_texture_rect_region(item_tex, Rect2(ORIGIN.x + 4, y + 6, 20, 20), Rect2(int(icons.get(r["makes"], 0)) * 16, 0, 16, 16), Color.WHITE if ok else Color(1, 1, 1, 0.45))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 30, y + 13), ("%d. %s   (+%d energy)" % [(i + 1) % 10, r["name"], int(items.get(r["makes"], {}).get("energy", 0))]) if int(items.get(r["makes"], {}).get("energy", 0)) > 0 else ("%d. %s   (worth $%d)" % [(i + 1) % 10, r["name"], int(items.get(r["makes"], {}).get("price", 0))]), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1) if ok else Color(0.7, 0.65, 0.6))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 30, y + 25), CookModel.ingredient_text(GameState.bag, r), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.75, 0.95, 0.7) if ok else Color(0.9, 0.6, 0.55))
-	canvas.draw_string(font, ORIGIN + Vector2(0, 14 + ids.size() * ROW), msg if msg != "" else footer, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 0.8))
+		var text_w := cr.size.x - 36.0
+		WoodUI.row(canvas, cr, i == hover, ok)
+		WoodUI.icon_well(canvas, Rect2(o + Vector2(3, 3), Vector2(23, 22)))
+		canvas.draw_texture_rect_region(item_tex, Rect2(o + Vector2(4, 4), Vector2(20, 20)), Rect2(int(icons.get(r["makes"], 0)) * 16, 0, 16, 16), Color.WHITE if ok else Color(1, 1, 1, 0.45))
+		var info: Dictionary = items.get(r["makes"], {})
+		var label := ("%d. %s" % [(i + 1) % 10, r["name"]]) if i < 10 else String(r["name"])
+		if int(info.get("energy", 0)) > 0:
+			label += "   (+%d energy)" % int(info["energy"])
+		elif not ("(" in String(r["name"])):
+			label += "   (worth $%d)" % int(info.get("price", 0))
+		WoodUI.text(canvas, o + Vector2(32, 12), label, 9 if narrow else 10, WoodUI.INK if ok else WoodUI.INK_SOFT, text_w)
+		WoodUI.text(canvas, o + Vector2(32, 23 if narrow else 25), CookModel.ingredient_text(GameState.bag, r), 8 if narrow else 9, WoodUI.GOOD if ok else WoodUI.BAD, text_w)
+	WoodUI.text(canvas, Vector2(panel.position.x + 10, panel.end.y - 8), msg if msg != "" else footer, 10, WoodUI.GOOD if msg != "" else WoodUI.INK, panel.size.x - 16)

@@ -672,5 +672,41 @@
   "name": "Pearl",
   "price": 180,
   "stack": 99
+ },
+ "cheese": {
+  "name": "Cheese",
+  "price": 105,
+  "stack": 99,
+  "rarity": "bronze"
+ },
+ "goat_cheese": {
+  "name": "Goat Cheese",
+  "price": 90,
+  "stack": 99,
+  "rarity": "bronze"
+ },
+ "cloth": {
+  "name": "Woven Cloth",
+  "price": 70,
+  "stack": 99,
+  "rarity": "bronze"
+ },
+ "pickles": {
+  "name": "Pickles",
+  "price": 96,
+  "stack": 99,
+  "rarity": "bronze"
+ },
+ "jam": {
+  "name": "Jam",
+  "price": 120,
+  "stack": 99,
+  "rarity": "bronze"
+ },
+ "pumpkin_butter": {
+  "name": "Pumpkin Butter",
+  "price": 180,
+  "stack": 99,
+  "rarity": "bronze"
  }
 }

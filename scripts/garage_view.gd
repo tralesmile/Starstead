@@ -73,22 +73,31 @@ func handle(e: InputEvent) -> bool:
 	return true
 
 func _draw_all() -> void:
-	var font := ThemeDB.fallback_font
 	var rows := [
-		["1. Repair car", "Health %d%%" % int(car.health), GarageModel.repair_cost(car.health, VehicleMath.HEALTH_MAX)],
-		["2. Fill the tank", "Fuel %d%%" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX), GarageModel.fuel_cost(car.fuel, VehicleMath.FUEL_MAX)],
-		["3. Repaint", "Now: %s" % GarageModel.PAINTS[GameState.car_paint]["name"], GarageModel.PAINT_PRICE],
+		["1. Repair car", "Health %d%%" % int(car.health), GarageModel.repair_cost(car.health, VehicleMath.HEALTH_MAX), car.health / VehicleMath.HEALTH_MAX],
+		["2. Fill the tank", "Fuel %d%%" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX), GarageModel.fuel_cost(car.fuel, VehicleMath.FUEL_MAX), car.fuel / VehicleMath.FUEL_MAX],
+		["3. Repaint", "Now: %s" % GarageModel.PAINTS[GameState.car_paint]["name"], GarageModel.PAINT_PRICE, -1.0],
 	]
-	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(320, 34.0 * rows.size() + 76.0))
-	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
-	canvas.draw_rect(panel, Color(0.3, 0.3, 0.34, 0.97))
-	canvas.draw_string(font, ORIGIN + Vector2(0, -14), "Garage   $%d" % GameState.money, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
+	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(320, 34.0 * rows.size() + 60.0))
+	WoodUI.panel(canvas, panel, "Garage", WoodUI.Trim.HAZARD)
+	WoodUI.text(canvas, panel.position + Vector2(0, 15), "$%d" % GameState.money, 12, WoodUI.CREAM, panel.size.x - 10, HORIZONTAL_ALIGNMENT_RIGHT)
+	var mouse := canvas.get_local_mouse_position() - ORIGIN
+	var hover := int(mouse.y / 34.0) if mouse.x >= 0.0 and mouse.x < 300.0 and mouse.y >= 0.0 else -1
 	for i in rows.size():
 		var y := ORIGIN.y + i * 34.0
 		var cost: int = rows[i][2]
 		var ok := cost > 0 and cost <= GameState.money
-		canvas.draw_rect(Rect2(ORIGIN.x, y, 300, 31), Color(0.2, 0.2, 0.24, 0.95))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 6, y + 13), rows[i][0], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1) if ok else Color(0.7, 0.7, 0.7))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 6, y + 26), rows[i][1], HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.8, 0.9, 1))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 220, y + 20), "$%d" % cost if cost > 0 else "-", HORIZONTAL_ALIGNMENT_RIGHT, 70, 11, Color(0.8, 1, 0.7) if ok else Color(0.7, 0.6, 0.6))
-	canvas.draw_string(font, ORIGIN + Vector2(0, 34.0 * rows.size() + 12), msg if msg != "" else "Click or press a number.   E / Esc: leave", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 0.8))
+		WoodUI.row(canvas, Rect2(ORIGIN.x, y, 300, 31), i == hover, ok)
+		WoodUI.text(canvas, Vector2(ORIGIN.x + 6, y + 13), rows[i][0], 11, WoodUI.INK if ok else WoodUI.INK_SOFT)
+		WoodUI.text(canvas, Vector2(ORIGIN.x + 6, y + 26), rows[i][1], 9, WoodUI.INK_SOFT)
+		var level: float = rows[i][3]
+		if level >= 0.0:   # a gauge for health and fuel
+			var bar := Rect2(ORIGIN.x + 100, y + 19, 110, 7)
+			canvas.draw_rect(bar.grow(1), WoodUI.WOOD_D)
+			canvas.draw_rect(bar, WoodUI.PAPER.darkened(0.3))
+			canvas.draw_rect(Rect2(bar.position, Vector2(bar.size.x * clampf(level, 0.0, 1.0), bar.size.y)), Color(0.85, 0.28, 0.18) if level < 0.3 else Color(0.35, 0.66, 0.22))
+		else:
+			canvas.draw_rect(Rect2(ORIGIN.x + 99, y + 18, 16, 9), WoodUI.WOOD_D)
+			canvas.draw_rect(Rect2(ORIGIN.x + 100, y + 19, 14, 7), GarageModel.PAINTS[GameState.car_paint]["color"])
+		WoodUI.text(canvas, Vector2(ORIGIN.x + 220, y + 20), "$%d" % cost if cost > 0 else "-", 11, WoodUI.PRICE if ok else (WoodUI.BAD if cost > 0 else WoodUI.INK_SOFT), 70, HORIZONTAL_ALIGNMENT_RIGHT)
+	WoodUI.text(canvas, ORIGIN + Vector2(0, 34.0 * rows.size() + 16), msg if msg != "" else "Click or press a number.   E / Esc: leave", 10, WoodUI.GOOD if msg != "" else WoodUI.INK)

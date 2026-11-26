@@ -227,6 +227,7 @@ func _physics_process(delta: float) -> void:
 		drift.crash()
 	var skid := driving and VehicleMath.is_skidding(vel, heading)
 	_squeal_tick(driving, vel)
+	_engine_tick(delta)
 	_smoke.emitting = skid
 	if skid:
 		var ss := VehicleMath.smoke_style(VehicleMath.slip(vel, heading), _smoke_tile, _smoke_sdf, player.rain)
@@ -287,7 +288,7 @@ func _squeal_tick(driving: bool, vel: Vector2) -> void:
 		_squeal.volume_db = SquealMath.SILENT_DB
 		add_child(_squeal)
 	var lv := 0.0
-	if driving:
+	if driving and not _hushed():
 		lv = SquealMath.level(VehicleMath.slip(vel, heading), vel.length(), _smoke_tile, _smoke_sdf, player.rain)
 	_squeal.volume_db = SquealMath.volume_db(lv)
 	_squeal.pitch_scale = SquealMath.pitch(vel.length())
@@ -295,3 +296,47 @@ func _squeal_tick(driving: bool, vel: Vector2) -> void:
 		_squeal.play()
 	elif lv <= 0.01 and _squeal.playing:
 		_squeal.stop()
+
+static func _hushed() -> bool:
+	## Vehicle sounds follow the N mute and fall quiet under menus and indoors (flags kept by Sfx / SfxDirector).
+	return Sfx.all_muted or Sfx.vehicles_hushed
+
+var _engine: AudioStreamPlayer
+var _gear := 1
+var _shift_t := 0.0
+var _engine_t := 0.0
+
+func _engine_tick(delta: float) -> void:
+	## Looping procedural engine note (EngineMath): 4-gear automatic, louder under load, misfires when battered.
+	if _engine == null:
+		var w := AudioStreamWAV.new()
+		w.format = AudioStreamWAV.FORMAT_16_BITS
+		w.mix_rate = EngineMath.RATE
+		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		w.loop_end = EngineMath.LOOP_SAMPLES
+		w.data = EngineMath.loop_samples()
+		_engine = AudioStreamPlayer.new()
+		_engine.stream = w
+		_engine.volume_db = EngineMath.SILENT_DB
+		add_child(_engine)
+	var fwd_speed := vel.dot(VehicleMath.forward(heading))
+	var speed := absf(fwd_speed)
+	var next := EngineMath.gear_for(_gear, speed) if driving and fwd_speed > -1.0 else 1
+	if driving and next > _gear:
+		_shift_t = EngineMath.SHIFT_CUT
+	else:
+		_shift_t = maxf(0.0, _shift_t - delta)
+	_gear = next
+	_engine_t += delta
+	var throttle := -Input.get_axis("move_up", "move_down") if driving else 0.0
+	var load_amt := EngineMath.engine_load(throttle, fwd_speed)
+	var r := EngineMath.rpm(_gear, speed, load_amt)
+	var lv := 0.0 if _hushed() else EngineMath.level(driving, fuel, r, load_amt)
+	var mf := EngineMath.misfire(health, _engine_t)
+	lv *= float(mf["gain"]) * (EngineMath.SHIFT_GAIN if _shift_t > 0.0 else 1.0)
+	_engine.volume_db = EngineMath.volume_db(lv)
+	_engine.pitch_scale = EngineMath.pitch_scale(r, _gear) * float(mf["pitch"])
+	if lv > 0.01 and not _engine.playing:
+		_engine.play()
+	elif lv <= 0.01 and _engine.playing:
+		_engine.stop()

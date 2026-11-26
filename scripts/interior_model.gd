@@ -45,10 +45,14 @@ static func layout(kind: String) -> Dictionary:
 				_f("crate2", "int_crate", 7, 3, 1, 1),
 				_f("mat", "int_mat", 3, 4, 1, 1, false)]}
 		"barn":
-			return {"w": 9, "h": 6, "door_x": 4, "window_x": [7], "furniture": [
+			return {"w": 9, "h": 6, "door_x": 4, "window_x": [1, 8], "furniture": [
 				_f("hay1", "int_hay", 0, 1, 1, 1),
 				_f("hay2", "int_hay", 1, 1, 1, 1),
 				_f("hay3", "int_hay", 0, 2, 1, 1),
+				_f("press", "int_press", 2, 0, 1, 1, true, "artisan"),
+				_f("jar1", "int_jar", 3, 0, 1, 1, true, "artisan"),
+				_f("jar2", "int_jar", 4, 0, 1, 1, true, "artisan"),
+				_f("loom", "int_loom", 5, 0, 2, 1, true, "artisan"),
 				_f("sack1", "int_sack", 7, 0, 1, 1),
 				_f("sack2", "int_sack", 8, 1, 1, 1),
 				_f("crate", "int_crate", 8, 3, 1, 1),
@@ -233,11 +237,17 @@ static func solid_rects(l: Dictionary) -> Array[Rect2]:
 
 ## Furniture the player can use from p (within 40px of its footprint), or {}.
 static func action_near(l: Dictionary, p: Vector2, want: Array = []) -> Dictionary:
+	## When several are in reach (a row of barn machines) the one you stand closest to wins.
+	var best := {}
+	var best_d := INF
 	for f in l["furniture"]:
 		var a := String(f["action"])
 		if a == "" or (not want.is_empty() and not (a in want)):
 			continue
-		var r := Rect2(Vector2(f["cell"]) * 32.0, Vector2(f["size"]) * 32.0).grow(24.0)
-		if r.has_point(p):
-			return f
-	return {}
+		var r := Rect2(Vector2(f["cell"]) * 32.0, Vector2(f["size"]) * 32.0)
+		if r.grow(24.0).has_point(p):
+			var d := p.distance_to(r.get_center())
+			if d < best_d:
+				best = f
+				best_d = d
+	return best

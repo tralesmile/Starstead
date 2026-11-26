@@ -70,17 +70,15 @@ func _draw_all() -> void:
 	var h: HomeUpgrades = GameState.home
 	var ids := h.ids()
 	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(360, 66.0 + ids.size() * ROW))
-	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
-	canvas.draw_rect(panel, Color(0.36, 0.24, 0.14, 0.97))
-	canvas.draw_string(font, ORIGIN + Vector2(0, -16), "Halden Builders: farmhouse upgrades   Cash $%d" % GameState.money, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
+	WoodUI.panel(canvas, panel, "Halden Builders: farmhouse upgrades   Cash $%d" % GameState.money, WoodUI.Trim.SAWDUST)
 	var hover := int((canvas.get_local_mouse_position() - ORIGIN).y / ROW) if canvas.get_local_mouse_position().x > ORIGIN.x else -1
 	for i in ids.size():
 		var id: String = ids[i]
 		var y := ORIGIN.y + i * ROW
 		var why := h.can_buy(id, GameState.money)
-		canvas.draw_rect(Rect2(ORIGIN.x, y, 340, ROW - 3), Color(0.3, 0.2, 0.12, 0.95) if i != hover else Color(0.42, 0.29, 0.17, 0.95))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 15), "%d. %s" % [i + 1, h.label(id)], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 29), String(h.defs[id]["desc"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.85, 0.8, 0.7))
+		WoodUI.row(canvas, Rect2(ORIGIN.x, y, 340, ROW - 3), i == hover, why == "")
+		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 15), "%d. %s" % [i + 1, h.label(id)], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, WoodUI.INK)
+		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 29), String(h.defs[id]["desc"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, WoodUI.INK_SOFT)
 		var tag := "BUILT" if why == "maxed" else "$%d" % h.next_cost(id)
-		canvas.draw_string(font, Vector2(ORIGIN.x + 280, y + 22), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.6, 0.9, 0.6) if why == "" else (Color(0.7, 0.7, 0.7) if why == "maxed" else Color(0.95, 0.55, 0.5)))
-	canvas.draw_string(font, ORIGIN + Vector2(0, 14 + ids.size() * ROW), msg if msg != "" else "Click an upgrade or press its number.   E / Esc: leave", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 0.8))
+		canvas.draw_string(font, Vector2(ORIGIN.x + 280, y + 22), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, WoodUI.GOOD if why == "" else (WoodUI.INK_SOFT if why == "maxed" else WoodUI.BAD))
+	canvas.draw_string(font, ORIGIN + Vector2(0, 14 + ids.size() * ROW), msg if msg != "" else "Click an upgrade or press its number.   E / Esc: leave", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, WoodUI.INK)

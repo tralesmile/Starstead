@@ -35,3 +35,4 @@
 - Run 39: cinematic overlays must sit above RegionBanner (layer >= 60), else a teleport prints the old region name over them.
 - Run 40: fixed-timestep sims must latch one-shot inputs until a tick actually runs; a frame shorter than 1/60 s runs no tick and silently eats the key press.
 - Run 40: any new input-grabbing overlay must be routed ABOVE the map/story/journal/bag handlers in Main._unhandled_input, or Tab/M/J/K open on top of it. Pure layout constants used by tests belong in the model class (ShopMenu), not the view (GameState does not compile in tests).
+- Run 41: "[ ] next:" notes in PLAN go stale (tyre squeal had existed for many runs): grep for the feature before building it. InteriorModel.action_near now returns the NEAREST furniture, so adjacent usable pieces work.

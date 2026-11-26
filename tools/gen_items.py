@@ -734,6 +734,97 @@ def club_icon(band, band_l):
 icons['club_copper'] = club_icon("#b8602c", "#e0904c")
 icons['club_iron'] = club_icon("#7a8494", "#c4ccd8")
 
+# ---- artisan goods ----
+def cheese():
+    i = Ic()
+    # cut wedge: pale top face, yellow cut side with holes, orange rind at the back
+    for y, (a, b) in enumerate(((10, 12), (8, 13), (6, 13), (4, 13), (2, 13))):
+        i.rect(a, 3 + y, b, 3 + y, "#fbe68a")
+    i.rect(2, 8, 13, 12, "#eebc3c")
+    i.rect(2, 8, 13, 8, "#fff2b0")
+    i.rect(2, 12, 13, 12, "#c8902a")
+    i.rect(13, 4, 13, 12, "#d88a28")
+    for (x, y) in ((4, 10), (5, 10), (4, 11), (5, 11), (9, 9), (10, 11), (11, 11), (10, 5)):
+        i.px(x, y, "#b47c20")
+    return i
+icons['cheese'] = cheese
+
+def goat_cheese():
+    i = Ic()
+    # white soft log with a cut round face, herbs, resting on a green leaf
+    i.rect(2, 12, 13, 13, "#5c8c3a"); i.px(14, 12, "#5c8c3a"); i.rect(3, 12, 8, 12, "#86b052")
+    i.rect(5, 5, 12, 11, "#f4efdc")
+    i.ell(12, 8, 2, 3.4, "#e0d8bc")
+    i.rect(5, 5, 11, 5, "#ffffff"); i.rect(5, 11, 11, 11, "#cfc6a8")
+    i.ell(5, 8, 2.6, 3.4, "#fffdf2")
+    i.ell(5, 8, 1.2, 1.8, "#efe8d0")
+    for (x, y) in ((8, 6), (10, 7), (9, 9), (7, 10), (12, 7)):
+        i.px(x, y, "#5c8c3a")
+    return i
+icons['goat_cheese'] = goat_cheese
+
+def cloth():
+    i = Ic()
+    # folded bolt of woven teal cloth with a cream stripe and a loose fringe
+    i.rect(3, 3, 13, 6, "#7cc4bc"); i.rect(3, 3, 13, 3, "#b4e4da")
+    i.rect(2, 7, 12, 9, "#4e9c98"); i.rect(2, 7, 12, 7, "#8cd0c6")
+    i.rect(3, 10, 13, 12, "#3a7e80"); i.rect(3, 10, 13, 10, "#68b0aa")
+    for y in range(3, 13):
+        i.px(9, y, "#f0e2b8"); i.px(10, y, "#d8c490")
+    for (x, y) in ((4, 5), (6, 4), (5, 8), (7, 9), (4, 11), (6, 12), (12, 5), (12, 11)):
+        i.px(x, y, "#2e6a6c")
+    for x in (3, 5, 7):
+        i.px(x, 13, "#8cd0c6")
+    return i
+icons['cloth'] = cloth
+
+def _jar(i, liquid, light, dark):
+    i.rect(5, 4, 10, 4, "#cfe4e4")                       # neck
+    i.rect(3, 5, 12, 13, liquid); i.rect(4, 14, 11, 14, dark)
+    i.rect(3, 5, 12, 5, "#e4f4f2")                       # glass shoulder
+    i.rect(11, 6, 12, 13, dark)
+    i.rect(4, 6, 4, 12, light)
+
+def pickles():
+    i = Ic()
+    _jar(i, "#b8bc58", "#e8ec9c", "#848a34")
+    i.rect(4, 1, 11, 3, "#a8a4ac"); i.rect(4, 1, 11, 1, "#d8d4dc"); i.rect(10, 2, 11, 3, "#74707a")
+    for x, y0 in ((5, 7), (8, 6)):
+        i.rect(x, y0, x + 1, y0 + 6, "#3e6e28")
+        i.rect(x, y0, x, y0 + 5, "#6a9c3a")
+        i.px(x, y0 + 2, "#a8c860"); i.px(x + 1, y0 + 4, "#a8c860")
+    i.px(10, 8, "#d85030"); i.px(10, 12, "#f0e8c0")
+    return i
+icons['pickles'] = pickles
+
+def jam():
+    i = Ic()
+    _jar(i, "#b82c44", "#f07880", "#7c1830")
+    # checked cloth cover tied with string
+    i.rect(5, 1, 10, 1, "#f4ecd8"); i.rect(4, 2, 11, 3, "#f4ecd8"); i.rect(3, 3, 12, 3, "#f4ecd8")
+    for (x, y) in ((5, 1), (7, 1), (9, 1), (4, 2), (6, 2), (8, 2), (10, 2), (3, 3), (5, 3), (7, 3), (9, 3), (11, 3)):
+        i.px(x, y, "#d84848")
+    i.rect(5, 4, 10, 4, "#c8a060")
+    i.rect(5, 8, 10, 12, "#f4e8c8")                      # label with a berry
+    i.rect(7, 10, 8, 11, "#c82c40"); i.px(7, 9, "#4c8030"); i.px(8, 9, "#4c8030")
+    return i
+icons['jam'] = jam
+
+def pumpkin_butter():
+    i = Ic()
+    # squat crock of orange spread with a wooden lid and a pumpkin label
+    i.rect(4, 2, 11, 3, "#a6703f"); i.rect(4, 2, 11, 2, "#d09858")
+    i.rect(7, 1, 8, 1, "#8a5a34")
+    i.rect(3, 4, 12, 5, "#f08c24"); i.rect(3, 4, 12, 4, "#ffb850")
+    i.rect(2, 6, 13, 13, "#e0d0ac"); i.rect(3, 14, 12, 14, "#b49c74")
+    i.rect(12, 6, 13, 13, "#bca880"); i.rect(3, 6, 3, 12, "#f8eed4")
+    i.px(5, 6, "#f08c24"); i.px(5, 7, "#f08c24"); i.px(10, 6, "#f08c24")   # drips
+    i.ell(7.5, 10.5, 3.3, 2.4, "#e8741c")
+    i.rect(6, 9, 6, 12, "#ffa844"); i.rect(9, 9, 9, 12, "#b45210")
+    i.px(7, 7, "#4c7a2c"); i.px(8, 8, "#4c7a2c")
+    return i
+icons['pumpkin_butter'] = pumpkin_butter
+
 GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def scarecrow_icon():
