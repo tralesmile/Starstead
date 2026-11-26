@@ -354,3 +354,9 @@ Houses, buildings, graphics (5, 10)
 
 ## Backlog additions (2026-11-26 run 38, research)
 - Bow feel: The Pathless builds archery on shot timing rather than precise aiming (https://giantsquidstudios.com/Archery-in-The-Pathless-Timing-Not-Aiming ; search returned titles only). Idea: a brief 'perfect release' window right at full draw that adds damage.
+
+## Run 39 queue
+- [ ] Sound: procedural sound effects + weather ambience, no audio assets (weakest part vs every reference game) (CLAIMED 2026-11-26)
+- [ ] Phase 3 slice E13: ferry from Halden Harbour to a new island, Gull Isle (CLAIMED 2026-11-26)
+- [ ] Graphics: harbour night lamps / bow impact particles (CLAIMED 2026-11-26)
+- [ ] Physics/feel: bow perfect-release window (CLAIMED 2026-11-26)
