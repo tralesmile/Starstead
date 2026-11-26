@@ -249,11 +249,11 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
-## Run 44 queue (CLAIMED 2026-11-26)
-- [ ] Phase 3 slice: bike racing at the circuit (Sports item)
-- [ ] Keep the car (position, fuel, damage), the player's position and robbery memory in the save
-- [ ] Graphics: puddle reflections of props and people
-- [ ] Physics/feel: splashes when you run or drive through puddles
+## Run 44 queue
+- [x] Phase 3 slice (run 44): bike racing, the Halden Criterium at the circuit's bike rack (BikeModel pure rules + BikeView; 5 riders, 3 laps, drafting, stamina, lanes, cornering grip, wet road; $20 entry, one paid race a day; saved; tested). [ ] next: hands-on tuning (a bot with drafting rarely wins in the wet), riding a bicycle in the open world, more courses
+- [x] Run 44: the save keeps the car (position, fuel, damage), the player's spot and what robbed houses remember (WorldState, tested + live check in --save-roundtrip). Fixed: passing out at the wheel left the walker hidden and frozen. [ ] next: save on quit, title screen
+- [x] Run 44 graphics: puddle mirror images of people, trees and posts on dirt paths and asphalt, drop ripples, deeper puddle middles (PuddleView; one PuddleMath field shared by shader and game). [ ] next: reflections of buildings and lamp glow at night, softer puddle edges
+- [x] Run 44 physics/feel: footfalls splash in puddles; cars throw spray, drag in water and aquaplane above 130 px/s (PuddleMath, tested). [ ] next: hands-on check of the aquaplane strength
 
 ## Backlog (ideas found by research; promote into phases)
 - Run 42: Stardew-style permanent profession choices (https://stardewvalleywiki.com/Professions, https://www.thegamer.com/stardew-valley-profession-tips-guide/) -> done at level 5; a second choice at level 10 is next | 2026-11-26
@@ -262,6 +262,7 @@ Houses, buildings, graphics (5, 10)
 - Weakest vs comparables (2026-11-17): Palworld/Core Keeper have creature variety + base building loops; we have 2 species and no pen/barn use. Next: cow/sheep in a fenced pen at the barn, gear UI, dogs for robbery defence.
 - Cops cannot fight back yet (no player health): add player HP/knock-out + hospital fee | 2026-11-17
 (runner appends here: idea, source link, date)
+- Run 44: cycling drafting primer and a drafting-based board game as references for pack tactics (search returned titles only): https://efprocycling.com/cycling-101/tour-de-france-primer-drafting , https://meeplemountain.com/boardgame/breaking-away . Idea: team-mate riders who pull for you, and named rival personalities across a season | 2026-11-26
 - Town layout generators (house footprints along roads, plaza first) | https://forum.godotengine.org/t/procedural-environment-generation-in-godot-a-whole-city/5296 | 2026-11-17
 - Weakest vs comparables (2026-11-17): town is buildings with locked doors and no interiors; next: enterable house/shop interiors, then robbery slice.
 - Rain puddle ripples + reflections floor shader, 4-frame pixel rain/reflection animation | https://godotshaders.com/?p=11585 , https://budgetpixel.com/blog/how-to-animate-pixel-art-rain-and-reflections-in-4-frames | 2026-11-17

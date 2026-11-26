@@ -1,6 +1,8 @@
 extends Node
 ## Autoload holding the whole save-able state. Save is versioned JSON.
 
+signal before_save   # the live world (player, car, house memory) writes itself into world_state
+
 const SAVE_VERSION := 1
 const SAVE_PATH := "user://save.json"
 
@@ -32,6 +34,7 @@ var job_xp: Dictionary = {}  # job id -> xp
 var skill_xp: Dictionary = {}  # skill id -> xp (SkillModel)
 var perks: Dictionary = {}  # skill id -> level-5 perk id (PerkModel), permanent
 var world: String = "earth"
+var world_state: Dictionary = {}   # player spot, car, robbery memory (WorldState)
 var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var story := StoryModel.new(DataDB.load_json("story"))
 var home := HomeUpgrades.new()  # farmhouse upgrades bought at the Town Hall builder
@@ -77,7 +80,7 @@ func has_item(id: String, n: int = 1) -> bool:
 func to_dict() -> Dictionary:
 	return {
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "energy": energy.value, "money": money, "bank_balance": bank_balance,
-		"inventory": inventory, "world": world,
+		"inventory": inventory, "world": world, "world_state": world_state,
 		"rep_honest": rep_honest, "rep_street": rep_street,
 		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "warden_day": warden_day, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
 	}
@@ -92,6 +95,8 @@ func from_dict(d: Dictionary) -> bool:
 	for k in d.get("inventory", {}):
 		inventory[k] = int(d["inventory"][k])
 	world = str(d.get("world", "earth"))
+	var ws = d.get("world_state", {})
+	world_state = (ws as Dictionary).duplicate(true) if ws is Dictionary else {}
 	rep_honest = int(d.get("rep_honest", 0))
 	rep_street = int(d.get("rep_street", 0))
 	farm.from_array(d.get("farm", []))
@@ -156,6 +161,7 @@ func from_dict(d: Dictionary) -> bool:
 	return true
 
 func save_game(path: String = SAVE_PATH) -> bool:
+	before_save.emit()
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
 		return false

@@ -11,6 +11,7 @@ const B := 15.0
 const HALF_W := 2.0                               # half track width (cells)
 const PITCH_CELL := Vector2i(-110, 164)           # top-left of the 6x4-cell football pitch
 const LEAGUE_CELL := Vector2i(-111, 166)        # the Sunday League noticeboard beside the pitch
+const BIKE_CELL := Vector2i(-101, 166)            # the bike rack by the derby flag (criterium, BikeModel)
 const GOAL_CELL := Vector2i(-107, 164)            # penalty spot interactable (goal on the pitch's north edge)
 const START_CELL := Vector2i(-96, 175)
 const LICENCE_PRICE := 150
@@ -87,6 +88,7 @@ static func props() -> Array:
 		{"kind": "tyres", "cell": Vector2i(-122, 160)},
 		{"kind": "flag", "cell": Vector2i(-94, 178)},
 		{"kind": "league", "cell": LEAGUE_CELL},
+		{"kind": "bikerack", "cell": BIKE_CELL},
 		{"kind": "goal", "cell": GOAL_CELL},
 		{"kind": "goal", "cell": GOAL_CELL + Vector2i(1, 0)},
 	]

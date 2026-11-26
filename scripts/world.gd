@@ -114,6 +114,7 @@ func _build_ground() -> void:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var m := ShaderMaterial.new()
 	m.shader = load("res://assets/shaders/ground.gdshader")
+	m.set_shader_parameter("puddle_tex", PuddleMath.texture())
 	m.set_shader_parameter("data", ImageTexture.create_from_image(data_image(gen, 1)))
 	m.set_shader_parameter("data_size", float(WorldGen.SIZE + 2))
 	m.set_shader_parameter("data_pad", 1.0)

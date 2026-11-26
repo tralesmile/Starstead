@@ -61,6 +61,7 @@ func _ground(world: World) -> void:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var m := ShaderMaterial.new()
 	m.shader = load("res://assets/shaders/ground.gdshader")
+	m.set_shader_parameter("puddle_tex", PuddleMath.texture())
 	gen.stream_ref = world.stream
 	m.set_shader_parameter("data", ImageTexture.create_from_image(World.data_image(gen, 1)))
 	m.set_shader_parameter("data_size", float(WorldGen.SIZE + 2))
@@ -332,6 +333,7 @@ const CIRCUIT_SPRITES := {
 	"flag": ["pit_flag", Vector2(6, 6), 40],
 	"goal": ["goal_post", Vector2(30, 8), 40],
 	"league": ["league_board", Vector2(28, 8), 44],
+	"bikerack": ["bike_rack", Vector2(42, 8), 34],
 }
 
 func _circuit(world: World) -> void:
@@ -361,6 +363,8 @@ func _circuit(world: World) -> void:
 		var b := world.make_prop(tex, c, d[1], Vector2(0, -float(d[2]) / 2.0))
 		if String(p["kind"]) == "league":
 			world.interactables.add(c, "league", "E: Sunday League match day (round, table)")
+		if String(p["kind"]) == "bikerack":
+			world.interactables.add(c, "bike", "E: Bicycle criterium (3 laps, one paid race a day)")
 		if String(p["kind"]) == "goal" and c == CircuitModel.GOAL_CELL:
 			world.interactables.add(c, "pitch", "E: Penalty shootout (5 kicks)")
 		if String(p["kind"]) == "flag":

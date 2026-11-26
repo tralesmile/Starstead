@@ -20,6 +20,7 @@ static func prompt(action: String) -> String:
 		"pitch": return "E: Penalty shootout (5 kicks)"
 		"league": return "E: Sunday League match day (round, table)"
 		"derby": return "E: Animal derby ($%d entry, your best mount runs)" % DerbyModel.FEE
+		"bike": return "E: Bicycle criterium (3 laps, one paid race a day)"
 	return ""
 
 static func licence_prompt() -> String:
@@ -114,6 +115,13 @@ static func run(m, action: String) -> void:
 			m.player.move_v = Vector2.ZERO
 			m.player.set_physics_process(false)
 			if not m.derby.open():
+				m.player.set_physics_process(true)
+		"bike":
+			m.player.velocity = Vector2.ZERO
+			m.player.move_v = Vector2.ZERO
+			m.player.set_physics_process(false)
+			m.bike_view.rain = m.rain_today
+			if not m.bike_view.open():
 				m.player.set_physics_process(true)
 		"licence":
 			var r := CircuitModel.licence_ok(GameState.licence, GameState.money)

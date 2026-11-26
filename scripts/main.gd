@@ -58,6 +58,7 @@ var farm_view: FarmView
 var sports: SportsView
 var football_view: FootballView
 var derby: DerbyView
+var bike_view: BikeView
 var hangar: HangarView
 var hoof_t := 0.0
 var garage_view: GarageView
@@ -203,6 +204,11 @@ func _ready() -> void:
 		GameState.drift_board = res["board"]
 		_say("Drift +%d%s%s" % [p, "  NEW BEST!" if p > best else "  (best %d)" % best, ("  #%d on the board" % int(res["rank"])) if int(res["rank"]) > 0 else ""]))
 	world.add_child(car)
+	var puddles := PuddleView.new()   # rain puddles: mirror images + splashes
+	puddles.setup(world, player)
+	puddles.splashed.connect(func(gain: float, pitch: float): sfx_director.play("splash", gain, pitch))
+	car.puddles = puddles
+	world.add_child(puddles)
 	police = PoliceView.new()
 	police.setup(world, player, self, world.gen)
 	police.message.connect(_say)
@@ -346,6 +352,11 @@ func _ready() -> void:
 	derby.closed.connect(func(): player.set_physics_process(true))
 	derby.message.connect(_say)
 	add_child(derby)
+	bike_view = BikeView.new()
+	bike_view.closed.connect(func(): player.set_physics_process(true))
+	bike_view.message.connect(_say)
+	bike_view.sound.connect(func(n: String): sfx_director.play(n))
+	add_child(bike_view)
 	garage_view = GarageView.new()
 	garage_view.car = car
 	garage_view.closed.connect(func(): player.set_physics_process(true))
@@ -493,14 +504,16 @@ func _ready() -> void:
 			GameState.clock.day = int(a.substr(9)) * GameState.clock.DAYS_PER_SEASON + 1
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
+	GameState.before_save.connect(_capture_world)
 	if loaded:
 		_setup_welcome()
 	demos.on_ready()
 	$HUD.queue_free()
 
 func _setup_welcome() -> void:
-	## A loaded save wakes you at your own door, behind the welcome-back card.
-	player.position = (Vector2(_home_door()) + Vector2(0.5, 1.6)) * 32.0
+	## A loaded save puts you, the car and the neighbours' memories back, behind the welcome-back card.
+	player.position = (Vector2(_home_door()) + Vector2(0.5, 1.6)) * 32.0   # old saves: your own door
+	_restore_world()
 	welcome = WelcomeView.new()
 	add_child(welcome)
 	welcome.continued.connect(func(): _welcome_lock(false))
@@ -509,6 +522,29 @@ func _setup_welcome() -> void:
 		get_tree().reload_current_scene())
 	welcome.open(SaveBoot.summary(GameState.clock.day, GameState.clock.season(), GameState.money))
 	_welcome_lock(true)
+
+func _capture_world() -> void:
+	var at := player.position
+	if interior.active:
+		at = interior.outside_pos   # rooms live far off the map: remember the doorstep
+	elif cave.active:
+		at = cave.outside_pos
+	elif car.driving:
+		at = car.position + VehicleMath.forward(car.heading).orthogonal() * 24.0
+	GameState.world_state = WorldState.pack(at, player.facing, car.position, car.heading, car.fuel, car.health, robbery.model.serialize())
+
+func _restore_world() -> void:
+	var bounds := Rect2(ChunkGrid.world_rect_px())
+	var p := WorldState.player_of(GameState.world_state, bounds)
+	if not p.is_empty():
+		player.position = p["pos"]
+		player.facing = p["facing"]
+	var c := WorldState.car_of(GameState.world_state, bounds)
+	if not c.is_empty():
+		car.restore(c["pos"], c["heading"], c["fuel"], c["health"])
+	var r := WorldState.robbery_of(GameState.world_state)
+	if not r.is_empty():
+		robbery.model.deserialize(r)
 
 func _home_door() -> Vector2i:
 	for b in town.buildings:
@@ -719,6 +755,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if bike_view.visible:
+		bike_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if football_view.visible:
 		football_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -890,7 +930,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			cave.enter(GameState.clock.day)
 			story_view.event("enter_cave")
 			return
-		if it.get("kind", "") == "pitch" or it.get("kind", "") == "league":
+		if it.get("kind", "") == "pitch" or it.get("kind", "") == "league" or it.get("kind", "") == "bike":
 			CityActions.run(self, String(it["kind"]))
 			return
 		if it.get("kind", "") == "driftboard":
@@ -1582,8 +1622,8 @@ func _pass_out(cause: String, clock_rolled: bool) -> void:
 		cave.busy = false
 		cave._freeze(false)
 	if car.driving:
-		car.driving = false
 		car.vel = Vector2.ZERO
+		car.leave()   # steps out properly: otherwise the walker stays hidden and frozen
 	var home_door := _home_door()
 	var hosp_door := Vector2i(198, -2)
 	for b in CityModel.buildings():

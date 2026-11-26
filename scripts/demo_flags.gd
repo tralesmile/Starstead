@@ -119,6 +119,10 @@ func save_roundtrip() -> void:
 	g.skill_xp = {"fishing": 1100}
 	g.choose_perk("fishing", String(PerkModel.options("fishing")[0]["id"]))
 	g.nodes.hit(m.world.gen.trees[0], "axe")
+	m.car.fuel = 21.0
+	m.car.health = 66.0
+	m.robbery.model.house("city_house1")["grudge"] = true
+	g.before_save.emit()
 	var before: Dictionary = g.to_dict()
 	var before_text := JSON.stringify(before)
 	g.save_game(path)
@@ -126,6 +130,12 @@ func save_roundtrip() -> void:
 	var wiped := g.money != 1234 and g.farm.soil.is_empty() and g.build.placed.is_empty()
 	var ok := g.load_game(path)
 	var bad := SaveBoot.diff_keys(JSON.parse_string(before_text), g.to_dict())
+	# the live half: wreck the car and forget the grudge, then restore from the loaded save
+	m.car.restore(m.car.position + Vector2(300, 0), 1.0, 1.0, 1.0)
+	m.robbery.model.houses.clear()
+	m._restore_world()
+	if not (is_equal_approx(m.car.fuel, 21.0) and is_equal_approx(m.car.health, 66.0) and m.robbery.model.house("city_house1")["grudge"]):
+		bad.append("live world")
 	DirAccess.remove_absolute(path)
 	if ok and wiped and bad.is_empty():
 		print("save roundtrip ok (%d keys)" % before.size())
@@ -352,6 +362,45 @@ func on_process() -> void:
 					warm -= 0.1
 				fv.game.events = []
 				fv.banner_t = 0.0
+	if "--bike-demo=world" in OS.get_cmdline_user_args():   # the real path: stand at the rack, face it, press E
+		if Engine.get_process_frames() == 3:
+			m.player.position = Vector2(CircuitModel.BIKE_CELL) * 32.0 + Vector2(16, 48)
+			m.player.facing = PlayerMath.Facing.UP
+			m.mouse_aim = false
+		if Engine.get_process_frames() == 10:
+			var press := InputEventAction.new()
+			press.action = "interact"
+			press.pressed = true
+			m._unhandled_input(press)
+	elif m._arg_prefix("--bike-demo") and Engine.get_process_frames() == 3:
+		# screenshot helper (add --rain for a wet road; --bike-demo=grid|result): mid-race, you on a wheel heading into a
+		# bend, and the last rival forced to take it far too fast so the slide, skid and spray paths all draw
+		GameState.money = maxi(GameState.money, 100)
+		m.player.set_physics_process(false)
+		var bv: BikeView = m.bike_view
+		bv.rain = m.rain_today
+		bv.open(5)
+		if not ("--bike-demo=grid" in OS.get_cmdline_user_args()):
+			bv.auto_pilot = true
+			bv._start()
+			bv.banner_t = 0.0
+			while not bv.finished and bv.t < 55.0:
+				bv._tick(bv._player_input())
+				var s := float(bv.riders[0]["s"])
+				if bv.t > 22.0 and float(bv.riders[0]["draft"]) > 0.5 and BikeModel.radius(s + 16.0) < 24.0 and not ("--bike-demo=result" in OS.get_cmdline_user_args()):
+					break
+			if "--bike-demo=result" in OS.get_cmdline_user_args():
+				while not bv.finished:
+					bv._tick(bv._player_input())
+			else:
+				var last := 1
+				for i in range(1, BikeModel.RIDERS):
+					if float(bv.riders[i]["s"]) < float(bv.riders[last]["s"]):
+						last = i
+				var rr: Dictionary = bv.riders[last]
+				rr["v"] = BikeModel.corner_limit(float(rr["s"]), float(rr["l"]), bv.wet) * 1.4
+				rr["safe"] = 0.0
+				bv._tick(bv._player_input())
 	if "--derby-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.money = maxi(GameState.money, 300)
 		m.derby.open()

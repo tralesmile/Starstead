@@ -18,6 +18,8 @@ var _skid_a := 0.7
 var _smoke_tile := 0
 var _smoke_sdf := 5.0
 var _mud := 0.0
+var puddles: PuddleView
+var _splash_t := 0.0
 var _mud_fx: CPUParticles2D
 var night := 0.0       # 0..1 from DayNight.lamp_strength, set by main
 var _smoke: CPUParticles2D
@@ -179,11 +181,18 @@ func _physics_process(delta: float) -> void:
 			if float(rb["shake"]) > 0.0:
 				grip_m *= float(rb["grip"])
 				player.shake(float(rb["shake"]), 0.1)
+		var water := 0.0   # how deep the puddle under the wheels is
+		if puddles != null:
+			for wp in VehicleMath.wheel_points(position, heading):
+				water = maxf(water, puddles.standing_water(wp))
+			grip_m *= PuddleMath.aquaplane_grip(vel.length(), water)
+			_wheel_spray(water, delta)
 		var r := VehicleMath.step(vel, heading, th, st, hb, delta, grip_m * GearModel.grip_mult(GameState.bag), GearModel.top_speed_mult(GameState.bag))
 		vel = (r["vel"] as Vector2).limit_length(VehicleMath.speed_cap(health) * GearModel.top_speed_mult(GameState.bag) * surf * slip)
 		heading = r["heading"]
 		if _mud > 0.0:
 			vel *= exp(-_mud * delta)
+		vel *= exp(-PuddleMath.wheel_drag(vel.length(), water) * delta)
 	else:
 		vel = vel.move_toward(Vector2.ZERO, 200.0 * delta)
 	velocity = vel
@@ -261,6 +270,26 @@ func _physics_process(delta: float) -> void:
 				var tw := m.create_tween()
 				tw.tween_property(m, "modulate:a", 0.0, VehicleMath.skid_life(_on_circuit, player.rain))
 				tw.tween_callback(m.queue_free)
+
+func _wheel_spray(water: float, delta: float) -> void:
+	_splash_t -= delta
+	var n := PuddleMath.spray_amount(vel.length(), water)
+	if n == 0 or _splash_t > 0.0:
+		return
+	_splash_t = 0.09
+	for wp in VehicleMath.wheel_points(position, heading):
+		if puddles.standing_water(wp) >= PuddleMath.SEEN:
+			puddles.splash(wp, maxi(3, n / 3))
+	puddles.splashed.emit(clampf(vel.length() / 300.0, 0.25, 0.8), 0.8)
+
+func restore(at: Vector2, h: float, f: float, hp: float) -> void:
+	## Put a saved car back where it was left.
+	position = at
+	heading = h
+	rotation = h
+	fuel = f
+	health = hp
+	vel = Vector2.ZERO
 
 func repair(bag: Inventory) -> String:
 	## Spend wood to restore health (all-or-nothing). Returns a message or "".
