@@ -18,6 +18,7 @@ static func prompt(action: String) -> String:
 		"ring": return "E: Box a bout ($%d entry)" % SportsModel.BOUT_FEE
 		"licence": return "E: Circuit licence is owned" if GameState.licence else "E: Buy the circuit licence ($%d)" % CircuitModel.LICENCE_PRICE
 		"pitch": return "E: Penalty shootout (5 kicks)"
+		"league": return "E: Sunday League match day (round, table)"
 		"derby": return "E: Animal derby ($%d entry, your best mount runs)" % DerbyModel.FEE
 	return ""
 
@@ -100,6 +101,13 @@ static func run(m, action: String) -> void:
 			m.player.move_v = Vector2.ZERO
 			m.player.set_physics_process(false)
 			if not m.sports.open({"hoops": "hoops", "ring": "boxing", "pitch": "penalty"}[action]):
+				m.player.set_physics_process(true)
+		"league":
+			m.player.velocity = Vector2.ZERO
+			m.player.move_v = Vector2.ZERO
+			m.player.set_physics_process(false)
+			m.football_view.rain = m.rain_today
+			if not m.football_view.open():
 				m.player.set_physics_process(true)
 		"derby":
 			m.player.velocity = Vector2.ZERO

@@ -54,6 +54,7 @@ var cook_view: CookView
 var upgrade_view: UpgradeView
 var farm_view: FarmView
 var sports: SportsView
+var football_view: FootballView
 var derby: DerbyView
 var hangar: HangarView
 var hoof_t := 0.0
@@ -62,7 +63,6 @@ var drops_view: DropsView
 var tree_fall: TreeFallView
 var float_fx: FloatFx
 var mouse_aim := false
-var legend: Label
 var goal_label: Label
 var goal_arrow: GoalArrowView
 var city_seen := false
@@ -325,6 +325,11 @@ func _ready() -> void:
 	sports.closed.connect(func(): player.set_physics_process(true))
 	sports.message.connect(_say)
 	add_child(sports)
+	football_view = FootballView.new()
+	football_view.closed.connect(func(): player.set_physics_process(true))
+	football_view.message.connect(_say)
+	football_view.sound.connect(func(n: String): sfx_director.play(n))
+	add_child(football_view)
 	hangar = HangarView.new()
 	hangar.finished.connect(_hangar_done)
 	add_child(hangar)
@@ -441,17 +446,13 @@ func _ready() -> void:
 	cursor.z_index = 30
 	world.add_child(cursor)
 	world.add_child(CropHoverView.new().setup(cursor))
-	legend = Label.new()
-	legend.position = Vector2(8, 347)
-	legend.add_theme_font_size_override("font_size", 10)
-	legend.modulate = Color(1, 1, 1, 0.7)
-	legend.text = "Click: use tool   Right-click / E: interact   Wheel: tool   +/-: zoom   C: craft  Tab: bag  J: journal  K: story  G: gear  T: steal   Shift: sprint  Ctrl: sneak"
 	var leg_layer := CanvasLayer.new()
-	leg_layer.add_child(legend)
 	goal_label = Label.new()
 	goal_label.position = Vector2(8, 72)
 	goal_label.add_theme_font_size_override("font_size", 11)
-	goal_label.modulate = Color(1.0, 0.92, 0.55, 0.9)
+	goal_label.modulate = Color(1.0, 0.92, 0.55)
+	goal_label.add_theme_color_override("font_outline_color", Color(0.12, 0.07, 0.03))
+	goal_label.add_theme_constant_override("outline_size", 4)
 	leg_layer.add_child(goal_label)
 	add_child(leg_layer)
 	prompt = Label.new()   # screen layer, centred above the hotbar (was a world-space child: invisible away from the homestead)
@@ -660,6 +661,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if football_view.visible:
+		football_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if not shop.visible and not dialogue.visible and not inv_view.visible and not story_view.log_open() and map_view.handle(e):
 		if not car.driving:
 			player.velocity = Vector2.ZERO
@@ -825,8 +830,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			cave.enter(GameState.clock.day)
 			story_view.event("enter_cave")
 			return
-		if it.get("kind", "") == "pitch":
-			CityActions.run(self, "pitch")
+		if it.get("kind", "") == "pitch" or it.get("kind", "") == "league":
+			CityActions.run(self, String(it["kind"]))
 			return
 		if it.get("kind", "") == "driftboard":
 			_say(DriftBoard.lines(GameState.drift_board))

@@ -14,6 +14,16 @@ var day := 1
 var sell_bonus := 1.0   # root cellar (HomeUpgrades.sell_mult)
 var rep_honest := 0   # honest tier discounts and sell bonus (ReputationModel)
 
+const ROWS := 9            # rows the shop window shows at once
+const ROW_H := 19.0
+const BOX := Rect2(140, 36, 360, 270)   # the window on the 640x360 screen
+
+static func first_row(cursor: int, total: int, rows: int = ROWS) -> int:
+	## Top entry of the scrolled list: keeps the cursor in view with a row of context either side.
+	if total <= rows:
+		return 0
+	return clampi(cursor - rows / 2, 0, total - rows)
+
 func _init(items_db: Dictionary) -> void:
 	items = items_db
 

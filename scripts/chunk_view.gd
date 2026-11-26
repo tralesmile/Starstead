@@ -331,6 +331,7 @@ const CIRCUIT_SPRITES := {
 	"tyres": ["tyre_stack", Vector2(18, 10), 24],
 	"flag": ["pit_flag", Vector2(6, 6), 40],
 	"goal": ["goal_post", Vector2(30, 8), 40],
+	"league": ["league_board", Vector2(28, 8), 44],
 }
 
 func _circuit(world: World) -> void:
@@ -358,6 +359,8 @@ func _circuit(world: World) -> void:
 		var d: Array = CIRCUIT_SPRITES[String(p["kind"])]
 		var tex: String = "res://assets/sprites/%s.png" % d[0]
 		var b := world.make_prop(tex, c, d[1], Vector2(0, -float(d[2]) / 2.0))
+		if String(p["kind"]) == "league":
+			world.interactables.add(c, "league", "E: Sunday League match day (round, table)")
 		if String(p["kind"]) == "goal" and c == CircuitModel.GOAL_CELL:
 			world.interactables.add(c, "pitch", "E: Penalty shootout (5 kicks)")
 		if String(p["kind"]) == "flag":

@@ -48,5 +48,7 @@ static func for_context(ctx: Dictionary) -> String:
 	if bool(ctx.get("tilled", false)):
 		return "Tilled soil: pick a seed packet (key 3) and click to plant"
 	if bool(ctx.get("water", false)):
+		if not bool(ctx.get("has_rod", true)):
+			return "Good fishing water: craft a Fishing Rod (C) to fish here"
 		return "Hold F with the Fishing Rod (key %s) to cast a line" % key_of("rod") if held != "rod" else "Hold F to cast, release to throw"
 	return ""

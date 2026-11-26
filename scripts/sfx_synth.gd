@@ -9,7 +9,7 @@ const SILENT_DB := -60.0
 const NAMES: Array[String] = [
 	"step_grass", "step_path", "step_wood", "step_snow", "step_wet", "chop", "tree_fall", "mine", "hoe",
 	"water_pour", "splash", "pickup", "coin", "bow_draw", "bow_twang", "bow_perfect", "arrow_hit", "swing",
-	"hit", "ui_open", "ui_close", "error", "ship_horn"]
+	"hit", "ui_open", "ui_close", "error", "ship_horn", "ball_kick", "ball_post", "whistle", "crowd_cheer"]
 const LOOPS: Array[String] = ["amb_rain", "amb_wind", "amb_birds", "amb_crickets", "amb_waves"]
 
 # ---------------------------------------------------------------- public
@@ -233,6 +233,31 @@ static func _one_shot(name: String, rng: RandomNumberGenerator, variant: int) ->
 			for i in 7:
 				var f := rng.randf_range(700.0, 1600.0)
 				_tone(b, 0.18 + rng.randf() * 0.34, 0.04, f, f * 1.4, 0.12, 0.006, 2.0)
+		"ball_kick":
+			b = _buf(0.14)
+			_tone(b, 0.0, 0.12, 190.0 * k, 70.0, 0.9, 0.001, 3.0)
+			_noise(b, rng, 0.0, 0.035, 0.7, 0.5 * k, 0.08, 0.001, 3.0)
+			peak = 0.65
+		"ball_post":
+			b = _buf(0.45)
+			_tone(b, 0.0, 0.43, 610.0 * k, 600.0 * k, 0.6, 0.001, 4.0)
+			_tone(b, 0.0, 0.25, 1470.0 * k, 1455.0 * k, 0.3, 0.001, 4.0)
+			_noise(b, rng, 0.0, 0.02, 0.6, 0.7, 0.2, 0.001, 3.0)
+			peak = 0.6
+		"whistle":
+			b = _buf(0.55)
+			for i in 12:   # the pea rattling: short alternating pips
+				var f := 2350.0 if i % 2 == 0 else 2520.0
+				_tone(b, i * 0.042, 0.05, f * k, f * k, 0.6, 0.006, 0.6)
+			peak = 0.4
+		"crowd_cheer":
+			b = _buf(1.6)
+			_noise(b, rng, 0.0, 1.55, 1.0, 0.22, 0.03, 0.25, 1.4)
+			_noise(b, rng, 0.1, 1.3, 0.5, 0.4, 0.1, 0.4, 1.6)
+			for i in 14:
+				var f := rng.randf_range(330.0, 760.0)
+				_tone(b, rng.randf_range(0.05, 0.9), rng.randf_range(0.2, 0.5), f, f * rng.randf_range(1.05, 1.3), 0.06, 0.08, 1.5)
+			peak = 0.6
 		"pickup":
 			b = _buf(0.12)
 			_tone(b, 0.0, 0.11, 520.0 * k, 1040.0 * k, 0.8, 0.006, 2.0)

@@ -67,3 +67,15 @@ func test_buy_wood_uses_buy_price() -> void:
 	for x in m.entries(inv):
 		ids.append(x.id)
 	check("wood" in ids and "turnip_seed" in ids)
+
+func test_long_list_scrolls_and_keeps_the_cursor_visible() -> void:
+	var total := 29
+	for cursor in total:
+		var top := ShopMenu.first_row(cursor, total)
+		check(cursor >= top and cursor < top + ShopMenu.ROWS, "cursor %d visible" % cursor)
+		check(top >= 0 and top + ShopMenu.ROWS <= total, "window inside the list")
+	check_eq(ShopMenu.first_row(3, 5), 0)
+
+func test_shop_rows_fit_the_screen() -> void:
+	check(61.0 + ShopMenu.ROWS * ShopMenu.ROW_H + 30.0 <= ShopMenu.BOX.size.y)
+	check(ShopMenu.BOX.end.y + 6.0 <= 360.0)

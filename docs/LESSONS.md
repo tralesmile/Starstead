@@ -33,3 +33,5 @@
 - Run 39: tests/test_chunks.gd pins chunk -> region ids, so a new place inside an existing region should be a cell-level override (IsleModel.RECT for the banner), not a new regions.json entry.
 - Run 39: screenshots cannot verify audio: use `--sfx-log` (prints Sfx.play_counts + ambience) after wiring a sound. A bow QA flag must append "bow" to tools_owned or the slot stays the club.
 - Run 39: cinematic overlays must sit above RegionBanner (layer >= 60), else a teleport prints the old region name over them.
+- Run 40: fixed-timestep sims must latch one-shot inputs until a tick actually runs; a frame shorter than 1/60 s runs no tick and silently eats the key press.
+- Run 40: any new input-grabbing overlay must be routed ABOVE the map/story/journal/bag handlers in Main._unhandled_input, or Tab/M/J/K open on top of it. Pure layout constants used by tests belong in the model class (ShopMenu), not the view (GameState does not compile in tests).

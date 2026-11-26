@@ -20,3 +20,8 @@ func test_farm_and_water_hints() -> void:
 	check(HintModel.for_context({"weed": true, "held": "hand"}).contains("Scythe (key 9)"), "weeds")
 	check(HintModel.for_context({"water": true, "held": "hand"}).contains("Fishing Rod (key 7)"), "water")
 	check(HintModel.for_context({}) == "", "nothing to say")
+
+func test_no_rod_means_craft_one_first() -> void:
+	var s := HintModel.for_context({"water": true, "held": "hoe", "has_rod": false})
+	check(s.contains("craft") and s.contains("(C)"), s)
+	check(not s.contains("key 7"), s)

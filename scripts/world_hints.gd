@@ -52,4 +52,5 @@ static func text(m) -> String:
 		return HintModel.for_context(ctx)
 	if m._water_cell_ahead(2) != Vector2i(-1, -1):
 		ctx["water"] = true
+		ctx["has_rod"] = "rod" in GameState.tools_owned
 	return HintModel.for_context(ctx)

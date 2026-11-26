@@ -24,7 +24,7 @@ static func rows(mode: String) -> Array:
 		"indoors":
 			return [["WASD", "Walk"], ["Ctrl", "Sneak"], ["E", "Use / talk"], ["Tab", "Bag"], ["F1", "Hide keys"]]
 		_:
-			return [["WASD", "Walk"], ["Shift", "Sprint"], ["E", "Use / talk"], ["F", "Tool"], ["1-0", "Hotbar"], ["Tab", "Bag"], ["C", "Craft"], ["K", "Quests"], ["M", "Map"], ["F1", "Hide keys"]]
+			return [["WASD", "Walk"], ["Shift", "Sprint"], ["Ctrl", "Sneak"], ["E", "Use / talk"], ["F/Click", "Tool"], ["1-0", "Hotbar"], ["Tab", "Bag"], ["C", "Craft"], ["J", "Fish log"], ["K", "Quests"], ["M", "Map"], ["+/-", "Zoom"], ["F1", "Hide keys"]]
 
 ## Width in px of the widest row at a given char width (for the panel).
 static func panel_width(mode: String, char_w: float = 5.0) -> float:

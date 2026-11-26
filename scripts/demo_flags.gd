@@ -174,6 +174,9 @@ func on_process() -> void:
 		GameState.bag.add("carp", 2)
 		GameState.market.record("turnip", 10)
 		m.shop.open()
+	if "--shop-buy" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 4:   # with --shop-demo: the long BUY list, scrolled
+		m.shop.menu.switch_tab()
+		m.shop.menu.cursor = 14
 	if "--craft-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: the craft menu with wood, new-game toolbelt
 		GameState.tools_owned = ToolKit.start()
 		GameState.bag.add("wood", 5)
@@ -261,6 +264,30 @@ func on_process() -> void:
 		m.hangar.open()
 		m.hangar.demo_pos = Vector2(6.5 * 32.0, 6.5 * 32.0)
 		m.hangar.opened = [0]
+	if m._arg_prefix("--football-demo") and Engine.get_process_frames() == 3:
+		# screenshot helper: --football-demo=lobby|play|goal|result (with --rain for a wet pitch)
+		var fv: FootballView = m.football_view
+		fv.rain = m.rain_today
+		fv.open()
+		var args := OS.get_cmdline_user_args()
+		if not ("--football-demo=lobby" in args):
+			GameState.money = maxi(GameState.money, 100)
+			fv.kick_off(7)
+			fv.game.auto = true
+			var warm := 9.0
+			if "--football-demo=goal" in args:
+				while int(fv.game.score[0]) + int(fv.game.score[1]) == 0 and not fv.game.finished:
+					fv.game.update(FootballMatch.TICK)
+				fv.game.events = ["goal0" if int(fv.game.score[0]) > 0 else "goal1"]
+			elif "--football-demo=result" in args:
+				while not fv.game.finished:
+					fv.game.update(0.2)
+			else:
+				while warm > 0.0:
+					fv.game.update(0.1)
+					warm -= 0.1
+				fv.game.events = []
+				fv.banner_t = 0.0
 	if "--derby-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		GameState.money = maxi(GameState.money, 300)
 		m.derby.open()
