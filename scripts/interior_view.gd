@@ -1,7 +1,7 @@
 class_name InteriorView
 extends Node
 ## Walk through a building's door: fade out, the room is built far from the map, the player is moved in,
-## fade in. Leaving through the door gap (or Esc) returns to the exact outside spot.
+## fade in. Leaving through the door gap returns to the exact outside spot.
 ## Actions: sleep (farmhouse bed), loot (robbery of house furniture).
 
 signal garage_requested

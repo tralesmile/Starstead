@@ -2,6 +2,8 @@ class_name CityActions
 extends RefCounted
 ## Runs a Port Halden counter action (bank, hospital, police desk, shop, cafe, town hall). `m` is Main.
 
+const HOOP_PROMPT := "E: Street hoops 3-on-3 (one money game a day)"
+
 static func prompt(action: String) -> String:
 	match action:
 		"shop": return "E: Browse the shop"
@@ -19,6 +21,7 @@ static func prompt(action: String) -> String:
 		"licence": return "E: Circuit licence is owned" if GameState.licence else "E: Buy the circuit licence ($%d)" % CircuitModel.LICENCE_PRICE
 		"pitch": return "E: Penalty shootout (5 kicks)"
 		"league": return "E: Sunday League match day (round, table)"
+		"streethoop": return HOOP_PROMPT
 		"derby": return "E: Animal derby ($%d entry, your best mount runs)" % DerbyModel.FEE
 		"bike": return "E: Bicycle criterium (3 laps, one paid race a day)"
 	return ""
@@ -109,6 +112,12 @@ static func run(m, action: String) -> void:
 			m.player.set_physics_process(false)
 			m.football_view.rain = m.rain_today
 			if not m.football_view.open():
+				m.player.set_physics_process(true)
+		"streethoop":
+			m.player.velocity = Vector2.ZERO
+			m.player.move_v = Vector2.ZERO
+			m.player.set_physics_process(false)
+			if not m.hoop_view.open():
 				m.player.set_physics_process(true)
 		"derby":
 			m.player.velocity = Vector2.ZERO

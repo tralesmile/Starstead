@@ -8,6 +8,10 @@ static func night_factor(minutes: float) -> float:
 		return 0.0
 	return clampf((minutes - 720.0) / 180.0, 0.0, 1.0)
 
+## Fireflies hide from rain: they thin out in a drizzle and are gone by rain 0.4.
+static func firefly_amount(night: float, rain: float) -> float:
+	return night * clampf(1.0 - rain / 0.4, 0.0, 1.0)
+
 static func firefly_pos(i: int, t: float, radius: float = 150.0) -> Vector2:
 	## Slow wandering loop around the origin (player); distinct phase per firefly i.
 	var a := float(i) * 2.399963  # golden angle spreads them evenly

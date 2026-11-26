@@ -2,7 +2,7 @@ class_name CaveView
 extends Node
 ## The Highlands mine in play. Like InteriorView: fade out, the cavern (CaveModel) is built far from the map,
 ## the player is moved in and gets a miner's lamp; torches light the walls, ore breaks under the pickaxe,
-## bats chase and are driven off with the club. Walking off the bottom edge (or Esc) returns to the cave mouth.
+## bats chase and are driven off with the club. Walking off the bottom edge returns to the cave mouth.
 
 signal ore_broken(id: String, n: int, pos: Vector2, kind: String)
 signal bat_down(pos: Vector2)
@@ -46,6 +46,12 @@ var cart_sprite: Sprite2D
 var riding := false
 var cart_roll := 0.0
 var rumble_t := 0.0
+signal cargo_spilled(id: String, n: int, pos: Vector2)
+const DOOR_END := 40.0     # px of track from the entrance buffer where the cart can be emptied
+const SCOOP_R := 40.0
+var cargo := CartCargo.new()
+var bag_cb: Callable       # () -> the player's Inventory
+var heap_node: Node2D
 
 func setup(w: Node2D, p: Player, host: Node) -> void:
 	world = w
@@ -120,6 +126,7 @@ func _do_change_floor(n: int, going_down: bool) -> void:
 	floor_changed.emit(n)
 
 func _clear_nodes() -> void:
+	_return_cargo()
 	for n in nodes:
 		if is_instance_valid(n):
 			n.queue_free()
@@ -326,6 +333,9 @@ func _build_rail() -> void:
 	cart_sprite.hframes = 4
 	cart_sprite.offset = Vector2(0, -22)
 	cart_node.add_child(cart_sprite)
+	heap_node = Node2D.new()
+	heap_node.draw.connect(_draw_heap)
+	cart_node.add_child(heap_node)
 	var sh := World.make_shadow(18.0)
 	sh.position = Vector2(0, -3)
 	sh.show_behind_parent = true
@@ -340,6 +350,102 @@ func _place_cart() -> void:
 	var dir := CartMath.dir_at(cart_pts, float(cart["s"]))
 	var side := absf(dir.x) > 0.5
 	cart_sprite.frame = (0 if side else 2) + int(cart_roll / 9.0) % 2
+	heap_node.queue_redraw()
+
+func _draw_heap() -> void:
+	## Lumps piled on the rim, bottom row first, coloured by ore.
+	var lumps := cargo.heap()
+	if lumps.is_empty() or cart_sprite == null:
+		return
+	var side := cart_sprite.frame < 2
+	var base := -29.0 + cart_sprite.frame % 2 if side else -26.0
+	var rows: Array = [5, 4, 3, 2] if side else [4, 4, 3, 2]
+	var spots: Array[Vector2] = []
+	for r in rows.size():
+		for k in int(rows[r]):
+			if spots.size() < lumps.size():
+				spots.append(Vector2(roundf((k - (int(rows[r]) - 1) * 0.5) * 5.0 - 2.5), base - r * 3.0 - (k + r) % 2))
+	for at in spots:   # one dark edge round the whole heap, then the lumps on top of it
+		heap_node.draw_rect(Rect2(at + Vector2(-1, -1), Vector2(7, 6)), Color(0.12, 0.08, 0.09))
+	for i in spots.size():
+		var at := spots[i]
+		var col: Color = CartCargo.COLORS[lumps[i]]
+		heap_node.draw_rect(Rect2(at + Vector2(1, 0), Vector2(3, 4)), col)
+		heap_node.draw_rect(Rect2(at + Vector2(0, 1), Vector2(5, 2)), col)
+		heap_node.draw_rect(Rect2(at + Vector2(1, 0), Vector2(2, 1)), col.lightened(0.35))
+		heap_node.draw_rect(Rect2(at + Vector2(1, 3), Vector2(3, 1)), col.darkened(0.35))
+
+func at_door_end() -> bool:
+	return not cart.is_empty() and float(cart["s"]) <= DOOR_END
+
+func _cart_in_reach() -> bool:
+	return active and not busy and not cart.is_empty() and (riding or near_cart())
+
+func load_cargo() -> bool:
+	## G: ore from the bag into the cart.
+	if not _cart_in_reach() or not bag_cb.is_valid():
+		return false
+	if absf(float(cart["v"])) > CartMath.BUMP_V:
+		message.emit("Slow down before loading (Shift)")
+		return false
+	var n := cargo.load_from(bag_cb.call())
+	if n <= 0:
+		message.emit("The cart is full" if cargo.count() >= CartCargo.CAPACITY else "No ore in your bag to load")
+		return false
+	_place_cart()
+	sound.emit("ball_post", 0.5, 0.8)
+	message.emit("Loaded %d ore (cart %d/%d). Heavier: slow to start, long to stop" % [n, cargo.count(), CartCargo.CAPACITY])
+	return true
+
+func unload_cargo() -> bool:
+	## X: cart to bag, only at the door end of the track.
+	if not _cart_in_reach() or not bag_cb.is_valid():
+		return false
+	if cargo.count() == 0:
+		message.emit("The cart is empty")
+		return false
+	if not at_door_end() or absf(float(cart["v"])) > CartMath.BUMP_V:
+		message.emit("Stop the cart at the door end of the track to unload")
+		return false
+	var res := cargo.unload_to(bag_cb.call())
+	_place_cart()
+	if int(res["left"]) > 0:
+		message.emit("Bag full: unloaded %d, %d ore still in the cart" % [res["moved"], res["left"]])
+	else:
+		message.emit("Unloaded %d ore into your bag" % res["moved"])
+	return int(res["moved"]) > 0
+
+func _return_cargo() -> void:
+	## Leaving the floor or the mine (or passing out): the ore follows you; what the bag cannot take stays in the hold.
+	if cart.is_empty() or cargo.count() == 0 or not bag_cb.is_valid():
+		return
+	var res := cargo.unload_to(bag_cb.call())
+	var text := "Cart ore packed into your bag (%d)" % res["moved"]
+	if int(res["left"]) > 0:
+		text = "Bag full: %d ore stays safe in the mine cart" % res["left"]
+	message.emit.call_deferred(text)   # after the floor's own arrival message
+
+func scoop(id: String, n: int, pos: Vector2) -> int:
+	## A ridden cart picks up ore lying beside the track. Returns how many it took.
+	if not active or busy or not riding or cart.is_empty():
+		return 0
+	if pos.distance_to(CartMath.pos_at(cart_pts, float(cart["s"]))) > SCOOP_R:
+		return 0
+	var took := cargo.add(id, n)
+	if took > 0:
+		_place_cart()
+		sound.emit("step_wood", 0.9, 1.5)
+	return took
+
+func spill(speed: float, at: Vector2) -> int:
+	var lost := cargo.spill(CartMath.spill_count(speed, cargo.load_fraction(), cargo.count()))
+	var total := 0
+	for id in lost:
+		total += int(lost[id])
+		cargo_spilled.emit(String(id), int(lost[id]), at)
+	if total > 0:
+		message.emit("Too fast for that bend! %d ore spilled by the track" % total)
+	return total
 
 func near_cart() -> bool:
 	return cart_node != null and not cart.is_empty() and player.position.distance_to(CartMath.pos_at(cart_pts, float(cart["s"]))) < 42.0
@@ -388,13 +494,14 @@ func cart_tick(d: float, input: Vector2, braking: bool) -> void:
 	if cart.is_empty() or not riding:
 		return
 	var dir := CartMath.dir_at(cart_pts, float(cart["s"]))
-	var res := CartMath.step(cart, cart_pts, CartMath.pump_from_input(input, dir), braking, d)
+	var res := CartMath.step(cart, cart_pts, CartMath.pump_from_input(input, dir), braking, d, cargo.load_fraction())
 	var v := float(cart["v"])
 	cart_roll += absf(v) * d
 	if res["jolt"]:
 		player.shake(1.2, 0.18)
 		sound.emit("mine", 0.5, 1.6)
 		_sparks(CartMath.pos_at(cart_pts, float(cart["s"])), 12)
+		spill(float(res["jolt_v"]), CartMath.pos_at(cart_pts, float(res["jolt_s"])))
 	if float(res["bump"]) > 0.0:
 		player.shake(1.0 + float(res["bump"]) / 150.0, 0.2)
 		sound.emit("ball_post", 0.8, 0.6)
@@ -618,12 +725,25 @@ func rel() -> Vector2i:
 func prompt() -> String:
 	if not active or busy:
 		return ""
-	if riding:
-		return "Move: pump the cart   Shift: brake   E: hop off"
-	if near_cart():
-		return "E: ride the mine cart"
+	if riding or near_cart():
+		return cart_prompt()
 	var where := "Warden's Hall" if model.is_boss_floor() else "Floor %d/%d" % [floor_no, CaveModel.MAX_FLOOR]
-	return "%s   Pickaxe: ore   Club: monsters   %sSouth / Esc: up" % [where, "Ladder down: deeper   " if model.has_ladder_down() else ""]
+	return "%s   Pickaxe: ore   Club: monsters   %sSouth: up" % [where, "Ladder down: deeper   " if model.has_ladder_down() else ""]
+
+func cart_prompt() -> String:
+	var n := cargo.count()
+	var hold := "Cart %d/%d" % [n, CartCargo.CAPACITY]
+	var slow := absf(float(cart["v"])) <= CartMath.BUMP_V
+	var keys := ""
+	if slow:
+		keys = "G: load ore   "
+		if n > 0:
+			keys += "X: unload   " if at_door_end() else "(unload at door end)   "
+	if not riding:
+		return "E: ride   %s%s" % [keys, hold]
+	if slow:
+		return "Move: pump   %sE: off   %s" % [keys, hold]
+	return "Move: pump   Shift: brake   E: off   %s" % hold
 
 func _process(d: float) -> void:
 	if not active or busy:

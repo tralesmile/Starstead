@@ -1,7 +1,7 @@
 class_name DemoFlags
 extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
-## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
+## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --hoopmatch-demo[=lobby|result|world] --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
 ## --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
@@ -23,6 +23,10 @@ func on_ready() -> void:
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
 			m.race.start()
+	if "--pause-demo" in OS.get_cmdline_user_args():   # screenshot helper: the pause menu (=keys: the controls card)
+		m._open_pause.call_deferred()
+	if "--pause-demo=keys" in OS.get_cmdline_user_args():
+		(func(): m._open_pause(); m.pause_view.show_keys = true; m.pause_view._c.queue_redraw()).call_deferred()
 	if "--welcome-demo" in OS.get_cmdline_user_args():   # screenshot helper: the welcome-back card
 		m._setup_welcome()
 	if "--save-roundtrip" in OS.get_cmdline_user_args():
@@ -101,6 +105,38 @@ func on_ready() -> void:
 		GameState.skill_xp["farming"] = SkillModel.THRESHOLDS[PerkModel.UNLOCK_LEVEL]
 		m.perk_view.open("farming")
 
+func _hoopmatch_demo() -> void:
+	## Screenshot helper: --hoopmatch-demo (live play, your shot meter up) | =lobby | =result | =world (stand at the hoop, press nothing)
+	var args := OS.get_cmdline_user_args()
+	if "--hoopmatch-demo=world" in args:
+		m.player.position = Vector2(CircuitModel.HOOP_CELL) * 32.0 + Vector2(16, 48)
+		m.player.facing = PlayerMath.Facing.UP
+		m.mouse_aim = false
+		return
+	var hv: HoopView = m.hoop_view
+	m.player.set_physics_process(false)
+	GameState.money = maxi(GameState.money, 100)
+	hv.open()
+	if "--hoopmatch-demo=lobby" in args:
+		hv.block_reason = ""
+		return
+	hv.tip_off(7)
+	var g := hv.game
+	g.auto = true
+	if "--hoopmatch-demo=result" in args:
+		while not g.finished:
+			g.update(0.2)
+			g.events.clear()
+		return
+	var warm := 0.0   # play on until some points are up and your side is about to shoot
+	while not g.finished and (warm < 25.0 or not (g.owner >= 0 and g.owner < 3 and float(g.players[g.owner]["meter"]) > 0.1) or g.pause > 0.0):
+		g.update(HoopMatch.TICK)
+		g.events.clear()
+		warm += HoopMatch.TICK
+	g.auto = false   # the shooter is now yours: the meter keeps filling on screen
+	g.selected = int(g.players[maxi(g.owner, 0)]["role"])
+	hv.banner_t = 0.0
+
 func save_roundtrip() -> void:
 	## QA (--save-roundtrip): play a little, save, start over, load, and compare the whole save dictionary.
 	var g := GameState
@@ -119,6 +155,7 @@ func save_roundtrip() -> void:
 	g.skill_xp = {"fishing": 1100}
 	g.choose_perk("fishing", String(PerkModel.options("fishing")[0]["id"]))
 	g.nodes.hit(m.world.gen.trees[0], "axe")
+	g.hoops.record(21, 12, 11)
 	m.car.fuel = 21.0
 	m.car.health = 66.0
 	m.robbery.model.house("city_house1")["grudge"] = true
@@ -316,7 +353,13 @@ func on_process() -> void:
 	if "--cart-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 44 and m.cave.active:   # with --cave-demo: ride the mine cart down the track
 		var at := CartMath.pos_at(m.cave.cart_pts, 0.0)
 		m.player.position = at + Vector2(0, 20)
-		m.cave.board()
+		if "--cart-haul" in OS.get_cmdline_user_args():   # with --cart-demo: a mixed load of ore goes from the bag into the cart
+			for id in CartCargo.ORES:
+				GameState.bag.add(id, 9)
+			m.cave.board()
+			m.cave.load_cargo()
+		else:
+			m.cave.board()
 	if m._arg_prefix("--sports-demo") and Engine.get_process_frames() == 3:   # screenshot helper: --sports-demo=hoops|penalty|boxing
 		var mode := "hoops"
 		for a in OS.get_cmdline_user_args():
@@ -338,6 +381,13 @@ func on_process() -> void:
 		m.hangar.open()
 		m.hangar.demo_pos = Vector2(6.5 * 32.0, 6.5 * 32.0)
 		m.hangar.opened = [0]
+	if m._arg_prefix("--hoopmatch-demo") and Engine.get_process_frames() == 3:
+		_hoopmatch_demo()
+	if "--hoopmatch-demo=world" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 10:   # the real path: press E at the hoop
+		var press := InputEventAction.new()
+		press.action = "interact"
+		press.pressed = true
+		Input.parse_input_event(press)
 	if m._arg_prefix("--football-demo") and Engine.get_process_frames() == 3:
 		# screenshot helper: --football-demo=lobby|play|goal|result (with --rain for a wet pitch)
 		var fv: FootballView = m.football_view

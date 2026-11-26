@@ -29,7 +29,7 @@ const vec3 MOSS = vec3(0.45, 0.60, 0.25);
 uniform vec3 season_mul = vec3(1.0);
 uniform float season_frost = 0.0;
 uniform float wet = 0.0;             // rain on city asphalt: darker surface, sky-coloured puddles with sparkles
-uniform sampler2D puddle_tex : filter_nearest, repeat_enable;   // PuddleMath field: the same water the game splashes in
+uniform sampler2D puddle_tex : filter_linear, repeat_enable;   // PuddleMath field: the same water the game splashes in
 
 vec3 sg(vec3 c) {
 	vec3 t = c * season_mul;
@@ -65,7 +65,19 @@ float sdf_at(vec2 tile) {
 	float r = texture(data, (tile - origin_tiles + data_pad + warp * 0.9) / data_size).r;
 	return (r - 0.5) * 2.0 * sdf_range + (fbm(tile * 2.5) - 0.5) * 0.5;
 }
-float puddle_at(vec2 wpx) { return smoothstep(0.58, 0.68, texture(puddle_tex, (floor(wpx / 4.0) + 0.5) / 256.0).r) * wet; }
+float puddle_at(vec2 wpx) { return smoothstep(0.58, 0.68, texture(puddle_tex, (floor(wpx) + 0.5) / 1024.0).r) * wet; }   // = PuddleMath.noise_at (4px texels, 256 side)
+// a puddle over wet ground: damp halo, soft one-step edge, water, shaded north bank and a lit south lip (SEEN = 0.35)
+vec3 puddle_paint(vec3 ground, vec2 wpx, float m, vec3 water, vec3 lip, float opacity) {
+	vec3 c = ground * (1.0 - 0.13 * step(0.07, m) - 0.15 * step(0.2, m));             // darker wet rim in two crisp steps
+	c = mix(c, water, opacity * (0.4 * step(0.29, m) + 0.6 * step(0.35, m)));
+	c = mix(c, c * 0.86, smoothstep(0.75, 1.0, m));                                   // deeper middle
+	if (m >= 0.35) {
+		if (puddle_at(wpx - vec2(0.0, 2.0)) < 0.35) c *= 0.8;                          // the near bank shades the water's top edge
+		else if (puddle_at(wpx + vec2(0.0, 1.0)) < 0.35) c = mix(c, lip, 0.55);        // sky catches the lower lip
+		else if (puddle_at(wpx + vec2(0.0, 3.0)) < 0.35) c = mix(c, lip, 0.16);
+	}
+	return c;
+}
 float rain_ring(vec2 wpx) {
 	// one expanding drop ring per 22px patch, each on its own beat
 	vec2 c = floor(wpx / 22.0);
@@ -194,11 +206,8 @@ void fragment() {
 				// rain on dirt paths: darker mud and glossy sky-coloured puddles in the ruts, with a bright rim and a few ripple glints
 				float pd = puddle_at(px) * step(0.5, pe);
 				col = mix(col, col * 0.72, 0.5 * wet);
-				col = mix(col, vec3(0.42, 0.52, 0.64) * (0.88 + 0.25 * fbm(tile * 6.0 + TIME * 0.15)), pd * 0.7);
-				float rim = smoothstep(0.02, 0.3, pd) * (1.0 - smoothstep(0.3, 0.75, pd));
-				col = mix(col, DIRT_L, rim * 0.35);
-				col += vec3(0.45) * step(0.985, hash(floor(px / 2.0) + floor(TIME * 3.0) + 17.0)) * pd;
-				col = mix(col, col * 0.86, smoothstep(0.75, 1.0, pd));                       // deeper middle
+				col = puddle_paint(col, px, pd, vec3(0.42, 0.52, 0.64) * (0.88 + 0.25 * fbm(tile * 6.0 + TIME * 0.15)), vec3(0.80, 0.78, 0.74), 0.68);
+				col += vec3(0.45) * step(0.985, hash(floor(px / 2.0) + floor(TIME * 3.0) + 17.0)) * step(0.35, pd) * pd;
 				col = mix(col, vec3(0.78, 0.86, 0.94), rain_ring(px) * step(0.45, pd) * 0.8);
 			}
 			if (city_cell) {
@@ -217,9 +226,8 @@ void fragment() {
 					col = mix(col, vec3(0.88, 0.88, 0.84) * (0.9 + 0.1 * sp), bars * 0.92);
 					float pud = puddle_at(px);
 					col *= 1.0 - 0.3 * wet;
-					col = mix(col, vec3(0.40, 0.50, 0.62) * (0.85 + 0.3 * fbm(tile * 5.0 + TIME * 0.2)), pud * 0.6);
-					col += vec3(0.5) * step(0.98, hash(floor(px / 2.0) + floor(TIME * 3.0))) * pud;
-					col = mix(col, col * 0.86, smoothstep(0.75, 1.0, pud));
+					col = puddle_paint(col, px, pud, vec3(0.34, 0.45, 0.58) * (0.85 + 0.3 * fbm(tile * 5.0 + TIME * 0.2)), vec3(0.66, 0.76, 0.86), 0.66);
+					col += vec3(0.5) * step(0.98, hash(floor(px / 2.0) + floor(TIME * 3.0))) * step(0.35, pud) * pud;
 					col = mix(col, vec3(0.74, 0.82, 0.92), rain_ring(px) * step(0.45, pud) * 0.7);
 					vec4 nn = texelFetch(data, tcell + ivec2(0, -1), 0);
 					if (nn.g > 0.5 && nn.a > 0.25 && nn.a < 0.75) col *= mix(0.55, 1.0, smoothstep(0.0, 0.11, fract(tile.y)));  // curb shadow on the street

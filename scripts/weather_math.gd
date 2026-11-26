@@ -22,6 +22,15 @@ static func rain_now(intensity: float, minutes: float) -> float:
 	var b := clampf((720.0 - minutes) / 40.0, 0.0, 1.0)
 	return intensity * minf(a, b)
 
+## How wet the ground is (puddles, wet asphalt): fills as the rain starts, then stays after it stops at 18:00 and
+## dries only slowly, so on the evening of a rainy day the lamps still find water to shine in.
+static func ground_wet(intensity: float, minutes: float) -> float:
+	if intensity <= 0.0:
+		return 0.0
+	var filling := clampf((minutes - 180.0) / 40.0, 0.0, 1.0)
+	var drying := clampf((minutes - 720.0) / 480.0, 0.0, 1.0)   # 18:00 -> 02:00
+	return intensity * filling * (1.0 - 0.5 * drying)
+
 static func darken(rain: float) -> Color:
 	## Multiply onto the day tint: overcast greys the world.
 	var k := 1.0 - 0.28 * rain

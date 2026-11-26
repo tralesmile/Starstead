@@ -3,11 +3,12 @@ extends RefCounted
 ## Pure packing of the live world into the save: where you stand, where the car is (with fuel and damage),
 ## and what every robbed house remembers. Bad or missing parts are dropped, never guessed.
 
-static func pack(pos: Vector2, facing: int, car_pos: Vector2, heading: float, fuel: float, health: float, robbery: Dictionary) -> Dictionary:
+static func pack(pos: Vector2, facing: int, car_pos: Vector2, heading: float, fuel: float, health: float, robbery: Dictionary, heat: float = 0.0) -> Dictionary:
 	return {
 		"player": {"x": roundf(pos.x), "y": roundf(pos.y), "facing": facing},
 		"car": {"x": roundf(car_pos.x), "y": roundf(car_pos.y), "heading": snappedf(heading, 0.001), "fuel": snappedf(fuel, 0.01), "health": snappedf(health, 0.01)},
 		"robbery": robbery.duplicate(true),
+		"heat": snappedf(heat, 0.1),
 	}
 
 static func _inside(d, bounds: Rect2) -> bool:
@@ -27,6 +28,11 @@ static func car_of(state: Dictionary, bounds: Rect2) -> Dictionary:
 	return {"pos": Vector2(float(d["x"]), float(d["y"])), "heading": wrapf(float(d.get("heading", 0.0)), -PI, PI),
 		"fuel": clampf(float(d.get("fuel", VehicleMath.FUEL_MAX)), 0.0, VehicleMath.FUEL_MAX),
 		"health": clampf(float(d.get("health", VehicleMath.HEALTH_MAX)), 0.0, VehicleMath.HEALTH_MAX)}
+
+## Wanted heat, so quitting is not a way to shake the police.
+static func heat_of(state: Dictionary) -> float:
+	var h = state.get("heat", 0.0)
+	return clampf(float(h), 0.0, WantedMath.MAX_HEAT) if (h is float or h is int) else 0.0
 
 ## House memory (locks, dogs, grudges, emptied safes). The noise meter always starts quiet. {} when none saved.
 static func robbery_of(state: Dictionary) -> Dictionary:

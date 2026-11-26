@@ -6,6 +6,8 @@ var player: Player
 var gen: WorldGen
 var intensity := 0.0   # today's rain strength (0 = clear)
 var now := 0.0         # current rain after fade window
+var ground := 0.0      # how wet the ground is (lingers after the rain)
+var forced := false    # --rain screenshot flag: rain at any hour
 var t := 0.0
 const DROPS := 120
 
@@ -14,7 +16,8 @@ func _ready() -> void:
 
 func _process(d: float) -> void:
 	t += d
-	now = WeatherMath.rain_now(intensity, GameState.clock.minutes)
+	now = intensity if forced else WeatherMath.rain_now(intensity, GameState.clock.minutes)
+	ground = intensity if forced else WeatherMath.ground_wet(intensity, GameState.clock.minutes)
 	queue_redraw()
 
 func _draw() -> void:

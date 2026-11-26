@@ -20,6 +20,7 @@ var car_paint := 0
 var licence := false              # Halden circuit licence (CircuitModel)
 var stats: Dictionary = {}   # lifetime counters for story beats: race_wins, contests, promotions (StoryModel stat_min)
 var football := FootballLeague.new()   # Halden Sunday League (E6)
+var hoops := HoopLadder.new()   # 3-on-3 street basketball crews (E6)
 var sport_best: Dictionary = {}   # hoops / penalty best scores, bouts_won (SportsModel)
 var race_best: Dictionary = {}   # laps (as text) -> best time
 var energy := Energy.new()
@@ -44,6 +45,7 @@ var tools_owned: Array = ToolKit.start()   # hotbar tools you have crafted or st
 var drift_board: Array = []       # best circuit drift scores (DriftBoard)
 var after_hours: Dictionary = {}   # public building id -> {"in": day lock picked, "till": day till emptied} (ShopHours)
 var hangar_day := -1   # day of the last Vance hangar raid
+var cart_cargo: Dictionary = {}   # ore left in the mine cart (CartCargo.serialize)
 var warden_day := -1   # day the Stone Warden in the deep mine was last beaten
 var yard_looted: Dictionary = {}   # Vance yard crate index -> day last cleared
 var debt_paid: int = 0       # Vance debt repaid at the Town Hall ledger
@@ -82,7 +84,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "energy": energy.value, "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world, "world_state": world_state,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "warden_day": warden_day, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "hoops": hoops.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "warden_day": warden_day, "cart_cargo": cart_cargo, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -113,6 +115,7 @@ func from_dict(d: Dictionary) -> bool:
 	for k in d.get("stats", {}):
 		stats[str(k)] = int(d["stats"][k])
 	football.from_dict(d.get("football", {}))
+	hoops.from_dict(d.get("hoops", {}))
 	sport_best = {}
 	for k in d.get("sport_best", {}):
 		sport_best[str(k)] = int(d["sport_best"][k])
@@ -146,6 +149,8 @@ func from_dict(d: Dictionary) -> bool:
 		after_hours[str(k)] = {"in": int(d["after_hours"][k].get("in", -1)), "till": int(d["after_hours"][k].get("till", -1))}
 	hangar_day = int(d.get("hangar_day", -1))
 	warden_day = int(d.get("warden_day", -1))
+	var cc = d.get("cart_cargo", {})
+	cart_cargo = (cc as Dictionary).duplicate() if cc is Dictionary else {}
 	var yl: Dictionary = d.get("yard_looted", {})
 	for k in yl:
 		yard_looted[int(k)] = int(yl[k])

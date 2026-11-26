@@ -13,6 +13,10 @@ var world: Node2D       # World: .wet, .gen
 var player: Node2D
 var sources: Array = []   # Sprite2D nodes standing near the player
 var splashes: Array = []  # {pos, age, drops: [{v, p}]}
+var lamps: Array = []     # PointLight2D of street lamps, lanterns and windows near the player
+var glow: Node2D          # additive, unshaded layer for their reflection streaks
+var streak_blocks := 0
+var _gloss := {}          # Vector2i (2px cell) -> PuddleMath.gloss, cleared on every scan
 var blocks_drawn := 0
 var _scan_t := 0.0
 var _t := 0.0
@@ -23,6 +27,13 @@ func setup(w: Node2D, p: Node2D) -> void:
 	z_index = -2
 	z_as_relative = false
 	p.footstep.connect(_on_step)
+	glow = Node2D.new()
+	var m := CanvasItemMaterial.new()
+	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	glow.material = m
+	glow.draw.connect(_draw_streaks)
+	add_child(glow)
 
 func standing_water(at: Vector2) -> float:
 	## Puddle depth 0..1 under a world pixel (0 off paths/asphalt and in dry weather).
@@ -89,12 +100,16 @@ func _process(delta: float) -> void:
 		if _scan_t <= 0.0:
 			_scan_t = SCAN_EVERY
 			sources.clear()
+			lamps.clear()
+			_gloss.clear()
 			_scan(world, 0)
 	else:
 		sources.clear()
+		lamps.clear()
 		_scan_t = 0.0
-	if on or not splashes.is_empty() or blocks_drawn > 0:
+	if on or not splashes.is_empty() or blocks_drawn > 0 or streak_blocks > 0:
 		queue_redraw()   # also once after the water goes, so no stale mirror is left behind
+		glow.queue_redraw()
 
 func _scan(n: Node, depth: int) -> void:
 	for c in n.get_children():
@@ -103,8 +118,70 @@ func _scan(n: Node, depth: int) -> void:
 		var cd := c as Node2D
 		if cd is Sprite2D and _stands(cd as Sprite2D):
 			sources.append(cd)
+		elif cd is PointLight2D and _is_fixed_lamp(cd as PointLight2D):
+			lamps.append(cd)
 		if depth < 3:
 			_scan(cd, depth + 1)
+
+func _is_fixed_lamp(l: PointLight2D) -> bool:
+	## Lamps on posts and house fronts (not headlights or the player): their parent's origin is their foot.
+	var par := l.get_parent()
+	if not (par is StaticBody2D or par is Lantern or l.is_in_group("night_lights")) or l.position.y > -8.0:
+		return false
+	var d := (l.global_position - player.global_position).abs()
+	return d.x < REACH.x and d.y < REACH.y
+
+func _gloss_at(cell: Vector2i) -> float:
+	var g: float = _gloss.get(cell, -1.0)
+	if g < 0.0:
+		var at := Vector2(cell) * 2.0 + Vector2.ONE
+		var tile: int = world.gen.tile_at(floori(at.x / 32.0), floori(at.y / 32.0))
+		g = PuddleMath.gloss(tile, PuddleMath.mask_at(at, world.wet), world.wet)
+		_gloss[cell] = g
+	return g
+
+func _draw_streaks() -> void:
+	streak_blocks = 0
+	if world == null or world.wet < MIN_WET or player.get("indoors"):
+		return
+	for node in lamps:
+		if not is_instance_valid(node):
+			continue
+		var l := node as PointLight2D
+		if not l.is_visible_in_tree() or l.energy <= 0.02:
+			continue
+		var post := l.texture_scale >= 1.4   # lamp posts throw wider, brighter streaks than windows
+		var foot := (l.get_parent() as Node2D).global_position
+		var height := maxf(foot.y - l.global_position.y, 8.0)
+		var length := PuddleMath.streak_length(height)
+		var k := clampf(l.energy / 0.9, 0.0, 1.0) * (1.0 if post else 0.85)
+		var cx := l.global_position.x
+		var phase := fposmod(cx * 0.131 + foot.y * 0.071, TAU)
+		var half := 7.0 if post else 5.0
+		var y := 2.0
+		while y < length:
+			var u := y / length
+			var a := PuddleMath.streak_profile(u) * k
+			var dash := PuddleMath.streak_dash(y, _t, phase)
+			var w := roundf(half * (1.0 - 0.45 * u) * (0.55 + 0.6 * dash) * 0.5) * 2.0
+			var x0 := floorf((cx - w + PuddleMath.streak_wobble(y, _t, phase)) / 2.0)
+			var cy := floori((foot.y + y) / 2.0)
+			for i in int(w):
+				var cell := Vector2i(int(x0) + i, cy)
+				var g := _gloss_at(cell)
+				if g <= 0.0:
+					continue
+				var core := 1.0 - absf((i + 0.5) / w * 2.0 - 1.0)   # 0 at the sides, 1 in the middle
+				# standing water holds an almost unbroken image; rough wet ground breaks it into dashes
+				var broken := lerpf(dash * dash, 0.45 + 0.55 * dash, clampf(g * 1.6 - 0.6, 0.0, 1.0))
+				var alpha := a * g * broken * (0.35 + 0.65 * core) * 1.25
+				if alpha < 0.04:
+					continue
+				var col := Color(1.0, 0.52, 0.14).lerp(Color(1.0, 0.74, 0.36), core * dash)
+				col.a = minf(alpha, 0.85)
+				glow.draw_rect(Rect2(Vector2(cell) * 2.0, Vector2(2, 2)), col)
+				streak_blocks += 1
+			y += 2.0
 
 func _stands(s: Sprite2D) -> bool:
 	## Upright things only: tall enough, drawn above the ground layers, not already a mirror image.
@@ -152,14 +229,27 @@ func _mirror(s: Sprite2D) -> void:
 		var wob := roundf(sin(_t * 3.0 + y * 0.35) * 1.0)
 		var x := floorf(left / 4.0) * 4.0
 		while x < left + w:
-			var m := standing_water(Vector2(x + 2.0, y + 2.0))
-			if m >= PuddleMath.SEEN:
-				var u := clampf(x - left + wob, 0.0, w - 4.0)
-				if s.flip_h:
-					u = w - 4.0 - u
-				var v := clampf(h - 7.0 - row, 0.0, h - 4.0)
-				var dest := Rect2(Vector2(x, y), Vector2(-4.0 if s.flip_h else 4.0, -4.0))
-				draw_texture_rect_region(s.texture, dest, Rect2(fr.position + Vector2(u, v), Vector2(4, 4)), Color(0.62, 0.74, 0.9, alpha * m * (1.0 - 0.5 * clampf(row / h, 0.0, 1.0))))
-				blocks_drawn += 1
+			# whole 4px block inside one puddle: draw it at once; on the outline: 2px pieces that follow the curve
+			var c0 := standing_water(Vector2(x + 0.5, y + 0.5)) >= PuddleMath.SEEN
+			var c1 := standing_water(Vector2(x + 3.5, y + 0.5)) >= PuddleMath.SEEN
+			var c2 := standing_water(Vector2(x + 0.5, y + 3.5)) >= PuddleMath.SEEN
+			var c3 := standing_water(Vector2(x + 3.5, y + 3.5)) >= PuddleMath.SEEN
+			var size := 4.0 if c0 and c1 and c2 and c3 else 2.0
+			if c0 or c1 or c2 or c3:
+				var oy := 0.0
+				while oy < 4.0:
+					var ox := 0.0
+					while ox < 4.0:
+						var m := standing_water(Vector2(x + ox, y + oy) + Vector2.ONE * size * 0.5)
+						if m >= PuddleMath.SEEN:
+							var u := clampf(x + ox - left + wob, 0.0, w - size)
+							if s.flip_h:
+								u = w - size - u
+							var v := clampf(h - 3.0 - size - row - oy, 0.0, h - size)
+							var dest := Rect2(Vector2(x + ox, y + oy), Vector2(-size if s.flip_h else size, -size))   # negative size = mirrored
+							draw_texture_rect_region(s.texture, dest, Rect2(fr.position + Vector2(u, v), Vector2(size, size)), Color(0.62, 0.74, 0.9, alpha * m * (1.0 - 0.5 * clampf(row / h, 0.0, 1.0))))
+							blocks_drawn += 1
+						ox += size
+					oy += size
 			x += 4.0
 		y += 4.0

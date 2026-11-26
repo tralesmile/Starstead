@@ -50,10 +50,51 @@ static func texture() -> ImageTexture:
 		_tex = ImageTexture.create_from_image(img)
 	return _tex
 
+## Bilinear between texel centres, evaluated once per world (art) pixel: soft organic outlines with crisp pixels.
+## The ground shader does the same with a filter_linear lookup at the pixel centre.
 static func noise_at(world_px: Vector2) -> float:
-	var tx := posmod(floori(world_px.x / TEXEL_PX), TEXELS)
-	var ty := posmod(floori(world_px.y / TEXEL_PX), TEXELS)
-	return field()[ty * TEXELS + tx]
+	var fx := (floorf(world_px.x) + 0.5) / TEXEL_PX - 0.5
+	var fy := (floorf(world_px.y) + 0.5) / TEXEL_PX - 0.5
+	var ix := floori(fx)
+	var iy := floori(fy)
+	var f := field()
+	var x0 := posmod(ix, TEXELS)
+	var x1 := posmod(ix + 1, TEXELS)
+	var y0 := posmod(iy, TEXELS) * TEXELS
+	var y1 := posmod(iy + 1, TEXELS) * TEXELS
+	return lerpf(lerpf(f[y0 + x0], f[y0 + x1], fx - ix), lerpf(f[y1 + x0], f[y1 + x1], fx - ix), fy - iy)
+
+## ---- Night reflections: lamps and lit windows smear into vertical wavering streaks on wet ground.
+const STREAK_PUDDLE := 1.0    # surface mirror strength: standing water,
+const STREAK_ASPHALT := 0.58  # wet asphalt,
+const STREAK_DAMP := 0.32     # wet paving slabs and mud
+
+## How well the ground at a spot mirrors a light (0 on grass, water, or dry weather).
+static func gloss(tile: int, mask: float, wet: float) -> float:
+	var w := clampf(wet, 0.0, 1.0)
+	if capable(tile):
+		if mask >= SEEN:
+			return STREAK_PUDDLE * w
+		return (STREAK_ASPHALT if tile == WorldGen.ASPHALT else STREAK_DAMP) * w
+	return STREAK_DAMP * w if WorldGen.is_road(tile) else 0.0
+
+## Streak length in pixels for a lamp hung `height` px above its foot.
+static func streak_length(height: float) -> float:
+	return clampf(height * 1.6 + 60.0, 70.0, 140.0)
+
+## Brightness 0..1 along the streak, u = 0 at the foot of the lamp, 1 at the tip: quick rise, long fade.
+static func streak_profile(u: float) -> float:
+	if u <= 0.0 or u >= 1.0:
+		return 0.0
+	return smoothstep(0.0, 0.22, u) * (1.0 - smoothstep(0.42, 1.0, u))
+
+## Sideways ripple of the row `y` px below the foot; swings wider further out.
+static func streak_wobble(y: float, t: float, phase: float) -> float:
+	return roundf((sin(y * 0.42 - t * 3.6 + phase) * 1.4 + sin(y * 0.17 + t * 2.1 + phase * 1.7) * 1.2) * clampf(0.4 + y / 70.0, 0.4, 1.5))
+
+## 0..1 ripple breaks: bright dashes with darker gaps that crawl down the streak.
+static func streak_dash(y: float, t: float, phase: float) -> float:
+	return clampf(0.62 + 0.55 * sin(y * 0.9 - t * 4.2 + phase) * sin(y * 0.31 + t * 1.3 + phase * 0.6) + 0.2 * sin(y * 0.55 - t * 2.0), 0.0, 1.0)
 
 static func mask_of(v: float, wet: float) -> float:
 	return smoothstep(T0, T1, v) * clampf(wet, 0.0, 1.0)

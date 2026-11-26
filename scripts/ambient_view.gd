@@ -56,9 +56,10 @@ func _draw() -> void:
 			for band in 3:   # stepped soft edge: three nested ellipses
 				var f := 1.0 - 0.28 * float(band)
 				draw_colored_polygon(CloudMath.ellipse(cp, cr * f), Color(0.05, 0.1, 0.18, 0.07 * cs))
-	if night > 0.05:
+	var flies := AmbientMath.firefly_amount(night, rain)
+	if flies > 0.05:
 		for i in FIREFLIES:
-			var g := AmbientMath.firefly_glow(i, t) * night
+			var g := AmbientMath.firefly_glow(i, t) * flies
 			if g < 0.05:
 				continue
 			var p := (c + AmbientMath.firefly_pos(i, t)).round()

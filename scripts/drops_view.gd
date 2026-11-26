@@ -11,13 +11,15 @@ var drops: Array = []  # {id, n, node, spr, pos, age, phase}
 var icons: Dictionary = DataDB.load_json("item_icons")
 var tex: Texture2D = load("res://assets/sprites/items.png")
 var frames := 19
+var claim: Callable   # (id, n, pos) -> pieces something else takes first (the mine cart scooping ore)
 
 func setup(w: Node2D, p: Node2D) -> void:
 	world = w
 	player = p
 	frames = maxi(1, tex.get_width() / 16)
 
-func spawn(id: String, n: int, pos: Vector2) -> void:
+func spawn(id: String, n: int, pos: Vector2, hold: float = 0.0) -> void:
+	## hold: extra seconds before anything may pick it up (ore thrown from the cart).
 	var parts := DropMath.pieces(n)
 	for i in parts.size():
 		var node := Node2D.new()
@@ -33,7 +35,7 @@ func spawn(id: String, n: int, pos: Vector2) -> void:
 		var target := pos + DropMath.scatter(i, parts.size())
 		node.position = target
 		world.add_child(node)
-		drops.append({"id": id, "n": int(parts[i]), "node": node, "spr": spr, "age": 0.0, "phase": randf() * TAU, "start": pos, "end": target})
+		drops.append({"id": id, "n": int(parts[i]), "node": node, "spr": spr, "age": 0.0, "hold": hold, "phase": randf() * TAU, "start": pos, "end": target})
 
 func _process(delta: float) -> void:
 	var keep: Array = []
@@ -44,7 +46,17 @@ func _process(delta: float) -> void:
 		var spr: Sprite2D = d["spr"]
 		if age < DropMath.POP_TIME:
 			node.position = (d["start"] as Vector2).lerp(d["end"], age / DropMath.POP_TIME)
-		elif DropMath.in_magnet(node.position, player.position, age) and GameState.bag.count(d["id"]) >= 0 and _room(d["id"]):
+		if age < DropMath.POP_TIME + float(d["hold"]):
+			spr.offset.y = -6.0 - DropMath.pop_height(age) - DropMath.bob(age, float(d["phase"]))
+			keep.append(d)
+			continue
+		if claim.is_valid():
+			var took := int(claim.call(d["id"], int(d["n"]), node.position))
+			if took >= int(d["n"]):
+				node.queue_free()
+				continue
+			d["n"] = int(d["n"]) - took
+		if DropMath.in_magnet(node.position, player.position, age) and GameState.bag.count(d["id"]) >= 0 and _room(d["id"]):
 			node.position = DropMath.magnet_step(node.position, player.position, delta)
 		spr.offset.y = -6.0 - DropMath.pop_height(age) - DropMath.bob(age, float(d["phase"]))
 		if age >= DropMath.POP_TIME and DropMath.in_pickup(node.position, player.position) and _room(d["id"]):

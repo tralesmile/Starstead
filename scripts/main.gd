@@ -44,6 +44,8 @@ var sfx_director: SfxDirector
 var bus_stops: BusStopsView
 var craft_view: CraftView
 var welcome: WelcomeView
+var pause_view: PauseView
+var _overlay_was_open := false   # a view that closes itself on Esc must not open the pause menu with the same press
 var perk_view: PerkView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
@@ -57,6 +59,7 @@ var upgrade_view: UpgradeView
 var farm_view: FarmView
 var sports: SportsView
 var football_view: FootballView
+var hoop_view: HoopView
 var derby: DerbyView
 var bike_view: BikeView
 var hangar: HangarView
@@ -345,6 +348,11 @@ func _ready() -> void:
 	football_view.message.connect(_say)
 	football_view.sound.connect(func(n: String): sfx_director.play(n))
 	add_child(football_view)
+	hoop_view = HoopView.new()
+	hoop_view.closed.connect(func(): player.set_physics_process(true))
+	hoop_view.message.connect(_say)
+	hoop_view.sound.connect(func(n: String): sfx_director.play(n))
+	add_child(hoop_view)
 	hangar = HangarView.new()
 	hangar.finished.connect(_hangar_done)
 	add_child(hangar)
@@ -461,9 +469,13 @@ func _ready() -> void:
 	cave.sound.connect(func(n, g, pi): sfx_director.play(n, g, pi))
 	cave.message.connect(func(msg): _say(msg))
 	cave.boss_defeated.connect(_on_warden_down)
+	cave.bag_cb = func() -> Inventory: return GameState.bag
+	cave.cargo.deserialize(GameState.cart_cargo)
+	cave.cargo_spilled.connect(func(id, n, p): drops_view.spawn(id, n, p, 1.0))
 	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
+	drops_view.claim = cave.scoop
 	tree_fall = TreeFallView.new()
 	tree_fall.setup(world, drops_view)
 	float_fx = FloatFx.new()
@@ -507,8 +519,46 @@ func _ready() -> void:
 	GameState.before_save.connect(_capture_world)
 	if loaded:
 		_setup_welcome()
+	pause_view = PauseView.new()
+	pause_view.persist_volume = PauseModel.quit_saves(OS.get_cmdline_user_args())
+	if pause_view.persist_volume:
+		pause_view.volume = PauseModel.load_volume()
+		pause_view.apply_volume()
+	pause_view.chosen.connect(_pause_chosen)
+	add_child(pause_view)
 	demos.on_ready()
 	$HUD.queue_free()
+
+func _overlay_open() -> bool:
+	for v in [shop, dealer, dialogue, inv_view, craft_view, chest_view, cook_view, bus_view, ferry_view, forge_view, butcher_view, smelt_view, upgrade_view, garage_view, journal_view, bike_view, football_view, hoop_view, sports, derby, hangar, jobs.game_view if jobs != null else null]:
+		if v != null and v.visible:
+			return true
+	return map_view.is_open() or story_view.log_open() or perk_view.visible or (welcome != null and welcome.active)
+
+func _open_pause() -> void:
+	var place := "mine" if cave.active else ("building" if interior.active else "")
+	pause_view.open(place, sfx_director.sfx.muted)
+
+func _pause_chosen(id: String) -> void:
+	match id:
+		"save":
+			pause_view.note = "Game saved" if GameState.save_game() else "Could not save!"
+		"sound":
+			pause_view.muted = sfx_director.sfx.toggle_mute()
+		"leave":
+			if cave.active:
+				cave.leave()
+			elif interior.active:
+				interior.leave()
+		"quit":
+			if PauseModel.quit_saves(OS.get_cmdline_user_args()):
+				GameState.save_game()
+			get_tree().quit()
+
+## Closing the window keeps the day: the game used to save only at bedtime and on the ferry.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and pause_view != null and PauseModel.quit_saves(OS.get_cmdline_user_args()):
+		GameState.save_game()
 
 func _setup_welcome() -> void:
 	## A loaded save puts you, the car and the neighbours' memories back, behind the welcome-back card.
@@ -524,6 +574,7 @@ func _setup_welcome() -> void:
 	_welcome_lock(true)
 
 func _capture_world() -> void:
+	GameState.cart_cargo = cave.cargo.serialize()
 	var at := player.position
 	if interior.active:
 		at = interior.outside_pos   # rooms live far off the map: remember the doorstep
@@ -531,7 +582,7 @@ func _capture_world() -> void:
 		at = cave.outside_pos
 	elif car.driving:
 		at = car.position + VehicleMath.forward(car.heading).orthogonal() * 24.0
-	GameState.world_state = WorldState.pack(at, player.facing, car.position, car.heading, car.fuel, car.health, robbery.model.serialize())
+	GameState.world_state = WorldState.pack(at, player.facing, car.position, car.heading, car.fuel, car.health, robbery.model.serialize(), police.heat)
 
 func _restore_world() -> void:
 	var bounds := Rect2(ChunkGrid.world_rect_px())
@@ -545,6 +596,7 @@ func _restore_world() -> void:
 	var r := WorldState.robbery_of(GameState.world_state)
 	if not r.is_empty():
 		robbery.model.deserialize(r)
+	police.heat = WorldState.heat_of(GameState.world_state)
 
 func _home_door() -> Vector2i:
 	for b in town.buildings:
@@ -560,6 +612,7 @@ func _welcome_lock(on: bool) -> void:
 	jobs.set_process_unhandled_input(not on)
 
 func _process(delta: float) -> void:
+	_overlay_was_open = _overlay_open()
 	car_theft.refresh(GameState.clock.day)
 	if rod_charging:
 		rod_charge_t += delta
@@ -589,6 +642,7 @@ func _process(delta: float) -> void:
 		rain_today = WeatherMath.rain_for_day(1, rain_day, GameState.clock.season())
 		if "--rain" in OS.get_cmdline_user_args():
 			rain_today = 1.0
+			weather.forced = true
 		weather.intensity = rain_today
 		farm_view.rain = rain_today
 		_start_fish_event()
@@ -601,7 +655,7 @@ func _process(delta: float) -> void:
 	storm_t += delta
 	player.rain = weather.now
 	ambient.rain = maxf(weather.now, fog * 0.8)
-	world.set_wet(weather.now)
+	world.set_wet(weather.ground)
 	world.set_wind(WeatherMath.tree_wind(weather.now, PlayerMath.wind_angle(GameState.clock.day)))
 	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
 	flash_rect.size = fog_rect.size
@@ -725,6 +779,10 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
 		_rod_released()
 		bow.release()
+	if e.is_action_pressed("pause") and not _overlay_was_open and not _overlay_open():
+		_open_pause()
+		get_viewport().set_input_as_handled()
+		return
 	if perk_view.handle_key(e):   # perk chooser grabs input above every other menu
 		get_viewport().set_input_as_handled()
 		return
@@ -757,6 +815,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
 	if bike_view.visible:
 		bike_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
+	if hoop_view.visible:
+		hoop_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if football_view.visible:
@@ -848,20 +910,20 @@ func _unhandled_input(e: InputEvent) -> void:
 	if cave.active:
 		if cave.busy:
 			return
-		if e.is_action_pressed("pause"):
-			cave.leave()
-		elif e.is_action_pressed("interact"):
+		if e.is_action_pressed("interact"):
 			cave.interact()
 		elif e.is_action_pressed("use_tool"):
 			_cave_tool()
+		elif e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_G:
+			cave.load_cargo()
+		elif e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_X:
+			cave.unload_cargo()
 		return
 	if interior.active:
 		if interior.busy:
 			return
 		if e.is_action_pressed("interact"):
 			interior.interact()
-		elif e.is_action_pressed("pause"):
-			interior.leave()
 		return
 	if dialogue.handle(e):
 		get_viewport().set_input_as_handled()
@@ -930,7 +992,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			cave.enter(GameState.clock.day)
 			story_view.event("enter_cave")
 			return
-		if it.get("kind", "") == "pitch" or it.get("kind", "") == "league" or it.get("kind", "") == "bike":
+		if it.get("kind", "") == "pitch" or it.get("kind", "") == "league" or it.get("kind", "") == "bike" or it.get("kind", "") == "streethoop":
 			CityActions.run(self, String(it["kind"]))
 			return
 		if it.get("kind", "") == "driftboard":

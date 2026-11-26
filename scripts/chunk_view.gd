@@ -334,6 +334,7 @@ const CIRCUIT_SPRITES := {
 	"goal": ["goal_post", Vector2(30, 8), 40],
 	"league": ["league_board", Vector2(28, 8), 44],
 	"bikerack": ["bike_rack", Vector2(42, 8), 34],
+	"streethoop": ["bball_hoop", Vector2(16, 8), 72],
 }
 
 func _circuit(world: World) -> void:
@@ -363,6 +364,8 @@ func _circuit(world: World) -> void:
 		var b := world.make_prop(tex, c, d[1], Vector2(0, -float(d[2]) / 2.0))
 		if String(p["kind"]) == "league":
 			world.interactables.add(c, "league", "E: Sunday League match day (round, table)")
+		if String(p["kind"]) == "streethoop":
+			world.interactables.add(c, "streethoop", "E: Street hoops 3-on-3 (one money game a day)")
 		if String(p["kind"]) == "bikerack":
 			world.interactables.add(c, "bike", "E: Bicycle criterium (3 laps, one paid race a day)")
 		if String(p["kind"]) == "goal" and c == CircuitModel.GOAL_CELL:
