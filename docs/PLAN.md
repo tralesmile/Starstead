@@ -249,6 +249,9 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 45 queue (PLAYTEST run)
+- [ ] Run 45: PLAYTEST checklist; pause menu + save on quit; softer puddle edges + night lamp reflections; mine cart that hauls ore (weight physics); basketball 3-on-3 street matches (CLAIMED 2026-11-26)
+
 ## Run 44 queue
 - [x] Phase 3 slice (run 44): bike racing, the Halden Criterium at the circuit's bike rack (BikeModel pure rules + BikeView; 5 riders, 3 laps, drafting, stamina, lanes, cornering grip, wet road; $20 entry, one paid race a day; saved; tested). [ ] next: hands-on tuning (a bot with drafting rarely wins in the wet), riding a bicycle in the open world, more courses
 - [x] Run 44: the save keeps the car (position, fuel, damage), the player's spot and what robbed houses remember (WorldState, tested + live check in --save-roundtrip). Fixed: passing out at the wheel left the walker hidden and frozen. [ ] next: save on quit, title screen
