@@ -11,6 +11,8 @@ signal floor_changed(n: int)
 signal bitten(amount: float)
 var motes: CPUParticles2D
 signal message(msg: String)
+signal sound(name: String, gain: float, pitch: float)
+signal boss_defeated(pos: Vector2)
 
 const ORIGIN := Vector2(30016, 30016)
 const CELL_OFFSET := Vector2i(938, 938)   # ORIGIN / 32
@@ -34,6 +36,16 @@ var lamp: PointLight2D
 var fade: ColorRect
 var tex := {}
 var t := 0.0
+var boss: BossView
+var boss_ready_cb: Callable      # () -> days until the Warden is back (0 = awake and waiting)
+var wide_lamp_cb: Callable       # () -> true when the Deepglow Lamp is carried
+var cart: Dictionary = {}        # {s, v} on model.rail
+var cart_pts := PackedVector2Array()
+var cart_node: Node2D
+var cart_sprite: Sprite2D
+var riding := false
+var cart_roll := 0.0
+var rumble_t := 0.0
 
 func setup(w: Node2D, p: Player, host: Node) -> void:
 	world = w
@@ -112,6 +124,10 @@ func _clear_nodes() -> void:
 		if is_instance_valid(n):
 			n.queue_free()
 	nodes.clear()
+	riding = false
+	boss = null
+	cart_node = null
+	cart.clear()
 	ore_nodes.clear()
 	bats.clear()
 	torch_sprites.clear()
@@ -135,7 +151,7 @@ func _do_enter() -> void:
 	player.camera.limit_bottom = int(c.y + CaveModel.H * 16 + 40)
 	lamp = PointLight2D.new()
 	lamp.texture = Lantern.light_texture()
-	lamp.texture_scale = 2.4
+	lamp.texture_scale = 3.6 if wide_lamp_cb.is_valid() and bool(wide_lamp_cb.call()) else 2.4
 	lamp.color = Color(1.0, 0.86, 0.6)
 	lamp.energy = 0.85
 	lamp.position = Vector2(0, -14)
@@ -254,6 +270,177 @@ func _build() -> void:
 	for sp in model.crab_spawns:
 		_make_crawler(px(sp) + Vector2(16, 16), "crab")
 	_ladder_tiles()
+	_build_rail()
+	if model.is_boss_floor():
+		_build_boss()
+
+func _build_boss() -> void:
+	var days: int = int(boss_ready_cb.call()) if boss_ready_cb.is_valid() else 0
+	if days > 0:
+		message.emit("Rubble lies where the Warden fell. It stirs again in %d day%s" % [days, "" if days == 1 else "s"])
+		return
+	boss = BossView.new().setup(px(model.boss_spawn()) + Vector2(16, 24), player, model)
+	boss.hurt_player.connect(func(a, from, force):
+		bitten.emit(a)
+		player.push(from, force))
+	boss.shake.connect(func(a, s): player.shake(a, s))
+	boss.sound.connect(func(n, g, p): sound.emit(n, g, p))
+	boss.message.connect(func(m): message.emit(m))
+	boss.defeated.connect(func(pos): boss_defeated.emit(pos))
+	boss.z_index = -10   # warning rings lie on the floor, under everyone's feet
+	_add(boss)
+	_add(boss.body)
+
+## --- the mine cart ---
+func _build_rail() -> void:
+	if model.rail.is_empty():
+		return
+	var tex_rail := _t("cave_rail")
+	for i in model.rail.size():
+		var c: Vector2i = model.rail[i]
+		var a: Vector2i = model.rail[i - 1] - c if i > 0 else Vector2i.ZERO
+		var b: Vector2i = model.rail[i + 1] - c if i < model.rail.size() - 1 else Vector2i.ZERO
+		var s := Sprite2D.new()
+		s.texture = tex_rail
+		s.hframes = 6
+		s.frame = CartMath.tile_frame(a, b)
+		s.centered = false
+		s.position = px(c)
+		s.z_index = -17
+		_add(s)
+	cart_pts = CartMath.points(model.rail)
+	for i in cart_pts.size():
+		cart_pts[i] = cart_pts[i] + ORIGIN
+	for end in [0, cart_pts.size() - 1]:   # sprung buffers
+		var buf := ColorRect.new()
+		var dir: Vector2 = (cart_pts[end] - cart_pts[1 if end == 0 else end - 1]).normalized()
+		buf.size = Vector2(6, 20) if absf(dir.x) > 0.5 else Vector2(22, 6)
+		buf.position = cart_pts[end] + dir * 17.0 - buf.size * 0.5
+		buf.color = Color(0.55, 0.2, 0.14)
+		buf.z_index = -16
+		_add(buf)
+	cart = {"s": 0.0, "v": 0.0}
+	cart_node = Node2D.new()
+	cart_sprite = Sprite2D.new()
+	cart_sprite.texture = _t("cave_cart")
+	cart_sprite.hframes = 4
+	cart_sprite.offset = Vector2(0, -22)
+	cart_node.add_child(cart_sprite)
+	var sh := World.make_shadow(18.0)
+	sh.position = Vector2(0, -3)
+	sh.show_behind_parent = true
+	cart_node.add_child(sh)
+	_add(cart_node)
+	_place_cart()
+
+func _place_cart() -> void:
+	var at := CartMath.pos_at(cart_pts, float(cart["s"]))
+	# the node sorts a little below the rider so the tub hides the legs
+	cart_node.position = at + Vector2(0, 18)
+	var dir := CartMath.dir_at(cart_pts, float(cart["s"]))
+	var side := absf(dir.x) > 0.5
+	cart_sprite.frame = (0 if side else 2) + int(cart_roll / 9.0) % 2
+
+func near_cart() -> bool:
+	return cart_node != null and not cart.is_empty() and player.position.distance_to(CartMath.pos_at(cart_pts, float(cart["s"]))) < 42.0
+
+func board() -> bool:
+	if riding or not near_cart():
+		return false
+	riding = true
+	player.set_physics_process(false)
+	player.velocity = Vector2.ZERO
+	player.move_v = Vector2.ZERO
+	sound.emit("door_close", 0.8, 0.7)
+	message.emit("In the cart. Move along the rails to pump, Shift brakes, E hops off")
+	_seat_player()
+	return true
+
+func hop_off() -> bool:
+	if not riding:
+		return false
+	if absf(float(cart["v"])) > CartMath.BUMP_V * 1.5:
+		message.emit("Too fast to jump off. Brake first (Shift)")
+		return false
+	var at := CartMath.pos_at(cart_pts, float(cart["s"]))
+	var dir := CartMath.dir_at(cart_pts, float(cart["s"]))
+	var across := Vector2(-dir.y, dir.x)
+	for off in [across * 30.0, -across * 30.0, -dir * 32.0, dir * 32.0]:
+		var c := model_cell(at + off)
+		if model.is_floor(c) and not model.ores.has(c):
+			riding = false
+			player.position = at + off
+			player.set_physics_process(true)
+			cart["v"] = 0.0
+			return true
+	return false
+
+func interact() -> bool:
+	if not active or busy:
+		return false
+	return hop_off() if riding else board()
+
+func _seat_player() -> void:
+	player.position = CartMath.pos_at(cart_pts, float(cart["s"])) + Vector2(0, 8)
+
+func cart_tick(d: float, input: Vector2, braking: bool) -> void:
+	## A parked, empty cart keeps its brake on.
+	if cart.is_empty() or not riding:
+		return
+	var dir := CartMath.dir_at(cart_pts, float(cart["s"]))
+	var res := CartMath.step(cart, cart_pts, CartMath.pump_from_input(input, dir), braking, d)
+	var v := float(cart["v"])
+	cart_roll += absf(v) * d
+	if res["jolt"]:
+		player.shake(1.2, 0.18)
+		sound.emit("mine", 0.5, 1.6)
+		_sparks(CartMath.pos_at(cart_pts, float(cart["s"])), 12)
+	if float(res["bump"]) > 0.0:
+		player.shake(1.0 + float(res["bump"]) / 150.0, 0.2)
+		sound.emit("ball_post", 0.8, 0.6)
+	if braking and absf(v) > 40.0:
+		rumble_t -= d
+		if rumble_t <= 0.0:
+			rumble_t = 0.12
+			_sparks(CartMath.pos_at(cart_pts, float(cart["s"])) - dir * signf(v) * 10.0, 4)
+	elif absf(v) > 20.0:
+		rumble_t -= d
+		if rumble_t <= 0.0:
+			rumble_t = clampf(32.0 / absf(v), 0.1, 0.6)
+			sound.emit("step_wood", 0.7, 0.7)   # wheels over the rail joints
+	_place_cart()
+	_seat_player()
+	var face := dir * (1.0 if v >= 0.0 else -1.0)
+	if absf(v) > 8.0:
+		player.facing = PlayerMath.facing_for(face, player.facing)
+	if absf(v) > 90.0:
+		_ram(CartMath.pos_at(cart_pts, float(cart["s"])), face, absf(v))
+
+func _ram(at: Vector2, dir: Vector2, speed: float) -> void:
+	## A fast cart bowls monsters over.
+	for b in bats.duplicate():
+		var m: Dictionary = b["data"]
+		if float(m["down"]) > 0.0 or (m["pos"] as Vector2).distance_to(at) > 24.0:
+			continue
+		_hurt_monster(b, speed * 0.1, (dir + Vector2(-dir.y, dir.x) * 0.7).normalized() * speed)
+
+func _sparks(at: Vector2, n: int) -> void:
+	var p := CPUParticles2D.new()
+	p.position = at + Vector2(0, 6)
+	p.one_shot = true
+	p.emitting = true
+	p.explosiveness = 1.0
+	p.amount = n
+	p.lifetime = 0.3
+	p.direction = Vector2(0, -1)
+	p.spread = 100.0
+	p.initial_velocity_min = 40.0
+	p.initial_velocity_max = 90.0
+	p.gravity = Vector2(0, 260)
+	p.color = Color(1.0, 0.82, 0.35)
+	p.z_index = 3
+	_add(p)
+	get_tree().create_timer(0.7).timeout.connect(p.queue_free)
 
 func _make_ore(c: Vector2i) -> void:
 	var kind: String = model.ores[c]["kind"]
@@ -405,19 +592,25 @@ func club_swing(damage: float, reach: float, force: float) -> int:
 			continue
 		hits += 1
 		var dmg: float = CaveModel.crab_damage(damage) if d.get("kind", "bat") == "crab" else damage
-		d["hp"] = CombatModel.hit(float(d["hp"]), dmg)
-		d["vel"] = (bp - origin).normalized() * 220.0 * force
-		d["down"] = 0.35
-		(b["sprite"] as Sprite2D).modulate = Color(1.6, 1.6, 1.6)
-		if CombatModel.is_down(float(d["hp"])):
-			_splat(d["pos"], String(d.get("kind", "bat")))
-			if d.get("kind", "bat") == "bat":
-				bat_down.emit(d["pos"])
-			else:
-				monster_down.emit(String(d["kind"]), d["pos"])
-			(b["node"] as Node).queue_free()
-			bats.erase(b)
+		_hurt_monster(b, dmg, (bp - origin).normalized() * 220.0 * force)
+	if boss != null and boss.club_swing(origin, face, damage, reach):
+		hits += 1
 	return hits
+
+func _hurt_monster(b: Dictionary, dmg: float, knock: Vector2) -> void:
+	var d: Dictionary = b["data"]
+	d["hp"] = CombatModel.hit(float(d["hp"]), dmg)
+	d["vel"] = knock
+	d["down"] = 0.35
+	(b["sprite"] as Sprite2D).modulate = Color(1.6, 1.6, 1.6)
+	if CombatModel.is_down(float(d["hp"])):
+		_splat(d["pos"], String(d.get("kind", "bat")))
+		if d.get("kind", "bat") == "bat":
+			bat_down.emit(d["pos"])
+		else:
+			monster_down.emit(String(d["kind"]), d["pos"])
+		(b["node"] as Node).queue_free()
+		bats.erase(b)
 
 func rel() -> Vector2i:
 	return model_cell(player.position)
@@ -425,7 +618,12 @@ func rel() -> Vector2i:
 func prompt() -> String:
 	if not active or busy:
 		return ""
-	return "Floor %d/%d   Pickaxe: ore   Club: monsters   Ladder down: deeper   South / Esc: up" % [floor_no, CaveModel.MAX_FLOOR]
+	if riding:
+		return "Move: pump the cart   Shift: brake   E: hop off"
+	if near_cart():
+		return "E: ride the mine cart"
+	var where := "Warden's Hall" if model.is_boss_floor() else "Floor %d/%d" % [floor_no, CaveModel.MAX_FLOOR]
+	return "%s   Pickaxe: ore   Club: monsters   %sSouth / Esc: up" % [where, "Ladder down: deeper   " if model.has_ladder_down() else ""]
 
 func _process(d: float) -> void:
 	if not active or busy:
@@ -433,6 +631,10 @@ func _process(d: float) -> void:
 	t += d
 	for ts in torch_sprites:
 		(ts as Sprite2D).frame = int(t * 8.0 + (ts as Sprite2D).position.x * 0.07) % 4
+	if riding:
+		cart_tick(minf(d, 0.05), Input.get_vector("move_left", "move_right", "move_up", "move_down"), Input.is_action_pressed("sprint"))
+	if boss != null:
+		boss.tick(minf(d, 0.05))
 	var pp := player.position
 	for b in bats:
 		var data: Dictionary = b["data"]
@@ -457,10 +659,13 @@ func _process(d: float) -> void:
 		var dmg: float = CaveModel.bat_bite(data, pp + Vector2(0, -10)) if kind == "bat" else CaveModel.crawler_bite(data, pp)
 		if dmg > 0.0:
 			bitten.emit(dmg)
-			player.push(data["pos"], CaveModel.bite_force(kind))
+			if not riding:
+				player.push(data["pos"], CaveModel.bite_force(kind))
 			player.shake(0.6, 0.12)
 			data["vel"] = (data["pos"] - pp).normalized() * 160.0
 	var c := rel()
+	if riding:
+		return
 	if model.has_ladder_down():
 		var near := Vector2(c - model.ladder_down).length()
 		if ladder_lock and near > 1.8:

@@ -9,8 +9,6 @@ var rows: Array = []
 var here_name := ""
 var wait_min := 0
 var msg := ""
-const ORIGIN := Vector2(150, 50)
-const ROW := 30.0
 
 func _init() -> void:
 	layer = 9
@@ -55,9 +53,7 @@ func handle(e: InputEvent) -> bool:
 		close()
 		return true
 	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
-		var p := canvas.get_local_mouse_position() - ORIGIN
-		if p.x >= 0.0 and p.x < 340.0 and p.y >= 0.0:
-			_try(int(p.y / ROW))
+		_try(WoodUI.bus_row_at(canvas.get_local_mouse_position(), rows.size()))
 	elif e is InputEventKey and e.pressed and not e.echo:
 		var k := TargetMath.key_slot(e.keycode)
 		if k >= 0:
@@ -65,18 +61,25 @@ func handle(e: InputEvent) -> bool:
 	return true
 
 func _draw_all() -> void:
-	var font := ThemeDB.fallback_font
-	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(360, 66.0 + rows.size() * ROW))
-	canvas.draw_rect(panel.grow(2), Color(0.06, 0.12, 0.22))
-	canvas.draw_rect(panel, Color(0.12, 0.24, 0.42, 0.97))
-	canvas.draw_string(font, ORIGIN + Vector2(0, -16), "Bus stop: %s   (next bus in %d min)" % [here_name, wait_min], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
-	var hover := int((canvas.get_local_mouse_position() - ORIGIN).y / ROW) if canvas.get_local_mouse_position().x > ORIGIN.x else -1
+	var panel := WoodUI.bus_window(rows.size())
+	WoodUI.panel(canvas, panel, "Bus stop: %s" % here_name, WoodUI.Trim.HAZARD)
+	WoodUI.plank_note(canvas, panel, "next bus in %d min" % wait_min)
+	var hover := WoodUI.bus_row_at(canvas.get_local_mouse_position(), rows.size())
 	for i in rows.size():
 		var r: Dictionary = rows[i]
-		var y := ORIGIN.y + i * ROW
+		var rr := WoodUI.bus_row_rect(i)
+		var o := rr.position
 		var ok := bool(r["ok"])
-		canvas.draw_rect(Rect2(ORIGIN.x, y, 340, ROW - 3), Color(0.18, 0.32, 0.52, 0.95) if i != hover else Color(0.26, 0.44, 0.68, 0.95))
-		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 13), "%d. %s" % [(i + 1) % 10, r["name"]], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1) if ok else Color(0.7, 0.7, 0.75))
-		var right := "$%d   %d min" % [r["fare"], int(r["minutes"]) + wait_min] if ok else String(r["why"])
-		canvas.draw_string(font, Vector2(ORIGIN.x + 8, y + 25), right, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(0.75, 0.95, 0.7) if ok else Color(0.95, 0.6, 0.55))
-	canvas.draw_string(font, ORIGIN + Vector2(0, 14 + rows.size() * ROW), msg if msg != "" else "Fares by distance. Buses every 30 min, 06:00-23:00.   E / Esc: leave", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 0.8))
+		WoodUI.row(canvas, rr, i == hover, ok)
+		WoodUI.icon_well(canvas, Rect2(o + Vector2(3, 3), Vector2(21, 21)))
+		WoodUI.text(canvas, o + Vector2(3, 18), str((i + 1) % 10), 11, WoodUI.INK if ok else WoodUI.INK_SOFT, 21, HORIZONTAL_ALIGNMENT_CENTER)
+		WoodUI.text(canvas, o + Vector2(32, 18), String(r["name"]), 12, WoodUI.INK if ok else WoodUI.INK_SOFT, 178)
+		if ok:
+			WoodUI.text(canvas, o + Vector2(214, 18), "$%d" % r["fare"], 11, WoodUI.PRICE, 50, HORIZONTAL_ALIGNMENT_RIGHT)
+			WoodUI.text(canvas, o + Vector2(268, 18), "%d min" % (int(r["minutes"]) + wait_min), 11, WoodUI.INK, rr.size.x - 276, HORIZONTAL_ALIGNMENT_RIGHT)
+		else:
+			WoodUI.text(canvas, o + Vector2(214, 18), String(r["why"]), 11, WoodUI.BAD, rr.size.x - 222, HORIZONTAL_ALIGNMENT_RIGHT)
+	var fy := WoodUI.BUS_ORIGIN.y + rows.size() * WoodUI.BUS_ROW
+	var w := WoodUI.BUS_W
+	WoodUI.text(canvas, Vector2(WoodUI.BUS_ORIGIN.x, fy + 13), msg if msg != "" else "Fares by distance. Buses every 30 min, 06:00-23:00.", 10, WoodUI.BAD if msg != "" else WoodUI.INK, w, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(canvas, Vector2(WoodUI.BUS_ORIGIN.x, fy + 27), "Click a stop or press its number.   E / Esc: leave", 10, WoodUI.INK_SOFT, w, HORIZONTAL_ALIGNMENT_CENTER)

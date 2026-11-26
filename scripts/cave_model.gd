@@ -7,11 +7,18 @@ extends RefCounted
 const W := 48
 const H := 34
 const LAYOUT_SEED := 4242
-const ORE_HP := {"copper": 3, "coal": 3, "iron": 5}
-const ORE_DROP := {"copper": ["copper_ore", 2], "coal": ["coal", 2], "iron": ["iron_ore", 1]}
+const ORE_HP := {"copper": 3, "coal": 3, "iron": 5, "silver": 5, "gold": 6}
+const ORE_DROP := {"copper": ["copper_ore", 2], "coal": ["coal", 2], "iron": ["iron_ore", 1], "silver": ["silver_ore", 1], "gold": ["gold_ore", 1]}
 const BAT_HP := 12.0
 const BAT_CONTACT := 0.9   # seconds between bites
-const MAX_FLOOR := 5
+const MAX_FLOOR := 6
+const BOSS_FLOOR := 6       # the Warden's Hall: a round arena under the deepest mine floor
+const SILVER_FROM := 3
+const GOLD_FROM := 4
+const VEIN_MAX := 4
+const HALL_CENTRE := Vector2i(W / 2, 13)
+const HALL_RADIUS := Vector2(13.5, 9.5)
+const RAIL_MIN := 8         # shorter paths get no track
 const SLIME_HP := 18.0
 const CRAB_HP := 36.0
 
@@ -19,6 +26,7 @@ var floor_no := 1
 var ladder_down := Vector2i(-1, -1)   # deepest floor cell; (-1,-1) on the last floor
 var slime_spawns: Array[Vector2i] = []
 var crab_spawns: Array[Vector2i] = []
+var rail: Array[Vector2i] = []   # mine-cart track from near the entrance to near the ladder down (4-neighbour steps)
 
 var floor_cells: Dictionary = {}   # Vector2i -> true
 var entrance := Vector2i(W / 2, H - 4)
@@ -31,11 +39,16 @@ static func generate(day: int = 1, floor_no: int = 1, layout_seed: int = LAYOUT_
 	var m := CaveModel.new()
 	m.floor_no = clampi(floor_no, 1, MAX_FLOOR)
 	var sd := layout_seed + (m.floor_no - 1) * 977
-	m._carve(sd)
-	m._torches()
-	m._bats(sd)
-	m._ladder()
-	m._monsters(sd)
+	if m.is_boss_floor():
+		m._carve_hall()
+		m._torches()
+	else:
+		m._carve(sd)
+		m._torches()
+		m._bats(sd)
+		m._ladder()
+		m._monsters(sd)
+		m._lay_rail()
 	m.refill(day)
 	return m
 
@@ -44,9 +57,99 @@ static func floor_bias(f: int) -> float:
 	return (clampi(f, 1, MAX_FLOOR) - 1) * 0.18
 
 static func monster_counts(f: int) -> Dictionary:
-	## Bats from floor 1, slimes from floor 2, rock crabs from floor 3.
+	## Bats from floor 1, slimes from floor 2, rock crabs from floor 3. The boss fights alone.
 	var fl := clampi(f, 1, MAX_FLOOR)
+	if fl == BOSS_FLOOR:
+		return {"bat": 0, "slime": 0, "crab": 0}
 	return {"bat": 5, "slime": 0 if fl < 2 else 2 + fl, "crab": 0 if fl < 3 else fl - 1}
+
+func is_boss_floor() -> bool:
+	return floor_no == BOSS_FLOOR
+
+func boss_spawn() -> Vector2i:
+	return HALL_CENTRE + Vector2i(0, -3)
+
+func _carve_hall() -> void:
+	## A wide round hall with a straight corridor down to the ladder you came in by.
+	for y in range(2, H - 2):
+		for x in range(2, W - 2):
+			var d := Vector2(x - HALL_CENTRE.x, y - HALL_CENTRE.y) / HALL_RADIUS
+			if d.length() <= 1.0:
+				floor_cells[Vector2i(x, y)] = true
+	for y in range(HALL_CENTRE.y, entrance.y + 2):
+		for dx in range(-2, 3):
+			floor_cells[Vector2i(entrance.x + dx, y)] = true
+
+func _lay_rail() -> void:
+	## Shortest walk from just above the entrance to just short of the ladder, preferring straight runs.
+	rail.clear()
+	if not has_ladder_down():
+		return
+	var start := entrance + Vector2i(2, -1)
+	if not floor_cells.has(start):
+		start = entrance + Vector2i(0, -1)
+	var dirs: Array[Vector2i] = [Vector2i(0, -1), Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1)]
+	var cost := {}
+	var came := {}
+	var open: Array = [[0, start, -1]]   # [cost, cell, direction index]
+	cost[Vector3i(start.x, start.y, -1)] = 0
+	var goal_key = null
+	while not open.is_empty():
+		var bi := 0
+		for i in range(1, open.size()):
+			if int(open[i][0]) < int(open[bi][0]):
+				bi = i
+		var cur: Array = open[bi]
+		open[bi] = open[open.size() - 1]
+		open.pop_back()
+		var c: Vector2i = cur[1]
+		var di: int = cur[2]
+		var key := Vector3i(c.x, c.y, di)
+		if int(cur[0]) > int(cost[key]):
+			continue
+		if absi(c.x - ladder_down.x) + absi(c.y - ladder_down.y) == 2:
+			goal_key = key
+			break
+		for i in 4:
+			var n: Vector2i = c + dirs[i]
+			if not floor_cells.has(n) or n == ladder_down:
+				continue
+			if di >= 0 and dirs[i] == -dirs[di]:
+				continue
+			var step_cost := 10 + (0 if i == di or di < 0 else 14)
+			# keep the track off the walls where there is room
+			for o in dirs:
+				if not floor_cells.has(n + o):
+					step_cost += 3
+			var nk := Vector3i(n.x, n.y, i)
+			var nc := int(cur[0]) + step_cost
+			if not cost.has(nk) or nc < int(cost[nk]):
+				cost[nk] = nc
+				came[nk] = key
+				open.append([nc, n, i])
+	if goal_key == null:
+		return
+	var k: Vector3i = goal_key
+	while true:
+		rail.push_front(Vector2i(k.x, k.y))
+		if not came.has(k):
+			break
+		k = came[k]
+	if rail.size() < RAIL_MIN:
+		rail.clear()
+
+func on_rail(c: Vector2i) -> bool:
+	return rail.has(c)
+
+func rare_kind(base: String, roll: float) -> String:
+	## Silver replaces some ore from floor 3, gold from floor 4; richer the deeper you go.
+	var gold := 0.0 if floor_no < GOLD_FROM else 0.10 + 0.04 * (floor_no - GOLD_FROM)
+	var silver := 0.0 if floor_no < SILVER_FROM else 0.16
+	if roll < gold:
+		return "gold"
+	if roll < gold + silver:
+		return "silver"
+	return base
 
 func has_ladder_down() -> bool:
 	return ladder_down.x >= 0
@@ -151,13 +254,39 @@ func refill(day: int) -> void:
 		cand[i] = cand[j]
 		cand[j] = t
 	var want := 22 + (floor_no - 1) * 3
+	if is_boss_floor():
+		want = 10
+	var wall_set := {}
+	for c in cand:
+		wall_set[c] = true
+	# ore grows in veins: a seed cell, then neighbours along the same wall carry the same metal
 	for c in cand:
 		if ores.size() >= want:
 			break
-		var kind := ore_kind_for(c, r.randf())
-		ores[c] = {"kind": kind, "hp": ORE_HP[kind]}
-		if not reachable_all():
-			ores.erase(c)
+		if ores.has(c) or rail.has(c):
+			continue
+		var kind := rare_kind(ore_kind_for(c, r.randf()), r.randf())
+		if is_boss_floor():
+			kind = "gold" if r.randf() < 0.4 else "silver"
+		if not _try_ore(c, kind):
+			continue
+		var size := r.randi_range(1, VEIN_MAX)
+		var frontier: Array[Vector2i] = [c]
+		var grown := 1
+		while grown < size and not frontier.is_empty() and ores.size() < want:
+			var from: Vector2i = frontier.pop_front()
+			for o in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var n: Vector2i = from + o
+				if grown < size and ores.size() < want and wall_set.has(n) and not ores.has(n) and not rail.has(n) and _try_ore(n, kind):
+					frontier.append(n)
+					grown += 1
+
+func _try_ore(c: Vector2i, kind: String) -> bool:
+	ores[c] = {"kind": kind, "hp": ORE_HP[kind]}
+	if not reachable_all():
+		ores.erase(c)
+		return false
+	return true
 
 func reachable_all() -> bool:
 	## True when every floor cell without ore can be reached from the entrance.

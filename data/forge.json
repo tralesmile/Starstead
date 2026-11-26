@@ -4,5 +4,13 @@
 	"engine_kit": {"name": "Engine Kit (+12% car top speed)", "needs": {"iron_bar": 4, "copper_bar": 2}, "makes": "engine_kit", "item": true, "count": 1, "limit": 1},
 	"grip_tyres": {"name": "Grip Tyres (+20% car grip)", "needs": {"iron_bar": 2, "hide": 3}, "makes": "grip_tyres", "item": true, "count": 1, "limit": 1},
 	"armour": {"name": "Animal Armour (boar bites -50%)", "needs": {"iron_bar": 3, "leather": 1}, "makes": "armour", "item": true, "count": 1},
-	"bumper_guard": {"name": "Bumper Guard (-35% crash damage)", "needs": {"iron_bar": 3}, "makes": "bumper_guard", "item": true, "count": 1, "limit": 1}
+	"bumper_guard": {"name": "Bumper Guard (-35% crash damage)", "needs": {"iron_bar": 3}, "makes": "bumper_guard", "item": true, "count": 1, "limit": 1},
+	"axe_copper": {"name": "Copper Axe", "needs": {"wood": 2, "copper_bar": 3}, "makes": "axe_copper", "item": true, "count": 1, "limit": 1},
+	"axe_iron": {"name": "Iron Axe", "needs": {"wood": 2, "iron_bar": 4}, "makes": "axe_iron", "item": true, "count": 1, "limit": 1},
+	"hoe_copper": {"name": "Copper Hoe", "needs": {"wood": 2, "copper_bar": 3}, "makes": "hoe_copper", "item": true, "count": 1, "limit": 1},
+	"hoe_iron": {"name": "Iron Hoe", "needs": {"wood": 2, "iron_bar": 4}, "makes": "hoe_iron", "item": true, "count": 1, "limit": 1},
+	"watering_can_copper": {"name": "Copper Watering Can", "needs": {"wood": 2, "copper_bar": 3}, "makes": "watering_can_copper", "item": true, "count": 1, "limit": 1},
+	"watering_can_iron": {"name": "Iron Watering Can", "needs": {"wood": 2, "iron_bar": 4}, "makes": "watering_can_iron", "item": true, "count": 1, "limit": 1},
+	"pickaxe_gold": {"name": "Gold Pickaxe (power 4)", "needs": {"wood": 2, "gold_bar": 4}, "makes": "pickaxe_gold", "item": true, "count": 1, "limit": 1},
+	"deep_lamp": {"name": "Deepglow Lamp (wide mine light)", "needs": {"silver_bar": 2, "gold_bar": 1, "warden_core": 1}, "makes": "deep_lamp", "item": true, "count": 1, "limit": 1}
 }

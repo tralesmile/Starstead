@@ -3,10 +3,10 @@ extends CanvasLayer
 ## Storage chest screen: chest grid on top, bag below. Left-click a stack to send it to the other side, Shift+click moves every stack of that item.
 
 signal closed
-const COLS := 10
-const CELL := 28.0
-const CHEST_ORIGIN := Vector2(140, 50)
-const BAG_ORIGIN := Vector2(140, 170)
+const COLS := WoodUI.GRID_COLS
+const CELL := WoodUI.GRID_CELL
+const CHEST_ORIGIN := WoodUI.CHEST_GRID
+const BAG_ORIGIN := WoodUI.CHEST_BAG_GRID
 var canvas: Control
 var items: Dictionary = DataDB.load_json("items")
 var icons: Dictionary = DataDB.load_json("item_icons")
@@ -17,6 +17,7 @@ func _init() -> void:
 	canvas = Control.new()
 	canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	canvas.draw.connect(_draw_all)
 	add_child(canvas)
 	visible = false
@@ -57,28 +58,25 @@ func handle(e: InputEvent) -> bool:
 	return true
 
 func _grid(inv: Inventory, origin: Vector2, title: String) -> void:
-	var font := ThemeDB.fallback_font
-	canvas.draw_string(font, origin + Vector2(0, -6), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 0.95, 0.7))
+	WoodUI.text(canvas, origin + Vector2(0, -5), title, 11)
 	var hover := Inventory.slot_at(canvas.get_local_mouse_position(), origin, CELL, COLS, inv.slots.size())
 	for i in inv.slots.size():
-		var r := Rect2(origin + Vector2((i % COLS) * CELL, (i / COLS) * CELL), Vector2(CELL - 2, CELL - 2))
-		canvas.draw_rect(r, Color(0.22, 0.14, 0.08, 0.95))
+		var r := WoodUI.grid_slot_rect(origin, i)
+		WoodUI.slot(canvas, r, i == hover)
 		var s = inv.slots[i]
 		if s != null:
 			canvas.draw_texture_rect_region(item_tex, Rect2(r.position + Vector2(5, 3), Vector2(16, 16)), Rect2(int(icons.get(s.id, 0)) * 16, 0, 16, 16))
-			if int(s.n) > 1:
-				canvas.draw_string(font, r.position + Vector2(0, CELL - 5), str(s.n), HORIZONTAL_ALIGNMENT_RIGHT, CELL - 4, 9, Color(1, 1, 1))
 			var rar := String(items.get(s.id, {}).get("rarity", ""))
 			if ItemInfo.has_border(rar):
-				canvas.draw_rect(r.grow(-1), ItemInfo.border_color(rar), false, 1.0)
-		if i == hover:
-			canvas.draw_rect(r, Color(1, 1, 1, 0.8), false, 1.0)
+				canvas.draw_rect(r.grow(-1), ItemInfo.border_color(rar), false, 2.0)
+			if int(s.n) > 1:
+				WoodUI.count_badge(canvas, r, int(s.n))
+		WoodUI.slot_mark(canvas, r, i == hover, false)
 
 func _draw_all() -> void:
-	var font := ThemeDB.fallback_font
-	var panel := Rect2(Vector2(130, 18), Vector2(COLS * CELL + 20.0, 300))
-	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
-	canvas.draw_rect(panel, Color(0.36, 0.24, 0.14, 0.97))
+	WoodUI.panel(canvas, WoodUI.chest_window(GameState.bag.slots.size()), "Farmhouse storage", WoodUI.Trim.IRON)
 	_grid(GameState.chest, CHEST_ORIGIN, "Storage chest")
 	_grid(GameState.bag, BAG_ORIGIN, "Bag")
-	canvas.draw_string(font, Vector2(140, 300), "Click: move stack   Shift+click: move all of that item   E / Esc: close", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 1, 1, 0.8))
+	var gy := BAG_ORIGIN.y + WoodUI.grid_rows(GameState.bag.slots.size()) * CELL
+	WoodUI.text(canvas, Vector2(BAG_ORIGIN.x, gy + 13), "Click: move stack   Shift+click: move all of that item", 10, WoodUI.INK, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(canvas, Vector2(BAG_ORIGIN.x, gy + 26), "E / Esc: close", 10, WoodUI.INK_SOFT, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)

@@ -726,5 +726,43 @@
   "price": 1300,
   "stack": 1,
   "rarity": "gold"
+ },
+ "silver_ore": {
+  "name": "Silver Ore",
+  "price": 22,
+  "stack": 99
+ },
+ "gold_ore": {
+  "name": "Gold Ore",
+  "price": 45,
+  "stack": 99
+ },
+ "silver_bar": {
+  "name": "Silver Bar",
+  "price": 130,
+  "stack": 99
+ },
+ "gold_bar": {
+  "name": "Gold Bar",
+  "price": 260,
+  "stack": 99
+ },
+ "warden_core": {
+  "name": "Warden Core",
+  "price": 500,
+  "stack": 99,
+  "rarity": "gold"
+ },
+ "pickaxe_gold": {
+  "name": "Gold Pickaxe",
+  "price": 400,
+  "stack": 1,
+  "rarity": "gold"
+ },
+ "deep_lamp": {
+  "name": "Deepglow Lamp",
+  "price": 300,
+  "stack": 1,
+  "rarity": "gold"
  }
 }

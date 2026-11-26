@@ -443,7 +443,13 @@ func _ready() -> void:
 		if not dr.is_empty():
 			drops_view.spawn(dr[0], dr[1], p)
 		_say("%s down" % String(k).capitalize()))
-	cave.bitten.connect(func(a): a = GearModel.soften(GameState.bag, a); GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("Bitten! -%d energy" % int(a)))
+	cave.bitten.connect(func(a): a = GearModel.soften(GameState.bag, a); GameState.energy.value = maxf(0.0, GameState.energy.value - a); _say("Hurt! -%d energy" % int(a)))
+	cave.boss_ready_cb = func() -> int:
+		return 0 if BossModel.can_respawn(GameState.warden_day, GameState.clock.day) else BossModel.RESPAWN_DAYS - (GameState.clock.day - GameState.warden_day)
+	cave.wide_lamp_cb = func() -> bool: return GameState.bag.count("deep_lamp") > 0
+	cave.sound.connect(func(n, g, pi): sfx_director.play(n, g, pi))
+	cave.message.connect(func(msg): _say(msg))
+	cave.boss_defeated.connect(_on_warden_down)
 	add_child(cave)
 	drops_view = DropsView.new()
 	drops_view.setup(world, player)
@@ -804,6 +810,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			return
 		if e.is_action_pressed("pause"):
 			cave.leave()
+		elif e.is_action_pressed("interact"):
+			cave.interact()
 		elif e.is_action_pressed("use_tool"):
 			_cave_tool()
 		return
@@ -1421,6 +1429,18 @@ func _on_ore_broken(id: String, n: int, pos: Vector2, _kind: String) -> void:
 	var sk := "mining"
 	if _skill_gain(sk):
 		_say("Mining level %d!" % SkillModel.level(int(GameState.skill_xp[sk])))
+
+func _on_warden_down(pos: Vector2) -> void:
+	GameState.warden_day = GameState.clock.day
+	GameState.bump("wardens")
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var i := 0
+	for l in BossModel.loot(rng):
+		drops_view.spawn(String(l[0]), int(l[1]), pos + Vector2(-28 + 28 * i, 12))
+		i += 1
+	_say("The Stone Warden falls! Take its core to the anvil")
+	toast_t = 5.0
 
 func _target_cell() -> Vector2i:
 	## Mouse tile when aiming with the mouse and in reach, otherwise the tile in front of the player.

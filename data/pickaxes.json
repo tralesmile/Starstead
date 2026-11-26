@@ -4,5 +4,8 @@
  },
  "pickaxe_iron": {
   "power": 3
+ },
+ "pickaxe_gold": {
+  "power": 4
  }
 }

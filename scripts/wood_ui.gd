@@ -67,3 +67,76 @@ static func icon_well(c: CanvasItem, r: Rect2) -> void:
 
 static func text(c: CanvasItem, at: Vector2, s: String, size: int, col: Color = INK, width: float = -1.0, align: int = HORIZONTAL_ALIGNMENT_LEFT) -> void:
 	c.draw_string(ThemeDB.fallback_font, at, s, align, width, size, col)
+
+# --- Slot grids and window layouts (pure, so tests can check them against the 640x360 screen) ---
+
+const SLOT_BG := Color(0.80, 0.65, 0.42)
+const GOLD := Color(1.0, 0.78, 0.25)
+const GRID_COLS := 10
+const GRID_CELL := 28.0
+const GRID_W := GRID_COLS * GRID_CELL - 2.0
+const BAG_GRID := Vector2(181, 96)          # bag screen: slot 0
+const CHEST_GRID := Vector2(181, 56)        # chest screen: chest slot 0
+const CHEST_BAG_GRID := Vector2(181, 160)   # chest screen: bag slot 0 (room for 5 bag rows)
+const BUS_ORIGIN := Vector2(150, 50)
+const BUS_ROW := 30.0
+const BUS_W := 340.0
+
+static func grid_rows(slots: int) -> int:
+	return ceili(float(slots) / GRID_COLS)
+
+static func grid_slot_rect(origin: Vector2, i: int) -> Rect2:
+	return Rect2(origin + Vector2((i % GRID_COLS) * GRID_CELL, (i / GRID_COLS) * GRID_CELL), Vector2(GRID_CELL - 2, GRID_CELL - 2))
+
+static func bag_window(slots: int, perk_line: bool) -> Rect2:
+	var bottom := BAG_GRID.y + grid_rows(slots) * GRID_CELL + (66.0 if perk_line else 53.0)
+	var top := BAG_GRID.y - 34.0
+	return Rect2(BAG_GRID.x - 11.0, top, GRID_W + 24.0, bottom - top)
+
+static func chest_window(bag_slots: int) -> Rect2:
+	var bottom := CHEST_BAG_GRID.y + grid_rows(bag_slots) * GRID_CELL + 32.0
+	var top := CHEST_GRID.y - 42.0
+	return Rect2(CHEST_GRID.x - 11.0, top, GRID_W + 24.0, bottom - top)
+
+static func bus_window(count: int) -> Rect2:
+	return Rect2(BUS_ORIGIN - Vector2(10, 34), Vector2(BUS_W + 20.0, 68.0 + count * BUS_ROW))
+
+static func bus_row_rect(i: int) -> Rect2:
+	return Rect2(BUS_ORIGIN + Vector2(0, i * BUS_ROW), Vector2(BUS_W, BUS_ROW - 3))
+
+static func bus_row_at(p: Vector2, count: int) -> int:
+	## Row under p, or -1. The small gap under a row still counts as that row.
+	var d := p - BUS_ORIGIN
+	if d.x < 0.0 or d.x >= BUS_W or d.y < 0.0:
+		return -1
+	var i := int(d.y / BUS_ROW)
+	return i if i < count else -1
+
+static func tooltip_rect(mouse: Vector2, text_w: float, screen: Vector2) -> Rect2:
+	## Below-right of the mouse, pushed back so the tag (and its 2px frame) stays on screen.
+	var size := Vector2(text_w + 10.0, 18.0)
+	var at := mouse + Vector2(10, 12)
+	return Rect2(at.clamp(Vector2(2, 2), (screen - size - Vector2(2, 2)).max(Vector2(2, 2))), size)
+
+static func slot(c: CanvasItem, r: Rect2, hover: bool, picked: bool = false) -> void:
+	c.draw_rect(r, SLOT_BG.lerp(GOLD, 0.8) if picked else (SLOT_BG.lightened(0.35) if hover else SLOT_BG))
+	c.draw_rect(Rect2(r.position, Vector2(r.size.x, 2)), Color(0.36, 0.21, 0.10, 0.5))
+	c.draw_rect(Rect2(r.position, Vector2(2, r.size.y)), Color(0.36, 0.21, 0.10, 0.3))
+	c.draw_rect(Rect2(Vector2(r.position.x, r.end.y - 1), Vector2(r.size.x, 1)), Color(1, 1, 0.9, 0.7))
+
+static func slot_mark(c: CanvasItem, r: Rect2, hover: bool, picked: bool) -> void:
+	## Outline drawn over a slot's contents: thick and dark when picked up, thin when hovered.
+	if picked:
+		c.draw_rect(r.grow(1), OUTLINE, false, 2.0)
+	elif hover:
+		c.draw_rect(r, WOOD_D, false, 1.0)
+
+static func count_badge(c: CanvasItem, r: Rect2, n: int) -> void:
+	## Stack size in the slot's bottom-right corner: ink with a cream halo so it reads over the icon.
+	var at := Vector2(r.position.x, r.end.y - 2)
+	c.draw_string_outline(ThemeDB.fallback_font, at, str(n), HORIZONTAL_ALIGNMENT_RIGHT, r.size.x - 2, 10, 4, CREAM)
+	text(c, at, str(n), 10, INK, r.size.x - 2, HORIZONTAL_ALIGNMENT_RIGHT)
+
+static func plank_note(c: CanvasItem, r: Rect2, s: String) -> void:
+	## Right-aligned text on a panel's title plank.
+	text(c, r.position + Vector2(0, 15), s, 10, CREAM, r.size.x - 10, HORIZONTAL_ALIGNMENT_RIGHT)

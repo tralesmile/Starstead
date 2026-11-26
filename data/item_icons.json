@@ -119,5 +119,12 @@
  "lantern_eel": 102,
  "anvil_sturgeon": 103,
  "glass_marlin": 104,
+ "silver_ore": 105,
+ "gold_ore": 106,
+ "silver_bar": 107,
+ "gold_bar": 108,
+ "warden_core": 109,
+ "pickaxe_gold": 110,
+ "deep_lamp": 111,
  "franchise_deed": 77
 }

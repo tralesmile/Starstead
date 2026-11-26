@@ -682,6 +682,59 @@ def bar(top, mid, low, hi):
 icons['copper_bar'] = lambda: bar("#f0a068", "#d4814a", "#a85a2a", "#ffe0b8")
 icons['iron_bar'] = lambda: bar("#d8e0ea", "#b8c0cc", "#7a8494", "#ffffff")
 
+# ---- deep mine items
+icons['silver_ore'] = lambda: ore("#686c80", "#eef8ff", "#8cb0e4", [(5, 8), (9, 10), (10, 7), (7, 11)])
+icons['gold_ore'] = lambda: ore("#7a6252", "#ffe060", "#d89420", [(5, 8), (9, 10), (10, 7), (7, 11), (6, 6)])
+icons['silver_bar'] = lambda: bar("#f4fbff", "#c4dcf4", "#7e9cca", "#ffffff")
+icons['gold_bar'] = lambda: bar("#ffe468", "#f2bc2c", "#bc7c14", "#fffbd0")
+
+def warden_core():
+    i = Ic()                                          # glowing amber heart held in stone claws
+    for y, w in ((2, 0), (3, 1), (4, 2), (5, 3), (6, 4), (7, 5), (8, 5), (9, 4), (10, 3), (11, 2), (12, 1), (13, 0)):
+        i.rect(8 - w, y, 8 + w, y, "#e87018")
+    for y, w in ((4, 0), (5, 1), (6, 2), (7, 3), (8, 3), (9, 2), (10, 1)):
+        i.rect(8 - w, y, 8 + w, y, "#ffb02c")
+    i.ell(7.5, 7, 1.8, 2, "#ffe26e")
+    i.px(7, 6, "#fffbe0"); i.px(7, 5, "#fffbe0"); i.px(6, 6, "#fffbe0")
+    for x, y in ((11, 9), (10, 10), (9, 11), (12, 8), (8, 12)):
+        i.px(x, y, "#963e12")
+    i.rect(2, 10, 4, 12, "#706664"); i.rect(3, 13, 6, 14, "#706664"); i.px(2, 10, "#a89a8a"); i.px(3, 10, "#a89a8a")
+    i.rect(12, 10, 14, 12, "#564c50"); i.rect(10, 13, 13, 14, "#564c50"); i.px(12, 10, "#8c8078")
+    i.px(2, 9, "#729632"); i.px(3, 9, "#4e7430")        # a bit of moss
+    return i
+icons['warden_core'] = warden_core
+
+def pickaxe_gold():
+    i = Ic()                                          # same silhouette as the copper / iron pickaxes
+    for y, xs in ((2, (7, 8, 9)), (3, (5, 6, 10, 11)), (4, (4, 5, 6, 7, 8, 9, 10)), (5, (3, 4, 5, 9, 10, 11)),
+                  (6, (3, 4, 12)), (7, (4,))):
+        for x in xs:
+            i.px(x, y, "#f2bc2c")
+    for x, y in ((7, 2), (8, 2), (9, 2), (5, 3), (6, 3)):
+        i.px(x, y, "#fff0a0")
+    for x, y in ((11, 5), (12, 6)):
+        i.px(x, y, "#bc7c14")
+    i.px(11, 6, "#825832")
+    for x, y in ((9, 7), (10, 6), (8, 8), (7, 9), (6, 10), (5, 11), (4, 12), (3, 13)):
+        i.px(x, y, "#825832")
+    i.px(8, 2, "#fffbe0")
+    return i
+icons['pickaxe_gold'] = pickaxe_gold
+
+def deep_lamp():
+    i = Ic()                                          # brass miner's lantern with a teal-white flame
+    i.rect(6, 1, 9, 1, "#d8a838"); i.px(5, 2, "#d8a838"); i.px(10, 2, "#a87820")   # carry loop
+    i.rect(5, 3, 10, 3, "#f0c850"); i.rect(4, 4, 11, 4, "#d8a838")                 # cap
+    i.rect(4, 5, 11, 11, "#58d8c8")                                                # glass
+    i.ell(7.5, 8.5, 2.4, 2.8, "#a8fff0")
+    i.rect(7, 7, 8, 10, "#f0fffc"); i.px(7, 6, "#f0fffc")
+    i.rect(4, 5, 4, 11, "#d8a838"); i.rect(11, 5, 11, 11, "#a87820")               # cage bars
+    i.px(5, 5, "#ffffff"); i.px(5, 6, "#ffffff")
+    i.rect(4, 12, 11, 12, "#f0c850"); i.rect(3, 13, 12, 14, "#a87820")             # base
+    i.rect(3, 13, 12, 13, "#d8a838")
+    return i
+icons['deep_lamp'] = deep_lamp
+
 def bat_wing():
     i = Ic()
     # membrane: fan from the wrist (3,4) with a scalloped lower edge
@@ -856,7 +909,7 @@ def pumpkin_butter():
     return i
 icons['pumpkin_butter'] = pumpkin_butter
 
-GLOW = {'lantern_eel': (170, 255, 110, 100), 'anvil_sturgeon': (255, 200, 80, 100), 'glass_marlin': (190, 240, 255, 110), 'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
+GLOW = {'warden_core': (255, 170, 50, 110), 'deep_lamp': (110, 255, 230, 100), 'lantern_eel': (170, 255, 110, 100), 'anvil_sturgeon': (255, 200, 80, 100), 'glass_marlin': (190, 240, 255, 110), 'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def scarecrow_icon():
     i = Ic()
@@ -1111,17 +1164,21 @@ icons['kelp'] = kelp
 
 NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest', 'arrow', 'shell', 'sea_glass', 'pearl', 'kelp']  # appended after the last old icon, in this order
 
+def is_variant(k, keys):
+    """Quality variant ("turnip_gold") of another item. Ids like "pickaxe_gold" have no base item, so they get their own icon."""
+    return k.endswith(('_silver', '_gold')) and k.rsplit("_", 1)[0] in keys
+
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())
     old_map = json.load(open(os.path.join(ROOT, "data", "item_icons.json")))
     old_img = Image.open(os.path.join(ROOT, "assets", "sprites", "items.png")).convert("RGBA")
     OLD = {k: old_img.crop((v * S, 0, v * S + S, S)) for k, v in old_map.items()}
-    frames = [k for k in keys if not k.endswith(('_silver', '_gold'))]
+    frames = [k for k in keys if not is_variant(k, keys)]
     for k in NEW_IDS:
         if k not in frames:
             frames.append(k)
     idx = {}
-    nxt = max([v for k, v in old_map.items() if not k.endswith(('_silver', '_gold'))] + [-1]) + 1
+    nxt = max([v for k, v in old_map.items() if not is_variant(k, keys)] + [-1]) + 1
     for k in frames:  # stable: ids keep their old index, new ids take the next free one
         if k in old_map:
             idx[k] = old_map[k]
@@ -1137,7 +1194,7 @@ def main():
             strip.paste(OLD[k], (n * S, 0))
         mapping[k] = n
     for k in keys:  # quality variants reuse the base icon (the rarity border shows the quality)
-        if k.endswith(("_silver", "_gold")):
+        if is_variant(k, keys):
             mapping[k] = mapping[k.rsplit("_", 1)[0]]
     order = [k for k in keys] + [k for k in frames if k not in keys]
     mapping = {k: mapping[k] for k in order}

@@ -1,4 +1,6 @@
 {
 	"copper_bar": {"name": "Copper Bar", "needs": {"copper_ore": 2, "coal": 1}, "makes": "copper_bar"},
-	"iron_bar": {"name": "Iron Bar", "needs": {"iron_ore": 2, "coal": 1}, "makes": "iron_bar"}
+	"iron_bar": {"name": "Iron Bar", "needs": {"iron_ore": 2, "coal": 1}, "makes": "iron_bar"},
+	"silver_bar": {"name": "Silver Bar", "needs": {"silver_ore": 2, "coal": 1}, "makes": "silver_bar"},
+	"gold_bar": {"name": "Gold Bar", "needs": {"gold_ore": 2, "coal": 2}, "makes": "gold_bar"}
 }

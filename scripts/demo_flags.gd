@@ -280,7 +280,7 @@ func on_process() -> void:
 	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: stand inside the mine with a pickaxe
 		GameState.energy.value = 100.0
 		m.cave.enter(GameState.clock.day)
-	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 40 and m.cave.active:
+	if "--cave-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 40 and m.cave.active and not ("--cart-demo" in OS.get_cmdline_user_args()):
 		var ore: Vector2i = m.cave.model.ores.keys()[0]
 		m.player.position = m.cave.px(ore) + Vector2(16, 48)
 		if "--cave-walls" in OS.get_cmdline_user_args():   # stand beside a torch and a wall edge
@@ -298,6 +298,15 @@ func on_process() -> void:
 			m.player.position = m.cave.px(spots[0]) + Vector2(16, 90)
 		if "--cave-ladder" in OS.get_cmdline_user_args() and m.cave.model.has_ladder_down():
 			m.player.position = m.cave.px(m.cave.model.ladder_down) + Vector2(16, -40)
+	if "--boss-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 62 and m.cave.active and m.cave.boss != null:   # with --cave-demo --cave-floor=6: the Warden mid-slam, enraged
+		m.player.position = m.cave.boss.model.pos + Vector2(52, 40)
+		m.player.facing = PlayerMath.Facing.UP
+		GameState.warden_day = -1
+		m.cave.boss.model.take_hit(400.0 * 0.9)
+	if "--cart-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 44 and m.cave.active:   # with --cave-demo: ride the mine cart down the track
+		var at := CartMath.pos_at(m.cave.cart_pts, 0.0)
+		m.player.position = at + Vector2(0, 20)
+		m.cave.board()
 	if m._arg_prefix("--sports-demo") and Engine.get_process_frames() == 3:   # screenshot helper: --sports-demo=hoops|penalty|boxing
 		var mode := "hoops"
 		for a in OS.get_cmdline_user_args():
