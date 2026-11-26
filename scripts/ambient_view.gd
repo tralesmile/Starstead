@@ -101,6 +101,20 @@ func _draw() -> void:
 			draw_rect(Rect2(cp + Vector2(-4, 10), Vector2(8, 2)), Color(0, 0, 0, 0.12 * CrowMath.alpha(ca)))   # ground shadow
 			draw_texture_rect_region(crow_tex, Rect2(cp - Vector2(8, 8), Vector2(16, 16)), Rect2(fr * 16, 0, 16, 16), Color(1, 1, 1, CrowMath.alpha(ca)))
 	_draw_perched_crows(c, mins, t)
+	var storm := WeatherMath.tree_wind(rain, 0.0).y
+	if storm > 0.05 and not player.indoors:
+		var wa := PlayerMath.wind_angle(GameState.clock.day)
+		var down := Vector2.from_angle(wa)
+		for i in int(AmbientMath.GALE_LEAVES * storm):
+			var gp := (c + AmbientMath.gale_leaf(i, t, wa)).round()
+			var flat := int(t * 9.0 + i) % 2 == 0   # tumbling: flips between a flat and an upright leaf
+			var lc := Color(0.72, 0.84, 0.26) if i % 3 else Color(0.95, 0.68, 0.2)
+			draw_line(gp - down * 7.0, gp, Color(lc, 0.3), 1.0)
+			# a two-step leaf with a darker spine, tilting one way then the other as it tumbles
+			var tilt := Vector2(2, 1) if flat else Vector2(1, 2)
+			draw_rect(Rect2(gp, Vector2(3, 2)), lc.lightened(0.35))
+			draw_rect(Rect2(gp + tilt, Vector2(2, 2) if flat else Vector2(1, 2)), lc)
+			draw_rect(Rect2(gp + tilt * 2.0, Vector2(1, 1)), lc.darkened(0.35))
 	if night < 0.5:
 		for i in LEAVES:
 			var p := (c + AmbientMath.leaf_pos(i, t)).round()

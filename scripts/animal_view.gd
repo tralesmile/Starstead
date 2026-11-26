@@ -107,7 +107,7 @@ func prompt_for(c: Dictionary) -> String:
 		return ""
 	var nm := String(model.animals[c["id"]]["name"])
 	if c["wild"] and not HuntModel.tameable(model.animals, c["id"]):
-		return "Swing the club or fists to hunt %s" % nm
+		return "Hunt %s: bow, club or bare hands" % nm
 	if c["wild"]:
 		return "E: Feed %s (%s) trust %d%%" % [nm, feed_for(c["id"]), int(100.0 * float(c["prog"]["trust"]) / model.trust_max())]
 	if model.is_rideable(c["st"]):
@@ -120,7 +120,7 @@ func interact(c: Dictionary) -> void:
 	var nm := String(model.animals[c["id"]]["name"])
 	if c["wild"]:
 		if not HuntModel.tameable(model.animals, c["id"]):
-			message.emit("%s is too wild to tame - hunt it (club or fists)" % nm)
+			message.emit("%s is too wild to tame - hunt it (bow, club or fists)" % nm)
 			return
 		var fi := feed_for(c["id"])
 		if GameState.bag.count(fi) < 1:
@@ -180,16 +180,35 @@ func hunt(origin: Vector2, face: Vector2, weapon: Dictionary) -> int:
 		if not CombatModel.in_swing(origin, face, node.position + Vector2(0, -6), float(weapon["range"])):
 			continue
 		hits += 1
-		c["hp"] = CombatModel.hit(float(c["hp"]), float(weapon["dmg"]))
-		node.position += HitMath.knockback(origin, node.position, float(weapon["force"])) * 0.5
-		var spr: Sprite2D = c["sprite"]
-		spr.modulate = Color(1.6, 0.7, 0.7)
-		get_tree().create_timer(0.12).timeout.connect(func(): if is_instance_valid(spr): spr.modulate = Color.WHITE)
-		if CombatModel.is_down(float(c["hp"])):
-			_kill(c)
-		elif HuntModel.fights_back(model.animals, c["id"]):
-			c["rage"] = 6.0
+		_wound(c, float(weapon["dmg"]), origin, float(weapon["force"]))
 	return hits
+
+func shot(from: Vector2, to: Vector2, damage: float) -> bool:
+	## An arrow's path this step: the first wild animal it passes through takes the hit.
+	for c in critters:
+		if not c["wild"] or not HuntModel.huntable(model.animals, c["id"]):
+			continue
+		var node: Node2D = c["node"]
+		if not BowMath.hits(from, to, node.position + Vector2(0, -6)) and not BowMath.hits(from, to, node.position):
+			continue
+		_wound(c, damage, from, 0.7)
+		return true
+	return false
+
+func _wound(c: Dictionary, damage: float, from: Vector2, force: float) -> void:
+	var node: Node2D = c["node"]
+	c["hp"] = CombatModel.hit(float(c["hp"]), damage)
+	node.position += HitMath.knockback(from, node.position, force) * 0.5
+	var spr: Sprite2D = c["sprite"]
+	spr.modulate = Color(1.6, 0.7, 0.7)
+	get_tree().create_timer(0.12).timeout.connect(func(): if is_instance_valid(spr): spr.modulate = Color.WHITE)
+	if CombatModel.is_down(float(c["hp"])):
+		_kill(c)
+		return
+	if HuntModel.fights_back(model.animals, c["id"]):
+		c["rage"] = 6.0
+	else:
+		c["spooked"] = 3.0   # wounded game bolts even from a distant archer
 
 func _kill(c: Dictionary) -> void:
 	var rng := RandomNumberGenerator.new()
@@ -199,7 +218,18 @@ func _kill(c: Dictionary) -> void:
 	for item in drops:
 		GameState.bag.add(item, int(drops[item]))
 		parts.append("%d %s" % [int(drops[item]), String(item).replace("_", " ")])
-	message.emit("Hunted %s: %s" % [String(model.animals[c["id"]]["name"]).to_lower(), ", ".join(parts) if parts.size() > 0 else "nothing useful"])
+	var law := GameState.ranger.on_kill(c["id"], GameState.clock.day)
+	var note := String(law["msg"])
+	if law["fine_due"]:
+		var fine := RangerModel.fine_amount(GameState.money)
+		GameState.money -= fine
+		var taken := GameState.bag.count("hide")
+		GameState.bag.remove("hide", taken)
+		GameState.bump("ranger_fines")
+		note = "A ranger catches you: $%d fine%s" % [fine, ", %d hides seized" % taken if taken > 0 else ""]
+	if not law["legal"]:
+		GameState.rep_honest = maxi(0, GameState.rep_honest - 1)
+	message.emit("Hunted %s: %s%s" % [String(model.animals[c["id"]]["name"]).to_lower(), ", ".join(parts) if parts.size() > 0 else "nothing useful", ("\n" + note) if note != "" else ""])
 	(c["node"] as Node2D).queue_free()
 	critters.erase(c)
 
@@ -309,7 +339,8 @@ func _process(delta: float) -> void:
 					c["bite"] = 1.0
 					GameState.energy.value = maxf(0.0, GameState.energy.value - HuntModel.bite_damage(dist))
 					message.emit("The boar gores you!")
-			elif AnimalModel.should_flee(dist, tf, HuntModel.scare_scale(player.sneaking, player.sprinting)):
+			elif float(c.get("spooked", 0.0)) > 0.0 or AnimalModel.should_flee(dist, tf, HuntModel.scare_scale(player.sneaking, player.sprinting)):
+				c["spooked"] = maxf(0.0, float(c.get("spooked", 0.0)) - delta)
 				move = AnimalModel.flee_dir(node.position, player.position) * spd * 0.8 * delta
 			else:
 				c["t"] -= delta

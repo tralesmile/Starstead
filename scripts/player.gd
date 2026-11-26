@@ -37,6 +37,7 @@ signal skid(amount: int)
 var _sprint := 1.0
 var mud_view: MudBootsView
 var _mud := 0.0    # mud on the boots (PlayerMath.mud_load)
+var aim_slow := 1.0   # bow drawn (BowView, PlayerMath.draw_slow)
 var _surf := 1.0   # eased ground speed multiplier (PlayerMath.surface_ease)
 var _sprint_lvl := 0.0
 var _punch := 0.0
@@ -68,7 +69,7 @@ func _ready() -> void:
 	add_child(refl)
 	held = Sprite2D.new()
 	held.texture = load("res://assets/sprites/held_tools.png")
-	held.hframes = 8
+	held.hframes = 9
 	held.visible = false
 	held.centered = true
 	add_child(held)
@@ -132,7 +133,7 @@ func _physics_process(delta: float) -> void:
 	elif _skid_cd <= 0.0 and PlayerMath.slide_dust_amount(move_v.length(), input.length()) > 0:
 		skid.emit(PlayerMath.slide_dust_amount(move_v.length(), input.length()))
 		_skid_cd = 0.12
-	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * PlayerMath.sneak_mult(sneaking) * PlayerMath.boots_mult(GameState.bag.count("leather_boots")) * PlayerMath.tired_mult(GameState.energy.value) * PlayerMath.load_mult(GameState.bag.fill_fraction()) * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)) * PlayerMath.stagger_mult(_stagger_left, _stagger_total), grip)
+	move_v = PlayerMath.accelerate(move_v, input, delta, PlayerMath.SPEED * mult * sp * PlayerMath.sneak_mult(sneaking) * PlayerMath.boots_mult(GameState.bag.count("leather_boots")) * PlayerMath.tired_mult(GameState.energy.value) * PlayerMath.load_mult(GameState.bag.fill_fraction()) * speed_mult * PlayerMath.swing_slow(tool_t, PlayerMath.tool_plant(held_tool)) * PlayerMath.stagger_mult(_stagger_left, _stagger_total) * aim_slow, grip)
 	knock = HitMath.decay(knock, delta)
 	velocity = move_v + knock
 	facing = PlayerMath.facing_for(input, facing)  # face where the stick points, even while braking
@@ -221,5 +222,5 @@ func _update_held() -> void:
 	held.position = dir[facing]
 	held.flip_h = facing == PlayerMath.Facing.LEFT
 	held.z_index = -1 if facing == PlayerMath.Facing.UP else 1
-	var a := HitMath.hoe_angle(tool_t, swing_total) if held_tool == "hoe" else HitMath.swing_angle(tool_t, swing_total)
+	var a := HitMath.hoe_angle(tool_t, swing_total) if held_tool == "hoe" else (0.0 if held_tool == "bow" else HitMath.swing_angle(tool_t, swing_total))
 	held.rotation = -a if held.flip_h else a

@@ -117,6 +117,7 @@ static func layout(kind: String) -> Dictionary:
 				_f("desk", "int_desk", 1, 1, 2, 1, true, "notice"),
 				_f("ledger", "int_teller", 5, 1, 2, 1, true, "debt"),
 				_f("plans", "int_desk", 7, 3, 2, 1, true, "upgrade"),
+				_f("ranger", "int_desk", 0, 3, 2, 1, true, "huntlicence"),
 				_f("shelf1", "int_shelf", 0, 0, 1, 1), _f("shelf2", "int_shelf", 8, 0, 1, 1),
 				_f("rug", "int_rug", 3, 3, 3, 2, false),
 				_f("mat", "int_mat", 4, 5, 1, 1, false)]}

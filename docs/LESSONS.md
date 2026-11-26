@@ -28,3 +28,5 @@
 - New class_name files need `godot --headless --import` before tools/screenshot.sh, else main.gd fails to parse (run 34).
 - Again (run 35): `cat >> tests/x.gd` on a missing file creates a test without `extends BaseTest`; `ls tests | grep name` first. Demo placements must be near the player at the chosen zoom (zoom 3 shows only ~7x4 cells).
 - Run 37: `godot` is not on PATH in a fresh container, only ~/bin/godot: a bare `godot --import` fails silently and then new class_names are 'not declared'. Always call ~/bin/godot.
+- Run 38: menus that list data/*.json grow silently past the 360px screen: give every list a layout test (see CraftGrid test). Pure layout/logic used by tests must live outside classes that mention GameState (Hotbar, CraftView).
+- Run 38: tools/check.sh now takes more than 10 minutes: start it in the background (`tools/check.sh > /tmp/check.log 2>&1 &`) and wait, a foreground call times out.

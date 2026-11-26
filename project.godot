@@ -22,3 +22,10 @@ window/stretch/scale_mode="integer"
 2d/snap/snap_2d_transforms_to_pixel=true
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
+
+[shader_globals]
+
+prop_wind={
+"type": "vec2",
+"value": Vector2(0, 0)
+}

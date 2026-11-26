@@ -28,6 +28,7 @@ var police: PoliceView
 var robbery: RobberyView
 var combat: CombatView
 var animals: AnimalView
+var bow: BowView
 var cursor: CursorView
 var rod_charging := false
 var rod_charge_t := 0.0
@@ -242,6 +243,12 @@ func _ready() -> void:
 	world.add_child(animals)
 	world.chunk_built.connect(func(ch: Vector2i) -> void: animals.populate_chunk(ch, String(world.stream.region_at(ch).get("id", "")), world.stream, GameState.clock.day))
 	world.chunk_dropped.connect(func(_ch: Vector2i) -> void: animals.drop_far(player.position))
+	bow = BowView.new()
+	bow.player = player
+	bow.animals = animals
+	bow.solid_cb = func(c: Vector2i) -> bool: return GameState.nodes.is_solid(c) or (GameState.build.placed.has(c) and GameState.build.defs[GameState.build.placed[c]].solid)
+	bow.message.connect(_say)
+	world.add_child(bow)
 	combat = CombatView.new()
 	combat.setup(world, player, npcs, police)
 	combat.message.connect(_say)
@@ -493,6 +500,7 @@ func _process(delta: float) -> void:
 	player.rain = weather.now
 	ambient.rain = maxf(weather.now, fog * 0.8)
 	world.set_wet(weather.now)
+	world.set_wind(WeatherMath.tree_wind(weather.now, PlayerMath.wind_angle(GameState.clock.day)))
 	fog_rect.size = get_viewport_rect().size  # CanvasLayer parent has no size: anchors alone leave it 0x0
 	flash_rect.size = fog_rect.size
 	var fl := WeatherMath.lightning_flash(1, rain_day, storm_t, weather.now)
@@ -506,6 +514,7 @@ func _process(delta: float) -> void:
 		modulate_node.color = CaveView.DARK  # torches and the miner's lamp do the lighting
 
 	_update_fishing(delta)
+	_update_bow()
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
 	car.night = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	traffic.night = car.night
@@ -581,6 +590,17 @@ func _process(delta: float) -> void:
 		toast.text = ""
 	goal_label.visible = toast.text == ""   # both live at (8,72): a fresh message hides the goal line for 1.5 s
 
+func _update_bow() -> void:
+	bow.rain = weather.now
+	bow.day = GameState.clock.day
+	if not bow.drawing:
+		return
+	if _indoors() or car.driving or hotbar.current() != "bow" or not player.is_physics_processing():
+		bow.cancel()   # a menu, door or another tool lowers the bow without loosing
+		return
+	var to_mouse := get_global_mouse_position() - player.position
+	bow.aim = to_mouse if mouse_aim and to_mouse.length() > 8.0 else CombatModel.facing_vec(player.facing)
+
 func _hoof_dust(delta: float) -> void:
 	## A galloping mount kicks up ground-coloured dust behind it (rate by speed, MountMath.dust_rate).
 	var rate := MountMath.dust_rate(player.velocity.length()) if animals.riding != null and not _indoors() else 0.0
@@ -599,6 +619,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		hud.legend_on = not hud.legend_on
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
 		_rod_released()
+		bow.release()
 	if e is InputEventMouseMotion:
 		mouse_aim = true
 	elif e is InputEventKey and e.pressed and not e.echo and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down") or e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
@@ -856,6 +877,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		_say("You have no %s yet - press C to craft it from wood" % hotbar.current().replace("_", " "))
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "rod":
 		_rod_pressed()
+	elif e.is_action_pressed("use_tool") and hotbar.current() == "bow":
+		bow.press()
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
 		if GameState.energy.can_use("club") and combat.cd <= 0.0:
 			GameState.energy.spend("club")
@@ -933,6 +956,11 @@ func _unhandled_input(e: InputEvent) -> void:
 		if hotbar.current() == "axe" and tree_fall.hit_log(cell, player.position):
 			return  # chopping a fallen trunk into logs
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
+		if msg == "" and hotbar.current() == "hand" and combat.cd <= 0.0 and GameState.energy.can_use("club"):   # bare fists on small game
+			if animals.hunt(player.position + Vector2(0, -8), CombatModel.facing_vec(player.facing), CombatModel.weapon("fist")) > 0:
+				combat.cd = CombatModel.cooldown("fist")
+				GameState.energy.spend("club")
+				return
 		if msg == "" and hotbar.current() == "scythe" and world.cut_tuft(cell):   # wild grass -> hay (feeds cows, sheep, horses)
 			dl.append({"id": "hay", "n": 1})
 			msg = "Cut grass"
@@ -1485,6 +1513,7 @@ func _end_day() -> void:
 	if cafe_add > 0:
 		_say("Your cafe took $%d last night" % cafe_add)
 	animals.day_tick()
+	GameState.ranger.new_day()
 	GameState.bank_balance += CityServices.daily_interest(GameState.bank_balance)
 	GameState.energy.new_day(false)
 	world.sync_props(GameState.nodes)

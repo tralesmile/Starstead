@@ -324,6 +324,15 @@ func sync_props(nodes: ResourceNodes) -> void:
 
 var wet := 0.0
 
+var _wind := Vector2.ZERO
+
+func set_wind(w: Vector2) -> void:
+	## Storm wind bends every swaying prop downwind (prop shader global).
+	if w.distance_to(_wind) < 0.02:
+		return
+	_wind = w
+	RenderingServer.global_shader_parameter_set("prop_wind", w)
+
 func set_wet(w: float) -> void:
 	## Rain on the city asphalt (ground shader "wet"): only pushes to the materials when it changes noticeably.
 	if absf(w - wet) < 0.02:

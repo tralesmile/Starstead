@@ -74,3 +74,13 @@ static func animal_breath_age(t: float, idx: int, size: float) -> float:
 static func animal_breath_size(size: float, age: float) -> float:
 	## Puff pixel size for an animal of relative size (0.5 rabbit .. 1.6 horse) at breath age 0..1.
 	return roundf((1.5 + age * 2.5) * clampf(size, 0.6, 1.5))
+
+const GALE_LEAVES := 26
+
+static func gale_leaf(i: int, t: float, wind_angle: float) -> Vector2:
+	## A torn leaf racing downwind across a 360x240 box around the camera (centred offset), bobbing as it tumbles.
+	var dir := Vector2.from_angle(wind_angle)
+	var speed := 110.0 + float(i % 5) * 28.0
+	var x := fposmod(float(i) * 97.0 + dir.x * speed * t, 360.0) - 180.0
+	var y := fposmod(float(i) * 53.0 + (dir.y * speed * 0.5 + 16.0) * t, 240.0) - 140.0
+	return Vector2(x, y + sin(t * (5.0 + float(i % 3)) + float(i)) * 4.0)

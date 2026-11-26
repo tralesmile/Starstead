@@ -10,6 +10,7 @@ var seed_ids: Array = []   # every seed in crops.json; the seed slot plants the 
 var seed_idx := 0
 const PLACEABLES := ["sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow"]   # slot 0 holds both; press its key again to switch
 var place_idx := 0
+var melee_idx := 0   # the club slot switches to the bow once you own one (press 8 again)
 var canvas: Control
 var tool_tex: Texture2D = load("res://assets/sprites/held_tools.png")
 var item_tex: Texture2D = load("res://assets/sprites/items.png")
@@ -32,6 +33,8 @@ func slot_tool(i: int) -> String:
 		return seed_ids[seed_idx % seed_ids.size()]
 	if t == "sprinkler":
 		return PLACEABLES[place_idx % PLACEABLES.size()]
+	if t == "club":
+		return ToolKit.melee_tool(melee_idx, GameState.tools_owned)
 	return t
 
 func cycle_seed() -> void:
@@ -53,6 +56,8 @@ func _unhandled_input(e: InputEvent) -> void:
 				cycle_seed()
 			elif i == selected and ToolUse.TOOLS[i] == "sprinkler":
 				place_idx = (place_idx + 1) % PLACEABLES.size()
+			elif i == selected and ToolUse.TOOLS[i] == "club":
+				melee_idx += 1
 			selected = i
 
 func _process(_d: float) -> void:
@@ -88,8 +93,8 @@ func _draw_bar() -> void:
 			var f := GameState.can.fraction()
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2(SLOT - 6, 3)), Color(0.2, 0.14, 0.08, 0.8))
 			canvas.draw_rect(Rect2(r.position + Vector2(3, SLOT - 5), Vector2((SLOT - 6) * f, 3)), Color(0.35, 0.7, 1.0))
-		if t.ends_with("_seed") or t in PLACEABLES:
-			var cnt := str(GameState.bag.count(t))
+		if t.ends_with("_seed") or t in PLACEABLES or t == "bow":
+			var cnt := str(GameState.bag.count("arrow" if t == "bow" else t))
 			var w := font.get_string_size(cnt, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
 			var p := r.position + Vector2(SLOT - 2 - w, SLOT - 2)
 			for o in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:

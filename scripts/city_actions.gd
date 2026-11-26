@@ -11,6 +11,7 @@ static func prompt(action: String) -> String:
 		"coffee": return "E: Buy a coffee ($%d)" % CityServices.COFFEE_PRICE
 		"business": return CityActions.business_prompt()
 		"notice": return "E: Read the notice board"
+		"huntlicence": return CityActions.licence_prompt()
 		"upgrade": return "E: Farmhouse builder (pack, kitchen, cellar upgrades)"
 		"debt": return "E: Pay the Vance debt ($%d left; Shift+E pays all you can)" % GameState.story.debt_left(GameState.debt_paid) if GameState.story.debt_left(GameState.debt_paid) > 0 else "The Vance ledger is closed: debt cleared"
 		"hoops": return "E: Free throws (10 shots)"
@@ -19,6 +20,13 @@ static func prompt(action: String) -> String:
 		"pitch": return "E: Penalty shootout (5 kicks)"
 		"derby": return "E: Animal derby ($%d entry, your best mount runs)" % DerbyModel.FEE
 	return ""
+
+static func licence_prompt() -> String:
+	var r: RangerModel = GameState.ranger
+	var day: int = GameState.clock.day
+	if r.licensed(day):
+		return "E: Hunting licence valid %d more days (renew $%d)" % [r.days_left(day), RangerModel.LICENCE_COST]
+	return "E: Buy a hunting licence ($%d, deer + boar, %d a day)" % [RangerModel.LICENCE_COST, RangerModel.BAG_LIMIT]
 
 static func business_prompt() -> String:
 	var b: BusinessModel = GameState.business
@@ -121,6 +129,13 @@ static func run(m, action: String) -> void:
 				else:
 					m._say("Paid $%d to Vance. $%d still owed" % [r["moved"], GameState.story.debt_left(GameState.debt_paid)])
 					m.story_view.poll(GameState.farm.crops_planted())
+		"huntlicence":
+			var r := GameState.ranger.buy(GameState.clock.day, GameState.money)
+			if r["ok"]:
+				GameState.money = r["cash"]
+				m._say("Hunting licence stamped: valid %d days, %d big game a day" % [GameState.ranger.days_left(GameState.clock.day), RangerModel.BAG_LIMIT])
+			else:
+				m._say(String(r["why"]))
 		"upgrade":
 			m.player.velocity = Vector2.ZERO
 			m.player.move_v = Vector2.ZERO

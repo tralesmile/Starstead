@@ -51,6 +51,11 @@ func _try(i: int) -> void:
 	else:
 		msg = "Missing ingredients"
 
+func _try_at(at: Vector2) -> void:
+	var p := at - ORIGIN
+	if p.x >= 0.0 and p.x < 340.0 and p.y >= 0.0:
+		_try(int(p.y / ROW))
+
 func handle(e: InputEvent) -> bool:
 	if not visible:
 		return false
@@ -58,9 +63,7 @@ func handle(e: InputEvent) -> bool:
 		close()
 		return true
 	if e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
-		var p := canvas.get_local_mouse_position() - ORIGIN
-		if p.x >= 0.0 and p.x < 340.0 and p.y >= 0.0:
-			_try(int(p.y / ROW))
+		_try_at(canvas.get_local_mouse_position())
 	elif e is InputEventKey and e.pressed and not e.echo:
 		var k := TargetMath.key_slot(e.keycode)
 		if k >= 0:

@@ -252,3 +252,7 @@ static func wind_mult(rain: float, angle: float, input: Vector2) -> float:
 	var storm := clampf((rain - 0.6) / 0.4, 0.0, 1.0)
 	var along := input.normalized().dot(Vector2.from_angle(angle))   # +1 with the wind, -1 into it
 	return 1.0 + storm * (0.03 * along if along > 0.0 else 0.06 * along)
+
+static func draw_slow(power: float) -> float:
+	## Walking with the bowstring back: from a careful 0.75x down to a creeping 0.4x at full draw.
+	return lerpf(0.75, 0.4, clampf(power, 0.0, 1.0))

@@ -98,3 +98,8 @@ static func thunder_delay(world_seed: int, day: int, t: float) -> float:
 	## Seconds between flash and thunder (distance 0.5..3 s), for a future audio hook / screen rumble.
 	var h := hash(Vector2i(world_seed + 9, day + floori(t / 14.0))) & 0xFF
 	return 0.5 + 2.5 * float(h) / 255.0
+
+static func tree_wind(rain_v: float, wind_angle: float) -> Vector2:
+	## x = steady lean in multiples of each plant's own sway (+ = bent to the right, downwind), y = storm strength 0..1.
+	var storm := clampf((rain_v - 0.6) / 0.4, 0.0, 1.0)
+	return Vector2(cos(wind_angle) * 2.8 * storm, storm)

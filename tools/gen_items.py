@@ -914,7 +914,22 @@ def leather_vest():
     return f
 icons['leather_vest'] = leather_vest
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest']  # appended after the last old icon, in this order
+def arrow():
+    i = Ic()
+    i.line(4, 11, 11, 4, "#966438")                   # wooden shaft
+    i.px(6, 9, "#ba844e"); i.px(9, 6, "#ba844e")
+    for x, y in ((10, 3), (11, 3), (12, 3), (12, 4), (12, 5), (11, 4), (13, 2), (12, 2), (13, 3)):
+        i.px(x, y, "#b0bac4")                         # steel head
+    i.px(14, 1, "#e6ecf2"); i.px(12, 3, "#e6ecf2"); i.px(12, 5, "#6e7886"); i.px(12, 4, "#6e7886")
+    for k in range(3):                                # fletching: white upper vane, red lower vane
+        i.px(2 + k, 11 - k, "#f4f0e4"); i.px(1 + k, 11 - k, "#f4f0e4")
+        i.px(4 + k, 13 - k, "#c84a4a"); i.px(4 + k, 12 - k, "#c84a4a")
+    i.px(1, 12, "#c8c4b4"); i.px(3, 13, "#a83838")
+    i.px(3, 12, "#966438"); i.px(2, 13, "#6a4022")    # nock
+    return i
+icons['arrow'] = arrow
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest', 'arrow']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

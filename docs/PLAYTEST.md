@@ -40,3 +40,5 @@ Start a new game with no flags and play ~10 minutes with only the key legend vis
 2026-11-25 | PLAYTEST run 30 (checklist via demos/screens; no live input) | 1 yes. 2 yes. 3 yes. 4 unchecked by hand; sprint slide has dust. 5 yes: upgrade panel fits. 6 WORST NO: passing out is never triggered (Energy.new_day(true) unused), so exhaustion has no consequence and a bed upgrade has no effect. 7 trailer: farm in rain; ugliest: race START banner in farm demo.
 
 2026-11-25 | PLAYTEST run 35 (checklist via demos/screens; no live input) | 1 yes. 2 yes. 3 yes. 4 unchecked by hand. 5 yes. 6 WORST NO: hunting had no passive income (fixed: snares); butcher/bait next. 7 trailer: winter dawn with steaming deer; ugliest: empty dock edges.
+
+2026-11-26 | Run 38 screenshots: bow drawn at noon, storm meadow, craft menu | The drawn bow reads clearly; all 14 recipes now fit | Needs hands-on feel check: draw time 0.9 s, arrow drift in storms, 120 licence price.

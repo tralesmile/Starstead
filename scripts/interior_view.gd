@@ -19,7 +19,7 @@ signal till_requested(building: Dictionary)
 signal message(msg: String)
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade"]
+const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence"]
 var world: Node2D
 var player: Player
 var active := false
@@ -424,7 +424,7 @@ func interact() -> bool:
 		"alarm":
 			alarm_requested.emit(building)
 			return true
-		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade":
+		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence":
 			if ShopHours.counter_action(String(building.get("id", "")), String(a["action"]), float(hour_cb.call()) if hour_cb.is_valid() else 12.0) == "till":
 				till_requested.emit(building)
 				return true

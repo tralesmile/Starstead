@@ -25,7 +25,7 @@ func test_every_recipe_makes_a_hotbar_tool() -> void:
 			check(items.has(String(recipes[id]["makes"])), id)
 			check(int(recipes[id].get("count", 1)) >= 1, id)
 			continue
-		check(String(recipes[id]["makes"]) in ToolUse.TOOLS, id)
+		check(String(recipes[id]["makes"]) in ToolUse.TOOLS or String(recipes[id]["makes"]) in ToolKit.SWAP_TOOLS, id)
 		check(not (String(recipes[id]["makes"]) in ToolKit.STARTER))
 
 func test_leather_boots_recipe_and_speed() -> void:

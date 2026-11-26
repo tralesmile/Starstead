@@ -116,6 +116,27 @@ func on_process() -> void:
 	if "--hunt-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 12:
 		m.animals.hunt(m.player.position, Vector2.RIGHT, CombatModel.weapon("club"))
 		m.animals.hunt(m.player.position, Vector2.RIGHT, CombatModel.weapon("club"))
+	if "--bow-demo" in OS.get_cmdline_user_args():   # screenshot helper: two arrows stuck, one in flight, the third drawn at a deer
+		var fr := Engine.get_process_frames()
+		if fr == 3:
+			GameState.bag.add("arrow", 12)
+			if not "bow" in GameState.tools_owned:
+				GameState.tools_owned.append("bow")
+			m.hotbar.selected = ToolUse.TOOLS.find("club")
+			m.hotbar.melee_idx = 1
+			m.player.facing = PlayerMath.Facing.RIGHT
+			m.animals._spawn("deer", m.player.position + Vector2(150, 4), null)
+			m.bow.stuck.append({"pos": m.player.position + Vector2(70, 34), "angle": 0.25, "t": 40.0})
+			m.bow.stuck.append({"pos": m.player.position + Vector2(104, -26), "angle": -0.15, "t": 40.0})
+		if fr == 5:
+			m.bow.aim = Vector2(1.0, 0.45)
+			m.bow.loose(1.0)
+		if fr >= 6 and not m.bow.drawing:
+			m.bow.cd = 0.0
+			m.bow.press()
+		if fr >= 6:
+			m.mouse_aim = false
+			m.player.facing = PlayerMath.Facing.RIGHT
 	if "--shop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the stall with a glut of turnips already sold
 		GameState.bag.add("turnip", 12)
 		GameState.bag.add("carp", 2)

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Held tool sprites (original, CC0): 8 icons 16x16 in a 128x16 strip, handle at the bottom-left, head toward the upper right.
-Order: hoe, watering_can, axe, pickaxe, rod, club, hand(empty), scythe. Deterministic."""
+"""Held tool sprites (original, CC0): 9 icons 16x16 in a 144x16 strip, handle at the bottom-left, head toward the upper right.
+Order: hoe, watering_can, axe, pickaxe, rod, club, hand(empty), scythe, bow. Deterministic."""
 import os
 from PIL import Image, ImageDraw
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = (42, 26, 16); WOOD = (150, 100, 58); WOOD_L = (186, 132, 78); STEEL = (176, 186, 196); STEEL_D = (110, 120, 134)
-im = Image.new("RGBA", (128, 16), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+im = Image.new("RGBA", (144, 16), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
 def handle(ox):
     d.line([ox+2, 14, ox+11, 3], fill=OUT, width=3)
     d.line([ox+2, 14, ox+11, 3], fill=WOOD, width=1)
@@ -24,5 +24,18 @@ ox = 64; d.line([ox+1, 15, ox+14, 2], fill=OUT, width=3); d.line([ox+1, 15, ox+1
 ox = 80; d.line([ox+2, 14, ox+11, 4], fill=OUT, width=5); d.line([ox+2, 14, ox+11, 4], fill=WOOD, width=3); d.ellipse([ox+8, 1, ox+14, 7], fill=WOOD, outline=OUT); d.point((ox+10, 3), fill=WOOD_L)
 # scythe (frame 7): long handle, curved blade sweeping to the upper right
 ox = 112; handle(ox); d.arc([ox+3, -4, ox+16, 9], 200, 330, fill=OUT, width=3); d.arc([ox+3, -4, ox+16, 9], 205, 325, fill=STEEL, width=1); d.point((ox+8, 1), fill=(230, 236, 242))
+# bow (frame 8): grip at the bottom-left, limbs curving up and right to the tips, straight string between them
+ox = 128
+limb = [(3, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (3, 9), (3, 10), (4, 11), (5, 12), (6, 12), (7, 13), (8, 13), (9, 13), (10, 13), (11, 13), (12, 13), (13, 12)]
+for x, y in limb + [(4, 1), (14, 11)]:
+    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        d.point((ox+x+dx, y+dy), fill=OUT)
+for x, y in limb + [(4, 1), (14, 11)]:
+    d.point((ox+x, y), fill=WOOD)
+for x, y in ((2, 4), (2, 5), (2, 6), (9, 13), (10, 13), (11, 13)):
+    d.point((ox+x, y), fill=WOOD_L)
+d.line([ox+4, 2, ox+13, 11], fill=(230, 230, 230))
+for x, y in ((3, 10), (4, 11), (5, 12)):
+    d.point((ox+x, y), fill=(154, 74, 56))  # leather grip wrap
 im.save(os.path.join(ROOT, "assets", "sprites", "held_tools.png")); print("wrote held_tools.png")
 #, "sprites", "held_tools.png")); print("wrote held_tools.png")

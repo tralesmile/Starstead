@@ -6,6 +6,14 @@ extends RefCounted
 const STARTER := ["hoe", "axe", "hand"]
 const ALWAYS := ["turnip_seed", "sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow", "hand"]   # seeds and placeables are gated by the bag count instead
 
+const SWAP_TOOLS := ["bow"]   # tools that share a hotbar slot instead of having their own
+
+static func melee_tool(idx: int, owned: Array) -> String:
+	## Slot 8: the club, or the bow when it is chosen and owned (or when it is the only weapon you have).
+	if "bow" in owned and (idx % 2 == 1 or not "club" in owned):
+		return "bow"
+	return "club"
+
 static func start() -> Array:
 	return STARTER.duplicate()
 

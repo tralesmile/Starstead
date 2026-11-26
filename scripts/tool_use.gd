@@ -6,7 +6,7 @@ const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", 
 
 static func held_frame(tool: String) -> int:
 	## Frame in assets/sprites/held_tools.png, -1 = nothing in hand (seeds, bare hands).
-	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5, "scythe": 7}.get(tool, -1)
+	return {"hoe": 0, "watering_can": 1, "axe": 2, "pickaxe": 3, "rod": 4, "club": 5, "scythe": 7, "bow": 8}.get(tool, -1)
 
 static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory, season: int, gen: WorldGen = null, nodes: ResourceNodes = null, energy: Energy = null, drops = null, axes: Dictionary = {}) -> String:
 	if energy != null and not energy.can_use(tool):

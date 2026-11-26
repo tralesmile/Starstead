@@ -647,5 +647,10 @@
   "name": "Leather Vest",
   "price": 110,
   "stack": 1
+ },
+ "arrow": {
+  "name": "Arrow",
+  "price": 3,
+  "stack": 99
  }
 }

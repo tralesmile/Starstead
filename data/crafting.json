@@ -10,5 +10,7 @@
 	"club_copper": {"name": "Copper-Banded Club (+40% damage)", "needs": {"wood": 2, "copper_bar": 3}, "makes": "club_copper", "item": true, "count": 1, "limit": 1},
 	"club_iron": {"name": "Iron-Banded Club (+80% damage)", "needs": {"wood": 2, "iron_bar": 3}, "makes": "club_iron", "item": true, "count": 1, "limit": 1},
 	"pickaxe_copper": {"name": "Copper Pickaxe (power 2)", "needs": {"wood": 2, "copper_bar": 4}, "makes": "pickaxe_copper", "item": true, "count": 1, "limit": 1},
+	"bow": {"name": "Hunting Bow (key 8 swaps club/bow)", "needs": {"wood": 6, "fibre": 4}, "makes": "bow"},
+	"arrow": {"name": "Arrows x5 (wood + fibre)", "needs": {"wood": 1, "fibre": 1}, "makes": "arrow", "item": true, "count": 5},
 	"pickaxe_iron": {"name": "Iron Pickaxe (power 3)", "needs": {"wood": 2, "iron_bar": 4}, "makes": "pickaxe_iron", "item": true, "count": 1, "limit": 1}
 }
