@@ -29,9 +29,22 @@ func build(world: World, g: WorldGen) -> void:
 	_gates(world)
 	_cave_mouth(world)
 	_harbour(world)
+	_isle(world)
 	for it in HarbourProps.items():
 		if ChunkGrid.chunk_of_cell(it["cell"]) == chunk:
-			_add(world, HarbourProps.sprite(it, load("res://assets/sprites/dock_props.png")))
+			var prop := HarbourProps.sprite(it, load("res://assets/sprites/dock_props.png"))
+			_add(world, prop)
+			if int(it["frame"]) == 9:   # the quay's bollard lamp throws a warm pool after dark
+				var lamp_light := PointLight2D.new()
+				lamp_light.texture = Lantern.light_texture()
+				lamp_light.texture_scale = 1.5
+				lamp_light.color = Color(1.0, 0.78, 0.45)
+				lamp_light.position = Vector2(0, -20)
+				lamp_light.energy = 0.0
+				lamp_light.visible = false
+				lamp_light.set_meta("dim", 0.75)
+				lamp_light.add_to_group("night_lights")
+				prop.add_child(lamp_light)
 	_circuit(world)
 	_vance_yard(world)
 	_fish(world)
@@ -284,6 +297,33 @@ func _harbour(world: World) -> void:
 				world.interactables.add(c, "board", "E: Fishing contest board")
 		nodes.append(b)
 		sign_cells.append(c)
+
+func _isle(world: World) -> void:
+	## Ferry posts at the pier head and on Gull Isle, plus the isle decor (IsleModel.decor).
+	var sheet: Texture2D = load("res://assets/sprites/isle_props.png")
+	var items: Array = IsleModel.decor()
+	items.append({"kind": "ferry_post_home", "frame": 4, "cell": FerryModel.HARBOUR_POST})
+	for p in items:
+		var c: Vector2i = p["cell"]
+		if ChunkGrid.chunk_of_cell(c) != chunk:
+			continue
+		var s := Sprite2D.new()
+		s.texture = sheet
+		s.region_enabled = true
+		s.region_rect = Rect2(32.0 * int(p["frame"]), 0, 32, 32)
+		s.offset = Vector2(0, -14)
+		s.position = Vector2(c.x * 32 + 16, c.y * 32 + 28)
+		_add(world, s)
+		match String(p["kind"]):
+			"ferry_post_home":
+				world.interactables.add(c, "ferry", "E: Ferry to Gull Isle ($%d return)" % FerryModel.FARE, {"outbound": true})
+				sign_cells.append(c)
+			"ferry_post":
+				world.interactables.add(c, "ferry", "E: Ferry back to Halden Harbour (paid)", {"outbound": false})
+				sign_cells.append(c)
+			"cairn":
+				world.interactables.add(c, "cairn", "E: Look at the old cairn")
+				sign_cells.append(c)
 
 const CIRCUIT_SPRITES := {
 	"grandstand": ["grandstand", Vector2(150, 10), 72],

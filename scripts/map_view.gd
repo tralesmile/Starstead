@@ -6,7 +6,7 @@ signal closed
 
 const SCALE := 2
 const KIND_COL := {"home": Color(1, 0.9, 0.3), "town": Color(0.9, 0.9, 0.95), "fuel": Color(1, 0.55, 0.1), "sea": Color(0.4, 0.8, 1), "race": Color(1, 0.3, 0.3), "cave": Color(0.8, 0.6, 0.9), "place": Color(0.8, 0.95, 0.6)}
-const REGION_COL := {"homestead": Color(0.36, 0.55, 0.28), "farmland": Color(0.5, 0.62, 0.3), "pine_forest": Color(0.2, 0.38, 0.24), "port_halden": Color(0.45, 0.47, 0.5), "harbour": Color(0.5, 0.52, 0.45), "highlands": Color(0.5, 0.45, 0.4), "vance": Color(0.45, 0.45, 0.5), "circuit": Color(0.42, 0.55, 0.3)}
+const REGION_COL := {"gull_isle": Color(0.34, 0.55, 0.3), "homestead": Color(0.36, 0.55, 0.28), "farmland": Color(0.5, 0.62, 0.3), "pine_forest": Color(0.2, 0.38, 0.24), "port_halden": Color(0.45, 0.47, 0.5), "harbour": Color(0.5, 0.52, 0.45), "highlands": Color(0.5, 0.45, 0.4), "vance": Color(0.45, 0.45, 0.5), "circuit": Color(0.42, 0.55, 0.3)}
 
 var canvas: Control
 var tex: ImageTexture
@@ -87,8 +87,10 @@ func _terrain(c: Vector2i) -> Color:
 		return Color(0.5, 0.52, 0.56) if CityModel.is_asphalt(c) or CityModel.RECT.has_point(c) else Color(0.7, 0.7, 0.72)
 	if CircuitModel.in_rect(c):
 		return Color(0.3, 0.3, 0.33) if CircuitModel.on_circuit(c) else Color(0.42, 0.55, 0.3)
-	if HarbourModel.is_quay(c):
+	if HarbourModel.is_quay(c) or IsleModel.is_jetty(c):
 		return Color(0.62, 0.6, 0.55)
+	if IsleModel.is_island(c):
+		return Color(0.82, 0.74, 0.5) if IsleModel.is_beach(c) else Color(0.34, 0.55, 0.3)
 	if _is_water(c):
 		return _water_col(c)
 	return _land_col(c)

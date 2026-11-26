@@ -42,3 +42,5 @@ Start a new game with no flags and play ~10 minutes with only the key legend vis
 2026-11-25 | PLAYTEST run 35 (checklist via demos/screens; no live input) | 1 yes. 2 yes. 3 yes. 4 unchecked by hand. 5 yes. 6 WORST NO: hunting had no passive income (fixed: snares); butcher/bait next. 7 trailer: winter dawn with steaming deer; ugliest: empty dock edges.
 
 2026-11-26 | Run 38 screenshots: bow drawn at noon, storm meadow, craft menu | The drawn bow reads clearly; all 14 recipes now fit | Needs hands-on feel check: draw time 0.9 s, arrow drift in storms, 120 licence price.
+
+2026-11-26 | Run 39 screenshots + --sfx-log: ferry post, crossing, Gull Isle jetty/beach/cairn, lighthouse at 22:00 | Crossing reads like a real trip and the isle looks like a new place; finds glint on the sand. Nobody has HEARD the new sounds: the log only proves they fire | Needs hands-on: loudness and harshness of steps/chops/ambience (N mutes), perfect-shot window 0.28 s, ferry $60 vs finds (~$150-250 a day).

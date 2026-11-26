@@ -652,5 +652,25 @@
   "name": "Arrow",
   "price": 3,
   "stack": 99
+ },
+ "shell": {
+  "name": "Seashell",
+  "price": 14,
+  "stack": 99
+ },
+ "kelp": {
+  "name": "Kelp",
+  "price": 10,
+  "stack": 99
+ },
+ "sea_glass": {
+  "name": "Sea Glass",
+  "price": 28,
+  "stack": 99
+ },
+ "pearl": {
+  "name": "Pearl",
+  "price": 180,
+  "stack": 99
  }
 }

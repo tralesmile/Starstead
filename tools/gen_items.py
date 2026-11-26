@@ -929,7 +929,65 @@ def arrow():
     return i
 icons['arrow'] = arrow
 
-NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest', 'arrow']  # appended after the last old icon, in this order
+def shell():
+    i = Ic()                                          # scallop: fan of ribs over a hinge
+    i.ell(8, 7.5, 6.2, 5.4, "#f0b49a")
+    for x in range(S):
+        for y in range(11, S):
+            i.p.pop((x, y), None)
+    i.rect(5, 11, 10, 11, "#e09a84"); i.rect(6, 12, 9, 13, "#d08672"); i.rect(5, 13, 10, 13, "#b86e60")
+    for x1, y1 in ((3, 6), (5, 3), (8, 2), (11, 3), (13, 6)):
+        i.line(8, 11, x1, y1, "#c87466")
+    for x, y in ((3, 8), (4, 5), (6, 4), (7, 3), (6, 5), (4, 6)):
+        i.px(x, y, "#ffe4cc")
+    i.px(12, 9, "#d08672"); i.px(13, 8, "#d08672"); i.px(11, 10, "#d08672")
+    return i
+icons['shell'] = shell
+
+def sea_glass():
+    i = Ic()                                          # two frosted tumbled shards
+    for y, x0, x1 in ((2, 5, 7), (3, 4, 9), (4, 3, 9), (5, 3, 10), (6, 2, 10), (7, 2, 9), (8, 3, 8), (9, 4, 6)):
+        i.rect(x0, y, x1, y, "#4cc4a4")
+    i.line(5, 3, 3, 6, "#b8f4dc"); i.line(6, 3, 5, 4, "#b8f4dc"); i.px(5, 3, "#ffffff")
+    i.line(9, 5, 7, 8, "#2e9484"); i.line(10, 6, 8, 8, "#2e9484"); i.px(5, 9, "#2e9484"); i.px(6, 9, "#2e9484")
+    for y, x0, x1 in ((9, 10, 11), (10, 8, 13), (11, 7, 14), (12, 7, 13), (13, 9, 12)):
+        i.rect(x0, y, x1, y, "#5a9ee0")
+    i.line(8, 11, 10, 10, "#c4e4ff"); i.px(9, 11, "#c4e4ff")
+    i.line(10, 13, 12, 13, "#3a6cb0"); i.line(12, 12, 14, 11, "#3a6cb0")
+    i.px(12, 3, "#ffffff"); i.px(12, 2, "#b8f4dc"); i.px(12, 4, "#b8f4dc"); i.px(11, 3, "#b8f4dc"); i.px(13, 3, "#b8f4dc")
+    return i
+icons['sea_glass'] = sea_glass
+
+def pearl():
+    i = Ic()
+    i.ell(8, 8, 5.2, 5.2, "#b8b0cc")                  # lilac rim
+    i.ell(7.4, 7.4, 4.3, 4.3, "#e4dcec")
+    i.ell(6.8, 6.8, 2.8, 2.8, "#faf4f4")
+    i.rect(5, 5, 6, 6, "#ffffff"); i.px(7, 5, "#ffffff")
+    for x, y in ((11, 9), (10, 10), (9, 11)):
+        i.px(x, y, "#f0c4d4")                         # pink reflected light
+    for x, y in ((12, 10), (11, 11), (10, 12), (8, 13), (9, 12)):
+        i.px(x, y, "#8c84a8")
+    i.px(11, 6, "#c4e4ec"); i.px(12, 7, "#c4e4ec")
+    return i
+icons['pearl'] = pearl
+
+def kelp():
+    i = Ic()                                          # three wavy olive-green fronds from one holdfast
+    def frond(pts, c, h):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            i.line(x0, y0, x1, y1, c); i.line(x0 + 1, y0, x1 + 1, y1, c)
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            i.line(x0, y0, x1, y1, h)
+    frond([(7, 12), (3, 9), (4, 6), (2, 3)], "#4e7a2c", "#78a43c")
+    frond([(8, 12), (11, 9), (10, 6), (12, 3)], "#3c6428", "#5e8a30")
+    frond([(7, 12), (6, 8), (8, 5), (6, 1)], "#5e8a30", "#a4c850")
+    i.rect(5, 12, 10, 13, "#6a5428"); i.rect(6, 12, 8, 12, "#947838")
+    i.px(5, 8, "#c4a848"); i.px(10, 8, "#c4a848")      # air bladders
+    return i
+icons['kelp'] = kelp
+
+NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest', 'arrow', 'shell', 'sea_glass', 'pearl', 'kelp']  # appended after the last old icon, in this order
 
 def main():
     keys = list(json.load(open(os.path.join(ROOT, "data", "items.json"))).keys())

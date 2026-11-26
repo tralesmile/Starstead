@@ -137,6 +137,38 @@ func on_process() -> void:
 		if fr >= 6:
 			m.mouse_aim = false
 			m.player.facing = PlayerMath.Facing.RIGHT
+	if "--ferry-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: stand by the pier-head ferry post
+		GameState.money = maxi(GameState.money, 100)
+		m.player.position = (Vector2(FerryModel.HARBOUR_LANDING) + Vector2(0.5, 0.6)) * 32.0
+	if "--ferry-demo" in OS.get_cmdline_user_args() and "--crossing" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 8:   # ... and board
+		FerryActions.run(m, true)
+	if "--isle-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: on Gull Isle's beach beside today's first find
+		var spot: Vector2i = IsleModel.forage(GameState.clock.day, false)[0]["cell"]
+		var inland := Vector2(IsleModel.CENTER - Vector2(spot)).normalized() * 2.2
+		m.player.position = (Vector2(spot) + Vector2(0.5, 0.6) + inland) * 32.0
+	if "--sfx-log" in OS.get_cmdline_user_args():   # QA: walk, shoot, spend money; print which sounds played and the ambience mix
+		var f := Engine.get_process_frames()
+		if f == 3:
+			Input.action_press("move_left")
+		if f == 30:
+			Input.action_release("move_left")
+			GameState.money += 5
+			GameState.bag.add("arrow", 3)
+			GameState.tools_owned = ToolKit.all_tools()
+			GameState.tools_owned.append("bow")
+			m.hotbar.selected = ToolUse.TOOLS.find("club")
+			m.hotbar.melee_idx = 1
+			m.bow.cd = 0.0
+			m.bow.press()
+		if f == 34:
+			m.bow.held_t = BowMath.DRAW_TIME
+			m.bow.release()
+		if f == 38:
+			m.inv_view.visible = true
+		if f == 55:
+			print("SFX ", m.sfx_director.sfx.play_counts, " ambience ", m.sfx_director.sfx.ambience)
+	if "--perfect-demo" in OS.get_cmdline_user_args() and m.bow.drawing:   # with --bow-demo: hold the string inside the perfect window
+		m.bow.held_t = BowMath.DRAW_TIME + 0.05
 	if "--shop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the stall with a glut of turnips already sold
 		GameState.bag.add("turnip", 12)
 		GameState.bag.add("carp", 2)

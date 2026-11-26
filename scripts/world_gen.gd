@@ -70,6 +70,8 @@ func _water_noise(wx: int, wy: int) -> bool:
 		return false
 	if HarbourModel.is_quay(Vector2i(wx, wy)) or CircuitModel.in_rect(Vector2i(wx, wy)):
 		return false
+	if IsleModel.is_land(Vector2i(wx, wy)):
+		return false
 	if HarbourModel.is_sea(Vector2i(wx, wy)):
 		return true
 	return _n.get_noise_2d(wx, wy) < -0.14
@@ -133,6 +135,8 @@ func generate() -> void:
 			var wc := Vector2i(x + _ox, y + _oy)
 			if HarbourModel.is_quay(wc):
 				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3
+			elif IsleModel.is_land(wc):   # Gull Isle: grass inside, a sandy rim and the plank jetty
+				tiles[y * SIZE + x] = PATH + (wc.x * 7 + wc.y * 13) % 3 if IsleModel.is_beach(wc) or IsleModel.is_jetty(wc) else GRASS + posmod(wc.x * 5 + wc.y * 3, 3)
 			elif HarbourModel.is_sea(wc):
 				tiles[y * SIZE + x] = WATER_DEEP if HarbourModel.is_deep(wc) else WATER_SHALLOW
 	for y in SIZE:   # Vance Aerospace yard (VanceYard): forced land, paved concrete
@@ -162,9 +166,11 @@ func generate() -> void:
 			var t := tiles[y * SIZE + x]
 			if t <= 2 and (VanceYard.in_rect(Vector2i(x + _ox, y + _oy)) or CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) or CityModel.in_rect(Vector2i(x + _ox, y + _oy)) or HarbourModel.is_quay(Vector2i(x + _ox, y + _oy))):
 				continue  # the city park stays clear of trees, rocks and bushes
+			if t <= 2 and IsleModel.is_clear(Vector2i(x + _ox, y + _oy)):
+				continue
 			if t <= 2 and (not is_home() or absi(x - 32) + absi(y - 32) > 6):
 				var roll := r.randf()
-				var dens := (0.015 + 0.3 * maxf(0.0, forest.get_noise_2d(x + _ox, y + _oy))) * tree_mul
+				var dens := (0.015 + 0.3 * maxf(0.0, forest.get_noise_2d(x + _ox, y + _oy))) * (1.8 if IsleModel.is_island(Vector2i(x + _ox, y + _oy)) else tree_mul)
 				var rd := 0.012 * rock_mul
 				if roll < dens:
 					trees.append(Vector2i(x, y))
@@ -197,7 +203,7 @@ func generate() -> void:
 		for x in SIZE:
 			var c := Vector2i(x, y)
 			var roll := tr.randf()
-			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) and not HarbourModel.is_quay(Vector2i(x + _ox, y + _oy)) and not VanceYard.in_rect(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
+			if roll < 0.07 and tiles[y * SIZE + x] <= 2 and not IsleModel.is_beach(Vector2i(x + _ox, y + _oy)) and not CityModel.in_rect(Vector2i(x + _ox, y + _oy)) and not CircuitModel.in_rect(Vector2i(x + _ox, y + _oy)) and not HarbourModel.is_quay(Vector2i(x + _ox, y + _oy)) and not VanceYard.in_rect(Vector2i(x + _ox, y + _oy)) and not (c in trees) and not (c in rocks) and not (c in bushes):
 				tufts.append(c)
 
 static func is_road(t: int) -> bool:

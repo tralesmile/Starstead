@@ -30,3 +30,6 @@
 - Run 37: `godot` is not on PATH in a fresh container, only ~/bin/godot: a bare `godot --import` fails silently and then new class_names are 'not declared'. Always call ~/bin/godot.
 - Run 38: menus that list data/*.json grow silently past the 360px screen: give every list a layout test (see CraftGrid test). Pure layout/logic used by tests must live outside classes that mention GameState (Hotbar, CraftView).
 - Run 38: tools/check.sh now takes more than 10 minutes: start it in the background (`tools/check.sh > /tmp/check.log 2>&1 &`) and wait, a foreground call times out.
+- Run 39: tests/test_chunks.gd pins chunk -> region ids, so a new place inside an existing region should be a cell-level override (IsleModel.RECT for the banner), not a new regions.json entry.
+- Run 39: screenshots cannot verify audio: use `--sfx-log` (prints Sfx.play_counts + ambience) after wiring a sound. A bow QA flag must append "bow" to tools_owned or the slot stays the club.
+- Run 39: cinematic overlays must sit above RegionBanner (layer >= 60), else a teleport prints the old region name over them.

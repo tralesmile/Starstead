@@ -26,14 +26,14 @@ static func is_quay(c: Vector2i) -> bool:
 
 static func is_sea(c: Vector2i) -> bool:
 	## Forced water (not on the quay/pier). South of a wavy shore, east of SEA_X0, inside the world.
-	return c.x >= SEA_X0 and c.y >= shore_y(c.x) and not is_quay(c)
+	return c.x >= SEA_X0 and c.y >= shore_y(c.x) and not is_quay(c) and not IsleModel.is_land(c)
 
 static func in_sea_area(c: Vector2i) -> bool:
 	## Fishing here uses the sea fish table (a bit of margin north of the shore for the wobble).
 	return c.x >= SEA_X0 and c.y >= shore_y(c.x) - 1
 
 static func is_deep(c: Vector2i) -> bool:
-	return is_sea(c) and c.y - shore_y(c.x) >= 6
+	return is_sea(c) and c.y - shore_y(c.x) >= 6 and not IsleModel.is_shallows(c)
 
 static func props() -> Array:
 	var out: Array = [

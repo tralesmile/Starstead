@@ -18,6 +18,13 @@ const BREEZE := 0.12          # a dry day still has a light breeze (fraction of 
 const STALL_SPEED := 90.0
 const HIT_RADIUS := 11.0
 const COOLDOWN := 0.35
+const PERFECT_WINDOW := 0.28  # s after reaching full draw: release now for a perfect shot
+const PERFECT_DMG := 1.35
+const PERFECT_SPEED := 1.08
+const PERFECT_WIND := 0.35    # a perfect arrow flies true: only this share of the wind push
+const TIRE_AFTER := 2.4       # s held before the bow arm starts to shake
+const TIRE_FULL := 4.4
+const SWAY_MAX := 0.09        # radians either side
 
 static func draw_power(held: float) -> float:
 	return clampf(held / DRAW_TIME, 0.0, 1.0)
@@ -37,6 +44,25 @@ static func reach(power: float) -> float:
 static func damage(power: float) -> float:
 	return lerpf(DMG_MIN, DMG_MAX, _t(power))
 
+static func is_perfect(held: float) -> bool:
+	return held >= DRAW_TIME and held <= DRAW_TIME + PERFECT_WINDOW
+
+static func sway(held: float) -> float:
+	## Aim error (radians) from holding a full draw too long; zero while fresh.
+	var amp := SWAY_MAX * clampf((held - TIRE_AFTER) / (TIRE_FULL - TIRE_AFTER), 0.0, 1.0)
+	return amp * sin(held * 11.0)
+
+static func perfect(a: Dictionary) -> Dictionary:
+	## The perfect-release bonus applied to a launched arrow.
+	var out := a.duplicate()
+	out["vel"] = (a["vel"] as Vector2) * PERFECT_SPEED
+	out["dmg"] = float(a["dmg"]) * PERFECT_DMG
+	out["perfect"] = true
+	return out
+
+static func wind_share(a: Dictionary) -> float:
+	return PERFECT_WIND if bool(a.get("perfect", false)) else 1.0
+
 static func wind_accel(rain: float, angle: float) -> Vector2:
 	var storm := clampf((rain - 0.6) / 0.4, 0.0, 1.0)
 	return Vector2.from_angle(angle) * WIND_ACCEL * maxf(BREEZE, storm)
@@ -49,7 +75,7 @@ static func step(a: Dictionary, wind: Vector2, dt: float) -> Dictionary:
 	## One physics step; returns the new arrow state (the input is not changed).
 	var out := a.duplicate()
 	var vel: Vector2 = a["vel"]
-	vel = vel * pow(1.0 - DRAG, dt) + wind * dt
+	vel = vel * pow(1.0 - DRAG, dt) + wind * wind_share(a) * dt
 	var move := vel * dt
 	var left := float(a["reach"]) - float(a["flown"])
 	if move.length() >= left:

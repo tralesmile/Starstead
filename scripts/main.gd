@@ -38,6 +38,9 @@ var smelt_view: SmeltView
 var forge_view: ForgeView
 var butcher_view: ButcherView
 var bus_view: BusView
+var isle_view: IsleView
+var ferry_view: FerryView
+var sfx_director: SfxDirector
 var bus_stops: BusStopsView
 var craft_view: CraftView
 var fish_fx: FishingWorldView
@@ -290,6 +293,13 @@ func _ready() -> void:
 	bus_view.closed.connect(func(): player.set_physics_process(true))
 	bus_view.ride.connect(_bus_ride)
 	add_child(bus_view)
+	isle_view = IsleView.new()
+	isle_view.player = player
+	world.add_child(isle_view)
+	isle_view.found.connect(func(id, at): float_fx.pickup(at, id, 1))
+	ferry_view = FerryView.new()
+	ferry_view.arrived.connect(func(): FerryActions.arrived(self))
+	add_child(ferry_view)
 	map_view = MapView.new().setup(player, world.gen, _workshop_door())
 	map_view.locked_cb = func() -> Dictionary: return MapModel.locked_regions(gate_keeper.gates if gate_keeper.enabled else {}, GameState.story.done)
 	add_child(map_view)
@@ -423,6 +433,9 @@ func _ready() -> void:
 	float_fx = FloatFx.new()
 	world.add_child(float_fx)
 	drops_view.picked.connect(func(id, n): float_fx.pickup(player.position, id, n))
+	sfx_director = SfxDirector.new()
+	sfx_director.setup(self)
+	add_child(sfx_director)
 	add_child(drops_view)
 	cursor = CursorView.new()
 	cursor.z_index = 30
@@ -515,6 +528,9 @@ func _process(delta: float) -> void:
 
 	_update_fishing(delta)
 	_update_bow()
+	isle_view.rain = weather.now
+	isle_view.haze = maxf(weather.now, fog)
+	isle_view.lamp = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	world.set_lamps(DayNight.lamp_strength(GameState.clock.minutes))
 	car.night = 0.0 if _indoors() else DayNight.lamp_strength(GameState.clock.minutes)
 	traffic.night = car.night
@@ -536,7 +552,7 @@ func _process(delta: float) -> void:
 		world.stream_update(player.position)
 		var reg: Dictionary = world.region_now(player.position)
 		if ChunkGrid.region_changed(world.region_id, String(reg.id)):
-			region_banner.show_region(String(reg.name))
+			region_banner.show_region("Gull Isle" if IsleModel.RECT.has_point(Vector2i(floori(player.position.x / 32.0), floori(player.position.y / 32.0))) else String(reg.name))
 			story_view.event("region_" + String(reg.id))
 		world.region_id = String(reg.id)
 		var gr := gate_keeper.step(player.position, String(reg.id), GameState.story.done, delta)
@@ -678,6 +694,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if forge_view.visible:
 		forge_view.handle(e)
+		get_viewport().set_input_as_handled()
+		return
+	if ferry_view.visible:
+		ferry_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
 	if bus_view.visible:
@@ -850,6 +870,12 @@ func _unhandled_input(e: InputEvent) -> void:
 		if it.get("kind", "") in ["board", "crate", "fence"]:
 			HarbourActions.run(self, String(it["kind"]))
 			return
+		if it.get("kind", "") == "ferry":
+			FerryActions.run(self, bool(it["outbound"]))
+			return
+		if it.get("kind", "") == "cairn":
+			FerryActions.cairn(self)
+			return
 		if it.get("kind", "") == "sign":
 			_say(String(it.get("text", "")))
 			toast_t = 4.0
@@ -884,6 +910,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			GameState.energy.spend("club")
 			player.held_tool = "club"
 			player.swing()
+			sfx_director.play("swing")
 			combat.attack("club")
 	elif e.is_action_pressed("use_tool"):
 		player.held_tool = hotbar.current()
@@ -1004,6 +1031,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		if sk != "" and _skill_gain(sk):
 			msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
 		world.sync_props(GameState.nodes)
+		if msg != "":
+			sfx_director.tool_result(hotbar.current(), msg)
 		if msg == "Tilled":
 			for lc in line_cells:
 				_dirt_puff(lc)
@@ -1129,6 +1158,7 @@ func _rod_released() -> void:
 				_say("Used " + bait_id.replace("_", " "))
 			GameState.energy.spend("rod")
 			fish_fx.start_cast(TargetMath.center_of(c))
+			sfx_director.play("swing")
 			player.held_tool = "rod"
 			player.swing()
 
@@ -1136,6 +1166,7 @@ func _update_fishing(delta: float) -> void:
 	fishing.tick(delta, Input.is_action_pressed("use_tool") or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
 	if fishing.state == Fishing.State.CAUGHT:
 		GameState.bag.add(fishing.fish_id, 1)
+		sfx_director.play("splash")
 		fish_fx.leap(fishing.fish_id)
 		var treasure_txt := ""
 		if fishing.treasure_got:   # opened the chest in the reel and landed the fish: the loot comes too
@@ -1553,6 +1584,8 @@ func _arg_prefix(prefix: String) -> bool:
 	return false
 
 func _splash_fx(cell: Vector2i, soil_drops := false) -> void:
+	if not soil_drops:
+		sfx_director.play("splash")
 	var p := CPUParticles2D.new()
 	p.position = TargetMath.center_of(cell) + Vector2(0, 4)
 	p.emitting = true

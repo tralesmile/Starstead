@@ -28,6 +28,7 @@ static func pois(cave_mouth: Vector2i, hubs: Dictionary, workshop: Vector2i = Ve
 		if b["kind"] == "garage":
 			out.append({"name": "Garage (fuel)", "cell": b["door"], "kind": "fuel"})
 	out.append({"name": "Halden Harbour", "cell": HarbourModel.BOARD, "kind": "sea"})
+	out.append({"name": "Gull Isle (ferry)", "cell": Vector2i(IsleModel.CENTER), "kind": "sea"})
 	out.append({"name": "Race Circuit", "cell": CircuitModel.START_CELL, "kind": "race"})
 	if cave_mouth.x != RoadNet.NO_CELL:
 		out.append({"name": "Mine", "cell": cave_mouth, "kind": "cave"})

@@ -4,6 +4,8 @@ extends Node2D
 ## (drag + storm wind), hit wild animals, stick in trees, walls or the ground, and can be walked over to take back.
 
 signal message(msg: String)
+signal sound(name: String)
+signal impact(at: Vector2, kind: String)   # "game" | "wood" | "ground"
 
 const STUCK_SECONDS := 45.0
 const PICK_RADIUS := 18.0
@@ -38,22 +40,30 @@ func press() -> bool:
 		return false
 	drawing = true
 	held_t = 0.0
+	sound.emit("bow_draw")
 	return true
 
 func release() -> bool:
 	if not drawing:
 		return false
 	var power := BowMath.draw_power(held_t)
+	var clean := BowMath.is_perfect(held_t)
+	var wobble := BowMath.sway(held_t)
 	cancel()
 	if not BowMath.can_loose(power) or GameState.bag.count("arrow") < 1:
 		return false
 	GameState.bag.remove("arrow", 1)
 	GameState.energy.spend("bow")
-	loose(power)
+	aim = aim.rotated(wobble)
+	loose(power, clean)
 	return true
 
-func loose(power: float) -> void:
-	flying.append(BowMath.launch(player.position, aim, power))
+func loose(power: float, clean := false) -> void:
+	var arrow := BowMath.launch(player.position, aim, power)
+	if clean:
+		arrow = BowMath.perfect(arrow)
+	flying.append(arrow)
+	sound.emit("bow_perfect" if clean else "bow_twang")
 	cd = BowMath.COOLDOWN
 	player.shake(0.6 + power, 0.08)
 
@@ -77,10 +87,12 @@ func _process(delta: float) -> void:
 		if animals != null and animals.shot(from, to, float(nx["dmg"])):
 			if BowMath.recoverable(true, rng.randf()):
 				GameState.bag.add("arrow", 1)   # pulled from the game
+			impact.emit(to, "game")
 			flying.remove_at(i)
 			continue
 		var blocked := solid_cb.is_valid() and bool(solid_cb.call(Vector2i(floori(to.x / 32.0), floori(to.y / 32.0)))) and float(nx["flown"]) > 20.0
 		if blocked or bool(nx["done"]):
+			impact.emit(from if blocked else to, "wood" if blocked else "ground")
 			if BowMath.recoverable(false, rng.randf()):
 				stuck.append({"pos": from if blocked else to, "angle": (nx["vel"] as Vector2).angle(), "t": STUCK_SECONDS})
 			flying.remove_at(i)
@@ -108,14 +120,21 @@ func _draw() -> void:
 		draw_rect(Rect2(-7, -0.5, 14, 1), Color(0.05, 0.08, 0.04, 0.35))   # ground shadow
 		var up := p2 + Vector2(0, -BowMath.lift(a))
 		draw_set_transform(up, ang, Vector2.ONE)
-		draw_line(Vector2(-22, 0), Vector2(-8, 0), Color(1, 1, 1, 0.28), 1.0)   # speed streak
+		var gold := bool(a.get("perfect", false))
+		draw_line(Vector2(-30 if gold else -22, 0), Vector2(-8, 0), Color(1.0, 0.85, 0.3, 0.75) if gold else Color(1, 1, 1, 0.28), 2.0 if gold else 1.0)   # speed streak
 		draw_texture(tex, Vector2(-8, -2.5))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if drawing and player != null:
 		var power := BowMath.draw_power(held_t)
 		var o := player.position + Vector2(0, -14)
 		var col := Color(1.0, 0.85, 0.25) if power >= 1.0 else (Color(0.95, 0.95, 0.9) if BowMath.can_loose(power) else Color(0.7, 0.7, 0.7, 0.6))
-		var d := aim.normalized()
+		var d := aim.normalized().rotated(BowMath.sway(held_t))
+		if BowMath.is_perfect(held_t):
+			col = Color(1.0, 1.0, 0.75)
+			var tip := o + d * 20.0
+			for q in 4:   # a small glint: release now
+				var ray := Vector2.from_angle(q * PI / 2.0 + held_t * 5.0)
+				draw_line(tip + ray * 2.0, tip + ray * 7.0, Color(1.0, 0.9, 0.35), 1.0)
 		_draw_bow(player.position + Vector2(0, -17) + d * 10.0, d, power)
 		for k in range(1, 2 + int(power * 6.0)):   # aim dots reach further as the draw grows
 			draw_rect(Rect2((o + d * (14.0 + k * 9.0)).round() - Vector2(1, 1), Vector2(2, 2)), Color(col, 0.85 - k * 0.07))
