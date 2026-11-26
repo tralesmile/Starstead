@@ -249,6 +249,12 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 44 queue (CLAIMED 2026-11-26)
+- [ ] Phase 3 slice: bike racing at the circuit (Sports item)
+- [ ] Keep the car (position, fuel, damage), the player's position and robbery memory in the save
+- [ ] Graphics: puddle reflections of props and people
+- [ ] Physics/feel: splashes when you run or drive through puddles
+
 ## Backlog (ideas found by research; promote into phases)
 - Run 42: Stardew-style permanent profession choices (https://stardewvalleywiki.com/Professions, https://www.thegamer.com/stardew-valley-profession-tips-guide/) -> done at level 5; a second choice at level 10 is next | 2026-11-26
 - Run 42 follow-ups: save the car (position, fuel, damage), the player position and robbery memory (none are in the save yet); save on quit or a "save and quit" bed prompt; a title screen with settings | 2026-11-26
