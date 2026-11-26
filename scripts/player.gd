@@ -27,6 +27,7 @@ var shake_amp := 1.0
 var _last_frame := 0
 var held: Sprite2D
 var refl: Sprite2D
+var fish_pose := -1   # body pose column while casting / reeling (FishingWorldView)
 var held_tool := ""   # set by main when a tool is used
 var swing_total := 0.18
 var cam_focus := Vector2.ZERO  # dead-zone camera focus (world px)
@@ -48,7 +49,7 @@ var _idle_t := 0.0     # seconds standing still: the dead-zone camera drifts bac
 func _ready() -> void:
 	sprite = Sprite2D.new()
 	sprite.texture = load("res://assets/sprites/player_hd.png")
-	sprite.hframes = 8
+	sprite.hframes = PlayerMath.SHEET_COLS
 	sprite.vframes = 4
 	sprite.offset = Vector2(0, -22)  # feet (y=46 of the 48px frame) on the body origin
 	add_child(sprite)
@@ -59,7 +60,7 @@ func _ready() -> void:
 	add_child(sh)
 	refl = Sprite2D.new()
 	refl.texture = sprite.texture
-	refl.hframes = 8
+	refl.hframes = PlayerMath.SHEET_COLS
 	refl.vframes = 4
 	refl.flip_v = true
 	refl.offset = Vector2(0, 22 - 2)
@@ -157,7 +158,9 @@ func _physics_process(delta: float) -> void:
 		squash_left = maxf(squash_left - delta, 0.0)
 	sprite.scale = HitMath.squash(squash_left, 0.22)
 	var col := PlayerMath.TOOL_FRAME if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
-	sprite.frame = facing * 8 + col
+	if fish_pose >= 0 and not moving:
+		col = fish_pose
+	sprite.frame = facing * PlayerMath.SHEET_COLS + col
 	if moving and tool_t <= 0.0:
 		if PlayerMath.footstep_due(_last_frame, col):
 			footstep.emit()
@@ -213,7 +216,7 @@ func swing() -> void:
 
 func _update_held() -> void:
 	var f := ToolUse.held_frame(held_tool)
-	if tool_t <= 0.0 or f < 0:
+	if tool_t <= 0.0 or f < 0 or fish_pose >= 0:
 		held.visible = false
 		return
 	held.visible = true

@@ -1,0 +1,18 @@
+{
+ "farming": [
+  {"id": "stall_favourite", "name": "Stall Favourite", "desc": "Your crops, silver and gold too, sell for 15% more at the market stall.", "effect": {"crop_sell_mult": 1.15}},
+  {"id": "heavy_rows", "name": "Heavy Rows", "desc": "+25% chance of one extra crop every time you harvest.", "effect": {"crop_bonus_chance": 0.25}}
+ ],
+ "foraging": [
+  {"id": "clean_splitter", "name": "Clean Splitter", "desc": "Every fallen trunk you chop up gives 2 extra wood.", "effect": {"wood_bonus": 2}},
+  {"id": "easy_swing", "name": "Easy Swing", "desc": "Each axe hit on a standing tree costs 2 less energy.", "effect": {"axe_energy_save": 2}}
+ ],
+ "mining": [
+  {"id": "seam_reader", "name": "Seam Reader", "desc": "50% chance of 1 extra stone, ore or coal when a rock or vein breaks.", "effect": {"ore_bonus_chance": 0.5}},
+  {"id": "steady_pick", "name": "Steady Pick", "desc": "Each pickaxe hit costs 1 less energy.", "effect": {"pickaxe_energy_save": 1}}
+ ],
+ "fishing": [
+  {"id": "soft_hands", "name": "Soft Hands", "desc": "The green catch bar is wider, so fish are easier to land.", "effect": {"reel_bar_bonus": 0.07}},
+  {"id": "quay_haggler", "name": "Quay Haggler", "desc": "Your fish sell for 25% more at the market stall.", "effect": {"fish_sell_mult": 1.25}}
+ ]
+}

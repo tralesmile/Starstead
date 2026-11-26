@@ -9,6 +9,7 @@ const LOG_HITS := 2
 const LOG_WOOD := 3
 const LAND := 1.5708  # a lying trunk is rotated a quarter turn
 
+var bonus_wood := 0   # extra wood per log (perk)
 var logs: Dictionary = {}   # cell -> {"hp": int, "landed": bool, "dir": float}
 
 ## Trunk angle (radians) at time t seconds into the fall: slow start, accelerating, small rebound.
@@ -47,4 +48,4 @@ func hit(cell: Vector2i) -> Dictionary:
 	if logs[cell].hp > 0:
 		return {"hit": true, "hp": logs[cell].hp}
 	logs.erase(cell)
-	return {"id": "wood", "n": LOG_WOOD}
+	return {"id": "wood", "n": LOG_WOOD + bonus_wood}

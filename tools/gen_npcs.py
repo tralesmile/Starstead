@@ -9,7 +9,7 @@ but swaps the palette per outfit and draws beardless heads with three hair style
 longer look like tinted copies of the player.
 
 Layout: 256 x (192 * outfits). Each outfit is a block of 4 rows (down, left, up, right) x 8 columns
-(idle, 6 walk frames, tool pose), frames 32x48, exactly like player_hd.png.
+(idle, 6 walk frames, tool pose), frames 32x48, like columns 0..7 of player_hd.png.
 Outfit index = block (row // 4). Order is OUTFITS below; scripts/npc_look.gd mirrors it.
 """
 import os, sys

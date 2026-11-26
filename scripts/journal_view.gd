@@ -37,24 +37,25 @@ func _process(_d: float) -> void:
 		canvas.queue_redraw()
 
 func _draw_all() -> void:
-	var font := ThemeDB.fallback_font
 	var rows := FishJournal.rows(table, GameState.journal.entries)
-	var origin := Vector2(120, 70)
-	var panel := Rect2(origin - Vector2(10, 30), Vector2(400, 46.0 + rows.size() * 28.0))
-	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
-	canvas.draw_rect(panel, Color(0.24, 0.34, 0.4, 0.97))
-	canvas.draw_string(font, origin + Vector2(0, -12), "Fish journal   %d/%d species" % [GameState.journal.species_caught(), table.size()], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.9, 1, 1))
+	var panel := FishJournal.PANEL
+	WoodUI.panel(canvas, panel, "Fish journal   %d/%d species" % [GameState.journal.species_caught(), table.size()])
 	for i in rows.size():
 		var r: Dictionary = rows[i]
-		var y := origin.y + i * 28.0
-		canvas.draw_rect(Rect2(origin.x, y, 380, 26), Color(0.1, 0.16, 0.2, 0.9))
-		var ir := Rect2(origin.x + 4, y + 5, 16, 16)
+		var cell := FishJournal.cell_rect(i, rows.size())
+		var legend := bool(table[r["id"]].get("legendary", false))
+		WoodUI.row(canvas, cell, false, r["caught"])
+		if legend:
+			canvas.draw_rect(Rect2(cell.position, Vector2(3, cell.size.y)), Color(0.93, 0.68, 0.12))
+		var ir := Rect2(cell.position + Vector2(7, 6), Vector2(16, 16))
+		WoodUI.icon_well(canvas, ir.grow(3))
 		var col := Color.WHITE if r["caught"] else Color(0.0, 0.0, 0.0, 0.7)
 		canvas.draw_texture_rect_region(tex, ir, Rect2(int(icons.get(r["id"], 0)) * 16, 0, 16, 16), col)
-		canvas.draw_string(font, Vector2(origin.x + 28, y + 11), String(r["name"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1) if r["caught"] else Color(0.7, 0.8, 0.85))
-		canvas.draw_string(font, Vector2(origin.x + 28, y + 22), "%s water, %s" % [String(r["depth"]).capitalize(), r["seasons"]], HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(0.7, 0.85, 0.9))
+		var place := "%s %s, %s" % [String(r["depth"]).capitalize(), "sea" if bool(table[r["id"]].get("sea", false)) else "lake", r["seasons"]]
+		WoodUI.text(canvas, cell.position + Vector2(32, 13), String(r["name"]), 10, WoodUI.INK if r["caught"] else WoodUI.INK_SOFT)
+		WoodUI.text(canvas, cell.position + Vector2(32, 25), ("Legendary - " + place) if legend else place, 8, WoodUI.INK_SOFT)
 		if r["caught"]:
-			canvas.draw_string(font, Vector2(origin.x + 200, y + 16), "caught %d   best %d cm" % [r["count"], r["best"]], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 0.95, 0.6))
+			WoodUI.text(canvas, cell.position + Vector2(180, 19), "x%d  best %d cm" % [r["count"], r["best"]], 10, WoodUI.GOOD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
 		else:
-			canvas.draw_string(font, Vector2(origin.x + 200, y + 16), "not caught yet", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.6, 0.7, 0.75))
-	canvas.draw_string(font, origin + Vector2(0, 8 + rows.size() * 28.0), "J or Esc to close", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color(1, 1, 1, 0.8))
+			WoodUI.text(canvas, cell.position + Vector2(180, 19), "not yet", 9, WoodUI.INK_SOFT, 104, HORIZONTAL_ALIGNMENT_RIGHT)
+	WoodUI.text(canvas, Vector2(panel.position.x, panel.end.y - 8), "J or Esc to close", 9, WoodUI.INK_SOFT, panel.size.x, HORIZONTAL_ALIGNMENT_CENTER)

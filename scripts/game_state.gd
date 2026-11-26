@@ -30,6 +30,7 @@ var can := WaterCan.new()
 var animals: Array = []  # tamed animal states (AnimalModel dicts)
 var job_xp: Dictionary = {}  # job id -> xp
 var skill_xp: Dictionary = {}  # skill id -> xp (SkillModel)
+var perks: Dictionary = {}  # skill id -> level-5 perk id (PerkModel), permanent
 var world: String = "earth"
 var bank_balance: int = 0   # Halden Bank savings (CityServices)
 var story := StoryModel.new(DataDB.load_json("story"))
@@ -47,6 +48,12 @@ func street_skill() -> int:
 	return ReputationModel.skill(rep_street, bag.count("lockpick_set") > 0)
 
 var rep_street: int = 0  # two reputations, both viable (DESIGN differentiator 4)
+
+func choose_perk(skill: String, id: String) -> bool:
+	if not PerkModel.choose(perks, skill, id):
+		return false
+	energy.discounts = PerkModel.energy_discounts(perks)
+	return true
 
 func bump(stat: String, n: int = 1) -> void:
 	stats[stat] = int(stats.get(stat, 0)) + n
@@ -68,10 +75,10 @@ func has_item(id: String, n: int = 1) -> bool:
 
 func to_dict() -> Dictionary:
 	return {
-		"version": SAVE_VERSION, "clock": clock.to_dict(), "money": money, "bank_balance": bank_balance,
+		"version": SAVE_VERSION, "clock": clock.to_dict(), "energy": energy.value, "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -115,6 +122,9 @@ func from_dict(d: Dictionary) -> bool:
 	skill_xp = {}
 	for k in d.get("skill_xp", {}):
 		skill_xp[k] = int(d["skill_xp"][k])
+	perks = PerkModel.clean(d.get("perks", {}))
+	energy.discounts = PerkModel.energy_discounts(perks)
+	energy.value = clampf(float(d.get("energy", Energy.MAX)), 0.0, float(Energy.MAX))
 	job_xp = {}
 	for k in d.get("job_xp", {}):
 		job_xp[k] = int(d["job_xp"][k])
@@ -148,6 +158,16 @@ func save_game(path: String = SAVE_PATH) -> bool:
 		return false
 	f.store_string(JSON.stringify(to_dict()))
 	return true
+
+## Start over: every field back to what a brand-new GameState holds. The old save is kept as a backup.
+func reset_new(path: String = SAVE_PATH) -> void:
+	if path != "" and FileAccess.file_exists(path):
+		DirAccess.rename_absolute(path, path + ".bak")
+	var fresh: Node = (get_script() as GDScript).new()
+	for p in (get_script() as GDScript).get_script_property_list():
+		if int(p.usage) & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			set(p.name, fresh.get(p.name))
+	fresh.free()
 
 func load_game(path: String = SAVE_PATH) -> bool:
 	if not FileAccess.file_exists(path):

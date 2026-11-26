@@ -17,6 +17,9 @@ var reason := ""
 var _roofs: Dictionary = {}  # Vector2i -> roof Sprite2D
 var inside := false
 var _sprites: Dictionary = {}  # Vector2i -> Node2D
+const DOOR_SHEET: Texture2D = preload("res://assets/sprites/build_door_anim.png")
+var _doors: Dictionary = {}  # Vector2i -> {"s": Sprite2D, "open": 0..1, "want": bool}
+signal door_moved(opening: bool)
 signal message(text: String)
 
 func setup(w: Node2D, g: WorldGen, p: Player) -> void:
@@ -50,6 +53,12 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 		_fence_frame(s, cell)
 	if piece_id == "wall":
 		_wall_frame(s, cell)
+	if piece_id == "door":
+		s.texture = DOOR_SHEET
+		s.region_enabled = true
+		s.region_rect = Rect2(0, 0, 32, 48)
+		s.offset = Vector2(-16, -48)
+		_doors[cell] = {"s": s, "open": 0.0, "want": false}
 	if piece_id == "floor":
 		s.z_index = -8  # under props and the player
 		body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
@@ -101,8 +110,19 @@ func _refresh_fence_neighbours(cell: Vector2i) -> void:
 		elif kind == "wall":
 			_wall_frame(_sprites[n].get_child(0) as Sprite2D, n)
 
+func _update_doors(d: float) -> void:
+	for c in _doors:
+		var st: Dictionary = _doors[c]
+		var want := DoorMath.wants_open(player.position.distance_to(Vector2(c) * 32.0 + Vector2(16, 16)), st.want)
+		if want != st.want:
+			door_moved.emit(want)
+		st.want = want
+		st.open = DoorMath.step(st.open, want, d)
+		(st.s as Sprite2D).region_rect = Rect2(DoorMath.frame(st.open) * 32, 0, 32, 48)
+
 func _unspawn(cell: Vector2i) -> void:
 	_roofs.erase(cell)
+	_doors.erase(cell)
 	if _sprites.has(cell):
 		_sprites[cell].queue_free()
 		_sprites.erase(cell)
@@ -147,6 +167,7 @@ func stamp_blueprint(name: String) -> void:
 
 func _process(_d: float) -> void:
 	_update_roofs(_d)
+	_update_doors(_d)
 	ghost.visible = active
 	if not active:
 		return

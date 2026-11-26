@@ -185,6 +185,40 @@ def door():
     save(im, "build_door.png")
 
 
+def door_anim():
+    """5-frame swing (160x48): frame 0 is the shut door; the leaf then swings in on its left hinge, so it narrows,
+    darkens and uncovers a dim lamp-lit room behind."""
+    closed = Image.open(os.path.join(SPR, "build_door.png")).convert("RGBA")
+    leaf = closed.crop((4, 14, 28, 45))                      # leaf above the threshold step
+    sheet = Image.new("RGBA", (160, 48), (0, 0, 0, 0))
+    widths = [24, 19, 13, 8, 4]
+    for i, w in enumerate(widths):
+        im = closed.copy()
+        if i > 0:
+            d = ImageDraw.Draw(im)
+            d.rectangle([4, 14, 27, 44], fill=(34, 20, 16))                      # doorway
+            for k in range(8):                                                    # floorboards fading into the dark
+                y = 37 + k
+                d.line([4, y, 27, y], fill=shade((92, 60, 36), 0.55 + 0.07 * k))
+            d.line([4, 37, 27, 37], fill=(52, 32, 22))
+            d.rectangle([19, 21, 23, 26], fill=(232, 176, 86))                   # a lamp deep inside
+            d.rectangle([20, 22, 22, 24], fill=(255, 224, 150))
+            d.line([4, 14, 27, 14], fill=(20, 12, 10))
+            d.line([27, 14, 27, 44], fill=(20, 12, 10))
+            swung = leaf.resize((w, leaf.height), Image.NEAREST)
+            k = 1.0 - 0.11 * i
+            px = swung.load()
+            for x in range(swung.width):
+                for y in range(swung.height):
+                    r, g, b, a = px[x, y]
+                    px[x, y] = (int(r * k), int(g * k), int(b * k), a)
+            im.alpha_composite(swung, (4, 14))
+            d.line([4 + w, 14, 4 + w, 44], fill=OUT)                             # leading edge
+            d.line([3 + w, 15, 3 + w, 43], fill=shade(DOOR[3], 0.9))
+        sheet.alpha_composite(im, (i * 32, 0))
+    save(sheet, "build_door_anim.png")
+
+
 def fence():
     rng = random.Random(51)
     im, d = new(32, 32)
@@ -280,4 +314,4 @@ def roof():
 
 if __name__ == "__main__":
     os.makedirs(SPR, exist_ok=True)
-    floor(); wall(); door(); fence(); fence_auto(); wall_auto(); lamp(); roof()
+    floor(); wall(); door(); door_anim(); fence(); fence_auto(); wall_auto(); lamp(); roof()

@@ -6,6 +6,7 @@ extends CanvasLayer
 const SLOT := 28
 const GAP := 2
 var selected := 0
+var locked := false   # an overlay owns the number keys
 var seed_ids: Array = []   # every seed in crops.json; the seed slot plants the chosen one
 var seed_idx := 0
 const PLACEABLES := ["sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow"]   # slot 0 holds both; press its key again to switch
@@ -49,7 +50,7 @@ func cycle_seed() -> void:
 	seed_idx = (seed_idx + 1) % seed_ids.size()
 
 func _unhandled_input(e: InputEvent) -> void:
-	if e is InputEventKey and e.pressed and not e.echo:
+	if e is InputEventKey and e.pressed and not e.echo and not locked:
 		var i := TargetMath.key_slot(e.keycode)
 		if i >= 0 and i < ToolUse.TOOLS.size():
 			if i == selected and ToolUse.TOOLS[i] == "turnip_seed":

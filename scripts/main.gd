@@ -43,6 +43,8 @@ var ferry_view: FerryView
 var sfx_director: SfxDirector
 var bus_stops: BusStopsView
 var craft_view: CraftView
+var welcome: WelcomeView
+var perk_view: PerkView
 var fish_fx: FishingWorldView
 var inv_view: InventoryView
 var journal_view: JournalView
@@ -79,6 +81,9 @@ var rain_day := -1
 var prompt: Label
 var fishing := Fishing.new(int(Time.get_unix_time_from_system()))
 var fish_table: Dictionary = DataDB.load_json("fish")
+var fish_events: Dictionary = DataDB.load_json("fish_events")
+var event_fish := ""   # today's sighted legendary (FishEvents)
+var fish_event_view: FishEventView
 var bait_table: Dictionary = DataDB.load_json("bait")
 var rod_table: Dictionary = DataDB.load_json("rods")
 var axe_table: Dictionary = _merge(_merge(DataDB.load_json("axes"), DataDB.load_json("pickaxes")), _merge(DataDB.load_json("hoes"), DataDB.load_json("cans")))
@@ -90,6 +95,7 @@ var gate_keeper: StoryGate.Keeper
 
 func _ready() -> void:
 	demos = DemoFlags.new(self)
+	var loaded := SaveBoot.should_load(OS.get_cmdline_user_args(), FileAccess.file_exists(GameState.SAVE_PATH)) and GameState.load_game()
 	y_sort_enabled = true
 	world = World.new()
 	add_child(world)
@@ -263,9 +269,12 @@ func _ready() -> void:
 	combat.extra_targets = folk.targets
 	add_child(combat)
 	add_child(FishingView.new(fishing))
+	fish_event_view = FishEventView.new()
+	world.add_child(fish_event_view)
 	fish_fx = FishingWorldView.new()
 	fish_fx.setup(fishing, player)
 	fish_fx.water_at = func(c: Vector2i) -> bool: return world.gen.sdf_at(c.x, c.y) < -0.3
+	fish_fx.sound_cb = func(n: String): sfx_director.play(n)
 	world.add_child(fish_fx)
 	build_view = BuildView.new()
 	add_child(build_view)
@@ -417,6 +426,7 @@ func _ready() -> void:
 	smelt_view.closed.connect(func(): player.set_physics_process(true))
 	smelt_view.cooked.connect(func(n): _say("Smelted " + n))
 	add_child(smelt_view)
+	_setup_perk_view()
 	craft_view = CraftView.new()
 	craft_view.closed.connect(func(): player.set_physics_process(true))
 	craft_view.cooked.connect(func(n): _say("Crafted " + n))
@@ -444,6 +454,7 @@ func _ready() -> void:
 	drops_view.picked.connect(func(id, n): float_fx.pickup(player.position, id, n))
 	sfx_director = SfxDirector.new()
 	sfx_director.setup(self)
+	build_view.door_moved.connect(func(opening: bool): sfx_director.play("door_open" if opening else "door_close"))
 	add_child(sfx_director)
 	add_child(drops_view)
 	cursor = CursorView.new()
@@ -468,7 +479,7 @@ func _ready() -> void:
 	prompt.add_theme_color_override("font_outline_color", Color(0.12, 0.07, 0.03))
 	prompt.add_theme_constant_override("outline_size", 4)
 	leg_layer.add_child(prompt)
-	if GameState.bag.count("turnip_seed") == 0:
+	if not loaded and GameState.bag.count("turnip_seed") == 0:
 		GameState.bag.add("turnip_seed", 10)
 		GameState.bag.add("turnip", 4)  # treats for taming the first animals
 	for a in OS.get_cmdline_user_args():  # screenshot helper: --hour=22 sets the clock
@@ -476,8 +487,35 @@ func _ready() -> void:
 			GameState.clock.day = int(a.substr(9)) * GameState.clock.DAYS_PER_SEASON + 1
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
+	if loaded:
+		_setup_welcome()
 	demos.on_ready()
 	$HUD.queue_free()
+
+func _setup_welcome() -> void:
+	## A loaded save wakes you at your own door, behind the welcome-back card.
+	player.position = (Vector2(_home_door()) + Vector2(0.5, 1.6)) * 32.0
+	welcome = WelcomeView.new()
+	add_child(welcome)
+	welcome.continued.connect(func(): _welcome_lock(false))
+	welcome.new_game.connect(func():
+		GameState.reset_new()
+		get_tree().reload_current_scene())
+	welcome.open(SaveBoot.summary(GameState.clock.day, GameState.clock.season(), GameState.money))
+	_welcome_lock(true)
+
+func _home_door() -> Vector2i:
+	for b in town.buildings:
+		if String(b["id"]) == "farmhouse":
+			return b["door"]
+	return Vector2i(32, 34)
+
+func _welcome_lock(on: bool) -> void:
+	player.velocity = Vector2.ZERO
+	player.move_v = Vector2.ZERO
+	player.set_physics_process(not on)
+	hotbar.locked = on
+	jobs.set_process_unhandled_input(not on)
 
 func _process(delta: float) -> void:
 	car_theft.refresh(GameState.clock.day)
@@ -485,6 +523,7 @@ func _process(delta: float) -> void:
 		rod_charge_t += delta
 	fish_fx.charge = CastMath.power(rod_charge_t) if rod_charging else -1.0
 	fish_fx.day = GameState.clock.day
+	fish_fx.wind = WeatherMath.tree_wind(weather.now, PlayerMath.wind_angle(GameState.clock.day)).x * 140.0
 	demos.on_process()
 	_goal_t -= delta
 	if _goal_t <= 0.0:
@@ -497,7 +536,7 @@ func _process(delta: float) -> void:
 			get_tree().call_group("vance_gate", "queue_free")   # Act 2 seat earned: the yard gate rolls away
 		goal_arrow.set_kind(GoalArrow.kind(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, "watering_can" in GameState.tools_owned))
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
-	if GameState.clock.advance(delta):
+	if GameState.clock.advance(0.0 if welcome != null and welcome.active else delta):
 		_pass_out("late", true)
 	elif PassOut.exhausted(GameState.energy.value) and not _passing_out:
 		_pass_out("exhausted", false)
@@ -510,6 +549,9 @@ func _process(delta: float) -> void:
 			rain_today = 1.0
 		weather.intensity = rain_today
 		farm_view.rain = rain_today
+		_start_fish_event()
+	if event_fish != "":
+		fish_event_view.active = FishEvents.in_hours(fish_table[event_fish], fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0))
 	var fog := WeatherMath.fog_now(WeatherMath.fog_for_day(1, rain_day, GameState.clock.season(), rain_today), GameState.clock.minutes)
 	if "--fog" in OS.get_cmdline_user_args():
 		fog = 0.6
@@ -641,6 +683,12 @@ func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_released("use_tool") or (e is InputEventMouseButton and not e.pressed and e.button_index == MOUSE_BUTTON_LEFT):
 		_rod_released()
 		bow.release()
+	if perk_view.handle_key(e):   # perk chooser grabs input above every other menu
+		get_viewport().set_input_as_handled()
+		return
+	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_P and not car.driving and not shop.visible and not dealer.visible and not dialogue.visible and fishing.state == Fishing.State.IDLE and _open_pending_perk():
+		get_viewport().set_input_as_handled()
+		return
 	if e is InputEventMouseMotion:
 		mouse_aim = true
 	elif e is InputEventKey and e.pressed and not e.echo and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down") or e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
@@ -989,6 +1037,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			if GameState.can.is_empty():
 				_say("The can is empty - face the water and use it to refill")
 				return
+		tree_fall.model.bonus_wood = int(PerkModel.value(GameState.perks, "wood_bonus"))
 		if hotbar.current() == "axe" and tree_fall.hit_log(cell, player.position):
 			return  # chopping a fallen trunk into logs
 		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
@@ -1016,6 +1065,9 @@ func _unhandled_input(e: InputEvent) -> void:
 			_quality_pass(dl, GameState.farm.fert_bonus(cell))
 		if hotbar.current() == "axe" and msg.begins_with("Got") and world.gen.trees.has(cell):
 			dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
+		if hotbar.current() == "pickaxe" and msg.begins_with("Got") and not dl.is_empty() and PerkModel.ore_extra(GameState.perks, randf()) > 0:
+			dl[0]["n"] = int(dl[0]["n"]) + 1
+			msg += " +1 bonus"
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
 		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
@@ -1030,7 +1082,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		if msg.begins_with("Harvested"):
 			sk = "farming"
 
-			if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
+			if PerkModel.crop_bonus(GameState.perks, SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
 				drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
 				msg += " +1 bonus"
 		elif msg.begins_with("Got") and hotbar.current() == "axe":
@@ -1128,13 +1180,33 @@ func _quality_pass(dl: Array, fert: float = 0.0) -> void:
 		if GameState.farm.crops.has(d["id"]):
 			d["id"] = QualityMath.variant(String(d["id"]), QualityMath.roll(flvl, randf(), fert))
 
+func _start_fish_event() -> void:
+	## A new day: maybe a legendary is sighted, in the lake by the home dock or off the harbour pier.
+	var caught: Array = []
+	for id in GameState.journal.entries:
+		if int(GameState.journal.entries[id].count) > 0:
+			caught.append(id)
+	event_fish = FishEvents.for_day(fish_events, fish_table, GameState.clock.day, GameState.clock.season(), caught)
+	var spot := Vector2i(-1, -1)
+	if event_fish != "":
+		var sea := bool(fish_table[event_fish].get("sea", false))
+		var from: Vector2i = HarbourModel.HEAD.position + Vector2i(HarbourModel.HEAD.size.x / 2, 6) if sea else (world.gen.dock[1] if world.gen.dock.size() > 1 else Vector2i(32, 32))
+		spot = FishEvents.find_spot(from, func(c: Vector2i) -> float: return world.gen.sdf_at(c.x, c.y), 40, -1.5, 0 if sea else 6)
+		_say(String(fish_events["events"][event_fish]))
+		toast_t = 8.0
+	fish_event_view.show_at(spot)
+
 func _fish_ctx() -> Dictionary:
 	var caught: Array = []
 	for id in GameState.journal.entries:
 		if int(GameState.journal.entries[id].count) > 0:
 			caught.append(id)
 	var cc := _water_cell_ahead(CastMath.distance_tiles(CastMath.power(rod_charge_t)))
-	return {"rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "caught_count": GameState.journal.total_caught(), "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc), "hot": cc.x >= 0 and FishSpots.is_hot(cc, GameState.clock.day)}
+	var hour := fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0)
+	var sighted := ""
+	if event_fish != "" and cc.x >= 0 and FishEvents.hits(fish_events, fish_table[event_fish], cc, fish_event_view.spot, hour):
+		sighted = event_fish
+	return {"event_fish": sighted, "event_boost": float(fish_events.get("boost", 0.4)), "rain": rain_today, "hour": fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0), "caught": caught, "caught_count": GameState.journal.total_caught(), "sea": cc.x >= 0 and HarbourModel.in_sea_area(cc), "hot": cc.x >= 0 and FishSpots.is_hot(cc, GameState.clock.day), "perk_bar": PerkModel.value(GameState.perks, "reel_bar_bonus")}
 
 func _rod_pressed() -> void:
 	if fishing.state == Fishing.State.IDLE:
@@ -1345,7 +1417,7 @@ func _cave_tool() -> void:
 		_say(msg)
 
 func _on_ore_broken(id: String, n: int, pos: Vector2, _kind: String) -> void:
-	drops_view.spawn(id, n, pos)
+	drops_view.spawn(id, n + PerkModel.ore_extra(GameState.perks, randf()), pos)
 	var sk := "mining"
 	if _skill_gain(sk):
 		_say("Mining level %d!" % SkillModel.level(int(GameState.skill_xp[sk])))
@@ -1377,7 +1449,7 @@ func _context_harvest(cell: Vector2i) -> void:
 		_quality_pass(dl, GameState.farm.fert_bonus(cell))
 	for d in dl:
 		drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
-	if SkillModel.roll_bonus(SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
+	if PerkModel.crop_bonus(GameState.perks, SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
 		drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
 		msg += " +1 bonus"
 	if _skill_gain("farming"):
@@ -1391,7 +1463,40 @@ func _skill_gain(sk: String) -> bool:
 	if up:
 		LevelFx.spawn(world, player.position, sk, SkillModel.level(int(GameState.skill_xp[sk])))
 		player.shake(0.6, 0.1)
+		if PerkModel.pending(GameState.skill_xp, GameState.perks).has(sk):
+			perk_view.open_later(sk, SkillModel.level(int(GameState.skill_xp[sk])))
 	return up
+
+func _setup_perk_view() -> void:
+	perk_view = PerkView.new()
+	perk_view.blocked = func() -> bool: return shop.visible or dealer.visible or dialogue.visible or car.driving
+	var was_free := [true]   # restore the player's state: a bag or cutscene may still hold them under the chooser
+	perk_view.opened.connect(func():
+		was_free[0] = player.is_physics_processing()
+		player.velocity = Vector2.ZERO
+		player.move_v = Vector2.ZERO
+		player.set_physics_process(false)
+		hotbar.locked = true
+		jobs.set_process_unhandled_input(false))
+	perk_view.closed.connect(func():
+		player.set_physics_process(was_free[0])
+		hotbar.locked = false
+		jobs.set_process_unhandled_input(true))
+	perk_view.picked.connect(func(sk: String, id: String):
+		if not GameState.choose_perk(sk, id):
+			return
+		sfx_director.play("pickup")
+		_say("New perk: %s" % PerkModel.option(sk, id)["name"])
+		if not _open_pending_perk():
+			perk_view.close())
+	add_child(perk_view)
+
+func _open_pending_perk() -> bool:
+	var waiting := PerkModel.pending(GameState.skill_xp, GameState.perks)
+	if waiting.is_empty():
+		return false
+	perk_view.open(waiting[0], SkillModel.level(int(GameState.skill_xp.get(waiting[0], 0))))
+	return true
 
 func _dirt_puff(cell: Vector2i) -> void:
 	var fd: Vector2 = TargetMath.center_of(cell) - player.position
@@ -1459,10 +1564,7 @@ func _pass_out(cause: String, clock_rolled: bool) -> void:
 	if car.driving:
 		car.driving = false
 		car.vel = Vector2.ZERO
-	var home_door := Vector2i(32, 34)
-	for b in town.buildings:
-		if String(b["id"]) == "farmhouse":
-			home_door = b["door"]
+	var home_door := _home_door()
 	var hosp_door := Vector2i(198, -2)
 	for b in CityModel.buildings():
 		if String(b["id"]) == "city_hospital":

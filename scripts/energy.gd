@@ -5,9 +5,12 @@ extends RefCounted
 const MAX := 100
 const COSTS := {"hoe": 2, "watering_can": 1, "axe": 4, "pickaxe": 4, "seed": 0, "hand": 0, "rod": 2, "club": 2, "bow": 1, "scythe": 1, "sprinkler": 0, "scarecrow": 0, "crab_pot": 0, "snare": 0}
 var value: float = MAX
+var discounts: Dictionary = {}   # tool -> energy saved per use (perks); a costly tool never drops below 1
 
 func cost_of(tool: String) -> int:
-	return int(COSTS.get(tool, 0 if tool.ends_with("_seed") else 1))
+	var base := int(COSTS.get(tool, 0 if tool.ends_with("_seed") else 1))
+	var saved := int(discounts.get(tool, 0))
+	return maxi(1, base - saved) if base > 0 and saved > 0 else base
 
 func can_use(tool: String) -> bool:
 	return value >= cost_of(tool)

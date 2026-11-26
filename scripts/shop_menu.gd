@@ -12,6 +12,9 @@ var world := "earth"
 var market: MarketModel = null   # optional sell pressure (E8)
 var day := 1
 var sell_bonus := 1.0   # root cellar (HomeUpgrades.sell_mult)
+var perks: Dictionary = {}   # chosen skill perks (PerkModel.sell_mult)
+var crops: Dictionary = DataDB.load_json("crops")
+var fish: Dictionary = DataDB.load_json("fish")
 var rep_honest := 0   # honest tier discounts and sell bonus (ReputationModel)
 
 const ROWS := 9            # rows the shop window shows at once
@@ -43,7 +46,7 @@ func entries(inv: Inventory) -> Array:
 func _sell_now(id: String) -> int:
 	var base := Shop.sell_price(items, id, planets, world)
 	var p := base if market == null else market.price(base, id, day)
-	return int(round(p * ReputationModel.sell_mult(rep_honest) * sell_bonus))
+	return int(round(p * ReputationModel.sell_mult(rep_honest) * sell_bonus * PerkModel.sell_mult(perks, id, crops, fish)))
 
 func _buy_now(id: String) -> int:
 	return int(round(Shop.buy_price(items, id, planets, world) * ReputationModel.buy_mult(rep_honest)))

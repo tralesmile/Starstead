@@ -49,6 +49,14 @@ static func rows(table: Dictionary, entries: Dictionary) -> Array:
 	out.sort_custom(func(a, b): return a["price"] < b["price"])
 	return out
 
+## Journal screen layout (640x360): two columns so the species list always fits.
+const PANEL := Rect2(18, 20, 604, 316)
+const ROW_H := 32.0
+
+static func cell_rect(i: int, n: int) -> Rect2:
+	var per := (n + 1) / 2
+	return Rect2(PANEL.position + Vector2(8 + (i / per) * 298.0, 32 + (i % per) * ROW_H), Vector2(290, ROW_H - 3.0))
+
 static func season_text(seasons: Array) -> String:
 	var names := ["Spr", "Sum", "Aut", "Win"]
 	if seasons.size() >= 4:

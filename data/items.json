@@ -708,5 +708,23 @@
   "price": 180,
   "stack": 99,
   "rarity": "bronze"
+ },
+ "lantern_eel": {
+  "name": "Lantern Eel",
+  "price": 900,
+  "stack": 1,
+  "rarity": "gold"
+ },
+ "anvil_sturgeon": {
+  "name": "Anvil Sturgeon",
+  "price": 1100,
+  "stack": 1,
+  "rarity": "gold"
+ },
+ "glass_marlin": {
+  "name": "Glass Marlin",
+  "price": 1300,
+  "stack": 1,
+  "rarity": "gold"
  }
 }

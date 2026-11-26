@@ -84,7 +84,7 @@ func _draw_all() -> void:
 	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(w, h))
 	canvas.draw_rect(panel.grow(2), Color(0.16, 0.1, 0.06))
 	canvas.draw_rect(panel, Color(0.36, 0.24, 0.14, 0.97))
-	canvas.draw_string(font, ORIGIN + Vector2(0, -16), "Bag   $%d   Energy %d" % [GameState.money, int(GameState.energy.value)], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
+	canvas.draw_string(font, ORIGIN + Vector2(0, -16), "Bag   $%d   Energy %d" % [GameState.money, int(GameState.energy.value)] + ("" if PerkModel.pending(GameState.skill_xp, GameState.perks).is_empty() else "   P: choose a perk"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.7))
 	var by := ORIGIN.y + rows * CELL + 28.0
 	for si in SkillModel.SKILLS.size():
 		var sk: String = SkillModel.SKILLS[si]

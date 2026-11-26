@@ -8,6 +8,22 @@ const ACCEL := 900.0     # px/s^2: reaches full speed in 0.1 s
 const FRICTION := 1200.0 # px/s^2: stops in 0.075 s, no ice-skating
 const WALK_FPS := 10.0
 const TOOL_FRAME := 7    # column of the tool-swing pose in player_hd.png
+const SHEET_COLS := 12   # columns in player_hd.png (tools/gen_player_hd.py); rows are Facing
+const CAST_WINDUP_FRAME := 8
+const CAST_FOLLOW_FRAME := 9
+const REEL_FRAME := 10   # 10 and 11 alternate
+const CAST_FOLLOW_TIME := 0.3
+const REEL_FPS := 6.0    # pose changes per second while reeling
+
+static func fishing_frame(charging: bool, cast_age: float, reeling: bool, t: float) -> int:
+	## Body pose column while fishing, or -1 for no fishing pose. Wind-up beats follow-through beats reeling.
+	if charging:
+		return CAST_WINDUP_FRAME
+	if cast_age < CAST_FOLLOW_TIME:
+		return CAST_FOLLOW_FRAME
+	if reeling:
+		return REEL_FRAME + int(t * REEL_FPS) % 2
+	return -1
 
 static func velocity(input: Vector2, speed: float = SPEED) -> Vector2:
 	## 8-way: diagonal is normalized so it is not faster.

@@ -35,6 +35,7 @@ func open() -> void:
 	menu.day = GameState.clock.day
 	menu.rep_honest = GameState.rep_honest
 	menu.sell_bonus = GameState.home.sell_mult()
+	menu.perks = GameState.perks
 	menu.tab = ShopMenu.Tab.SELL
 	menu.cursor = 0
 	msg = ""

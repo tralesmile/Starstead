@@ -132,5 +132,61 @@
   "difficulty": 0.8,
   "price": 260,
   "sea": true
+ },
+ "lantern_eel": {
+  "name": "Lantern Eel",
+  "depth": "deep",
+  "seasons": [
+   0,
+   1,
+   2
+  ],
+  "weight": 0,
+  "difficulty": 0.88,
+  "price": 900,
+  "legendary": true,
+  "hours": [
+   19,
+   24
+  ],
+  "min_rain": 0.0,
+  "chance": 0.03
+ },
+ "anvil_sturgeon": {
+  "name": "Anvil Sturgeon",
+  "depth": "deep",
+  "seasons": [
+   2,
+   3
+  ],
+  "weight": 0,
+  "difficulty": 0.92,
+  "price": 1100,
+  "legendary": true,
+  "hours": [
+   6,
+   13
+  ],
+  "min_rain": 0.0,
+  "chance": 0.03
+ },
+ "glass_marlin": {
+  "name": "Glass Marlin",
+  "depth": "deep",
+  "seasons": [
+   1,
+   2
+  ],
+  "weight": 0,
+  "difficulty": 0.95,
+  "price": 1300,
+  "legendary": true,
+  "hours": [
+   5,
+   12
+  ],
+  "min_rain": 0.0,
+  "chance": 0.03,
+  "sea": true
  }
 }

@@ -582,6 +582,37 @@ def river_king():
     return i
 icons['river_king'] = river_king
 
+def lantern_eel():
+    i = Ic()
+    pts = [(2, 6), (3, 5), (4, 5), (5, 6), (6, 8), (7, 9), (8, 10), (9, 10), (10, 9), (11, 8), (12, 7), (13, 7), (14, 8)]
+    for k, (x, y) in enumerate(pts):
+        r = 2 if k < 9 else 1
+        for dy in range(r + 1):
+            i.px(x, y + dy, "#2a4a3a" if dy == 0 else "#3e6e4e")
+    for (x, y) in ((4, 7), (7, 11), (10, 10), (12, 8)):
+        i.px(x, y, "#c8ff7a")
+    i.px(2, 6, "#fff8a0"); i.px(1, 7, "#3e6e4e"); i.px(2, 8, "#3e6e4e")
+    i.px(1, 3, "#c8ff7a"); i.px(2, 4, "#2a4a3a")
+    return i
+icons['lantern_eel'] = lantern_eel
+
+def anvil_sturgeon():
+    i = fish("#5a626e", "#c8ccd2", "#3a404a", big=True)
+    for x in (5, 7, 9):
+        i.px(x, 3, "#2a2e36"); i.px(x, 4, "#8a929e")
+    i.px(0, 8, "#5a626e"); i.px(0, 9, "#3a404a"); i.px(1, 11, "#3a404a"); i.px(2, 11, "#3a404a")
+    return i
+icons['anvil_sturgeon'] = anvil_sturgeon
+
+def glass_marlin():
+    i = fish("#7ac8e8", "#f0fcff", "#3a7ab8", big=True)
+    i.line(0, 6, 3, 8, "#d8f4ff")
+    for x in range(5, 11):
+        i.px(x, 2 + abs(x - 7) // 2, "#3a7ab8"); i.px(x, 3 + abs(x - 7) // 2, "#a8e0f8")
+    i.px(8, 7, "#ffffff"); i.px(9, 8, "#ffffff")
+    return i
+icons['glass_marlin'] = glass_marlin
+
 def crab_pot():
     i = Ic()
     i.ell(8, 9, 6, 5, "#a8885a")
@@ -825,7 +856,7 @@ def pumpkin_butter():
     return i
 icons['pumpkin_butter'] = pumpkin_butter
 
-GLOW = {'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
+GLOW = {'lantern_eel': (170, 255, 110, 100), 'anvil_sturgeon': (255, 200, 80, 100), 'glass_marlin': (190, 240, 255, 110), 'glow_bait': (96, 240, 176, 120), 'golden_koi': (255, 224, 96, 90), 'river_king': (255, 200, 80, 110)}
 
 def scarecrow_icon():
     i = Ic()

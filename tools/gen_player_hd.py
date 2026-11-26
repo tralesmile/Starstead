@@ -4,10 +4,12 @@
 Run from repo root:  python3 tools/gen_player_hd.py
 Writes assets/sprites/player_hd.png and a 4x preview to /tmp/player_hd_preview.png.
 
-Layout: 256x192, frames 32 wide x 48 tall, 8 columns x 4 rows.
+Layout: 384x192, frames 32 wide x 48 tall, 12 columns x 4 rows.
   rows:    0 = down (front), 1 = left, 2 = up (back), 3 = right
   columns: 0 = idle, 1-6 = walk (contact, down, passing, contact, down, passing),
-           7 = tool swing (arms raised forward/overhead, leaning into the facing direction)
+           7 = tool swing (arms raised forward/overhead, leaning into the facing direction),
+           8 = cast wind-up, 9 = cast follow-through, 10-11 = reeling (the rod itself is drawn
+           in code, scripts/fishing_world_view.gd; its grip is 6px to the side, 13px above the feet)
 Feet bottom on y = 46, body centred on x = 16 (the boundary between pixel columns 15 and 16).
 
 Same design as player.png (tools/gen_sprites.py): chunky bearded man, brown hair and beard,
@@ -200,9 +202,12 @@ POSES = [
     dict(b=0, A=(3, 0), B=(-3, 0), aA=0, aB=0, tool=True),  # 7 tool swing
 ]
 
+# columns 8..11, player sheet only (make_sheet() defaults to POSES, which gen_npcs.py shares)
+FISH_POSES = [dict(fish="wind"), dict(fish="cast"), dict(fish="reel_a"), dict(fish="reel_b")]
+
 
 # ================================================================ front / back views
-def leg_front(cv, L, side, fwd, lift, b, back_view):
+def leg_front(cv, L, side, fwd, lift, b, back_view, wide=0):
     """side -1 = screen-left leg, +1 = screen-right. Pants then boot, lit as cylinders."""
     lay = Layer()
     hip_y = 36 + b
@@ -211,10 +216,11 @@ def leg_front(cv, L, side, fwd, lift, b, back_view):
     foot = GROUND - lift - (1 if toward <= -3 else 0)
     inward = 1 if lift >= 2 else 0
     spread = 1 if toward >= 3 else 0  # striding leg swings slightly outward
-    x0 = (11 if side < 0 else 17) + side * spread + (inward if side < 0 else -inward)
+    x0 = (11 if side < 0 else 17) + side * (spread + wide) + (inward if side < 0 else -inward)
     top_boot = foot - 3
-    pm, pdx, pdy, pnz = segment((x0 + 2.0, hip_y), (x0 + 2.0, top_boot + 0.5), 2.0)
-    pm &= (YY >= hip_y) & (YY < top_boot) & (XX >= x0) & (XX <= x0 + 3)
+    # a wide (braced) stance slants the leg from the usual hip out to the planted boot
+    pm, pdx, pdy, pnz = segment((x0 + 2.0 - side * wide, hip_y), (x0 + 2.0, top_boot + 0.5), 2.0)
+    pm &= (YY >= hip_y) & (YY < top_boot) & (XX >= x0 - (wide if side > 0 else 0)) & (XX <= x0 + 3 + (wide if side < 0 else 0))
     lay.paint(pm, "pants", quant(L.dot(pdx, -0.15, pnz), 1, 3))
     # boot: 5 wide at the bottom two rows (toe spreads), 4 wide above
     bx0 = x0 - (1 if side < 0 else 0)
@@ -410,7 +416,7 @@ def draw_front(L, pose, back_view):
 
 
 # ================================================================ side view (faces right)
-def leg_side(cv, L, fwd, lift, b, far):
+def leg_side(cv, L, fwd, lift, b, far, planted=False):
     lay = Layer()
     d = -1 if far else 0
     hip = (CX + 0.2 + (-0.8 if far else 0.4), 36.0 + b)
@@ -424,7 +430,7 @@ def leg_side(cv, L, fwd, lift, b, far):
         lay.paint(m, "pants", np.maximum(1, quant(L.dot(ndx, ndy, nz), 1, 3, -0.3, 0.8) + d))
     # boot: heel at ankle, toe 2px forward; back foot on contact rolls onto the toe
     ax = int(math.floor(ankle[0]))
-    heel_up = fwd <= -3 and lift == 0
+    heel_up = fwd <= -3 and lift == 0 and not planted
     bm = rect(ax - 2, foot - 2, ax + 1, foot) | rect(ax + 2, foot - 1, ax + 3, foot)
     if heel_up:
         bm = rect(ax - 2, foot - 2, ax + 1, foot - 1) | rect(ax, foot, ax + 3, foot)
@@ -465,7 +471,8 @@ def arm_side_raised(cv, L, b, far, lean):
     cv.comp(lay)
 
 
-def torso_side(cv, L, b, lean=0):
+def torso_side(cv, L, b, lean=0, shear=0):
+    """lean shifts the whole torso; shear tips it (shoulders move `shear` px, the belt stays put)."""
     lay = Layer()
     y0, y1 = 25 + b, 35 + b
     # back edge straight-ish, belly bulges forward around the belt
@@ -474,7 +481,8 @@ def torso_side(cv, L, b, lean=0):
         r = y - y0
         x0 = 11 + (1 if r == 0 else 0)
         x1 = 20 + (1 if 3 <= r <= 9 else 0) + (1 if 5 <= r <= 7 else 0) - (1 if r == 0 else 0)
-        m |= rect(x0 + lean, y, x1 + lean, y)
+        tip = int(round(shear * max(0, 7 - r) / 7.0))
+        m |= rect(x0 + lean + tip, y, x1 + lean + tip, y)
     nx = (PX - (CX + lean)) / 5.5
     ny = np.clip((PY - (y0 + 4.0)) / 9.0, -0.6, 0.4)
     nz = np.sqrt(np.clip(1 - nx * nx, 0.05, 1))
@@ -567,19 +575,138 @@ def draw_side(L, pose):
     return cv
 
 
+# ================================================================ fishing poses
+def bent_arm(cv, L, sh, elbow, hand, far=False, hand_r=1.6, r=1.55):
+    """Two-bone arm (shoulder, elbow, hand); hand=None draws the sleeve only."""
+    d = -1 if far else 0
+    lay = Layer()
+    sleeve = np.zeros((FH, FW), bool)
+    pts = [sh, elbow] + ([hand] if hand else [])
+    for p0, p1 in zip(pts, pts[1:]):
+        m, ndx, ndy, nz = segment(p0, p1, r)
+        lay.paint(m, "tunic", np.maximum(1, quant(L.dot(ndx, ndy, nz), 1, 4, -0.3, 0.9) + d))
+        sleeve |= m
+    cv.comp(lay)
+    if hand:
+        fist(cv, L, hand, far, hand_r)
+
+
+def fist(cv, L, at, far=False, r=1.6):
+    lay = Layer()
+    hm, hdx, hdy, hnz = ellipse(at[0], at[1], r, r)
+    lay.paint(hm, "skin", np.maximum(1, quant(L.dot(hdx, hdy, hnz), 1, 4, -0.3, 0.9) + (-1 if far else 0)))
+    cv.comp(lay)
+
+
+def draw_front_fish(L, kind, back_view):
+    """Front (facing the camera) and back views. The rod side is screen-right in both.
+    Leaning toward the camera moves head/shoulders down; leaning away moves them up."""
+    cv = Canvas()
+    reel = kind.startswith("reel")
+    k = 1 if kind == "reel_b" else 0
+    toward_cam = {"wind": -1, "cast": 1, "reel_a": -1, "reel_b": -1}[kind] * (-1 if back_view else 1)
+    if kind == "wind":
+        hb, tb = (2, 1) if back_view else (-1, 0)
+    elif kind == "cast":
+        hb, tb = (-1, 0) if back_view else (3, 1)
+    else:  # leaning back, with a 1px bob on B
+        hb, tb = ((1, 0) if back_view else (0, 0))
+        hb, tb = hb + k, tb + k
+    wide = 2 if reel else 1
+    for side in (-1, 1):
+        fwd = 0
+        if not reel:  # one foot steps toward the cast
+            fwd = (3 if side < 0 else -3) * (1 if toward_cam else 0)
+            if back_view:
+                fwd = -fwd
+        leg_front(cv, L, side, fwd, 0, 0, back_view, wide)
+
+    ls, rs = (9.0, 26.8 + tb), (23.0, 26.8 + tb)
+
+    if kind == "cast" and back_view:
+        # arms reach away from the camera: drawn behind body and head, fists past the shoulders
+        bent_arm(cv, L, ls, (5.6, 28.0), (6.0, 22.6))
+        bent_arm(cv, L, rs, (26.4, 28.0), (26.0, 22.6))
+    if reel and back_view:
+        # hands are in front of the body: elbows poke out, the rod fist peeks past the right hip
+        bent_arm(cv, L, ls, (7.2 - k * 0.6, 31.6 + tb), (13.0, 33.0))
+        bent_arm(cv, L, rs, (26.2 + k, 30.4 + tb - k), (23.2, 33.4 - k), hand_r=2.0)
+
+    torso_front(cv, L, tb, back_view)
+
+    if kind == "wind" and not back_view:
+        # hands go back over the right shoulder, behind the head
+        bent_arm(cv, L, ls, (7.0, 18.0), (21.0, 9.6), far=True)
+        bent_arm(cv, L, rs, (27.4, 20.0), (25.6, 11.4))
+        fist(cv, L, (23.6, 10.0))
+
+    (head_back if back_view else head_front)(cv, L, hb)
+
+    if kind == "wind" and back_view:
+        # behind the character is toward the camera: arms cross over the right shoulder
+        bent_arm(cv, L, ls, (11.0, 32.0), (22.6, 24.6))
+        bent_arm(cv, L, rs, (28.0, 29.0), (26.0, 23.4), hand_r=2.0)
+    elif kind == "cast" and not back_view:
+        # thrust at the camera and down: fists low, together, drawn a little larger
+        bent_arm(cv, L, (8.8, 28.0), (8.4, 33.0), (14.2, 36.6), hand_r=2.1, r=1.7)
+        bent_arm(cv, L, (23.2, 28.0), (23.6, 33.0), (17.8, 36.6), hand_r=2.1, r=1.7)
+    elif reel and not back_view:
+        # both fists on the grip, right of centre; B cranks the right elbow out and up
+        bent_arm(cv, L, ls, (8.0, 31.6 + tb), (17.4 + k, 32.6 + k * 0.6))
+        bent_arm(cv, L, rs, (25.4 + k, 31.2 + tb - k * 1.6), (21.0, 32.6 - k), hand_r=1.8)
+    cv.outline()
+    return cv
+
+
+# side view per pose: head offset, torso (shift, tip), bob, feet (near, far),
+# near arm (elbow, hand), far arm (elbow, hand); arm points are absolute pixels, facing right
+SIDE_FISH = {
+    "wind": dict(head=-3, torso=(-1, -2), b=0, feet=(4, -3),
+                 near=((8.0, 23.0), (4.8, 15.0)), far=((20.0, 20.0), (6.0, 12.4))),
+    "cast": dict(head=3, torso=(0, 3), b=1, feet=(5, -4),
+                 near=((20.5, 33.0), (27.0, 34.6)), far=((25.0, 29.0), (29.0, 32.0))),
+    "reel_a": dict(head=-3, torso=(-1, -2), b=0, feet=(5, -5),
+                   near=((11.0, 32.4), (21.6, 32.8)), far=((17.0, 33.0), (23.6, 31.6))),
+    "reel_b": dict(head=-3, torso=(-1, -2), b=1, feet=(5, -5),
+                   near=((9.4, 31.6), (20.6, 31.8)), far=((17.0, 33.0), (23.4, 33.0))),
+}
+
+
+def draw_side_fish(L, kind):
+    cv = Canvas()
+    p = SIDE_FISH[kind]
+    b = p["b"]
+    shift, tip = p["torso"]
+    sx = CX + 0.5 + shift + tip
+    near_sh, far_sh = (sx - 0.5, 27.8 + b), (sx + 0.5, 27.8 + b)
+    bent_arm(cv, L, far_sh, *p["far"], far=True)
+    planted = kind.startswith("reel")
+    leg_side(cv, L, p["feet"][1], 0, 0, True, planted)
+    leg_side(cv, L, p["feet"][0], 0, 0, False, planted)
+    torso_side(cv, L, b, shift, tip)
+    head_side(cv, L, b, p["head"])
+    if kind == "wind":   # both hands on the grip behind the head
+        fist(cv, L, p["far"][1], far=True)
+    bent_arm(cv, L, near_sh, *p["near"], hand_r=1.8)
+    cv.outline()
+    return cv
+
+
 # ================================================================ sheet
-def make_sheet():
-    sheet = Image.new("RGBA", (FW * 8, FH * 4), (0, 0, 0, 0))
+def make_sheet(poses=POSES):
+    sheet = Image.new("RGBA", (FW * len(poses), FH * 4), (0, 0, 0, 0))
     for row, direction in enumerate(("down", "left", "up", "right")):
-        for col, pose in enumerate(POSES):
-            if direction == "down":
-                im = draw_front(Light(), pose, False).image()
-            elif direction == "up":
-                im = draw_front(Light(), pose, True).image()
-            elif direction == "right":
-                im = draw_side(Light(), pose).image()
+        for col, pose in enumerate(poses):
+            fish = pose.get("fish")
+            if direction in ("down", "up"):
+                back = direction == "up"
+                cv = draw_front_fish(Light(), fish, back) if fish else draw_front(Light(), pose, back)
+                im = cv.image()
             else:  # left: right-facing figure under mirrored light, then flipped
-                im = draw_side(Light(mirror=True), pose).image().transpose(Image.FLIP_LEFT_RIGHT)
+                L = Light(mirror=direction == "left")
+                im = (draw_side_fish(L, fish) if fish else draw_side(L, pose)).image()
+                if direction == "left":
+                    im = im.transpose(Image.FLIP_LEFT_RIGHT)
             sheet.paste(im, (col * FW, row * FH))
     return sheet
 
@@ -591,7 +718,7 @@ def preview(sheet, path, s=4):
 
 
 def main():
-    sheet = make_sheet()
+    sheet = make_sheet(POSES + FISH_POSES)
     sheet.save(OUT)
     print("wrote", os.path.relpath(OUT, ROOT), sheet.size)
     preview(sheet, PREVIEW)

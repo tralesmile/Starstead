@@ -1,0 +1,13 @@
+{
+ "every": 5,
+ "offset": 3,
+ "first_day": 8,
+ "boost": 0.4,
+ "radius": 4,
+ "events": {
+  "river_king": "Old Tam saw a giant shadow in the lake. The River King is up, 17:00 to midnight.",
+  "lantern_eel": "Green lights under the lake last night. A Lantern Eel is hunting, 19:00 to midnight.",
+  "anvil_sturgeon": "Something heavy is rolling in the cold lake. The Anvil Sturgeon, 06:00 to 13:00.",
+  "glass_marlin": "The harbour crews saw a fin like a window pane. A Glass Marlin, 05:00 to 12:00."
+ }
+}

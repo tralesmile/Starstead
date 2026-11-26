@@ -3,7 +3,7 @@ extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
-## --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
+## --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
 
@@ -23,6 +23,22 @@ func on_ready() -> void:
 		Input.action_press("move_right")
 		if "--race-demo" in OS.get_cmdline_user_args():
 			m.race.start()
+	if "--welcome-demo" in OS.get_cmdline_user_args():   # screenshot helper: the welcome-back card
+		m._setup_welcome()
+	if "--save-roundtrip" in OS.get_cmdline_user_args():
+		save_roundtrip.call_deferred()
+	if "--door-demo" in OS.get_cmdline_user_args():   # screenshot helper: two wall runs with doors; you walk up to the right one, the left stays shut
+		var base := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+		for k in 7:
+			var c := base + Vector2i(k - 4, -1)
+			var pid := "door" if k == 1 or k == 4 else "wall"
+			GameState.build.placed[c] = pid
+			m.build_view._spawn(c, pid)
+		m.player.position = Vector2(base) * 32.0 + Vector2(16, 12)
+		m.player.facing = PlayerMath.Facing.UP
+	if "--fishevent-demo" in OS.get_cmdline_user_args():   # screenshot helper: today's legendary sighting, camera on its shadow
+		GameState.clock.day = 8
+		GameState.clock.minutes = 13.0 * 60.0
 	if "--mud-demo" in OS.get_cmdline_user_args():   # screenshot helper: boots caked in mud
 		m.player._mud = 1.0
 	if "--traffic-demo" in OS.get_cmdline_user_args():   # screenshot helper: cars and a hiker close to the camera on the open road
@@ -81,8 +97,47 @@ func on_ready() -> void:
 		for fy in range(2, 5):
 			bm.place(o + Vector2i(9, fy), "fence", 9.0, false, GameState.bag)
 		m.build_view.setup(m.world, m.world.gen, m.player)
+	if "--perk-demo" in OS.get_cmdline_user_args():   # screenshot helper: the level-5 farming perk chooser
+		GameState.skill_xp["farming"] = SkillModel.THRESHOLDS[PerkModel.UNLOCK_LEVEL]
+		m.perk_view.open("farming")
+
+func save_roundtrip() -> void:
+	## QA (--save-roundtrip): play a little, save, start over, load, and compare the whole save dictionary.
+	var g := GameState
+	var path := "user://qa_roundtrip.json"
+	var pc := Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0))
+	g.money = 1234
+	g.energy.value = 37.0
+	g.clock.day = 12
+	g.farm.till(pc + Vector2i(2, 1))
+	g.farm.plant(pc + Vector2i(2, 1), "turnip_seed", 1)
+	g.bag.add("wood", 40)
+	g.chest.add("stone", 7)
+	g.build.place(pc + Vector2i(3, 0), "wall", 9.0, false, g.bag)
+	g.build.place(pc + Vector2i(4, 0), "door", 9.0, false, g.bag)
+	g.journal.record("carp", 44)
+	g.skill_xp = {"fishing": 1100}
+	g.choose_perk("fishing", String(PerkModel.options("fishing")[0]["id"]))
+	g.nodes.hit(m.world.gen.trees[0], "axe")
+	var before: Dictionary = g.to_dict()
+	var before_text := JSON.stringify(before)
+	g.save_game(path)
+	g.reset_new("")
+	var wiped := g.money != 1234 and g.farm.soil.is_empty() and g.build.placed.is_empty()
+	var ok := g.load_game(path)
+	var bad := SaveBoot.diff_keys(JSON.parse_string(before_text), g.to_dict())
+	DirAccess.remove_absolute(path)
+	if ok and wiped and bad.is_empty():
+		print("save roundtrip ok (%d keys)" % before.size())
+	else:
+		print("SCRIPT save roundtrip failed: loaded=%s wiped=%s differing=%s" % [ok, wiped, bad])
 
 func on_process() -> void:
+	if "--fishevent-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
+		var s: Vector2i = m.fish_event_view.spot
+		print("fish event ", m.event_fish, " at ", s)
+		if s.x >= 0:
+			m.player.position = Vector2(s) * 32.0 + Vector2(60, -14)
 	if "--traffic-debug" in OS.get_cmdline_user_args() and Engine.get_process_frames() % 40 == 0:
 		print("TRAFFIC ", m.player.position, "\n", m.traffic.debug_text())
 	if "--treasure-demo" in OS.get_cmdline_user_args() and m.fishing.state == Fishing.State.REELING and not m.fishing.treasure_on:  # screenshot helper: a chest in the reel track
@@ -350,7 +405,7 @@ func on_process() -> void:
 			m._rod_released()
 		if f == 14:
 			m.fishing.timer = 0.0
-		if f == 24 and m.fishing.state == Fishing.State.BITE:
+		if f == 24 and m.fishing.state == Fishing.State.BITE and not "--wait-only" in OS.get_cmdline_user_args():
 			m.fishing.fish_id = "perch"
 			m.fishing.hook()
 	if "--hotspot-demo" in OS.get_cmdline_user_args():   # screenshot helper: hold a cast and see the day's hot water ripple

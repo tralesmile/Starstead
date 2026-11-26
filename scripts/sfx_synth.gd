@@ -9,7 +9,8 @@ const SILENT_DB := -60.0
 const NAMES: Array[String] = [
 	"step_grass", "step_path", "step_wood", "step_snow", "step_wet", "chop", "tree_fall", "mine", "hoe",
 	"water_pour", "splash", "pickup", "coin", "bow_draw", "bow_twang", "bow_perfect", "arrow_hit", "swing",
-	"hit", "ui_open", "ui_close", "error", "ship_horn", "ball_kick", "ball_post", "whistle", "crowd_cheer"]
+	"hit", "ui_open", "ui_close", "error", "ship_horn", "ball_kick", "ball_post", "whistle", "crowd_cheer",
+	"door_open", "door_close", "reel_click", "line_snap"]
 const LOOPS: Array[String] = ["amb_rain", "amb_wind", "amb_birds", "amb_crickets", "amb_waves"]
 
 # ---------------------------------------------------------------- public
@@ -212,6 +213,28 @@ static func _one_shot(name: String, rng: RandomNumberGenerator, variant: int) ->
 			_tone(b, 0.0, 0.16, 2930.0 * k, 2920.0 * k, 0.22, 0.001, 4.0)
 			_tone(b, 0.0, 0.08, 210.0 * k, 130.0, 0.5)
 			_noise(b, rng, 0.07, 0.12, 0.25, 0.5, 0.2, 0.002, 2.0)  # rubble
+		"door_open":
+			b = _buf(0.34)
+			_noise(b, rng, 0.0, 0.015, 0.8, 0.45, 0.1, 0.001, 3.0)    # latch
+			_tone(b, 0.03, 0.28, 210.0 * k, 330.0 * k, 0.25, 0.05, 1.5)  # hinge creak
+			_tone(b, 0.05, 0.22, 423.0 * k, 668.0 * k, 0.1, 0.05, 1.5)
+			peak = 0.35
+		"door_close":
+			b = _buf(0.24)
+			_tone(b, 0.0, 0.2, 130.0 * k, 70.0, 0.9, 0.002, 3.0)       # leaf meets frame
+			_noise(b, rng, 0.0, 0.05, 0.6, 0.3, 0.05, 0.001, 3.0)
+			_noise(b, rng, 0.07, 0.015, 0.5, 0.5, 0.12, 0.001, 3.0)    # latch drops
+			peak = 0.45
+		"reel_click":
+			b = _buf(0.04)
+			_noise(b, rng, 0.0, 0.012, 0.8, 0.6, 0.2, 0.001, 2.0)
+			_tone(b, 0.0, 0.03, 1500.0 * k, 1200.0 * k, 0.35, 0.001, 3.0)
+			peak = 0.28
+		"line_snap":
+			b = _buf(0.3)
+			_tone(b, 0.0, 0.26, 900.0 * k, 180.0, 0.6, 0.001, 3.0)
+			_noise(b, rng, 0.0, 0.03, 0.9, 0.6, 0.2, 0.001, 3.0)
+			peak = 0.5
 		"hoe":
 			b = _buf(0.24)
 			_tone(b, 0.0, 0.12, 120.0 * k, 65.0, 0.8, 0.002, 3.0)

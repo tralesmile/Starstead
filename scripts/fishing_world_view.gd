@@ -12,6 +12,13 @@ var bite_age := 99.0
 var _last_state := Fishing.State.IDLE
 var water_at: Callable = func(_c): return false
 var day := 0
+var line := FishingLine.new()
+var throw_age := 99.0   # since the last cast left the rod (cast_age also restarts for a caught fish's splash)
+var wind := 0.0         # px/s^2 sideways on the line (storm wind)
+var sound_cb: Callable = func(_n: String): pass
+var _click_t := 0.0
+var _last_progress := 0.0
+var _bob := Vector2.ZERO
 
 func setup(f: Fishing, p: Node2D) -> void:
 	fishing = f
@@ -31,6 +38,8 @@ func leap(fish_id: String) -> void:
 func start_cast(cell_center: Vector2) -> void:
 	target = cell_center
 	cast_age = 0.0
+	throw_age = 0.0
+	line.reset(_rod_tip(), _rod_tip() + Vector2(0.5, 0))
 
 func _process(delta: float) -> void:
 	t += delta
@@ -38,12 +47,46 @@ func _process(delta: float) -> void:
 	bite_age += delta
 	if fishing.state == Fishing.State.BITE and _last_state != Fishing.State.BITE:
 		bite_age = 0.0
+	throw_age += delta
+	if fishing.state == Fishing.State.LOST or (_last_state == Fishing.State.REELING and fishing.state == Fishing.State.IDLE):
+		if _last_progress <= 0.05:
+			sound_cb.call("line_snap")
+		_last_progress = 1.0
 	_last_state = fishing.state
+	_update_line(delta)
+	_update_pose()
 	for l in leaps:
 		l["t"] = float(l["t"]) + delta
 		l["to"] = player.position + Vector2(0, -24)   # follows the player if they step back
 	leaps = leaps.filter(func(l): return float(l["t"]) < float(l["dur"]) + 0.35)
 	queue_redraw()
+
+func _update_line(delta: float) -> void:
+	if not casting_target():
+		return
+	var reeling := fishing.state == Fishing.State.REELING
+	var biting := fishing.state == Fishing.State.BITE
+	var bp := target + Vector2(0, BobberMath.bob(t, biting or reeling))
+	if reeling:
+		bp += FishingLine.fish_tug(fishing.fish_pos, fishing.progress, t)
+		_click_t -= delta
+		if _click_t <= 0.0:
+			var gaining := fishing.overlapping()
+			_click_t = FishingLine.click_interval(gaining)
+			sound_cb.call("reel_click")
+		_last_progress = fishing.progress
+	var flying := throw_age < 0.35
+	if flying:   # the bobber flies out from the rod tip in an arc
+		var k := throw_age / 0.35
+		bp = _rod_tip().lerp(bp, k) + Vector2(0, -sin(k * PI) * 22.0)
+	_bob = bp
+	line.step(_rod_tip(), bp, FishingLine.slack_for(flying, fishing.state == Fishing.State.WAITING), wind, delta)
+
+func _update_pose() -> void:
+	var col := -1
+	if charge >= 0.0 or casting_target():
+		col = PlayerMath.fishing_frame(charge >= 0.0, throw_age, fishing.state == Fishing.State.REELING, t)
+	player.fish_pose = col
 
 func _draw_leaps() -> void:
 	var cols := maxi(1, _item_tex.get_width() / 16)
@@ -95,19 +138,12 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, o + Vector2(2, 14), "%d tiles" % d, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 1, 1, 0.9))
 	if fishing.state == Fishing.State.IDLE or fishing.state == Fishing.State.CAUGHT:
 		return
-	var tip := _rod_tip()
 	var biting := fishing.state == Fishing.State.BITE
-	var reeling := fishing.state == Fishing.State.REELING
-	var bp := target + Vector2(0, BobberMath.bob(t, biting or reeling))
-	if cast_age < 0.35:  # the bobber flies out from the rod tip in an arc
-		var k := cast_age / 0.35
-		bp = tip.lerp(bp, k) + Vector2(0, -sin(k * PI) * 22.0)
-	var sag := 6.0 if not reeling else 1.0
-	var prev := tip
-	for i in range(1, 13):
-		var q := BobberMath.line_point(tip, bp, float(i) / 12.0, sag)
-		draw_line(prev.round(), q.round(), Color(1, 1, 1, 0.75), 1.0)
-		prev = q
+	var bp := _bob
+	var red := FishingLine.strain(fishing.progress) if fishing.state == Fishing.State.REELING else 0.0
+	var col := Color(1, 1, 1, 0.75).lerp(Color(1.0, 0.3, 0.2, 0.95), red * (0.65 + 0.35 * sin(t * 24.0)))
+	for i in range(1, line.pts.size()):
+		draw_line(line.pts[i - 1].round(), line.pts[i].round(), col, 1.0)
 	for sp in [cast_age - 0.35, bite_age]:
 		var s := BobberMath.splash(sp)
 		if s.y > 0.0:
