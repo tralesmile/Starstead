@@ -92,7 +92,7 @@ func handle(e: InputEvent) -> bool:
 	if not visible:
 		return false
 	if e is InputEventKey and e.pressed and not e.echo:
-		if e.keycode == KEY_ESCAPE or (finished and (e.keycode == KEY_E or e.keycode == KEY_SPACE)):
+		if e.keycode == KEY_ESCAPE or (finished and e.is_action_pressed("interact")):
 			close()
 			return true
 		if pause_t > 0.0 or finished:
@@ -105,9 +105,9 @@ func handle(e: InputEvent) -> bool:
 				if e.keycode == KEY_SPACE:
 					_kick()
 			"boxing":
-				if e.keycode == KEY_LEFT or e.keycode == KEY_A:
+				if e.is_action_pressed("move_left"):
 					_punch(-1)
-				elif e.keycode == KEY_RIGHT or e.keycode == KEY_D:
+				elif e.is_action_pressed("move_right"):
 					_punch(1)
 				elif e.keycode == KEY_SPACE:
 					_punch(2)
@@ -172,24 +172,24 @@ func _finish(result: String = "") -> void:
 		GameState.money += pay
 		if made > int(best.get("hoops", 0)):
 			best["hoops"] = made
-		last_text = "%d / %d made. +$%d  (E to leave)" % [made, SportsModel.SHOTS, pay]
+		last_text = "%d / %d made. +$%d  (%s to leave)" % [made, SportsModel.SHOTS, pay, KeyBinds.label("interact")]
 	elif mode == "penalty":
 		var goals := results.count(true)
 		var pay2 := goals * SportsModel.GOAL_PAY
 		GameState.money += pay2
 		if goals > int(best.get("penalty", 0)):
 			best["penalty"] = goals
-		last_text = "%d / %d goals. +$%d  (E to leave)" % [goals, SportsModel.KICKS, pay2]
+		last_text = "%d / %d goals. +$%d  (%s to leave)" % [goals, SportsModel.KICKS, pay2, KeyBinds.label("interact")]
 	elif mode == "boxing":
 		if result == "win":
 			var prize := SportsModel.bout_prize(tier)
 			GameState.money += prize
 			best["bouts_won"] = int(best.get("bouts_won", 0)) + 1
 			GameState.bump("bouts")
-			last_text = "KO! You win +$%d  (E to leave)" % prize
+			last_text = "KO! You win +$%d  (%s to leave)" % [prize, KeyBinds.label("interact")]
 		else:
-			last_text = "You lose the bout  (E to leave)"
-	message.emit(last_text.replace("  (E to leave)", ""))
+			last_text = "You lose the bout  (%s to leave)" % KeyBinds.label("interact")
+	message.emit(last_text.replace("  (%s to leave)" % KeyBinds.label("interact"), ""))
 
 func _draw_meter(x: float, y: float, w: float, v: float, zone_c: float, zone_w: float) -> void:
 	canvas.draw_rect(Rect2(x - 1, y - 1, w + 2, 18), Color(0.1, 0.06, 0.04))

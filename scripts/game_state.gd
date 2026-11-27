@@ -27,6 +27,7 @@ var energy := Energy.new()
 var nodes := ResourceNodes.new()
 var forestry := Forestry.new(DataDB.load_json("forestry"))  # tree seeds, saplings, planted trees
 var build := BuildModel.new(DataDB.load_json("build"))
+var farm_shop := FarmShopModel.new()  # goods stocked in a Farm Shop room you built
 var journal := FishJournal.new()
 var harbour := HarbourState.new()
 var isle := IsleState.new()  # Gull Isle finds (E13)
@@ -86,7 +87,7 @@ func to_dict() -> Dictionary:
 		"version": SAVE_VERSION, "clock": clock.to_dict(), "energy": energy.value, "money": money, "bank_balance": bank_balance,
 		"inventory": inventory, "world": world, "world_state": world_state,
 		"rep_honest": rep_honest, "rep_street": rep_street,
-		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "forestry": forestry.to_dict(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "hoops": hoops.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "vault_day": vault_day,"warden_day": warden_day, "cart_cargo": cart_cargo, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
+		"farm": farm.to_array(), "weeds": farm.weeds_to_array(), "sprinklers": farm.sprinklers_to_array(), "scarecrows": farm.scarecrows_to_array(), "pots": pots.to_array(), "snares": snares.to_array(), "artisan": artisan.to_dict(), "ranger": ranger.to_dict(), "nodes": nodes.to_array(), "forestry": forestry.to_dict(), "car_paint": car_paint, "race_best": race_best, "licence": licence, "sport_best": sport_best, "football": football.to_dict(), "hoops": hoops.to_dict(), "stats": stats, "bag": bag.to_array(), "chest": chest.to_array(), "build": build.to_dict(), "farm_shop": farm_shop.to_dict(), "journal": journal.to_dict(), "harbour": harbour.to_dict(), "isle": isle.to_dict(), "animals": animals, "can": can.to_dict(), "job_xp": job_xp, "story": story.to_array(), "debt_paid": debt_paid, "yard_looted": yard_looted, "hangar_day": hangar_day, "vault_day": vault_day,"warden_day": warden_day, "cart_cargo": cart_cargo, "after_hours": after_hours, "drift_board": drift_board, "market": market.to_dict(), "business": business.to_dict(), "home": home.to_dict(), "skill_xp": skill_xp, "perks": perks, "tools_owned": tools_owned,
 	}
 
 func from_dict(d: Dictionary) -> bool:
@@ -125,6 +126,7 @@ func from_dict(d: Dictionary) -> bool:
 	for k in d.get("race_best", {}):
 		race_best[str(k)] = float(d["race_best"][k])
 	build.from_dict(d.get("build", {}))
+	farm_shop.from_dict(d.get("farm_shop", {}))
 	journal.from_dict(d.get("journal", {}))
 	harbour.from_dict(d.get("harbour", {}))
 	isle.from_dict(d.get("isle", {}))

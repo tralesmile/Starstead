@@ -44,3 +44,5 @@
 - (run 46) Tell parallel subagents plainly not to chain git or delete commands onto their test commands; one denied part blocks the whole command.
 - (run 47) Subagents still chain `git status` / `rm -rf` onto commands even when the brief forbids it (3 of 3 this run): say it as the first line of the brief and give them a scratch folder they never need to clean.
 - (run 47) Never leave a bare `cat >> file` without a heredoc in a command: it waits on stdin until the 2 minute timeout.
+- Run 48: menu code that handles clicks can be dead if an earlier step rewrites the event: test clicks by pushing a real mouse event under xvfb (headless does not move the mouse; use warp_mouse + push_input). Demo flags that call handle() directly hide this.
+- Run 48: in tools/check.sh two specs without a space between them silently become one broken screen that still prints "ok": count the ok names after adding a screen.

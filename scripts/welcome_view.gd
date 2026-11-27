@@ -18,6 +18,7 @@ var sel := 0
 var volume := PauseModel.VOLUME_STEPS
 var muted := false
 var show_keys := false
+var keys_page := KeysPage.new()
 var t := 0.0
 var _c: Control
 
@@ -69,6 +70,7 @@ func activate(i: int) -> void:
 			sound_toggled.emit()
 		"keys":
 			show_keys = true
+			keys_page.open()
 		"quit":
 			quit_game.emit()
 	_c.queue_redraw()
@@ -85,7 +87,7 @@ func handle_key(e: InputEvent) -> bool:
 	var key: bool = e is InputEventKey and e.pressed and not e.echo
 	var click: bool = e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT
 	if show_keys:
-		if key or click or (e is InputEventJoypadButton and e.pressed):
+		if keys_page.handle(e, _c.get_local_mouse_position() if _c.is_inside_tree() else Vector2(-1, -1)):
 			show_keys = false
 	elif e.is_action_pressed("move_up") or (key and e.keycode == KEY_UP):
 		_move(-1)
@@ -93,7 +95,7 @@ func handle_key(e: InputEvent) -> bool:
 		_move(1)
 	elif rows()[sel] in ["volume", "music"] and (e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
 		_nudge_row(rows()[sel], -1 if e.is_action_pressed("move_left") else 1)
-	elif e.is_action_pressed("interact") or (key and e.keycode in [KEY_E, KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]):
+	elif e.is_action_pressed("interact") or (key and e.keycode in [KEY_ENTER, KEY_KP_ENTER]):
 		activate(sel)
 	elif e is InputEventMouseMotion:
 		var h := TitleModel.row_at(_c.get_local_mouse_position(), count)
@@ -148,7 +150,7 @@ func _on_draw() -> void:
 	_c.draw_string_outline(ThemeDB.fallback_font, Vector2(0, 104), "A farm, a town, and a long road to the Moon", HORIZONTAL_ALIGNMENT_CENTER, 640, 11, 4, WoodUI.OUTLINE)
 	_c.draw_string(ThemeDB.fallback_font, Vector2(0, 104), "A farm, a town, and a long road to the Moon", HORIZONTAL_ALIGNMENT_CENTER, 640, 11, WoodUI.CREAM)
 	if show_keys:
-		PauseView.draw_controls(_c)
+		keys_page.draw(_c)
 		return
 	var ids := rows()
 	var r := TitleModel.panel_rect(ids.size())
@@ -159,7 +161,7 @@ func _on_draw() -> void:
 		var warn: bool = ids[i] == "new" and armed
 		WoodUI.text(_c, rr.position + Vector2(0, 14), TitleModel.label(ids[i], volume, muted, armed), 12, WoodUI.BAD if warn else WoodUI.INK, rr.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	WoodUI.text(_c, Vector2(r.position.x, r.end.y - 22), line if has_save else "Grandmother left you the keys.", 11, WoodUI.GOOD, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
-	WoodUI.text(_c, Vector2(r.position.x, r.end.y - 7), "W/S choose   -   E / Enter / click", 9, WoodUI.INK_SOFT, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(_c, Vector2(r.position.x, r.end.y - 7), "%s/%s choose   -   %s / Enter / click" % [KeyBinds.label("move_up"), KeyBinds.label("move_down"), KeyBinds.label("interact")], 9, WoodUI.INK_SOFT, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _draw_logo(word: String, y: float) -> void:
 	var px := TitleModel.LOGO_PX

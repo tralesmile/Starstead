@@ -48,5 +48,58 @@
     "solid": true,
     "sprite": "build_lamp",
     "light": true
+  },
+  "bed": {
+    "name": "Bed",
+    "cost": {
+      "wood": 20
+    },
+    "solid": true,
+    "sprite": "room_bed",
+    "furniture": true,
+    "room": "bedroom"
+  },
+  "shop_counter": {
+    "name": "Shop Counter",
+    "cost": {
+      "wood": 24,
+      "stone": 4
+    },
+    "solid": true,
+    "sprite": "room_counter",
+    "furniture": true,
+    "room": "shop"
+  },
+  "shelf": {
+    "name": "Goods Shelf",
+    "cost": {
+      "wood": 12
+    },
+    "solid": true,
+    "sprite": "room_shelf",
+    "furniture": true,
+    "room": "shop"
+  },
+  "workbench": {
+    "name": "Workbench",
+    "cost": {
+      "wood": 20,
+      "stone": 10
+    },
+    "solid": true,
+    "sprite": "room_workbench",
+    "furniture": true,
+    "room": "garage"
+  },
+  "tool_rack": {
+    "name": "Tool Rack",
+    "cost": {
+      "wood": 10,
+      "stone": 4
+    },
+    "solid": true,
+    "sprite": "room_toolrack",
+    "furniture": true,
+    "room": "garage"
   }
 }

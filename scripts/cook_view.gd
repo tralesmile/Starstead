@@ -93,4 +93,4 @@ func _draw_all() -> void:
 			label += "   (worth $%d)" % int(info.get("price", 0))
 		WoodUI.text(canvas, o + Vector2(32, 12), label, 9 if narrow else 10, WoodUI.INK if ok else WoodUI.INK_SOFT, text_w)
 		WoodUI.text(canvas, o + Vector2(32, 23 if narrow else 25), CookModel.ingredient_text(GameState.bag, r), 8 if narrow else 9, WoodUI.GOOD if ok else WoodUI.BAD, text_w)
-	WoodUI.text(canvas, Vector2(panel.position.x + 10, panel.end.y - 8), msg if msg != "" else footer, 10, WoodUI.GOOD if msg != "" else WoodUI.INK, panel.size.x - 16)
+	WoodUI.text(canvas, Vector2(panel.position.x + 10, panel.end.y - 8), msg if msg != "" else KeyBinds.hint(footer), 10, WoodUI.GOOD if msg != "" else WoodUI.INK, panel.size.x - 16)

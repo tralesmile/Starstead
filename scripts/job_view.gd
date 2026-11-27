@@ -112,7 +112,7 @@ func _on_game_done(res: Dictionary) -> void:
 	message.emit(msg)
 
 func _unhandled_input(e: InputEvent) -> void:
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J:
+	if e is InputEventKey and e.is_action_pressed("journal"):
 		if not player.is_physics_processing():
 			return   # driving, a menu or a door fade has the player
 		if work():

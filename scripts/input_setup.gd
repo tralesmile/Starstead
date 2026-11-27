@@ -13,6 +13,10 @@ const ACTIONS := {
 	"pause": [KEY_ESCAPE],
 	"sprint": [KEY_SHIFT],
 	"sneak": [KEY_CTRL],
+	"craft": [KEY_C],
+	"map": [KEY_M],
+	"journal": [KEY_J],
+	"quests": [KEY_K],
 }
 const PAD := {
 	"interact": JOY_BUTTON_A,

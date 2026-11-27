@@ -16,6 +16,10 @@ const PAINTS := [
 static func repair_cost(health: float, health_max: float) -> int:
 	return int(ceil(maxf(health_max - health, 0.0) * REPAIR_PRICE))
 
+static func discounted(cost: int, mult: float) -> int:
+	## Repair price in your own garage; a job that costs something never becomes free.
+	return 0 if cost <= 0 else maxi(1, int(ceil(cost * clampf(mult, 0.0, 1.0))))
+
 static func fuel_cost(fuel: float, fuel_max: float) -> int:
 	return int(ceil(maxf(fuel_max - fuel, 0.0) * FUEL_PRICE))
 

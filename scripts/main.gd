@@ -48,6 +48,7 @@ var pause_view: PauseView
 var _overlay_was_open := false   # a view that closes itself on Esc must not open the pause menu with the same press
 var perk_view: PerkView
 var fish_fx: FishingWorldView
+var swing_hit := SwingHit.new()
 var inv_view: InventoryView
 var journal_view: JournalView
 var story_view: StoryView
@@ -66,6 +67,7 @@ var hangar: HangarView
 var bankjob: BankJobView
 var hoof_t := 0.0
 var garage_view: GarageView
+var rooms: RoomsView   # player-built rooms with a purpose
 var drops_view: DropsView
 var tree_fall: TreeFallView
 var forestry_view: ForestryView
@@ -295,6 +297,9 @@ func _ready() -> void:
 	add_child(build_view)
 	build_view.setup(world, world.gen, player)
 	build_view.message.connect(_say)
+	rooms = RoomsView.new()
+	add_child(rooms)
+	rooms.setup(self)
 	shop = ShopView.new()
 	shop.closed.connect(func(): player.set_physics_process(true))
 	add_child(shop)
@@ -536,6 +541,8 @@ func _ready() -> void:
 		pause_view.volume = PauseModel.load_volume()
 		PauseModel.music = PauseModel.load_volume(PauseModel.SETTINGS_PATH, "music", PauseModel.MUSIC_DEFAULT)
 		pause_view.apply_volume()
+	KeyBinds.persist = pause_view.persist_volume   # QA runs use the default keys and never write them
+	KeyBinds.apply(KeyBinds.from_settings(PauseModel.read_settings()) if KeyBinds.persist else KeyBinds.defaults())
 	pause_view.chosen.connect(_pause_chosen)
 	add_child(pause_view)
 	if loaded or (TitleModel.shows(OS.get_cmdline_user_args()) and not _skip_title):
@@ -545,10 +552,17 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _overlay_open() -> bool:
-	for v in [shop, dealer, dialogue, inv_view, craft_view, chest_view, cook_view, bus_view, ferry_view, forge_view, butcher_view, smelt_view, upgrade_view, garage_view, journal_view, bike_view, football_view, hoop_view, sports, derby, hangar, bankjob, jobs.game_view if jobs != null else null]:
+	for v in [shop, dealer, dialogue, inv_view, craft_view, chest_view, cook_view, bus_view, ferry_view, forge_view, butcher_view, smelt_view, upgrade_view, garage_view, journal_view, rooms.shop_ui if rooms != null else null, bike_view, football_view, hoop_view, sports, derby, hangar, bankjob, jobs.game_view if jobs != null else null]:
 		if v != null and v.visible:
 			return true
 	return map_view.is_open() or story_view.log_open() or perk_view.visible or (welcome != null and welcome.active)
+
+## Menus that read mouse clicks themselves; while one is open a click must not become a tool swing or "use".
+func _click_menu_open() -> bool:
+	for v in [inv_view, chest_view, cook_view, garage_view, bus_view, upgrade_view]:
+		if v != null and v.visible:
+			return true
+	return false
 
 func _open_pause() -> void:
 	var place := "mine" if cave.active else ("building" if interior.active else "")
@@ -652,6 +666,7 @@ func _title_hud(hide_it: bool) -> void:
 
 func _process(delta: float) -> void:
 	_overlay_was_open = _overlay_open()
+	swing_hit.tick(delta)
 	car_theft.refresh(GameState.clock.day)
 	if rod_charging:
 		rod_charge_t += delta
@@ -773,6 +788,8 @@ func _process(delta: float) -> void:
 		prompt.text = "E: Sell this stolen car to the chop shop"
 	elif car.driving:
 		prompt.text = "Fuel %d%%  E: exit" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX)
+	prompt.text = KeyBinds.hint(prompt.text)
+	prompt.text = rooms.prompt_or(prompt.text, _target_cell())
 	player.indoors = _indoors()
 	hud.legend_mode = KeyLegend.mode_for(car.driving, animals.riding != null, _indoors())
 	_hoof_dust(delta)
@@ -824,6 +841,10 @@ func _unhandled_input(e: InputEvent) -> void:
 		_open_pause()
 		get_viewport().set_input_as_handled()
 		return
+	if rooms.shop_ui.visible:   # your Farm Shop window: above the map, story, journal, bag and the click-to-action rewrite
+		rooms.shop_ui.handle(e)
+		get_viewport().set_input_as_handled()
+		return
 	if perk_view.handle_key(e):   # perk chooser grabs input above every other menu
 		get_viewport().set_input_as_handled()
 		return
@@ -834,7 +855,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		mouse_aim = true
 	elif e is InputEventKey and e.pressed and not e.echo and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down") or e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
 		mouse_aim = false  # walking with the keyboard goes back to the tile in front of you
-	if e is InputEventMouseButton and e.pressed and not shop.visible:
+	if e is InputEventMouseButton and e.pressed and not shop.visible and not _click_menu_open():   # menus that take clicks get the raw mouse event
 		if e.button_index == MOUSE_BUTTON_WHEEL_UP or e.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			var dir := -1 if e.button_index == MOUSE_BUTTON_WHEEL_UP else 1
 			if e.ctrl_pressed:
@@ -921,7 +942,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		smelt_view.handle(e)
 		get_viewport().set_input_as_handled()
 		return
-	if craft_view.visible or (e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_C and not car.driving and not shop.visible and not dialogue.visible and not inv_view.visible and not journal_view.visible and not interior.active):
+	if craft_view.visible or (e is InputEventKey and e.is_action_pressed("craft") and not car.driving and not shop.visible and not dialogue.visible and not inv_view.visible and not journal_view.visible and not interior.active):
 		if not craft_view.visible:
 			_open_craft()
 		else:
@@ -993,6 +1014,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			var m := car.repair(GameState.bag)
 			if m != "":
 				_say(m)
+		return
+	if e.is_action_pressed("interact") and not _indoors() and animals.riding == null and rooms.interact(_target_cell()):   # a bed, counter or workbench you built
 		return
 	if e.is_action_pressed("interact") and car.can_enter():
 		car.enter()
@@ -1123,149 +1146,155 @@ func _unhandled_input(e: InputEvent) -> void:
 			player.swing()
 			sfx_director.play("swing")
 			combat.attack("club")
-	elif e.is_action_pressed("use_tool"):
-		player.held_tool = hotbar.current()
+	elif e.is_action_pressed("use_tool") and not swing_hit.busy():
+		var held := hotbar.current()
+		player.held_tool = held
 		player.swing()
-		var cell := _target_cell()
-		var dl: Array = []
-		if forestry_view.use(hotbar.current(), cell):
-			return
-		if hotbar.current() == "crab_pot":
-			if GameState.bag.count("crab_pot") < 1:
-				_say("No crab pots - buy them at the shop")
-			elif GameState.pots.place(cell, world.gen.sdf_at(cell.x, cell.y)):
-				GameState.bag.remove("crab_pot", 1)
-				_splash_fx(cell)
-				_say("Crab pot placed - check it tomorrow")
-			else:
-				_say("Needs open water, half a tile out")
-			return
-		if hotbar.current() == "snare" and GameState.snares.snares.has(cell):
-			if GameState.snares.is_ready(cell):
-				_say("Empty it first (hand)")
-			elif GameState.bag.count("snare_bait") < 1:
-				_say("No bait - make it at the butcher block in the workshop")
-			elif GameState.snares.bait(cell):
-				GameState.bag.remove("snare_bait", 1)
-				_say("Baited - a better catch tomorrow")
-			else:
-				_say("Already baited")
-			return
-		if hotbar.current() == "snare":
-			if GameState.bag.count("snare") < 1:
-				_say("No snares - buy them at the shop")
-			elif GameState.snares.place(cell, world.gen.sdf_at(cell.x, cell.y), Snares.habitat_for(ChunkGrid.chunk_of_cell(cell))):
-				GameState.bag.remove("snare", 1)
-				_say("Snare set - check it tomorrow (rain spoils the scent)")
-			else:
-				_say("Set snares on dry ground away from the water")
-			return
-		if hotbar.current() == "hand" and GameState.snares.snares.has(cell):
-			if GameState.snares.is_ready(cell):
-				var worn := GameState.snares.worn(cell)
-				var loot: Array = GameState.snares.collect(cell)
-				for id in loot:
-					drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
-				_say("The snare caught game (%d)%s" % [loot.size(), " - it frayed and broke" if not GameState.snares.snares.has(cell) else ""])
-			else:
-				GameState.snares.pick_up(cell)
-				GameState.bag.add("snare", 1)
-				_say("Picked up the snare")
-			return
-		if hotbar.current() == "hand" and GameState.pots.pots.has(cell):
-			var got: Array = GameState.pots.collect(cell)
-			if got.is_empty():
-				GameState.pots.pick_up(cell)
-				GameState.bag.add("crab_pot", 1)
-				_say("Picked up the crab pot")
-			else:
-				for id in got:
-					drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
-				_say("Emptied the crab pot (%d)" % got.size())
-			return
-		if hotbar.current() == "watering_can":
-			GameState.can.set_capacity(LineMath.capacity_for(20, GameState.bag, axe_table))
-			if world.gen.sdf_at(cell.x, cell.y) < 0.0:
-				var added := GameState.can.refill()
-				_say("Refilled the can" if added > 0 else "The can is full")
-				_splash_fx(cell)
-				return
-			if GameState.can.is_empty():
-				_say("The can is empty - face the water and use it to refill")
-				return
-		tree_fall.model.bonus_wood = int(PerkModel.value(GameState.perks, "wood_bonus"))
-		if hotbar.current() == "axe" and tree_fall.hit_log(cell, player.position):
-			return  # chopping a fallen trunk into logs
-		var msg := ToolUse.apply(hotbar.current(), cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
-		if msg == "" and hotbar.current() == "hand" and combat.cd <= 0.0 and GameState.energy.can_use("club"):   # bare fists on small game
-			if animals.hunt(player.position + Vector2(0, -8), CombatModel.facing_vec(player.facing), CombatModel.weapon("fist")) > 0:
-				combat.cd = CombatModel.cooldown("fist")
-				GameState.energy.spend("club")
-				return
-		if msg == "" and hotbar.current() == "scythe" and world.cut_tuft(cell):   # wild grass -> hay (feeds cows, sheep, horses)
-			dl.append({"id": "hay", "n": 1})
-			msg = "Cut grass"
-			_hay_fx(cell)
-		var line_cells: Array = [cell]
-		if msg != "" and (hotbar.current() == "hoe" or hotbar.current() == "watering_can"):
-			var extra: Array = LineMath.cells(cell, player.facing, ToolUse.axe_power(GameState.bag, axe_table, hotbar.current()))
-			for i in range(1, extra.size()):
-				if hotbar.current() == "watering_can" and GameState.can.level <= 1:
-					break  # keep a unit for the first tile's use below
-				if GameState.forestry.saplings.has(extra[i]):
-					continue
-				var m2 := ToolUse.apply(hotbar.current(), extra[i], GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, null, dl, axe_table)
-				if m2 != "":
-					line_cells.append(extra[i])
-					if hotbar.current() == "watering_can":
-						GameState.can.use()
-		if msg.begins_with("Harvested"):
-			_quality_pass(dl, GameState.farm.fert_bonus(cell))
-		if hotbar.current() == "axe" and msg.begins_with("Got") and world.is_tree(cell):
-			dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
-		if hotbar.current() == "axe" and msg.begins_with("Got"):
-			dl.append_array(forestry_view.fell_drops(cell))
-		if hotbar.current() == "pickaxe" and msg.begins_with("Got") and not dl.is_empty() and PerkModel.ore_extra(GameState.perks, randf()) > 0:
-			dl[0]["n"] = int(dl[0]["n"]) + 1
-			msg += " +1 bonus"
-		for d in dl:
-			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
-		if hotbar.current() == "axe" and world.props.has(cell) and world.is_tree(cell):
-			var tspr := world.prop_sprite(cell)
-			if msg.begins_with("Got"):
-				var tb := (world.props[cell] as Node2D).position
-				tree_fall.fell(cell, tspr, tb, ChopFx.fall_dir(player.position.x, tb.x))
-			elif msg == "Hit":
-				ChopFx.wobble(tspr, tspr)
-				ChopFx.leaves(world, (world.props[cell] as Node2D).position + Vector2(0, -34), 5)
-		var sk := ""
-		if msg.begins_with("Harvested"):
-			sk = "farming"
+		swing_hit.queue(PoseMath.strike_delay(held), _apply_tool.bind(held, _target_cell()))
 
-			if PerkModel.crop_bonus(GameState.perks, SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
-				drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
-				msg += " +1 bonus"
-		elif msg.begins_with("Got") and hotbar.current() == "axe":
-			sk = "foraging"
-		elif msg.begins_with("Got") and hotbar.current() == "pickaxe":
-			sk = "mining"
-		if sk != "" and _skill_gain(sk):
-			msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
-		world.sync_props(GameState.nodes)
-		if msg != "":
-			sfx_director.tool_result(hotbar.current(), msg)
-		if msg == "Tilled":
-			for lc in line_cells:
-				_dirt_puff(lc)
-		if msg == "Watered":
-			GameState.can.use()
-			for lc in line_cells:
-				_splash_fx(lc, true)
-		if msg != "" and (hotbar.current() == "axe" or hotbar.current() == "pickaxe"):
-			_hit_feedback(cell, hotbar.current(), msg.begins_with("Got"))
-		if msg != "":
-			toast.text = msg
-			toast_t = 1.5
+## The tool's work on a tile. Posed tools call this on the strike frame of the swing (SwingHit), with the tool
+## and tile picked at the button press, so changing the hotbar mid-swing can not change the blow.
+func _apply_tool(tool: String, cell: Vector2i) -> void:
+	if car.driving or interior.active or cave.active:
+		return
+	var dl: Array = []
+	if forestry_view.use(tool, cell):
+		return
+	if tool == "crab_pot":
+		if GameState.bag.count("crab_pot") < 1:
+			_say("No crab pots - buy them at the shop")
+		elif GameState.pots.place(cell, world.gen.sdf_at(cell.x, cell.y)):
+			GameState.bag.remove("crab_pot", 1)
+			_splash_fx(cell)
+			_say("Crab pot placed - check it tomorrow")
+		else:
+			_say("Needs open water, half a tile out")
+		return
+	if tool == "snare" and GameState.snares.snares.has(cell):
+		if GameState.snares.is_ready(cell):
+			_say("Empty it first (hand)")
+		elif GameState.bag.count("snare_bait") < 1:
+			_say("No bait - make it at the butcher block in the workshop")
+		elif GameState.snares.bait(cell):
+			GameState.bag.remove("snare_bait", 1)
+			_say("Baited - a better catch tomorrow")
+		else:
+			_say("Already baited")
+		return
+	if tool == "snare":
+		if GameState.bag.count("snare") < 1:
+			_say("No snares - buy them at the shop")
+		elif GameState.snares.place(cell, world.gen.sdf_at(cell.x, cell.y), Snares.habitat_for(ChunkGrid.chunk_of_cell(cell))):
+			GameState.bag.remove("snare", 1)
+			_say("Snare set - check it tomorrow (rain spoils the scent)")
+		else:
+			_say("Set snares on dry ground away from the water")
+		return
+	if tool == "hand" and GameState.snares.snares.has(cell):
+		if GameState.snares.is_ready(cell):
+			var worn := GameState.snares.worn(cell)
+			var loot: Array = GameState.snares.collect(cell)
+			for id in loot:
+				drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
+			_say("The snare caught game (%d)%s" % [loot.size(), " - it frayed and broke" if not GameState.snares.snares.has(cell) else ""])
+		else:
+			GameState.snares.pick_up(cell)
+			GameState.bag.add("snare", 1)
+			_say("Picked up the snare")
+		return
+	if tool == "hand" and GameState.pots.pots.has(cell):
+		var got: Array = GameState.pots.collect(cell)
+		if got.is_empty():
+			GameState.pots.pick_up(cell)
+			GameState.bag.add("crab_pot", 1)
+			_say("Picked up the crab pot")
+		else:
+			for id in got:
+				drops_view.spawn(id, 1, TargetMath.center_of(cell) + Vector2(0, 6))
+			_say("Emptied the crab pot (%d)" % got.size())
+		return
+	if tool == "watering_can":
+		GameState.can.set_capacity(LineMath.capacity_for(20, GameState.bag, axe_table))
+		if world.gen.sdf_at(cell.x, cell.y) < 0.0:
+			var added := GameState.can.refill()
+			_say("Refilled the can" if added > 0 else "The can is full")
+			_splash_fx(cell)
+			return
+		if GameState.can.is_empty():
+			_say("The can is empty - face the water and use it to refill")
+			return
+	tree_fall.model.bonus_wood = int(PerkModel.value(GameState.perks, "wood_bonus"))
+	if tool == "axe" and tree_fall.hit_log(cell, player.position):
+		return  # chopping a fallen trunk into logs
+	var msg := ToolUse.apply(tool, cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
+	if msg == "" and tool == "hand" and combat.cd <= 0.0 and GameState.energy.can_use("club"):   # bare fists on small game
+		if animals.hunt(player.position + Vector2(0, -8), CombatModel.facing_vec(player.facing), CombatModel.weapon("fist")) > 0:
+			combat.cd = CombatModel.cooldown("fist")
+			GameState.energy.spend("club")
+			return
+	if msg == "" and tool == "scythe" and world.cut_tuft(cell):   # wild grass -> hay (feeds cows, sheep, horses)
+		dl.append({"id": "hay", "n": 1})
+		msg = "Cut grass"
+		_hay_fx(cell)
+	var line_cells: Array = [cell]
+	if msg != "" and (tool == "hoe" or tool == "watering_can"):
+		var extra: Array = LineMath.cells(cell, player.facing, ToolUse.axe_power(GameState.bag, axe_table, tool))
+		for i in range(1, extra.size()):
+			if tool == "watering_can" and GameState.can.level <= 1:
+				break  # keep a unit for the first tile's use below
+			if GameState.forestry.saplings.has(extra[i]):
+				continue
+			var m2 := ToolUse.apply(tool, extra[i], GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, null, dl, axe_table)
+			if m2 != "":
+				line_cells.append(extra[i])
+				if tool == "watering_can":
+					GameState.can.use()
+	if msg.begins_with("Harvested"):
+		_quality_pass(dl, GameState.farm.fert_bonus(cell))
+	if tool == "axe" and msg.begins_with("Got") and world.is_tree(cell):
+		dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
+	if tool == "axe" and msg.begins_with("Got"):
+		dl.append_array(forestry_view.fell_drops(cell))
+	if tool == "pickaxe" and msg.begins_with("Got") and not dl.is_empty() and PerkModel.ore_extra(GameState.perks, randf()) > 0:
+		dl[0]["n"] = int(dl[0]["n"]) + 1
+		msg += " +1 bonus"
+	for d in dl:
+		drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
+	if tool == "axe" and world.props.has(cell) and world.is_tree(cell):
+		var tspr := world.prop_sprite(cell)
+		if msg.begins_with("Got"):
+			var tb := (world.props[cell] as Node2D).position
+			tree_fall.fell(cell, tspr, tb, ChopFx.fall_dir(player.position.x, tb.x))
+		elif msg == "Hit":
+			ChopFx.wobble(tspr, tspr)
+			ChopFx.leaves(world, (world.props[cell] as Node2D).position + Vector2(0, -34), 5)
+	var sk := ""
+	if msg.begins_with("Harvested"):
+		sk = "farming"
+
+		if PerkModel.crop_bonus(GameState.perks, SkillModel.level(int(GameState.skill_xp.get("farming", 0))), randf()) > 0 and not dl.is_empty():
+			drops_view.spawn(dl[0]["id"], 1, TargetMath.center_of(cell) + Vector2(8, 10))
+			msg += " +1 bonus"
+	elif msg.begins_with("Got") and tool == "axe":
+		sk = "foraging"
+	elif msg.begins_with("Got") and tool == "pickaxe":
+		sk = "mining"
+	if sk != "" and _skill_gain(sk):
+		msg = "%s level %d!" % [sk.capitalize(), SkillModel.level(int(GameState.skill_xp[sk]))]
+	world.sync_props(GameState.nodes)
+	if msg != "":
+		sfx_director.tool_result(tool, msg)
+	if msg == "Tilled":
+		for lc in line_cells:
+			_dirt_puff(lc)
+	if msg == "Watered":
+		GameState.can.use()
+		_pour_fx(line_cells)
+	if msg != "" and (tool == "axe" or tool == "pickaxe"):
+		_hit_feedback(cell, tool, msg.begins_with("Got"))
+	if msg != "":
+		toast.text = msg
+		toast_t = 1.5
 
 func _update_highlight() -> void:
 	## Yellow outline on the tree/rock the player faces (the interact target).
@@ -1475,7 +1504,7 @@ func _hay_fx(cell: Vector2i) -> void:
 	get_tree().create_timer(1.0).timeout.connect(p.queue_free)
 
 func _say(msg: String) -> void:
-	toast.text = msg
+	toast.text = KeyBinds.hint(msg)
 	toast_t = 1.5
 
 func _hit_feedback(cell: Vector2i, tool: String, broke: bool) -> void:
@@ -1568,9 +1597,16 @@ func _cave_tool() -> void:
 	if not GameState.energy.can_use("pickaxe"):
 		_say("Too tired to mine")
 		return
+	if swing_hit.busy():
+		return
 	player.held_tool = tool
 	player.swing()
-	var msg := cave.use_tool(tool, ToolUse.axe_power(GameState.bag, axe_table, "pickaxe"))
+	swing_hit.queue(PoseMath.strike_delay(tool), _mine_strike)
+
+func _mine_strike() -> void:
+	if not cave.active or cave.busy:
+		return
+	var msg := cave.use_tool("pickaxe", ToolUse.axe_power(GameState.bag, axe_table, "pickaxe"))
 	if msg != "":
 		GameState.energy.spend("pickaxe")
 		_hit_feedback(cave.target_cell() + CaveView.CELL_OFFSET, "pickaxe", msg.begins_with("Got"))
@@ -1669,6 +1705,12 @@ func _open_pending_perk() -> bool:
 		return false
 	perk_view.open(waiting[0], SkillModel.level(int(GameState.skill_xp.get(waiting[0], 0))))
 	return true
+
+func _pour_fx(cells: Array) -> void:
+	var at: Array[Vector2] = []
+	for c in cells:
+		at.append(TargetMath.center_of(c))
+	world.add_child(PourView.make(player.position + PourMath.spout(player.facing) * player.sprite.scale, at))
 
 func _dirt_puff(cell: Vector2i) -> void:
 	var fd: Vector2 = TargetMath.center_of(cell) - player.position
@@ -1823,6 +1865,7 @@ func _end_day() -> void:
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
 	forestry_view.new_day()
+	rooms.night()   # Farm Shop takings (before the market forgets today's glut)
 	GameState.market.new_day()
 	if GameState.artisan.day_tick() > 0:
 		_say("Something is ready in the barn")

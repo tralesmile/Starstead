@@ -49,7 +49,7 @@ func toggle() -> void:
 		closed.emit()
 
 func handle(e: InputEvent) -> bool:
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_M:
+	if e is InputEventKey and e.is_action_pressed("map"):
 		toggle()
 		return true
 	if _open and (e.is_action_pressed("pause") or e.is_action_pressed("inventory")):

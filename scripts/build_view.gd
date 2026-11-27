@@ -39,6 +39,9 @@ func _tex(piece_id: String) -> Texture2D:
 	return load("res://assets/sprites/%s.png" % GameState.build.defs[piece_id].sprite)
 
 func _spawn(cell: Vector2i, piece_id: String) -> void:
+	if _sprites.has(cell):   # furniture set down on a floor replaces that sprite (the floor is redrawn under it)
+		_sprites[cell].queue_free()
+		_sprites.erase(cell)
 	var body := StaticBody2D.new()
 	body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
 	var s := Sprite2D.new()
@@ -63,6 +66,13 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 		s.z_index = -8  # under props and the player
 		body.position = Vector2(cell.x * 32 + 16, cell.y * 32 + 32)
 	body.add_child(s)
+	if GameState.build.under.has(cell):
+		var fl := Sprite2D.new()
+		fl.texture = _tex(String(GameState.build.under[cell]))
+		fl.centered = false
+		fl.offset = Vector2(-16, -32)
+		fl.z_index = -8
+		body.add_child(fl)
 	if bool(GameState.build.defs[piece_id].get("light", false)):
 		var l := PointLight2D.new()   # warm lamp pool, driven by main via the night_lights group
 		l.texture = Lantern.light_texture()
@@ -76,9 +86,10 @@ func _spawn(cell: Vector2i, piece_id: String) -> void:
 	if GameState.build.defs[piece_id].solid:
 		var cs := CollisionShape2D.new()
 		var r := RectangleShape2D.new()
-		r.size = Vector2(32, 32)
+		var furn: bool = GameState.build.is_furniture(piece_id)
+		r.size = Vector2(28, 22) if furn else Vector2(32, 32)   # furniture leaves a little room to squeeze past
 		cs.shape = r
-		cs.position = Vector2(0, -16)
+		cs.position = Vector2(0, -13) if furn else Vector2(0, -16)
 		body.add_child(cs)
 	world.add_child(body)
 	_sprites[cell] = body
@@ -193,7 +204,7 @@ func handle_key(e: InputEvent) -> bool:
 			return false
 		if e.keycode == KEY_Q:
 			idx = (idx + 1) % BuildModel.PIECES.size()
-			message.emit(GameState.build.defs[piece()].name)
+			message.emit(RoomModel.piece_label(GameState.build.defs, DataDB.load_json("rooms"), piece()))
 			return true
 		if e.keycode == KEY_R:
 			blueprint = BuildModel.next_blueprint(blueprint)
@@ -206,6 +217,8 @@ func handle_key(e: InputEvent) -> bool:
 			var c := target()
 			if GameState.build.remove_piece(c, GameState.bag):
 				_unspawn(c)
+				if GameState.build.placed.has(c):
+					_spawn(c, GameState.build.placed[c])
 				message.emit("Removed")
 			return true
 	if active and e.is_action_pressed("use_tool"):

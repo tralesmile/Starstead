@@ -98,7 +98,7 @@ func _process(d: float) -> void:
 		canvas.queue_redraw()
 		return
 	var ci := HangarHeist.case_near(pos)
-	if Input.is_key_pressed(KEY_E) and ci >= 0 and not (ci in opened):
+	if KeyBinds.down("interact") and ci >= 0 and not (ci in opened):
 		if crack_idx != ci:
 			crack_idx = ci
 			crack = 0.0
@@ -189,7 +189,7 @@ func _draw_all() -> void:
 	# HUD
 	var font := ThemeDB.fallback_font
 	c.draw_string(font, o + Vector2(0, -34), "VANCE HANGAR   cases %d/3   $%d" % [opened.size(), HangarHeist.total_cash(opened)], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.95, 0.85, 0.5))
-	c.draw_string(font, o + Vector2(0, H + 20), "Move: walk (Ctrl sneaks)   Hold E: crack a case   Door: leave and bank the loot   Esc: leave", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.8, 0.8, 0.85))
+	c.draw_string(font, o + Vector2(0, H + 20), "Move: walk (%s sneaks)   Hold %s: crack a case   Door: leave and bank the loot   Esc: leave" % [KeyBinds.label("sneak"), KeyBinds.label("interact")], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.8, 0.8, 0.85))
 	var mb := Rect2(o + Vector2(W - 110, -36), Vector2(110, 8))
 	c.draw_rect(mb, Color(0.1, 0.1, 0.12))
 	c.draw_rect(Rect2(mb.position, Vector2(mb.size.x * meter, 8)), Color(1.0, 0.3 + (1.0 - meter) * 0.5, 0.1))

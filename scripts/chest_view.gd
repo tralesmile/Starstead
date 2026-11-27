@@ -79,4 +79,4 @@ func _draw_all() -> void:
 	_grid(GameState.bag, BAG_ORIGIN, "Bag")
 	var gy := BAG_ORIGIN.y + WoodUI.grid_rows(GameState.bag.slots.size()) * CELL
 	WoodUI.text(canvas, Vector2(BAG_ORIGIN.x, gy + 13), "Click: move stack   Shift+click: move all of that item", 10, WoodUI.INK, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
-	WoodUI.text(canvas, Vector2(BAG_ORIGIN.x, gy + 26), "E / Esc: close", 10, WoodUI.INK_SOFT, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(canvas, Vector2(BAG_ORIGIN.x, gy + 26), KeyBinds.hint("E / Esc: close"), 10, WoodUI.INK_SOFT, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)

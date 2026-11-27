@@ -42,6 +42,11 @@ static func kind(tool: String) -> String:
 static func swing_time(tool: String) -> float:
 	return {"heavy": 0.28, "hoe": 0.32, "can": 0.4}.get(kind(tool), SWING_TIME)
 
+## Seconds from the button press until the tool bites: heavy tools at the bottom of the swing, the hoe once its
+## blade is in the soil, the can once the spout has tipped. Tools without a pose act at once.
+static func strike_delay(tool: String) -> float:
+	return swing_time(tool) * float({"heavy": 0.45, "hoe": 0.55, "can": 0.4}.get(kind(tool), 0.0))
+
 ## 0 at the start of a swing, 1 at its end.
 static func progress(t_left: float, total: float) -> float:
 	if total <= 0.0:

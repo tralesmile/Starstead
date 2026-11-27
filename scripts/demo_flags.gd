@@ -2,7 +2,7 @@ class_name DemoFlags
 extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --hoopmatch-demo[=lobby|result|world] --fish-demo --chop-demo
-## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
+## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --rooms-demo[=shop|garage|missing|night] --cook-demo --bag-demo --levelup-demo
 ## --sapling-demo --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo --pose-demo=axe|pickaxe|club|hoe|can|bow [--pose-phase=0..1 --pose-face=down|left|up|right] (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
@@ -12,6 +12,8 @@ func _init(main) -> void:
 
 func on_ready() -> void:
 	for a in OS.get_cmdline_user_args():   # demos and QA flags want the full toolbelt
+		if a.begins_with("--rooms-demo"):
+			_rooms_demo.call_deferred(a.get_slice("=", 1) if "=" in a else "")
 		if a.ends_with("-demo") or a.begins_with("--sports-demo") or a.begins_with("--enter-demo") or a.begins_with("--arrow-demo") or a == "--allgear":
 			GameState.tools_owned = ToolKit.all_tools()
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the m.car and floor it
@@ -106,6 +108,61 @@ func on_ready() -> void:
 	if "--perk-demo" in OS.get_cmdline_user_args():   # screenshot helper: the level-5 farming perk chooser
 		GameState.skill_xp["farming"] = SkillModel.THRESHOLDS[PerkModel.UNLOCK_LEVEL]
 		m.perk_view.open("farming")
+
+## --rooms-demo: a Farm Shop, Bedroom and Garage built through the real placement rules on clear ground.
+## =shop opens the counter, =garage the discounted garage menu, =missing shows an unfinished room, =walkin shows the room-name toast, =night sleeps in the built bed.
+func _rooms_demo(mode: String) -> void:
+	var bm: BuildModel = GameState.build
+	var o := _clear_patch(Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0)))
+	for y in range(-4, 5):   # a roomy lot: clear trees and rocks for the picture
+		for x in range(-10, 11):
+			var c := o + Vector2i(x, y)
+			if GameState.nodes.nodes.has(c):
+				GameState.nodes.nodes.erase(c)
+	m.world.sync_props(GameState.nodes)
+	GameState.bag.add("wood", 400)
+	GameState.bag.add("stone", 60)
+	var lots := [[-8, ["shop_counter", "shelf", "shelf"]], [-2, ["bed"]], [4, ["workbench", "tool_rack"]]]
+	for lot in lots:
+		var a: Vector2i = o + Vector2i(int(lot[0]), -3)
+		for y in 4:
+			for x in 5:
+				var edge := x == 0 or x == 4 or y == 0 or y == 3
+				bm.place(a + Vector2i(x, y), ("door" if x == 2 and y == 3 else "wall") if edge else "floor", 9.0, false, GameState.bag)
+		var spots := [Vector2i(1, 1), Vector2i(3, 1), Vector2i(2, 1)]
+		for i in lot[1].size():
+			var why := bm.place(a + spots[i], String(lot[1][i]), 9.0, false, GameState.bag)
+			if why != "":
+				printerr("SCRIPT ERROR: rooms demo could not place %s: %s" % [lot[1][i], why])
+	if mode == "missing":
+		bm.remove_piece(o + Vector2i(7, -2), GameState.bag)   # the tool rack goes
+	for c in bm.placed:
+		m.build_view._spawn(c, bm.placed[c])
+	for r in RoomModel.find_rooms(bm.placed, DataDB.load_json("rooms"), bm.defs):
+		print("ROOM ", r.name)
+	for id in ["turnip", "egg", "milk", "tomato", "pumpkin", "cheese", "perch"]:
+		GameState.bag.add(id, 6)
+	m.mouse_aim = false
+	m.player.facing = PlayerMath.Facing.UP
+	var stand := {"shop": Vector2i(-7, -1), "": Vector2i(-2, 1), "night": Vector2i(-1, -1), "garage": Vector2i(5, -1), "missing": Vector2i(5, -1), "walkin": Vector2i(-1, -1)}
+	m.player.position = Vector2(o + stand.get(mode, Vector2i(-2, 1))) * 32.0 + Vector2(16, 20)
+	m.car.position = Vector2(o + Vector2i(6, 2)) * 32.0
+	m.car.health = 55.0
+	await m.get_tree().create_timer(0.3).timeout
+	var target: Vector2i = o + stand.get(mode, Vector2i.ZERO) + Vector2i(0, -1)
+	if mode == "shop" or mode == "night":
+		if mode == "night":
+			GameState.farm_shop.add(DataDB.load_json("items"), GameState.bag, "turnip", 6, 40)
+			GameState.farm_shop.add(DataDB.load_json("items"), GameState.bag, "cheese", 6, 40)
+			var had: int = GameState.money
+			var day: int = GameState.clock.day
+			print("ROOMS bed used=", m.rooms.interact(target), " day +", GameState.clock.day - day, " money +", GameState.money - had)
+		else:
+			print("ROOMS counter used=", m.rooms.interact(target), " open=", m.rooms.shop_ui.visible)
+			m.rooms.shop_ui.transfer(0, 0, true)
+			m.rooms.shop_ui.transfer(0, 1, true)
+	elif mode == "garage" or mode == "missing":
+		print("ROOMS bench used=", m.rooms.interact(target), " garage=", m.garage_view.visible, " mult=", m.garage_view.repair_mult)
 
 ## QA: --bankjob-demo[=caught|vault|done|fine].Takes the player's path (night, picked lock, E at the lobby vault door),
 ## checks the weekly cooldown survives a save, then poses the room (=done walks out with the bags and prints the take).
@@ -232,6 +289,11 @@ func save_roundtrip() -> void:
 	g.forestry.register(g.nodes)
 	g.nodes.hit(pc + Vector2i(4, 3), "axe")
 	g.hoops.record(21, 12, 11)
+	g.build.place(pc + Vector2i(5, 0), "floor", 9.0, false, g.bag)
+	g.bag.add("wood", 40)
+	g.build.place(pc + Vector2i(5, 0), "bed", 9.0, false, g.bag)
+	g.bag.add("turnip", 3)
+	g.farm_shop.add(DataDB.load_json("items"), g.bag, "turnip", 3, 40)
 	m.car.fuel = 21.0
 	m.car.health = 66.0
 	m.robbery.model.house("city_house1")["grudge"] = true
@@ -792,3 +854,19 @@ func _pose_demo(kind: String) -> void:
 		m.bow.held_t = phase
 		return
 	m.player.pose_hold = phase
+	if kind == "can" and "--pour-demo" in OS.get_cmdline_user_args():   # freeze the water mid-air over three watered tiles
+		var cells: Array = []
+		var ahead := PlayerMath.facing_tile(m.player.position, face)
+		var step := ahead - TargetMath.cell_of(m.player.position)
+		for i in 3:
+			var c := ahead + step * i
+			GameState.farm.till(c)
+			if GameState.farm.soil.has(c):
+				GameState.farm.soil[c].watered = true
+			cells.append(c)
+		var at: Array[Vector2] = []
+		for c in cells:
+			at.append(TargetMath.center_of(c))
+		var v := PourView.make(m.player.position + PourMath.spout(face) * m.player.sprite.scale, at)
+		v.hold = 0.27
+		m.world.add_child(v)

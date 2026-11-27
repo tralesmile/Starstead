@@ -6,6 +6,7 @@ signal closed
 var canvas: Control
 var car: CarView
 var msg := ""
+var repair_mult := 1.0   # set by open()
 const ORIGIN := Vector2(170, 90)
 
 func _init() -> void:
@@ -17,7 +18,8 @@ func _init() -> void:
 	add_child(canvas)
 	visible = false
 
-func open() -> void:
+func open(mult: float = 1.0) -> void:
+	repair_mult = mult   # below 1 only at the workbench of a garage you built
 	visible = true
 	msg = ""
 
@@ -30,11 +32,14 @@ func _process(_d: float) -> void:
 		canvas.size = get_viewport().get_visible_rect().size
 		canvas.queue_redraw()
 
+func _repair_cost() -> int:
+	return GarageModel.discounted(GarageModel.repair_cost(car.health, VehicleMath.HEALTH_MAX), repair_mult)
+
 func _do(i: int) -> void:
 	var cost := 0
 	match i:
 		0:
-			cost = GarageModel.repair_cost(car.health, VehicleMath.HEALTH_MAX)
+			cost = _repair_cost()
 		1:
 			cost = GarageModel.fuel_cost(car.fuel, VehicleMath.FUEL_MAX)
 		2:
@@ -74,12 +79,12 @@ func handle(e: InputEvent) -> bool:
 
 func _draw_all() -> void:
 	var rows := [
-		["1. Repair car", "Health %d%%" % int(car.health), GarageModel.repair_cost(car.health, VehicleMath.HEALTH_MAX), car.health / VehicleMath.HEALTH_MAX],
+		["1. Repair car" + ("  (%d%% off)" % roundi((1.0 - repair_mult) * 100.0) if repair_mult < 1.0 else ""), "Health %d%%" % int(car.health), _repair_cost(), car.health / VehicleMath.HEALTH_MAX],
 		["2. Fill the tank", "Fuel %d%%" % int(100.0 * car.fuel / VehicleMath.FUEL_MAX), GarageModel.fuel_cost(car.fuel, VehicleMath.FUEL_MAX), car.fuel / VehicleMath.FUEL_MAX],
 		["3. Repaint", "Now: %s" % GarageModel.PAINTS[GameState.car_paint]["name"], GarageModel.PAINT_PRICE, -1.0],
 	]
 	var panel := Rect2(ORIGIN - Vector2(10, 34), Vector2(320, 34.0 * rows.size() + 60.0))
-	WoodUI.panel(canvas, panel, "Garage", WoodUI.Trim.HAZARD)
+	WoodUI.panel(canvas, panel, "Your garage" if repair_mult < 1.0 else "Garage", WoodUI.Trim.HAZARD)
 	WoodUI.text(canvas, panel.position + Vector2(0, 15), "$%d" % GameState.money, 12, WoodUI.CREAM, panel.size.x - 10, HORIZONTAL_ALIGNMENT_RIGHT)
 	var mouse := canvas.get_local_mouse_position() - ORIGIN
 	var hover := int(mouse.y / 34.0) if mouse.x >= 0.0 and mouse.x < 300.0 and mouse.y >= 0.0 else -1

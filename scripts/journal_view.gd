@@ -23,7 +23,7 @@ func toggle() -> void:
 		closed.emit()
 
 func handle(e: InputEvent) -> bool:
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J:
+	if e is InputEventKey and e.is_action_pressed("journal"):
 		toggle()
 		return true
 	if visible and (e.is_action_pressed("pause") or e.is_action_pressed("inventory")):
@@ -58,4 +58,4 @@ func _draw_all() -> void:
 			WoodUI.text(canvas, cell.position + Vector2(180, 19), "x%d  best %d cm" % [r["count"], r["best"]], 10, WoodUI.GOOD, 104, HORIZONTAL_ALIGNMENT_RIGHT)
 		else:
 			WoodUI.text(canvas, cell.position + Vector2(180, 19), "not yet", 9, WoodUI.INK_SOFT, 104, HORIZONTAL_ALIGNMENT_RIGHT)
-	WoodUI.text(canvas, Vector2(panel.position.x, panel.end.y - 8), "J or Esc to close", 9, WoodUI.INK_SOFT, panel.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(canvas, Vector2(panel.position.x, panel.end.y - 8), KeyBinds.hint("J or Esc to close"), 9, WoodUI.INK_SOFT, panel.size.x, HORIZONTAL_ALIGNMENT_CENTER)

@@ -2,9 +2,13 @@ class_name BuildModel
 extends RefCounted
 ## Pure build-mode rules: placement validity, cost, refund. Cells are Vector2i tile coords.
 
-const PIECES := ["floor", "wall", "door", "fence", "roof", "lamp"]
+const PIECES := ["floor", "wall", "door", "fence", "roof", "lamp", "bed", "shop_counter", "shelf", "workbench", "tool_rack"]
 var defs: Dictionary
 var placed: Dictionary = {}  # Vector2i -> piece id
+var under: Dictionary = {}   # Vector2i -> "floor" kept beneath a piece of furniture
+
+func is_furniture(piece: String) -> bool:
+	return defs.has(piece) and bool(defs[piece].get("furniture", false))
 
 func _init(d: Dictionary = {}) -> void:
 	defs = d
@@ -25,7 +29,7 @@ func check(cell: Vector2i, piece: String, sdf: float, blocked: bool, bag: Invent
 		return "Too close to water"
 	if blocked:
 		return "Something is in the way"
-	if placed.has(cell):
+	if placed.has(cell) and not (is_furniture(piece) and placed[cell] == "floor"):
 		return "Occupied"
 	if not can_afford(piece, bag):
 		return "Need materials"
@@ -37,6 +41,8 @@ func place(cell: Vector2i, piece: String, sdf: float, blocked: bool, bag: Invent
 		return why
 	for id in defs[piece].cost:
 		bag.remove(id, int(defs[piece].cost[id]))
+	if placed.has(cell):
+		under[cell] = placed[cell]
 	placed[cell] = piece
 	return ""
 
@@ -48,6 +54,9 @@ func remove_piece(cell: Vector2i, bag: Inventory) -> bool:
 	for id in defs[piece].cost:
 		bag.add(id, maxi(1, int(defs[piece].cost[id]) / 2))
 	placed.erase(cell)
+	if under.has(cell):   # the floor under the furniture stays
+		placed[cell] = under[cell]
+		under.erase(cell)
 	return true
 
 func is_solid(cell: Vector2i) -> bool:
@@ -56,15 +65,20 @@ func is_solid(cell: Vector2i) -> bool:
 func to_dict() -> Dictionary:
 	var out := {}
 	for c in placed:
-		out["%d,%d" % [c.x, c.y]] = placed[c]
+		out["%d,%d" % [c.x, c.y]] = String(placed[c]) + ("|" + String(under[c]) if under.has(c) else "")
 	return out
 
 func from_dict(d: Dictionary) -> void:
 	placed.clear()
+	under.clear()
 	for k in d:
 		var p: PackedStringArray = str(k).split(",")
-		if p.size() == 2 and defs.has(str(d[k])):
-			placed[Vector2i(int(p[0]), int(p[1]))] = str(d[k])
+		var v: PackedStringArray = str(d[k]).split("|")
+		if p.size() == 2 and defs.has(v[0]):
+			var c := Vector2i(int(p[0]), int(p[1]))
+			placed[c] = v[0]
+			if v.size() > 1 and v[1] == "floor":
+				under[c] = v[1]
 
 # --- Blueprints and rooms -------------------------------------------------
 const BLUEPRINTS := {
@@ -132,7 +146,7 @@ func is_enclosed(cell: Vector2i, limit: int = 64) -> bool:
 			var n: Vector2i = c + d
 			if seen.has(n):
 				continue
-			if placed.has(n) and (is_solid(n) or placed[n] == "door"):
+			if placed.has(n) and ((is_solid(n) and not is_furniture(placed[n])) or placed[n] == "door"):
 				continue
 			seen[n] = true
 			if seen.size() > limit:

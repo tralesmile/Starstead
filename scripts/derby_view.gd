@@ -72,10 +72,10 @@ func close() -> void:
 
 func handle(e: InputEvent) -> bool:
 	if visible and e is InputEventKey and e.pressed and not e.echo:
-		if countdown > 0.0 and not finished and (e.keycode == KEY_UP or e.keycode == KEY_DOWN or e.keycode == KEY_W or e.keycode == KEY_S):
-			bet = DerbyModel.next_bet(bet, 1 if e.keycode == KEY_UP or e.keycode == KEY_W else -1, GameState.money)
+		if countdown > 0.0 and not finished and (e.is_action_pressed("move_up") or e.is_action_pressed("move_down")):
+			bet = DerbyModel.next_bet(bet, 1 if e.is_action_pressed("move_up") else -1, GameState.money)
 			return true
-		if e.keycode == KEY_ESCAPE or (finished and (e.keycode == KEY_E or e.keycode == KEY_SPACE)):
+		if e.keycode == KEY_ESCAPE or (finished and e.is_action_pressed("interact")):
 			close()
 		return true
 	return visible

@@ -210,7 +210,7 @@ func _draw_all() -> void:
 	c.draw_rect(Rect2(mb.position, Vector2(mb.size.x * job.meter, mb.size.y)), Color(1.0, 0.75 * (1.0 - job.meter) + 0.1, 0.1))
 	c.draw_rect(mb, WoodUI.OUTLINE, false, 1.0)
 	var goal := "Take the keycard (guard desk)" if not job.has_card else ("Open the vault door" if not job.vault_open else ("Bag the cash" if job.taken.size() < BankJob.BAGS.size() else "Get out through the EXIT"))
-	var hint := "Ctrl sneak  Shift run (loud)  Hold E use  Walk out of EXIT to keep cash  Esc drop it"
+	var hint := "%s sneak  %s run (loud)  Hold %s use  Walk out of EXIT to keep cash  Esc drop it" % [KeyBinds.label("sneak"), KeyBinds.label("sprint"), KeyBinds.label("interact")]
 	if quit_armed > 0.0:
 		hint = "Press Esc again to drop the bags and leave with nothing."
 	WoodUI.text(c, Vector2(o.x, footer_y), hint, 10, WoodUI.BAD if quit_armed > 0.0 else WoodUI.INK, mb.position.x - 40 - o.x)

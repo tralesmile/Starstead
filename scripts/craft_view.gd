@@ -23,7 +23,7 @@ func _try(i: int) -> void:
 		cooked.emit(String(r["name"]))
 
 func handle(e: InputEvent) -> bool:
-	if visible and e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_C:
+	if visible and e is InputEventKey and e.is_action_pressed("craft"):
 		close()
 		return true
 	return super.handle(e)

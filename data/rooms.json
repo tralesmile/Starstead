@@ -1,0 +1,16 @@
+{
+  "shop": {
+    "name": "Farm Shop", "station": "shop_counter", "needs": {"shop_counter": 1, "shelf": 1}, "min_cells": 4,
+    "use": "E at the counter: stock goods, they sell overnight",
+    "premium": 1.15, "stock_cap": 40, "base_sales": 8, "sales_per_shelf": 4, "max_shelves": 3
+  },
+  "garage": {
+    "name": "Garage", "station": "workbench", "needs": {"workbench": 1, "tool_rack": 1}, "min_cells": 4,
+    "use": "E at the workbench with the car close by: garage services",
+    "repair_discount": 0.25, "car_range_tiles": 6
+  },
+  "bedroom": {
+    "name": "Bedroom", "station": "bed", "needs": {"bed": 1}, "min_cells": 2,
+    "use": "E at the bed: sleep until morning"
+  }
+}

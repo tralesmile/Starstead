@@ -58,7 +58,7 @@ func _land(steps: Array) -> void:
 		said.emit(banner)
 
 func handle(e: InputEvent) -> bool:
-	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_K:
+	if e is InputEventKey and e.is_action_pressed("quests"):
 		toggle_log()
 		return true
 	if _log and (e.is_action_pressed("pause") or e.is_action_pressed("inventory")):

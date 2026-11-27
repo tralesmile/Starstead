@@ -96,7 +96,7 @@ func _draw_all() -> void:
 	var font := ThemeDB.fallback_font
 	canvas.draw_rect(Rect2(0, sz.y - 34, sz.x, 34), Color(0.03, 0.07, 0.12, 0.75))
 	canvas.draw_string(font, Vector2(12, sz.y - 13), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1, 0.95, 0.72))
-	canvas.draw_string(font, Vector2(sz.x - 90, sz.y - 13), "E: skip", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.8, 0.85, 0.9))
+	canvas.draw_string(font, Vector2(sz.x - 90, sz.y - 13), KeyBinds.hint("E: skip"), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.8, 0.85, 0.9))
 
 func _shore(at: Vector2, w: float, is_isle: bool) -> void:
 	var pts := PackedVector2Array([at + Vector2(-w, 1)])

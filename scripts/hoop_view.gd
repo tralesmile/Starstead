@@ -101,9 +101,9 @@ func handle(e: InputEvent) -> void:
 			elif not e.pressed:
 				_release["release"] = true
 		elif e.pressed and not e.echo:
-			if key == KEY_E:
+			if key == KeyBinds.key_of("interact"):
 				_release["pass"] = true
-			elif key == KEY_TAB:
+			elif e.is_action_pressed("inventory"):
 				_release["switch"] = true
 			elif key == KEY_ESCAPE:
 				if forfeit_t > 0.0:
@@ -115,7 +115,7 @@ func handle(e: InputEvent) -> void:
 	if not e.pressed or e.echo:
 		return
 	if state == State.LOBBY:
-		if key == KEY_ESCAPE or key == KEY_E:
+		if key == KEY_ESCAPE or key == KeyBinds.key_of("interact"):
 			close()
 		elif key == KEY_SPACE:
 			block_reason = _blocked()
@@ -123,7 +123,7 @@ func handle(e: InputEvent) -> void:
 				tip_off()
 			else:
 				sound.emit("error")
-	elif key == KEY_ESCAPE or key == KEY_E:
+	elif key == KEY_ESCAPE or key == KeyBinds.key_of("interact"):
 		close()
 
 func _input_for_tick() -> Dictionary:
@@ -272,7 +272,7 @@ func _draw_all() -> void:
 				_text(feedback_at + Vector2(-80, -(1.1 - feedback_t) * 12.0), feedback, 12, feedback_col, 160, HORIZONTAL_ALIGNMENT_CENTER)
 			if banner_t > 0.0:
 				_text(Vector2(0, 232), banner, 24 if banner.contains("BUCKET") else 17, Color(1, 0.9, 0.35), 640, HORIZONTAL_ALIGNMENT_CENTER)
-			_text(Vector2(0, 358), "WASD run  Shift sprint  Space: hold, let go in green = shoot / tap = jump  E pass, steal, call  Tab swap  Esc quit", 9, Color(0.95, 0.93, 0.85), 640, HORIZONTAL_ALIGNMENT_CENTER)
+			_text(Vector2(0, 358), "%s run  %s sprint  Space: hold, let go in green = shoot / tap = jump  %s pass, steal, call  %s swap  Esc quit" % [KeyBinds.move_label(), KeyBinds.label("sprint"), KeyBinds.label("interact"), KeyBinds.label("inventory")], 9, Color(0.95, 0.93, 0.85), 640, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _draw_hoop_back() -> void:
 	var left := ORIGIN.x + HoopBall.RIM.x - HoopBall.BOARD_HALF
@@ -462,4 +462,4 @@ func _draw_panel(head: String) -> void:
 			var s: Dictionary = game.stats
 			for k in 2:
 				WoodUI.text(canvas, Vector2(150, 220 + k * 17), "%s:  %d/%d shots, %d/%d threes, %d boards, %d steals, %d blocks" % ["You" if k == 0 else "Them", s["fgm"][k], s["fga"][k], s["tpm"][k], s["tpa"][k], s["reb"][k], s["stl"][k], s["blk"][k]], 10)
-		WoodUI.text(canvas, Vector2(135, 291), "E / Esc: leave the court", 11, WoodUI.GOOD, 370, HORIZONTAL_ALIGNMENT_CENTER)
+		WoodUI.text(canvas, Vector2(135, 291), KeyBinds.hint("E / Esc: leave the court"), 11, WoodUI.GOOD, 370, HORIZONTAL_ALIGNMENT_CENTER)

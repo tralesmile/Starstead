@@ -106,7 +106,7 @@ func _draw_all() -> void:
 		canvas.draw_rect(Rect2(bx + 1, gy + 16, 63.0 * LevelFxMath.bar_fill(xp), 4), LevelFxMath.skill_color(sk))
 	canvas.draw_rect(Rect2(ORIGIN.x, gy + 26, WoodUI.GRID_W, 1), Color(0.36, 0.21, 0.10, 0.5))
 	WoodUI.text(canvas, Vector2(ORIGIN.x, gy + 37), "Click a slot, then another: move / swap", 10, WoodUI.INK, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
-	WoodUI.text(canvas, Vector2(ORIGIN.x, gy + 49), "Right-click: eat   S: sort   X: trash   Tab: close", 10, WoodUI.INK_SOFT, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
+	WoodUI.text(canvas, Vector2(ORIGIN.x, gy + 49), "Right-click: eat   S: sort   X: trash   %s: close" % KeyBinds.label("inventory"), 10, WoodUI.INK_SOFT, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
 	if perk:
 		WoodUI.text(canvas, Vector2(ORIGIN.x, gy + 62), "P: choose a perk", 10, WoodUI.GOOD, WoodUI.GRID_W, HORIZONTAL_ALIGNMENT_CENTER)
 	if hover >= 0 and bag.slots[hover] != null:

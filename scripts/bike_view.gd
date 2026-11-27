@@ -85,11 +85,11 @@ func close() -> void:
 func handle(e: InputEvent) -> bool:
 	if visible and e is InputEventKey and e.pressed and not e.echo:
 		var key: int = e.keycode
-		if key == KEY_ESCAPE or (finished and (key == KEY_E or key == KEY_SPACE)):
+		if key == KEY_ESCAPE or (finished and e.is_action_pressed("interact")):
 			close()
-		elif key == KEY_A or key == KEY_LEFT:
+		elif e.is_action_pressed("move_left"):
 			lane = maxi(lane - 1, 0)
-		elif key == KEY_D or key == KEY_RIGHT:
+		elif e.is_action_pressed("move_right"):
 			lane = mini(lane + 1, BikeModel.LANES.size() - 1)
 	return visible
 
@@ -143,7 +143,7 @@ func _player_input() -> Dictionary:
 		var a := BikeModel.ai_input(riders, 0, me, wet)
 		lane = a["lane"]
 		return a
-	var brake := Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN)
+	var brake := Input.is_action_pressed("move_down")
 	return {"effort": 1.0 if Input.is_key_pressed(KEY_SPACE) else 0.0, "brake": brake, "lane": lane}
 
 func _tick(mine: Dictionary) -> void:

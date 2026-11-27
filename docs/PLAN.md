@@ -250,10 +250,11 @@ Houses, buildings, graphics (5, 10)
 - [ ] Endgame (Act 5), carry house to ship module
 
 ## Run 48 queue
-- [ ] Run 48 Phase 1.5 leftover: rebindable keys (Controls page in pause and title, saved) (CLAIMED 2026-11-27)
-- [ ] Run 48 Phase 3 slice (building system): player-built rooms with a purpose, e.g. shop / garage / bedroom decided by the furniture inside, each doing real work (CLAIMED 2026-11-27)
-- [ ] Run 48 physics/feel: tool hits land on the strike frame of the swing, not on the button press (CLAIMED 2026-11-27)
-- [ ] Run 48 graphics: water pours from the can as droplets that splash on the soil (CLAIMED 2026-11-27)
+- [x] Run 48 Phase 1.5 leftover: rebindable keys (13 actions, Controls page in pause and title, swap on clash, reset, saved; KeyBinds tested). [ ] next: mouse + gamepad on the page by hand, fixed build/gear keys rebindable, remaining hint sentences that name default keys
+- [x] Run 48 Phase 3 slice (building system): player-built Bedroom, Farm Shop (sells overnight) and Garage (25% off repairs) decided by furniture (RoomModel/FarmShopModel, data/rooms.json, tools/gen_rooms.py, saved, tested). [ ] next: shoppers who walk in, more room types (kitchen, barn, workshop, sports venue), roofs/fade by hand
+- [x] Run 48 physics/feel: axe, pickaxe, club-free tool hits, hoe and can land on the strike frame of the swing (SwingHit + PoseMath.strike_delay, tested; mine pickaxe too). [ ] next: club and fists on the strike frame, hands-on responsiveness
+- [x] Run 48 graphics: water arcs from the can as drops that ring on the soil (PourMath/PourView, tested). [ ] next: soil darkens as the water lands, bow hidden behind the head facing up
+- [x] Run 48 fixes: mouse clicks reach the bag/chest/kitchen/garage/bus/upgrade menus (they were turned into tool swings); tools/check.sh bankjob and ride screens had merged into one broken spec. [ ] next: a real-input check (clicks and keys) inside tools/check.sh
 
 ## Run 47 queue
 - [x] Run 47 Phase 1.5 leftovers: tree seeds + saplings you can plant, sap drops, hardwood stumps/logs that need a copper axe (Forestry, tested, saved). [ ] next: see seed drops and a sapling maturing in play; starter-axe swing should not flash hit effects on hardwood
@@ -422,3 +423,6 @@ Houses, buildings, graphics (5, 10)
 
 ## Backlog additions (2026-11-26 run 45, research; search returned titles/links only)
 - Street basketball references to study for hands-on tuning (arcade shot timing, steals, fast breaks): https://basketballverse.gitbook.io/basketballverse/basketballverse-gameplay/on-court-mechanics , https://www.gameskinny.com/tips/fast-break-essential-nba-playgrounds-tips-for-starting-strong/
+
+## Backlog additions (2026-11-27 run 48, research; search returned titles/links only)
+- Rooms that count as homes/shops: https://terraria.wiki.gg/wiki/House and https://terraria.wiki.gg/wiki/Room (Terraria's valid-house rules). Ideas: a room check the player can run that lists what is missing (done), villagers who move into valid rooms or shop in them, room comfort bonuses.

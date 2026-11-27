@@ -12,6 +12,7 @@ var muted := false
 var leave_place := ""
 var note := ""
 var show_keys := false
+var keys_page := KeysPage.new()
 var persist_volume := true
 var _c: Control
 
@@ -59,6 +60,7 @@ func activate(i: int) -> void:
 			nudge_music(1 if PauseModel.music < PauseModel.VOLUME_STEPS else -PauseModel.VOLUME_STEPS)
 		"keys":
 			show_keys = true
+			keys_page.open()
 		"leave":
 			close()
 			chosen.emit(id)
@@ -89,7 +91,7 @@ func handle_key(e: InputEvent) -> bool:
 	var count := _rows().size()
 	var back := e.is_action_pressed("pause")
 	if show_keys:
-		if back or (e is InputEventKey and e.pressed and not e.echo) or (e is InputEventMouseButton and e.pressed) or (e is InputEventJoypadButton and e.pressed):
+		if keys_page.handle(e, _c.get_local_mouse_position() if _c.is_inside_tree() else Vector2(-1, -1)):
 			show_keys = false
 	elif back:
 		close()
@@ -128,7 +130,7 @@ func _input(e: InputEvent) -> void:
 func _on_draw() -> void:
 	_c.draw_rect(Rect2(Vector2.ZERO, PauseModel.SCREEN), Color(0.04, 0.03, 0.06, 0.55))
 	if show_keys:
-		draw_controls(_c)
+		keys_page.draw(_c)
 		return
 	var ids := _rows()
 	var r := PauseModel.panel_rect(ids.size())
@@ -139,17 +141,3 @@ func _on_draw() -> void:
 		WoodUI.text(_c, rr.position + Vector2(0, 15), PauseModel.label(ids[i], volume, muted, leave_place), 12, WoodUI.INK, rr.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	var foot := note if note != "" else "Esc  -  back to the game"
 	WoodUI.text(_c, Vector2(r.position.x, r.end.y - 8), foot, 10, WoodUI.GOOD if note != "" else WoodUI.INK_SOFT, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
-
-## The controls card (also used by the title screen).
-static func draw_controls(c: CanvasItem) -> void:
-	var rows := KeyLegend.rows("foot")
-	var extra := [["F", "Handbrake (car)"], ["G", "Gear / load cart"], ["N", "Mute"]]
-	var all: Array = rows + extra
-	var k := Rect2(130, 52, 380, 40.0 + ceili(all.size() / 2.0) * 20.0 + 20.0)
-	WoodUI.panel(c, k, "Controls", WoodUI.Trim.IRON)
-	var half := ceili(all.size() / 2.0)
-	for i in all.size():
-		var at := k.position + Vector2(16 + (i / half) * 184, 44 + (i % half) * 20)
-		WoodUI.text(c, at, String(all[i][0]), 11, WoodUI.PRICE, 56)
-		WoodUI.text(c, at + Vector2(60, 0), String(all[i][1]), 11, WoodUI.INK, 118)
-	WoodUI.text(c, Vector2(k.position.x, k.end.y - 8), "Any key to go back", 10, WoodUI.INK_SOFT, k.size.x, HORIZONTAL_ALIGNMENT_CENTER)

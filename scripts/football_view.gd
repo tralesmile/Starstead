@@ -102,7 +102,7 @@ func handle(e: InputEvent) -> void:
 			elif not e.pressed and space_held >= 0.0:
 				_release_kick()
 		elif e.pressed and not e.echo:
-			if key == KEY_TAB:
+			if e.is_action_pressed("inventory"):
 				_switch_queued = true
 			elif key == KEY_ESCAPE:
 				if forfeit_t > 0.0:
@@ -114,7 +114,7 @@ func handle(e: InputEvent) -> void:
 	if not e.pressed or e.echo:
 		return
 	if state == State.LOBBY:
-		if key == KEY_ESCAPE or key == KEY_E:
+		if key == KEY_ESCAPE or key == KeyBinds.key_of("interact"):
 			close()
 		elif key == KEY_SPACE:
 			block_reason = _blocked()
@@ -122,7 +122,7 @@ func handle(e: InputEvent) -> void:
 				kick_off()
 			else:
 				sound.emit("error")
-	elif key == KEY_ESCAPE or key == KEY_E:
+	elif key == KEY_ESCAPE or key == KeyBinds.key_of("interact"):
 		close()
 
 var _release: Dictionary = {}
@@ -138,7 +138,7 @@ func _input_for_tick() -> Dictionary:
 	var inp := {
 		"move": Input.get_vector("move_left", "move_right", "move_up", "move_down"),
 		"sprint": Input.is_action_pressed("sprint"),
-		"curl": (1.0 if Input.is_key_pressed(KEY_E) else 0.0) - (1.0 if Input.is_key_pressed(KEY_Q) else 0.0),
+		"curl": (1.0 if KeyBinds.down("interact") else 0.0) - (1.0 if Input.is_key_pressed(KEY_Q) else 0.0),
 	}
 	inp.merge(_release)
 	_release = {}
@@ -253,7 +253,7 @@ func _draw_all() -> void:
 			if banner_t > 0.0:
 				var big := 28 if banner.begins_with("GOAL") else 18
 				_text(Vector2(0, 190), banner, big, Color(1, 0.9, 0.35), 640, HORIZONTAL_ALIGNMENT_CENTER)
-			_text(Vector2(0, 354), "WASD run  Shift sprint  Space: tap = pass / tackle, hold = shoot  Q/E bend  Tab swap  Esc forfeit", 10, Color(0.9, 0.95, 0.85), 640, HORIZONTAL_ALIGNMENT_CENTER)
+			_text(Vector2(0, 354), "%s run  %s sprint  Space: tap = pass / tackle, hold = shoot  Q/%s bend  %s swap  Esc forfeit" % [KeyBinds.move_label(), KeyBinds.label("sprint"), KeyBinds.label("interact"), KeyBinds.label("inventory")], 10, Color(0.9, 0.95, 0.85), 640, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _draw_pitch() -> void:
 	var f := FootballBall.FIELD
@@ -408,4 +408,4 @@ func _draw_panel(head: String) -> void:
 		var foot := "Space: kick off      Esc: leave" if block_reason == "" else block_reason + "      Esc: leave"
 		_text(Vector2(box.position.x, 284), foot, 11, Color(0.75, 1.0, 0.65) if block_reason == "" else Color(1.0, 0.7, 0.55), box.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 	else:
-		_text(Vector2(box.position.x, 284), "E / Esc: leave the pitch", 11, Color(0.75, 1.0, 0.65), box.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+		_text(Vector2(box.position.x, 284), KeyBinds.hint("E / Esc: leave the pitch"), 11, Color(0.75, 1.0, 0.65), box.size.x, HORIZONTAL_ALIGNMENT_CENTER)

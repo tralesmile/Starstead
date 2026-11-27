@@ -35,11 +35,11 @@ func close(res: Dictionary) -> void:
 	finished.emit(res)
 
 static func key_dir(code: int) -> int:
-	match code:
-		KEY_UP, KEY_W: return 0
-		KEY_RIGHT, KEY_D: return 1
-		KEY_DOWN, KEY_S: return 2
-		KEY_LEFT, KEY_A: return 3
+	var arrows := [KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_LEFT]
+	var moves := ["move_up", "move_right", "move_down", "move_left"]
+	for i in 4:
+		if code == arrows[i] or code == KeyBinds.key_of(moves[i]):
+			return i
 	return -1
 
 func _input(e: InputEvent) -> void:
@@ -55,7 +55,7 @@ func _input(e: InputEvent) -> void:
 		if _end_t > 0.3:
 			_finish()
 		return
-	if game.kind == "timing" and e.keycode in [KEY_SPACE, KEY_E, KEY_J, KEY_ENTER]:
+	if game.kind == "timing" and e.keycode in [KEY_SPACE, KeyBinds.key_of("interact"), KeyBinds.key_of("journal"), KEY_ENTER]:
 		game.press_action()
 	elif game.kind == "sequence":
 		var d := key_dir(e.keycode)
@@ -72,7 +72,7 @@ func _process(d: float) -> void:
 		return
 	var inp := 0.0
 	if game.kind == "balance":
-		inp = (1.0 if Input.is_key_pressed(KEY_RIGHT) or Input.is_key_pressed(KEY_D) else 0.0) - (1.0 if Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_A) else 0.0)
+		inp = Input.get_axis("move_left", "move_right")
 	game.step(d, inp)
 	if game.done:
 		_end_t = maxf(_end_t, 0.0) + d
@@ -104,7 +104,7 @@ func _draw_all() -> void:
 		canvas.draw_string(font, o + Vector2(0, 118), "%s  pay x%.2f = $%d" % [r["grade"], r["mult"], int(round(base_pay * float(r["mult"])))], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 0.9, 0.4))
 		canvas.draw_string(font, o + Vector2(0, 140), "any key to clock out", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.9, 0.85, 0.7))
 	else:
-		var hint: String = {"timing": "SPACE / E to strike", "sequence": "arrow keys or WASD", "balance": "hold LEFT / RIGHT"}[game.kind]
+		var hint: String = {"timing": "SPACE / %s to strike" % KeyBinds.label("interact"), "sequence": "arrow keys or %s" % KeyBinds.move_label(), "balance": "hold LEFT / RIGHT"}[game.kind]
 		canvas.draw_string(font, o + Vector2(0, 140), hint + "    Esc: skip (normal pay)", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.9, 0.85, 0.7))
 
 func _draw_pips(p: Vector2) -> void:
