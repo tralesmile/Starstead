@@ -63,10 +63,12 @@ var hoop_view: HoopView
 var derby: DerbyView
 var bike_view: BikeView
 var hangar: HangarView
+var bankjob: BankJobView
 var hoof_t := 0.0
 var garage_view: GarageView
 var drops_view: DropsView
 var tree_fall: TreeFallView
+var forestry_view: ForestryView
 var float_fx: FloatFx
 var mouse_aim := false
 var goal_label: Label
@@ -360,6 +362,9 @@ func _ready() -> void:
 	hangar = HangarView.new()
 	hangar.finished.connect(_hangar_done)
 	add_child(hangar)
+	bankjob = BankJobView.new()
+	bankjob.finished.connect(_bankjob_done)
+	add_child(bankjob)
 	derby = DerbyView.new()
 	derby.closed.connect(func(): player.set_physics_process(true))
 	derby.message.connect(_say)
@@ -398,6 +403,7 @@ func _ready() -> void:
 	interior.safe_requested.connect(func(b): robbery.crack_safe(b))
 	interior.alarm_requested.connect(func(b): robbery.cut_alarm(b))
 	interior.till_requested.connect(func(b): robbery.crack_till(b))
+	interior.vault_requested.connect(_open_bankjob)
 	robbery.alarm_rang.connect(func(_id): interior.ring_alarm())
 	interior.extras_cb = func(id: String) -> Dictionary:
 		var h: Dictionary = robbery.model.house(id)
@@ -482,6 +488,9 @@ func _ready() -> void:
 	drops_view.claim = cave.scoop
 	tree_fall = TreeFallView.new()
 	tree_fall.setup(world, drops_view)
+	forestry_view = ForestryView.new()
+	forestry_view.setup(self)
+	add_child(forestry_view)
 	float_fx = FloatFx.new()
 	world.add_child(float_fx)
 	drops_view.picked.connect(func(id, n): float_fx.pickup(player.position, id, n))
@@ -525,6 +534,7 @@ func _ready() -> void:
 	pause_view.persist_volume = PauseModel.quit_saves(OS.get_cmdline_user_args())
 	if pause_view.persist_volume:
 		pause_view.volume = PauseModel.load_volume()
+		PauseModel.music = PauseModel.load_volume(PauseModel.SETTINGS_PATH, "music", PauseModel.MUSIC_DEFAULT)
 		pause_view.apply_volume()
 	pause_view.chosen.connect(_pause_chosen)
 	add_child(pause_view)
@@ -535,7 +545,7 @@ func _ready() -> void:
 	$HUD.queue_free()
 
 func _overlay_open() -> bool:
-	for v in [shop, dealer, dialogue, inv_view, craft_view, chest_view, cook_view, bus_view, ferry_view, forge_view, butcher_view, smelt_view, upgrade_view, garage_view, journal_view, bike_view, football_view, hoop_view, sports, derby, hangar, jobs.game_view if jobs != null else null]:
+	for v in [shop, dealer, dialogue, inv_view, craft_view, chest_view, cook_view, bus_view, ferry_view, forge_view, butcher_view, smelt_view, upgrade_view, garage_view, journal_view, bike_view, football_view, hoop_view, sports, derby, hangar, bankjob, jobs.game_view if jobs != null else null]:
 		if v != null and v.visible:
 			return true
 	return map_view.is_open() or story_view.log_open() or perk_view.visible or (welcome != null and welcome.active)
@@ -583,6 +593,7 @@ func _setup_welcome(has_save: bool) -> void:
 	welcome.volume_nudged.connect(func(dir: int):
 		pause_view._nudge(dir)
 		welcome.volume = pause_view.volume)
+	welcome.music_nudged.connect(pause_view.nudge_music)
 	welcome.quit_game.connect(func(): get_tree().quit())
 	welcome.open(SaveBoot.summary(GameState.clock.day, GameState.clock.season(), GameState.money) if has_save else "")
 	_welcome_lock(true)
@@ -659,7 +670,7 @@ func _process(delta: float) -> void:
 			get_tree().call_group("vance_gate", "queue_free")   # Act 2 seat earned: the yard gate rolls away
 		goal_arrow.set_kind(GoalArrow.kind(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, "watering_can" in GameState.tools_owned))
 		goal_label.text = "" if _indoors() else GoalText.current(GameState.farm.soil.size(), GameState.farm.crops_planted(), GameState.clock.day, GameState.money, city_seen, GameState.bank_balance, GameState.story.goal_text(), "watering_can" in GameState.tools_owned)
-	if GameState.clock.advance(0.0 if welcome != null and welcome.active else delta):
+	if GameState.clock.advance(0.0 if (welcome != null and welcome.active) or bankjob.visible else delta):
 		_pass_out("late", true)
 	elif PassOut.exhausted(GameState.energy.value) and not _passing_out:
 		_pass_out("exhausted", false)
@@ -843,6 +854,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, 1)
 	elif e is InputEventKey and e.pressed and not e.echo and (e.keycode == KEY_MINUS or e.keycode == KEY_KP_SUBTRACT):
 		player.zoom_step = TargetMath.zoom_step(player.zoom_step, -1)
+	if bankjob.visible:   # above the map, story log, journal and bag
+		get_viewport().set_input_as_handled()
+		return
 	if bike_view.visible:
 		bike_view.handle(e)
 		get_viewport().set_input_as_handled()
@@ -1114,6 +1128,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		player.swing()
 		var cell := _target_cell()
 		var dl: Array = []
+		if forestry_view.use(hotbar.current(), cell):
+			return
 		if hotbar.current() == "crab_pot":
 			if GameState.bag.count("crab_pot") < 1:
 				_say("No crab pots - buy them at the shop")
@@ -1196,6 +1212,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			for i in range(1, extra.size()):
 				if hotbar.current() == "watering_can" and GameState.can.level <= 1:
 					break  # keep a unit for the first tile's use below
+				if GameState.forestry.saplings.has(extra[i]):
+					continue
 				var m2 := ToolUse.apply(hotbar.current(), extra[i], GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, null, dl, axe_table)
 				if m2 != "":
 					line_cells.append(extra[i])
@@ -1203,14 +1221,16 @@ func _unhandled_input(e: InputEvent) -> void:
 						GameState.can.use()
 		if msg.begins_with("Harvested"):
 			_quality_pass(dl, GameState.farm.fert_bonus(cell))
-		if hotbar.current() == "axe" and msg.begins_with("Got") and world.gen.trees.has(cell):
+		if hotbar.current() == "axe" and msg.begins_with("Got") and world.is_tree(cell):
 			dl.clear()  # the felled tree is chopped into logs later (TreeFallView)
+		if hotbar.current() == "axe" and msg.begins_with("Got"):
+			dl.append_array(forestry_view.fell_drops(cell))
 		if hotbar.current() == "pickaxe" and msg.begins_with("Got") and not dl.is_empty() and PerkModel.ore_extra(GameState.perks, randf()) > 0:
 			dl[0]["n"] = int(dl[0]["n"]) + 1
 			msg += " +1 bonus"
 		for d in dl:
 			drops_view.spawn(d["id"], int(d["n"]), TargetMath.center_of(cell) + Vector2(0, 6))
-		if hotbar.current() == "axe" and world.props.has(cell) and world.gen.trees.has(cell):
+		if hotbar.current() == "axe" and world.props.has(cell) and world.is_tree(cell):
 			var tspr := world.prop_sprite(cell)
 			if msg.begins_with("Got"):
 				var tb := (world.props[cell] as Node2D).position
@@ -1802,6 +1822,7 @@ func _end_day() -> void:
 		_say("Your crab pots caught something")
 	GameState.farm.spawn_weeds(GameState.clock.day)
 	GameState.nodes.next_day()
+	forestry_view.new_day()
 	GameState.market.new_day()
 	if GameState.artisan.day_tick() > 0:
 		_say("Something is ready in the barn")
@@ -1814,6 +1835,42 @@ func _end_day() -> void:
 	GameState.energy.new_day(false)
 	world.sync_props(GameState.nodes)
 	GameState.save_game()
+
+func _open_bankjob() -> void:
+	var hr := NpcSchedule.hour_of(GameState.clock.minutes)
+	var day: int = GameState.clock.day
+	var block := BankJob.entry_block(ShopHours.is_open("city_bank", hr), ShopHours.broken_in(GameState.after_hours, "city_bank", day), hr, GameState.vault_day, day)
+	if block != "":
+		_say(block)
+		toast_t = 4.0
+		return
+	player.velocity = Vector2.ZERO
+	player.move_v = Vector2.ZERO
+	player.set_physics_process(false)
+	police.set_process(false)   # no arrest can reach you while the overlay has the controls
+	GameState.vault_day = day   # one try a week, win or lose
+	bankjob.open()
+
+func _bankjob_done(r: Dictionary) -> void:
+	player.set_physics_process(true)
+	police.set_process(true)
+	if bool(r["caught"]):
+		var fine := BankJob.fine_for(GameState.money)
+		GameState.money -= fine
+		police.add_heat(WantedMath.crime_heat("robbery"))
+		_say("Caught in the vault wing! $%d fine, and the bags stay behind." % fine)
+		toast_t = 5.0
+		return
+	if int(r["bags"]) == 0:
+		_say("You slip back out of the vault wing with nothing.")
+		toast_t = 3.0
+		return
+	GameState.money += int(r["cash"])
+	GameState.rep_street += 2 * int(r["bags"])
+	GameState.bump("vault_jobs")
+	police.add_heat(WantedMath.crime_heat("theft"))
+	_say("Vault job: $%d in %d bag(s). Clean getaway!" % [int(r["cash"]), int(r["bags"])])
+	toast_t = 5.0
 
 func _hangar_done(r: Dictionary) -> void:
 	player.set_physics_process(true)

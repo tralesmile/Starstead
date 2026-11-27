@@ -55,6 +55,8 @@ func activate(i: int) -> void:
 			close()
 		"volume":
 			_nudge(1 if volume < PauseModel.VOLUME_STEPS else -PauseModel.VOLUME_STEPS)
+		"music":
+			nudge_music(1 if PauseModel.music < PauseModel.VOLUME_STEPS else -PauseModel.VOLUME_STEPS)
 		"keys":
 			show_keys = true
 		"leave":
@@ -70,6 +72,17 @@ func _nudge(dir: int) -> void:
 	if persist_volume:
 		PauseModel.store_volume(volume)
 
+func nudge_music(dir: int) -> void:
+	PauseModel.music = PauseModel.step_volume(PauseModel.music, dir)
+	if persist_volume:
+		PauseModel.store_volume(PauseModel.music, PauseModel.SETTINGS_PATH, "music")
+
+func _nudge_row(id: String, dir: int) -> void:
+	if id == "music":
+		nudge_music(dir)
+	else:
+		_nudge(dir)
+
 func handle_key(e: InputEvent) -> bool:
 	if not active:
 		return false
@@ -84,10 +97,10 @@ func handle_key(e: InputEvent) -> bool:
 		sel = PauseModel.move(sel, -1, count)
 	elif e.is_action_pressed("move_down"):
 		sel = PauseModel.move(sel, 1, count)
-	elif e.is_action_pressed("move_left") and _rows()[sel] == "volume":
-		_nudge(-1)
-	elif e.is_action_pressed("move_right") and _rows()[sel] == "volume":
-		_nudge(1)
+	elif e.is_action_pressed("move_left") and _rows()[sel] in ["volume", "music"]:
+		_nudge_row(_rows()[sel], -1)
+	elif e.is_action_pressed("move_right") and _rows()[sel] in ["volume", "music"]:
+		_nudge_row(_rows()[sel], 1)
 	elif e.is_action_pressed("interact") or (e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ENTER, KEY_KP_ENTER]):
 		activate(sel)
 	elif e is InputEventMouseMotion:
@@ -98,9 +111,9 @@ func handle_key(e: InputEvent) -> bool:
 		var i := PauseModel.row_at(_c.get_local_mouse_position(), count)
 		if i >= 0:
 			sel = i
-			if _rows()[i] == "volume":
+			if _rows()[i] in ["volume", "music"]:
 				var left: bool = _c.get_local_mouse_position().x < PauseModel.row_rect(i, count).get_center().x
-				_nudge(-1 if left else 1)
+				_nudge_row(_rows()[i], -1 if left else 1)
 			else:
 				activate(i)
 	_c.queue_redraw()

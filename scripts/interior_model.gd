@@ -68,7 +68,7 @@ static func layout(kind: String) -> Dictionary:
 			return {"w": 9, "h": 6, "door_x": 4, "window_x": [2, 6], "furniture": [
 				_f("teller", "int_teller", 3, 1, 2, 1, true, "bank"),
 				_f("teller2", "int_teller", 5, 1, 2, 1),
-				_f("vault", "int_vault", 8, 0, 1, 1),
+				_f("vault", "int_vault", 8, 0, 1, 1, true, "vaultjob"),
 				_f("desk", "int_desk", 0, 1, 2, 1),
 				_f("rug", "int_rug", 3, 3, 3, 2, false),
 				_f("mat", "int_mat", 4, 5, 1, 1, false)]}

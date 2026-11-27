@@ -9,7 +9,7 @@ var selected := 0
 var locked := false   # an overlay owns the number keys
 var seed_ids: Array = []   # every seed in crops.json; the seed slot plants the chosen one
 var seed_idx := 0
-const PLACEABLES := ["sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow"]   # slot 0 holds both; press its key again to switch
+const PLACEABLES := ["sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow", "acorn", "pine_cone"]   # slot 0 holds both; press its key again to switch
 var place_idx := 0
 var melee_idx := 0   # the club slot switches to the bow once you own one (press 8 again)
 var canvas: Control

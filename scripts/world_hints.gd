@@ -29,6 +29,12 @@ static func text(m) -> String:
 		ctx["node_kind"] = n.kind
 		ctx["node_hp"] = n.hp
 		ctx["stump_days"] = n.stump_days
+		if n.kind == "big_stump":
+			var axes: Dictionary = m.axe_table
+			ctx["axe_power"] = ToolUse.axe_power(GameState.bag, axes, "axe")
+		return HintModel.for_context(ctx)
+	if GameState.forestry.saplings.has(cell):
+		ctx["sapling_days"] = GameState.forestry.days_left(cell)
 		return HintModel.for_context(ctx)
 	var own := Vector2i(floori(p.x / 32.0), floori(p.y / 32.0))
 	var farm: FarmModel = GameState.farm

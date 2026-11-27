@@ -8,10 +8,12 @@ const SETTINGS_PATH := "user://settings.json"
 const PANEL_W := 220.0
 const ROW_H := 24.0
 const SCREEN := Vector2(640, 360)
+const MUSIC_DEFAULT := 7
+static var music := MUSIC_DEFAULT    # music level in VOLUME_STEPS, on top of the master volume
 
 ## Row ids in order. `leave` is "" outdoors, else the place name ("building" / "mine").
 static func rows(leave: String = "") -> Array:
-	var out := ["resume", "save", "volume", "sound", "keys"]
+	var out := ["resume", "save", "volume", "music", "sound", "keys"]
 	if leave != "":
 		out.append("leave")
 	out.append("quit")
@@ -22,6 +24,7 @@ static func label(id: String, volume: int, muted: bool, leave: String = "") -> S
 		"resume": return "Resume"
 		"save": return "Save game"
 		"volume": return "< Volume %d%% >" % (volume * 100 / VOLUME_STEPS)
+		"music": return "< Music off >" if music <= 0 else "< Music %d%% >" % (music * 100 / VOLUME_STEPS)
 		"sound": return "Sound: %s" % ("off" if muted else "on")
 		"keys": return "Controls"
 		"leave": return "Leave the %s" % leave
@@ -57,17 +60,24 @@ static func row_at(p: Vector2, count: int) -> int:
 static func quit_saves(args: PackedStringArray) -> bool:
 	return args.is_empty() or ("--continue" in args)
 
-static func clean_volume(d) -> int:
-	if d is Dictionary and d.has("volume") and (d["volume"] is float or d["volume"] is int):
-		return clampi(int(d["volume"]), 0, VOLUME_STEPS)
-	return VOLUME_STEPS
+static func clean_volume(d, key := "volume", fallback := VOLUME_STEPS) -> int:
+	if d is Dictionary and d.has(key) and (d[key] is float or d[key] is int):
+		return clampi(int(d[key]), 0, VOLUME_STEPS)
+	return fallback
 
-static func load_volume(path: String = SETTINGS_PATH) -> int:
+static func read_settings(path: String = SETTINGS_PATH) -> Dictionary:
 	if not FileAccess.file_exists(path):
-		return VOLUME_STEPS
-	return clean_volume(JSON.parse_string(FileAccess.get_file_as_string(path)))
+		return {}
+	var d = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return d if d is Dictionary else {}
 
-static func store_volume(volume: int, path: String = SETTINGS_PATH) -> void:
+static func load_volume(path: String = SETTINGS_PATH, key := "volume", fallback := VOLUME_STEPS) -> int:
+	return clean_volume(read_settings(path), key, fallback)
+
+## Writes one setting and keeps the others.
+static func store_volume(volume: int, path: String = SETTINGS_PATH, key := "volume") -> void:
+	var d := read_settings(path)
+	d[key] = volume
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"volume": volume}))
+		f.store_string(JSON.stringify(d))

@@ -8,6 +8,7 @@ signal new_game
 signal quit_game
 signal sound_toggled
 signal volume_nudged(dir: int)
+signal music_nudged(dir: int)
 
 var active := false
 var armed := false      # "New farm" pressed once: the next press wipes
@@ -62,6 +63,8 @@ func activate(i: int) -> void:
 				armed = true
 		"volume":
 			volume_nudged.emit(1 if volume < PauseModel.VOLUME_STEPS else -PauseModel.VOLUME_STEPS)
+		"music":
+			music_nudged.emit(1 if PauseModel.music < PauseModel.VOLUME_STEPS else -PauseModel.VOLUME_STEPS)
 		"sound":
 			sound_toggled.emit()
 		"keys":
@@ -88,8 +91,8 @@ func handle_key(e: InputEvent) -> bool:
 		_move(-1)
 	elif e.is_action_pressed("move_down") or (key and e.keycode == KEY_DOWN):
 		_move(1)
-	elif rows()[sel] == "volume" and (e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
-		volume_nudged.emit(-1 if e.is_action_pressed("move_left") else 1)
+	elif rows()[sel] in ["volume", "music"] and (e.is_action_pressed("move_left") or e.is_action_pressed("move_right")):
+		_nudge_row(rows()[sel], -1 if e.is_action_pressed("move_left") else 1)
 	elif e.is_action_pressed("interact") or (key and e.keycode in [KEY_E, KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]):
 		activate(sel)
 	elif e is InputEventMouseMotion:
@@ -101,13 +104,19 @@ func handle_key(e: InputEvent) -> bool:
 		var i := TitleModel.row_at(_c.get_local_mouse_position(), count)
 		if i >= 0:
 			sel = i
-			if rows()[i] == "volume":
+			if rows()[i] in ["volume", "music"]:
 				var left: bool = _c.get_local_mouse_position().x < TitleModel.row_rect(i, count).get_center().x
-				volume_nudged.emit(-1 if left else 1)
+				_nudge_row(rows()[i], -1 if left else 1)
 			else:
 				activate(i)
 	_c.queue_redraw()
 	return true
+
+func _nudge_row(id: String, dir: int) -> void:
+	if id == "music":
+		music_nudged.emit(dir)
+	else:
+		volume_nudged.emit(dir)
 
 ## _input (not _unhandled_input) so no other node (car, jobs, hotbar, map) sees keys under the title.
 func _input(e: InputEvent) -> void:

@@ -12,5 +12,6 @@
 	"pickaxe_copper": {"name": "Copper Pickaxe (power 2)", "needs": {"wood": 2, "copper_bar": 4}, "makes": "pickaxe_copper", "item": true, "count": 1, "limit": 1},
 	"bow": {"name": "Hunting Bow (key 8 swaps club/bow)", "needs": {"wood": 6, "fibre": 4}, "makes": "bow"},
 	"arrow": {"name": "Arrows x5 (wood + fibre)", "needs": {"wood": 1, "fibre": 1}, "makes": "arrow", "item": true, "count": 5},
-	"pickaxe_iron": {"name": "Iron Pickaxe (power 3)", "needs": {"wood": 2, "iron_bar": 4}, "makes": "pickaxe_iron", "item": true, "count": 1, "limit": 1}
+	"pickaxe_iron": {"name": "Iron Pickaxe (power 3)", "needs": {"wood": 2, "iron_bar": 4}, "makes": "pickaxe_iron", "item": true, "count": 1, "limit": 1},
+	"sap_fertiliser": {"name": "Sap Fertiliser x4 (sap + fibre)", "needs": {"sap": 2, "fibre": 1}, "makes": "fertiliser", "item": true, "count": 4}
 }

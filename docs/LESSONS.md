@@ -42,3 +42,5 @@
 - Run 45: do not add code or tests while tools/check.sh is running. Parallel screenshot users must set SHOT_DIR.
 - (run 46) tools/check.sh now takes about 18 minutes, longer than a foreground command may run: start it with nohup in the background and poll /tmp/check.log.
 - (run 46) Tell parallel subagents plainly not to chain git or delete commands onto their test commands; one denied part blocks the whole command.
+- (run 47) Subagents still chain `git status` / `rm -rf` onto commands even when the brief forbids it (3 of 3 this run): say it as the first line of the brief and give them a scratch folder they never need to clean.
+- (run 47) Never leave a bare `cat >> file` without a heredoc in a command: it waits on stdin until the 2 minute timeout.

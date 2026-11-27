@@ -5,6 +5,7 @@ extends Node
 
 var m   # Main
 var sfx := Sfx.new()
+var music := MusicPlayer.new()
 var _money := 0
 var _menu := false
 var _near_water := 0.0
@@ -15,6 +16,7 @@ const TOOL_SOUNDS := {"Tilled": "hoe", "Watered": "water_pour"}
 func setup(main) -> void:
 	m = main
 	add_child(sfx)
+	add_child(music)
 	_money = GameState.money
 	m.player.footstep.connect(_step)
 	m.bow.sound.connect(func(n: String): play(n))
@@ -64,6 +66,13 @@ func _menu_open() -> bool:
 			return true
 	return m.map_view.is_open() or m.story_view.log_open()
 
+func _update_music(hour: float) -> void:
+	var boss: Object = m.cave.boss if m.cave.active else null
+	var fight: bool = boss != null and is_instance_valid(boss) and not (boss.model.state in ["sleep", "dead"])
+	var on_title: bool = m.welcome != null and m.welcome.active
+	music.set_mood(MusicSynth.mood_for(GameState.clock.season(), hour, m.cave.active, fight, on_title))
+	music.duck = 1.0 - 0.4 * clampf(m.weather.now, 0.0, 1.0)
+
 func _process(delta: float) -> void:
 	if m == null:
 		return
@@ -73,6 +82,7 @@ func _process(delta: float) -> void:
 		_near_water = 0.0 if m._indoors() else water_nearness(m.world.gen, m.player.position)
 	var hour := fposmod(6.0 + GameState.clock.minutes / 60.0, 24.0)
 	sfx.set_ambience(SfxSynth.ambience_levels(m.weather.now, hour, GameState.clock.season(), m.interior.active, _near_water, m.cave.active), delta)
+	_update_music(hour)
 	if GameState.money != _money:
 		play("coin", 0.8, 1.0 if GameState.money > _money else 0.82)
 		_money = GameState.money

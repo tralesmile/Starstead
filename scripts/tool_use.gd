@@ -2,6 +2,7 @@ class_name ToolUse
 extends RefCounted
 ## Pure tool application on a target cell. Returns a short message (empty = nothing happened).
 
+const TOO_TOUGH := "Too tough - needs a copper axe (forge)"
 const TOOLS := ["hoe", "watering_can", "turnip_seed", "hand", "axe", "pickaxe", "rod", "club", "scythe", "sprinkler"]
 
 static func held_frame(tool: String) -> int:
@@ -12,7 +13,7 @@ static func apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory,
 	if energy != null and not energy.can_use(tool):
 		return "Too tired"
 	var msg := _apply(tool, cell, farm, inv, season, gen, nodes, drops, axes)
-	if msg != "" and energy != null:
+	if msg != "" and msg != TOO_TOUGH and energy != null:
 		energy.spend(tool)
 	return msg
 
@@ -24,6 +25,8 @@ static func _apply(tool: String, cell: Vector2i, farm: FarmModel, inv: Inventory
 			var r := nodes.hit(cell, tool, axe_power(inv, axes, tool))
 			if r.is_empty():
 				return ""
+			if r.has("blocked"):
+				return TOO_TOUGH
 			if r.has("id"):
 				_give(inv, drops, r.id, r.n)
 				return "Got %d %s" % [r.n, r.id]

@@ -23,11 +23,23 @@ static func for_context(ctx: Dictionary) -> String:
 		if bool(ctx.get("bag_full", false)):
 			return "Bag full: free a slot (Tab) to pick up %s" % ctx["drop_name"]
 		return "Walk over the %s to pick it up" % ctx["drop_name"]
+	if ctx.has("sapling_days"):
+		var sd := int(ctx["sapling_days"])
+		return "Sapling: a tree in %d day%s" % [sd, "" if sd == 1 else "s"]
 	var kind := String(ctx.get("node_kind", ""))
 	if kind != "":
 		var stump := int(ctx.get("stump_days", 0))
 		if stump > 0:
+			if kind == "big_stump":
+				return ""
 			return "Chopped stump: a new tree grows in %d day%s" % [stump, "" if stump == 1 else "s"]
+		if kind == "big_stump":
+			if held != "axe":
+				return equip("axe", "to try this hardwood stump (needs a copper axe)")
+			if int(ctx.get("axe_power", 1)) < int(ResourceNodes.MIN_POWER["big_stump"]):
+				return "Hardwood stump: too tough - needs a copper axe (forge)"
+			var left := int(ctx.get("node_hp", 0))
+			return "F / Click: chop the hardwood stump (%d hp left)" % left
 		var tool := "axe" if kind == "tree" else "pickaxe"
 		var what := "tree" if kind == "tree" else "rock"
 		var yields := "logs" if kind == "tree" else "stone"

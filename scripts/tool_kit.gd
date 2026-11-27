@@ -4,7 +4,7 @@ extends RefCounted
 ## Old saves without a tool list own everything.
 
 const STARTER := ["hoe", "axe", "hand"]
-const ALWAYS := ["turnip_seed", "sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow", "hand"]   # seeds and placeables are gated by the bag count instead
+const ALWAYS := ["turnip_seed", "sprinkler", "crab_pot", "snare", "fertiliser", "scarecrow", "acorn", "pine_cone", "hand"]   # seeds and placeables are gated by the bag count instead
 
 const SWAP_TOOLS := ["bow"]   # tools that share a hotbar slot instead of having their own
 

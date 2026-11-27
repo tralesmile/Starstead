@@ -24,7 +24,7 @@ static func shows(args: PackedStringArray) -> bool:
 
 static func rows(has_save: bool) -> Array:
 	var out := ["continue", "new"] if has_save else ["start"]
-	out.append_array(["volume", "sound", "keys", "quit"])
+	out.append_array(["volume", "music", "sound", "keys", "quit"])
 	return out
 
 static func label(id: String, volume: int, muted: bool, armed: bool) -> String:

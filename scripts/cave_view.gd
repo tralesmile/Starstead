@@ -279,8 +279,11 @@ func _build() -> void:
 	_ladder_tiles()
 	_build_rail()
 	if model.is_boss_floor():
-		_add(HallDecor.new().setup(model, ORIGIN, func() -> BossView: return boss))
+		hall = HallDecor.new().setup(model, ORIGIN, func() -> BossView: return boss)
+		_add(hall)
 		_build_boss()
+
+var hall: HallDecor
 
 func _build_boss() -> void:
 	var days: int = int(boss_ready_cb.call()) if boss_ready_cb.is_valid() else 0
@@ -294,6 +297,7 @@ func _build_boss() -> void:
 	boss.shake.connect(func(a, s): player.shake(a, s))
 	boss.sound.connect(func(n, g, p): sound.emit(n, g, p))
 	boss.message.connect(func(m): message.emit(m))
+	boss.prop_hit.connect(func(c, kind): hall.knock(c, kind))
 	boss.defeated.connect(func(pos): boss_defeated.emit(pos))
 	boss.z_index = -10   # warning rings lie on the floor, under everyone's feet
 	_add(boss)

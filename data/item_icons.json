@@ -126,5 +126,9 @@
  "warden_core": 109,
  "pickaxe_gold": 110,
  "deep_lamp": 111,
+ "acorn": 112,
+ "pine_cone": 113,
+ "sap": 114,
+ "hardwood": 115,
  "franchise_deed": 77
 }

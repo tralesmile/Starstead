@@ -1,0 +1,8 @@
+{
+ "grow_days": 6,
+ "seeds": {"oak": "acorn", "pine": "pine_cone"},
+ "seed_chance": 0.4,
+ "sap_chance": 0.5,
+ "sap_max": 2,
+ "stump_spots": [[24, 28], [41, 37], [-70, 44], [-96, 12], [-78, 22], [-90, -24], [-120, 50]]
+}

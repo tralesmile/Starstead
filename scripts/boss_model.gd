@@ -49,6 +49,8 @@ const BOULDER_MIN_SPEED := 70.0
 const BOULDER_MAX_AGE := 6.0
 const BOULDER_BOUNCE_V := 25.0  # softer contacts (grazes) do not count as a bounce
 const BOULDER_SPAWN := 24.0
+const PILLAR_BREAK_SPEED := 90.0    # into a pillar faster than this the boulder breaks: pillars are cover
+const BRAZIER_KEEP := 0.7           # speed left after ploughing through a brazier
 const BOULDER_HIT_R := 17.0     # boulder plus the player's feet
 const BOULDER_DAMAGE := 12.0    # at BOULDER_SPEED
 const BOULDER_FORCE_PER_SPEED := 0.0075   # knockback force per px/s
@@ -80,6 +82,7 @@ var _wake_pending := false
 var _enrage_told := false
 var solid := Callable()         # (cell: Vector2i) -> bool, e.g. CaveModel.is_solid; unset = open ground
 var grid_origin := Vector2.ZERO # world position of cell (0, 0)
+var props: Array = []           # hall props in the boulder's way: {kind: pillar|brazier, rect: Rect2 (world), cell}
 var boulder: Dictionary = {}    # see new_boulder(); empty when none is rolling
 var aim_dir := Vector2.DOWN
 var far_t := 0.0                # how long the player has been keeping their distance
@@ -200,7 +203,54 @@ func aim_locked() -> bool:
 ## Where a boulder thrown along aim_dir starts: in front of the Warden, or at its feet when a wall is there.
 func throw_origin() -> Vector2:
 	var at := pos + aim_dir * BOULDER_SPAWN
-	return at if wall_contact(at, BOULDER_R, solid, grid_origin).is_empty() else pos
+	var blocked := not wall_contact(at, BOULDER_R, solid, grid_origin).is_empty() or prop_touching(at, BOULDER_R, props, "pillar") >= 0
+	return pos if blocked else at
+
+static func prop_rect(cell: Vector2i, origin: Vector2) -> Rect2:
+	## The footprint a standing hall prop blocks (matches HallDecor's collider).
+	return Rect2(origin + Vector2(cell) * TILE + Vector2(3, 0), Vector2(26, 28))
+
+static func rect_contact(at: Vector2, radius: float, r: Rect2) -> Dictionary:
+	## Circle against a box: {normal (out of the box), depth}; {} when clear.
+	var off := at - at.clamp(r.position, r.end)
+	var d := off.length()
+	if d > 0.001:
+		return {} if d >= radius - 0.001 else {"normal": off / d, "depth": radius - d}
+	var faces := [[at.x - r.position.x, Vector2.LEFT], [r.end.x - at.x, Vector2.RIGHT],
+		[at.y - r.position.y, Vector2.UP], [r.end.y - at.y, Vector2.DOWN]]
+	var near: Array = faces[0]
+	for f in faces:
+		if float(f[0]) < float(near[0]):
+			near = f
+	return {"normal": near[1], "depth": radius + float(near[0])}
+
+static func prop_touching(at: Vector2, radius: float, list: Array, kind: String) -> int:
+	## Index of the first prop of `kind` overlapping the circle, or -1.
+	for i in list.size():
+		if String(list[i]["kind"]) == kind and not rect_contact(at, radius, list[i]["rect"]).is_empty():
+			return i
+	return -1
+
+static func hit_props(b: Dictionary, list: Array) -> Dictionary:
+	## The boulder against the hall props. A brazier is ploughed through (it leaves `list`, the boulder slows).
+	## A pillar pushes it back; hit hard enough, the boulder breaks on it. Returns {} or {kind, cell, impact, shatter}.
+	var br := prop_touching(b["pos"], BOULDER_R, list, "brazier")
+	if br >= 0:
+		var speed := (b["vel"] as Vector2).length()
+		var cell: Vector2i = list[br]["cell"]
+		list.remove_at(br)
+		b["vel"] = (b["vel"] as Vector2) * BRAZIER_KEEP
+		return {"kind": "brazier", "cell": cell, "impact": speed, "shatter": false}
+	var pi := prop_touching(b["pos"], BOULDER_R, list, "pillar")
+	if pi < 0:
+		return {}
+	var c := rect_contact(b["pos"], BOULDER_R, list[pi]["rect"])
+	var normal: Vector2 = c["normal"]
+	var v: Vector2 = b["vel"]
+	var into := maxf(0.0, -v.dot(normal))
+	b["pos"] = (b["pos"] as Vector2) + normal * float(c["depth"])
+	b["vel"] = bounce_velocity(v, normal, BOULDER_RESTITUTION)
+	return {"kind": "pillar", "cell": list[pi]["cell"], "impact": into, "shatter": into >= PILLAR_BREAK_SPEED}
 
 func recover_time() -> float:
 	if _punish:
@@ -294,13 +344,15 @@ static func knock_force(speed: float) -> float:
 static func boulder_damage(speed: float) -> float:
 	return BOULDER_DAMAGE * clampf(speed / BOULDER_SPEED, 0.0, 1.2)
 
-static func trace_lane(from: Vector2, dir: Vector2, is_solid: Callable, origin: Vector2, max_len := 440.0, stub := 56.0) -> PackedVector2Array:
+static func trace_lane(from: Vector2, dir: Vector2, is_solid: Callable, origin: Vector2, max_len := 440.0, stub := 56.0, list: Array = []) -> PackedVector2Array:
 	## The warning lane: [start, first wall (or full reach)], plus a short third point showing the rebound.
 	var d := dir.normalized()
 	var at := from
 	var gone := 0.0
 	while gone < max_len:
 		var nxt := at + d * BOULDER_SUBSTEP
+		if prop_touching(nxt, BOULDER_R, list, "pillar") >= 0:
+			return PackedVector2Array([from, at])   # it ends on the pillar: no rebound to warn about
 		var c := wall_contact(nxt, BOULDER_R, is_solid, origin)
 		if not c.is_empty() and d.dot(c["normal"]) < 0.0:
 			var out := bounce_velocity(d, c["normal"], BOULDER_RESTITUTION).normalized()
@@ -338,6 +390,13 @@ func _step_thrown(player: Vector2, dt: float, events: Array) -> void:
 		var v: Vector2 = boulder["vel"]
 		if res["bounced"]:
 			events.append({"type": "bounce", "at": at, "impact": res["impact"]})
+		var struck := hit_props(boulder, props)
+		if not struck.is_empty():
+			at = boulder["pos"]
+			if struck["kind"] == "brazier" or struck["impact"] >= BOULDER_BOUNCE_V:
+				events.append({"type": "prop_hit", "at": at, "kind": struck["kind"], "cell": struck["cell"], "impact": struck["impact"]})
+			if struck["shatter"]:
+				res["shatter"] = true
 		if not boulder["hit"] and at.distance_to(player) <= BOULDER_HIT_R:
 			boulder["hit"] = true
 			events.append({"type": "boulder_hit", "at": at, "hit": true, "vel": v, "damage": boulder_damage(v.length()), "force": knock_force(v.length())})

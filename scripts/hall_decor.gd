@@ -33,7 +33,11 @@ var boss_cb: Callable                      # () -> BossView or null
 var glow: Sprite2D
 var glow_light: PointLight2D
 var glow_now := 0.0
-var flames: Array = []                     # {sprite, light, phase}
+var flames: Array = []                     # {sprite, light, phase, cell, down}
+var pillars: Dictionary = {}               # cell -> Sprite2D
+var cave_origin := Vector2.ZERO
+const BRAZIER_DOWN_SECS := 12.0
+const BRAZIER_TIP := 1.25                  # radians
 var t := 0.0
 
 ## --- pure layout ---
@@ -195,6 +199,60 @@ static func layout(m: CaveModel) -> Array:
 	_scatter(m, r, worn, 5, [7, 8, 1, 7, 2], 2.5, taken, out)
 	return out
 
+## A boulder struck a prop. A brazier tips over and spills its coals (it is relit later); a pillar breaks lower.
+func knock(cell: Vector2i, kind: String) -> void:
+	if kind == "brazier":
+		for f in flames:
+			if f["cell"] == cell and float(f["down"]) <= 0.0:
+				f["down"] = BRAZIER_DOWN_SECS
+				var s: Sprite2D = f["sprite"]
+				var side := 1.0 if cell.x > CaveModel.HALL_CENTRE.x else -1.0
+				var tw := create_tween()
+				tw.tween_property(s, "rotation", BRAZIER_TIP * side, 0.18).set_ease(Tween.EASE_IN)
+				s.modulate = Color(0.62, 0.55, 0.52)
+				_burst(s.position + Vector2(side * 10.0, -8), Color(1.0, 0.55, 0.15), 18, 90.0, 260.0)
+		return
+	var p: Sprite2D = pillars.get(cell)
+	if p == null:
+		return
+	p.frame = broken_frame(p.frame)
+	_burst(p.position + Vector2(0, -30), Color(0.55, 0.52, 0.5), 14, 80.0, 300.0)
+	var home := p.position
+	var tw := create_tween()
+	for dx in [3.0, -2.0, 1.0, 0.0]:
+		tw.tween_property(p, "position", home + Vector2(dx, 0), 0.05)
+
+## Pillar art: frame 0 is the tall shaft, 1 and 2 are broken. Each hit breaks it one step further, down to 2.
+static func broken_frame(frame: int) -> int:
+	return mini(frame + 1, 2)
+
+func _stand_up(f: Dictionary) -> void:
+	var s: Sprite2D = f["sprite"]
+	s.rotation = 0.0
+	s.modulate = Color.WHITE
+	var boss: Object = boss_cb.call() if boss_cb.is_valid() else null
+	if boss != null and is_instance_valid(boss):
+		boss.model.props.append({"kind": "brazier", "cell": f["cell"], "rect": BossModel.prop_rect(f["cell"], cave_origin)})
+
+func _burst(at: Vector2, col: Color, n: int, speed: float, fall: float) -> void:
+	var p := CPUParticles2D.new()
+	p.position = at
+	p.one_shot = true
+	p.emitting = true
+	p.explosiveness = 1.0
+	p.amount = n
+	p.lifetime = 0.55
+	p.direction = Vector2(0, -1)
+	p.spread = 110.0
+	p.initial_velocity_min = speed * 0.4
+	p.initial_velocity_max = speed
+	p.gravity = Vector2(0, fall)
+	p.scale_amount_min = 2.0
+	p.scale_amount_max = 3.0
+	p.color = col
+	add_child(p)
+	get_tree().create_timer(1.0).timeout.connect(p.queue_free)
+
 ## Brightness of the rune light: faint while the hall sleeps, steady in the fight, blazing and pulsing in rage.
 static func glow_level(state: String, enraged: bool, time: float) -> float:
 	if state == "" or state == "dead" or state == "sleep":
@@ -206,6 +264,7 @@ static func glow_level(state: String, enraged: bool, time: float) -> float:
 ## --- the node ---
 func setup(m: CaveModel, origin: Vector2, boss_getter: Callable) -> HallDecor:
 	boss_cb = boss_getter
+	cave_origin = origin
 	y_sort_enabled = true
 	_make_dais(origin)
 	for item in layout(m):
@@ -217,11 +276,11 @@ func setup(m: CaveModel, origin: Vector2, boss_getter: Callable) -> HallDecor:
 				var s := _flat("hall_litter", 9, item["frame"], at + Vector2(16, 12) + (item["off"] as Vector2), LITTER_Z, item["flip"])
 				s.modulate = Color(0.9, 0.9, 0.92)
 			"pillar":
-				_standing("hall_pillar", 3, item["frame"], at + Vector2(16, 27), -27.0, item["flip"])
+				pillars[item["cell"]] = _standing("hall_pillar", 3, item["frame"], at + Vector2(16, 27), -27.0, item["flip"])
 			"brazier":
 				var s := _standing("hall_brazier", 4, 0, at + Vector2(16, 27), -20.0, false)
 				var l := _light(at + Vector2(16, 18), Color(1.0, 0.6, 0.28), 2.2, 0.6)
-				flames.append({"sprite": s, "light": l, "phase": float(item["cell"].x) * 0.7})
+				flames.append({"sprite": s, "light": l, "phase": float(item["cell"].x) * 0.7, "cell": item["cell"], "down": 0.0})
 	return self
 
 func _tex(name: String) -> Texture2D:
@@ -288,5 +347,11 @@ func _process(d: float) -> void:
 	glow_light.energy = glow_now * 0.45
 	for f in flames:
 		var ph: float = f["phase"]
+		if float(f["down"]) > 0.0:
+			f["down"] = float(f["down"]) - d
+			(f["light"] as PointLight2D).energy = 0.12 + 0.05 * sin(t * 23.0 + ph)
+			if float(f["down"]) <= 0.0:
+				_stand_up(f)
+			continue
 		(f["sprite"] as Sprite2D).frame = int(t * 9.0 + ph) % 4
 		(f["light"] as PointLight2D).energy = 0.6 + 0.06 * sin(t * 11.0 + ph) + 0.03 * sin(t * 27.0 + ph * 2.0)

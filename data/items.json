@@ -764,5 +764,25 @@
   "price": 300,
   "stack": 1,
   "rarity": "gold"
+ },
+ "acorn": {
+  "name": "Acorn",
+  "price": 4,
+  "stack": 99
+ },
+ "pine_cone": {
+  "name": "Pine Cone",
+  "price": 4,
+  "stack": 99
+ },
+ "sap": {
+  "name": "Tree Sap",
+  "price": 6,
+  "stack": 99
+ },
+ "hardwood": {
+  "name": "Hardwood",
+  "price": 18,
+  "stack": 99
  }
 }

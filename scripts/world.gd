@@ -16,6 +16,7 @@ var layer: TileMapLayer
 var flower_sprites: Array = []
 var stumps: Dictionary = {}  # cell -> Sprite2D shown while a tree is chopped
 var props: Dictionary = {}  # cell -> StaticBody2D (trees and rocks; ResourceNodes-driven)
+var planted: Dictionary = {}  # cell -> true: trees the player grew from seed (ForestryView)
 var fish: Array[Node2D] = []
 var lily_pads: Array[LilyPad] = []
 var lanterns: Array[Lantern] = []
@@ -225,6 +226,9 @@ func _prop(tex: String, cell: Vector2i, body: Vector2, off: Vector2) -> StaticBo
 	b.add_child(c)
 	add_child(b)
 	return b
+
+func is_tree(cell: Vector2i) -> bool:
+	return gen.trees.has(cell) or planted.has(cell)
 
 func prop_sprite(cell: Vector2i) -> Sprite2D:
 	return props[cell].get_child(0) if props.has(cell) else null

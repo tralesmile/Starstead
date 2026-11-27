@@ -55,7 +55,7 @@ Graphics:
 - [x] Lily pads bob/drift and part around the player (reeds parting still to do)
 - [x] Raised grass bank over shoreline stones (3/4 height illusion: stone face under north banks, sunlit grass lip)
 - [x] Higher-detail player sheet 32x48 (6-frame walk, generic tool-swing pose) via tools/gen_player_hd.py
-- [x] Held tool sprites sweep during the swing (hoe, can, axe, pickaxe, rod, club; tools/gen_tools.py, HitMath.swing_angle). Per-tool body poses still to do
+- [x] Held tool sprites sweep during the swing (hoe, can, axe, pickaxe, rod, club; tools/gen_tools.py, HitMath.swing_angle). Per-tool body poses done in run 47
 - [x] Sun glints on water (twinkling single pixels in ground shader)
 - [x] Foam rings at dock posts (DockFoam)
 - [x] Light rays on water
@@ -141,7 +141,7 @@ Farming + working the land (7)
 - [x] Watering can holds 20 water (refill by using it on water, bar on the hotbar slot, saved; WaterCan). [x] 3x1 line upgrade (done via hoe/can tiers). [x] Sprinkler (shop 120, hotbar 0, waters 3x3 each night, hand picks it up, saved; gen_sprinkler.py). [x] scarecrow (run 17: craft 6 wood+3 fibre+2 hay, slot 0 cycle, crows eat up to a third of ripe crops a night unless a scarecrow is within 6 tiles; FarmModel.crow_raid/scared, saved, sprite + icon)
 - [x] Skill xp + levels (SkillModel: farming/foraging/mining/fishing, +5%/level bonus harvest, shown in bag, saved). [x] Seed packets by season: potato (spring), tomato (summer), pumpkin (autumn) with icons, shop, wrong-season message; press the seed key again to cycle seeds; ripe fruit tinted. [x] crop quality: silver/gold crops by farming level (QualityMath, items share the base icon, cooking accepts them, rarity borders). [x] fertiliser (run 14: craft 2 hay + 1 fibre -> 3 in the C menu, item recipes in crafting.json, hotbar slot 0 cycles sprinkler/crab pot/fertiliser, +12% gold chance on the next harvest, green flecks on the soil, saved; tested)
 Wood chopping (8)
-- [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (sap/seed drops and saplings still to do)
+- [x] Trees take 5 axe hits with canopy wobble + falling leaves, topple away from you (ChopFx), leave a stump (gen_stump.py) and drop wood pickups; regrow after days (run 47: sap/seed drops and saplings done)
 - [x] Axe upgrades (copper/iron) cut faster (ResourceNodes.hit power param done and tested; need items/shop); logs and big stumps need a better axe
 Fishing (6)
 - [x] Fishing visuals: line from the rod tip, bobber that bobs/dips, splash rings, "!" alert, framed reel bar with the fish icon (BobberMath, FishingWorldView). Hold-to-cast done (power bar, 2-7 tiles, CastMath; farther = deeper water)
@@ -250,11 +250,11 @@ Houses, buildings, graphics (5, 10)
 - [ ] Endgame (Act 5), carry house to ship module
 
 ## Run 47 queue
-- [ ] Run 47 Phase 1.5 leftovers: tree seeds + saplings you can plant, sap drops, big stumps/logs that need a better axe (CLAIMED 2026-11-27)
-- [ ] Run 47 Phase 3 slice (Act 2): bank vault job with cameras and a patrolling guard (CLAIMED 2026-11-27)
-- [ ] Run 47 graphics: per-tool body poses (chop/mine, hoe, watering) (CLAIMED 2026-11-27)
-- [ ] Run 47 physics/feel: Warden boulder hits the hall's pillars and braziers (CLAIMED 2026-11-27)
-- [ ] Run 47 weakness fix: music (procedural, no assets) (CLAIMED 2026-11-27)
+- [x] Run 47 Phase 1.5 leftovers: tree seeds + saplings you can plant, sap drops, hardwood stumps/logs that need a copper axe (Forestry, tested, saved). [ ] next: see seed drops and a sapling maturing in play; starter-axe swing should not flash hit effects on hardwood
+- [x] Run 47 Phase 3 slice (Act 2): Halden Bank vault job (BankJob: patrolling guard, two cameras, fuse box, keycard, 4 cash bags, weekly cooldown saved; tested). [ ] next: hands-on difficulty, controller leave button, hangar guards/keycard door
+- [x] Run 47 graphics: per-tool body poses in 4 directions (chop/mine, hoe, watering can, drawn bow; PoseMath tested). [ ] next: hit feedback on the strike frame (it fires on the button press), water droplets from the can, bow hidden behind the head facing up
+- [x] Run 47 physics/feel: the Warden's boulder breaks on pillars (they are cover) and ploughs through braziers, which tip over and are relit after 12 s. [ ] next: hands-on feel of using pillars as cover
+- [x] Run 47 weakness fix: procedural music (7 moods: four seasons, night, mine, boss; MusicSynth/MusicPlayer, Music setting in pause and title). [ ] next: owner listen-through, own title and town themes, more variants per mood
 
 ## Run 46 queue
 - [x] Run 46: title screen (TitleModel + WelcomeView: logo, continue / two-press new farm / start, volume, sound, controls, quit; HUD hidden behind it) and the race START strips only show from a driver's seat. [ ] next: key rebinding, hands-on check with a real keyboard
@@ -276,6 +276,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Run 44 physics/feel: footfalls splash in puddles; cars throw spray, drag in water and aquaplane above 130 px/s (PuddleMath, tested). [ ] next: hands-on check of the aquaplane strength
 
 ## Backlog (ideas found by research; promote into phases)
+- Run 47: generative game music frameworks (search returned titles/links only): https://gamasutra.com/audio/deep-dive-generative-music-in-video-games , https://alexlaverty.github.io/blog/music-thats-never-the-same/ . Applied: composed loops per mood with rests. Idea: layer parts in and out with the time of day instead of cross-fading whole tracks | 2026-11-27
 - Run 46: boss readability and phases (search returned titles only): https://gamedeveloper.com/blogs/designing-for-difficulty-readability-in-arpgs , https://molbv.github.io/blog/2025-07-08-boss-phases.html . Applied: a second attack with its own warning shape and a clear punish window. Idea: introduce each attack alone before mixing them | 2026-11-27
 - Run 42: Stardew-style permanent profession choices (https://stardewvalleywiki.com/Professions, https://www.thegamer.com/stardew-valley-profession-tips-guide/) -> done at level 5; a second choice at level 10 is next | 2026-11-26
 - Run 42 follow-ups: save the car (position, fuel, damage), the player position and robbery memory (none are in the save yet); save on quit or a "save and quit" bed prompt; a title screen with settings | 2026-11-26

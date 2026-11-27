@@ -1162,6 +1162,33 @@ def kelp():
     return i
 icons['kelp'] = kelp
 
+def acorn():
+    i = Ic()
+    i.ell(7.5, 10, 4, 4.5, "#c98a3c"); i.rect(6, 8, 6, 12, "#e8b060"); i.ell(7.5, 6, 5, 2.5, "#7a5030"); i.rect(4, 5, 7, 5, "#9c6c40"); i.rect(8, 2, 9, 3, "#5e3c22")
+    return i
+
+def pine_cone():
+    i = Ic()
+    i.ell(7.5, 9, 4, 5.5, "#8a5630")
+    for y in (6, 9, 12):
+        for x in (5, 8, 11):
+            i.px(x - (y % 2), y, "#c0884c"); i.px(x - (y % 2), y + 1, "#5e381e")
+    i.rect(7, 2, 8, 3, "#4a7a3a")
+    return i
+
+def sap():
+    i = Ic()
+    i.ell(7.5, 10.5, 4.5, 3.8, "#e09a20"); i.line(8, 2, 8, 8, "#e09a20"); i.rect(7, 5, 9, 8, "#e09a20"); i.rect(5, 9, 6, 11, "#ffd860"); i.rect(9, 12, 10, 12, "#a86410")
+    return i
+
+def hardwood():
+    i = Ic()
+    i.rect(2, 6, 11, 12, "#6e3c26"); i.rect(2, 6, 11, 7, "#92583a"); i.line(3, 10, 8, 10, "#4a2618"); i.ell(11, 9, 3, 3.4, "#c47c48"); i.ell(11, 9, 1.2, 1.5, "#8a4c2c")
+    return i
+
+for _f in (acorn, pine_cone, sap, hardwood):
+    icons[_f.__name__] = _f
+
 NEW_IDS = ['scarecrow', 'franchise_deed', 'slime_gel', 'crab_shell', 'copper_vest', 'iron_vest', 'engine_kit', 'grip_tyres', 'bumper_guard', 'lockpick_set', 'snare', 'leather', 'jerky', 'snare_bait', 'leather_vest', 'arrow', 'shell', 'sea_glass', 'pearl', 'kelp']  # appended after the last old icon, in this order
 
 def is_variant(k, keys):

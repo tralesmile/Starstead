@@ -28,8 +28,10 @@ var _last_frame := 0
 var held: Sprite2D
 var refl: Sprite2D
 var fish_pose := -1   # body pose column while casting / reeling (FishingWorldView)
+var bow_drawn := false   # drawn-bow stance while standing still (BowView)
 var held_tool := ""   # set by main when a tool is used
 var swing_total := 0.18
+var pose_hold := -1.0   # QA (--pose-demo): freeze the swing at this 0..1 progress
 var cam_focus := Vector2.ZERO  # dead-zone camera focus (world px)
 var ext_velocity := Vector2.ZERO  # set by the car while driving so the camera can look ahead
 var look := Vector2.ZERO     # eased look-ahead (camera offset), snapped to whole pixels when applied
@@ -154,10 +156,14 @@ func _physics_process(delta: float) -> void:
 	var moving := velocity.length() > 8.0
 	_t = _t + delta if moving else 0.0
 	tool_t -= delta
+	if pose_hold >= 0.0:
+		tool_t = swing_total * (1.0 - pose_hold)
 	if squash_left > 0.0:
 		squash_left = maxf(squash_left - delta, 0.0)
 	sprite.scale = HitMath.squash(squash_left, 0.22)
-	var col := PlayerMath.TOOL_FRAME if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
+	var col := PoseMath.frame(held_tool, PoseMath.progress(tool_t, swing_total)) if tool_t > 0.0 else PlayerMath.walk_frame_hd(_t, moving)
+	if bow_drawn and not moving:
+		col = PoseMath.BOW_DRAWN
 	if fish_pose >= 0 and not moving:
 		col = fish_pose
 	sprite.frame = facing * PlayerMath.SHEET_COLS + col
@@ -211,7 +217,8 @@ func push(from: Vector2, force: float = 1.0) -> void:
 
 func swing() -> void:
 	## Show the tool pose briefly (called by main when a tool is used).
-	tool_t = 0.18
+	swing_total = PoseMath.swing_time(held_tool)
+	tool_t = swing_total
 	squash_left = 0.22
 
 func _update_held() -> void:
@@ -221,9 +228,18 @@ func _update_held() -> void:
 		return
 	held.visible = true
 	held.frame = f
+	held.flip_h = facing == PlayerMath.Facing.LEFT
+	var k := PoseMath.progress(tool_t, swing_total)
+	var col := PoseMath.frame(held_tool, k)
+	if PoseMath.has_grip(col):   # posed tools: the handle sits in the drawn fists
+		held.offset = PoseMath.grip_offset(held_tool, held.flip_h)
+		held.position = PoseMath.grip(col, facing) * sprite.scale
+		held.z_index = -1 if PoseMath.behind(col, facing) else 1
+		held.rotation = PoseMath.rotation_for(PoseMath.tool_deg(held_tool, k, facing), -1.0 if held.flip_h else 1.0)
+		return
+	held.offset = Vector2.ZERO
 	var dir := {PlayerMath.Facing.DOWN: Vector2(7, -12), PlayerMath.Facing.UP: Vector2(-7, -26), PlayerMath.Facing.LEFT: Vector2(-10, -17), PlayerMath.Facing.RIGHT: Vector2(10, -17)}
 	held.position = dir[facing]
-	held.flip_h = facing == PlayerMath.Facing.LEFT
 	held.z_index = -1 if facing == PlayerMath.Facing.UP else 1
-	var a := HitMath.hoe_angle(tool_t, swing_total) if held_tool == "hoe" else (0.0 if held_tool == "bow" else HitMath.swing_angle(tool_t, swing_total))
+	var a := 0.0 if held_tool == "bow" else HitMath.swing_angle(tool_t, swing_total)
 	held.rotation = -a if held.flip_h else a

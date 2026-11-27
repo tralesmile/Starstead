@@ -18,9 +18,10 @@ signal safe_requested(building: Dictionary)
 signal alarm_requested(building: Dictionary)
 signal till_requested(building: Dictionary)
 signal message(msg: String)
+signal vault_requested
 
 const ORIGIN := Vector2(9000, 9000)
-const ACTIONS := ["sleep", "loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence", "artisan"]
+const ACTIONS := ["vaultjob", "sleep","loot", "safe", "alarm", "chest", "cook", "smelt", "forge", "butcher", "garage", "shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence", "artisan"]
 var world: Node2D
 var player: Player
 var active := false
@@ -380,6 +381,7 @@ func prompt() -> String:
 		"loot": return "E: Search the %s" % a["id"]
 		"safe": return "E: Crack the safe"
 		"alarm": return "E: Cut the alarm wire"
+		"vaultjob": return "E: The vault door"
 	var act := ShopHours.counter_action(String(building.get("id", "")), String(a.get("action", "")), float(hour_cb.call()) if hour_cb.is_valid() else 12.0)
 	if act == "till":
 		return "E: Crack the till (closed shop)"
@@ -429,6 +431,9 @@ func interact() -> bool:
 			return true
 		"alarm":
 			alarm_requested.emit(building)
+			return true
+		"vaultjob":
+			vault_requested.emit()
 			return true
 		"shop", "bank", "heal", "fine", "coffee", "notice", "debt", "hoops", "ring", "licence", "business", "upgrade", "huntlicence":
 			if ShopHours.counter_action(String(building.get("id", "")), String(a["action"]), float(hour_cb.call()) if hour_cb.is_valid() else 12.0) == "till":

@@ -71,6 +71,7 @@ func cancel() -> void:
 	drawing = false
 	held_t = 0.0
 	player.aim_slow = 1.0
+	player.bow_drawn = false
 
 func _process(delta: float) -> void:
 	cd = maxf(0.0, cd - delta)
@@ -78,6 +79,9 @@ func _process(delta: float) -> void:
 		held_t += delta
 		player.aim_slow = PlayerMath.draw_slow(BowMath.draw_power(held_t))
 		player.held_tool = "hand"   # the drawn bow is painted here, turned to the aim
+		player.bow_drawn = true
+		if player.move_v.length() < 8.0:
+			player.facing = PlayerMath.facing_for(aim, player.facing)   # the stance turns with the aim
 	var wind := BowMath.wind_accel(rain, PlayerMath.wind_angle(day))
 	for i in range(flying.size() - 1, -1, -1):
 		var a: Dictionary = flying[i]

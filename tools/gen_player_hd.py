@@ -4,12 +4,15 @@
 Run from repo root:  python3 tools/gen_player_hd.py
 Writes assets/sprites/player_hd.png and a 4x preview to /tmp/player_hd_preview.png.
 
-Layout: 384x192, frames 32 wide x 48 tall, 12 columns x 4 rows.
+Layout: 672x192, frames 32 wide x 48 tall, 21 columns x 4 rows.
   rows:    0 = down (front), 1 = left, 2 = up (back), 3 = right
   columns: 0 = idle, 1-6 = walk (contact, down, passing, contact, down, passing),
            7 = tool swing (arms raised forward/overhead, leaning into the facing direction),
            8 = cast wind-up, 9 = cast follow-through, 10-11 = reeling (the rod itself is drawn
-           in code, scripts/fishing_world_view.gd; its grip is 6px to the side, 13px above the feet)
+           in code, scripts/fishing_world_view.gd; its grip is 6px to the side, 13px above the feet),
+           12-14 = heavy tool (wind-up overhead, strike bent forward, recover),
+           15-17 = hoe (reach, chop down, drag back), 18-19 = watering can (held out, leaning pour),
+           20 = drawn bow. The fist positions of 12-20 are mirrored in scripts/pose_math.gd (GRIPS).
 Feet bottom on y = 46, body centred on x = 16 (the boundary between pixel columns 15 and 16).
 
 Same design as player.png (tools/gen_sprites.py): chunky bearded man, brown hair and beard,
@@ -204,6 +207,10 @@ POSES = [
 
 # columns 8..11, player sheet only (make_sheet() defaults to POSES, which gen_npcs.py shares)
 FISH_POSES = [dict(fish="wind"), dict(fish="cast"), dict(fish="reel_a"), dict(fish="reel_b")]
+
+# columns 12..20, per-tool body poses (see TOOL_FRONT / TOOL_SIDE below)
+TOOL_POSES = [dict(work=k) for k in ("heavy_wind", "heavy_strike", "heavy_recover",
+                                     "hoe_reach", "hoe_chop", "hoe_drag", "can_hold", "can_pour", "bow")]
 
 
 # ================================================================ front / back views
@@ -692,19 +699,127 @@ def draw_side_fish(L, kind):
     return cv
 
 
+# ================================================================ per-tool body poses
+# front/back: hb = head offset, tb = torso offset, wide = braced stance, then left/right arm as
+# (elbow, hand) in frame pixels (hand None = sleeve only, the fist is hidden). under = arms drawn
+# behind the body (back view reaching away from the camera, or fists hidden in front of the chest).
+def arms(le, lh, re, rh, hb=0, tb=0, wide=1, under=False):
+    return dict(l=(le, lh), r=(re, rh), hb=hb, tb=tb, wide=wide, under=under)
+
+
+TOOL_FRONT = {
+    "heavy_wind": arms((5.4, 17.0), (13.8, 8.0), (26.6, 17.0), (18.2, 8.0), hb=-1),
+    "heavy_strike": arms((6.6, 35.0), (13.8, 39.0), (25.4, 35.0), (18.2, 39.0), hb=4, tb=2, wide=2),
+    "heavy_recover": arms((6.4, 33.0), (13.8, 33.6), (25.6, 33.0), (18.2, 33.6), hb=1, tb=1),
+    "hoe_reach": arms((5.6, 29.0), (13.8, 30.6), (26.4, 29.0), (18.2, 30.6), hb=-1),
+    "hoe_chop": arms((7.0, 34.6), (13.8, 38.0), (25.0, 34.6), (18.2, 38.0), hb=3, tb=1, wide=2),
+    "hoe_drag": arms((4.8, 31.0), (13.8, 35.0), (27.2, 31.0), (18.2, 35.0), hb=2, tb=1),
+    "can_hold": arms((8.0, 31.0), None, (26.4, 32.0), (22.0, 33.4), hb=0),
+    "can_pour": arms((6.4, 33.0), (15.4, 36.0), (25.6, 33.6), (21.0, 35.4), hb=3, tb=1, wide=2),
+    "bow": arms((8.0, 33.0), (15.0, 37.0), (28.0, 29.4), (20.0, 29.6), hb=0, wide=2),
+}
+TOOL_BACK = {
+    "heavy_wind": arms((5.6, 18.4), (13.8, 9.0), (26.4, 18.4), (18.2, 9.0), hb=1),
+    "heavy_strike": arms((4.8, 31.0), (9.0, 23.0), (27.6, 29.6), (26.4, 22.4), hb=3, tb=2, wide=2, under=True),
+    "heavy_recover": arms((5.2, 31.6), (11.0, 32.0), (28.0, 30.0), (26.4, 28.4), hb=1, tb=1, under=True),
+    "hoe_reach": arms((5.6, 28.0), (6.4, 21.4), (26.8, 27.0), (26.4, 19.6), hb=-1, under=True),
+    "hoe_chop": arms((4.8, 31.0), (9.0, 23.0), (27.6, 30.0), (26.4, 23.6), hb=3, tb=1, wide=2, under=True),
+    "hoe_drag": arms((4.8, 32.0), (11.0, 33.0), (28.0, 31.0), (26.4, 28.6), hb=2, tb=1, under=True),
+    "can_hold": arms((7.0, 31.0), None, (28.2, 29.6), (26.6, 26.6), under=True),
+    "can_pour": arms((4.8, 31.0), (11.0, 30.0), (28.2, 29.0), (26.6, 24.4), hb=2, tb=1, wide=2, under=True),
+    "bow": arms((5.4, 27.0), (6.6, 20.0), (28.4, 29.0), (22.0, 28.6), wide=2, under=True),
+}
+
+
+def draw_front_work(L, kind, back_view):
+    cv = Canvas()
+    p = (TOOL_BACK if back_view else TOOL_FRONT)[kind]
+    hb, tb = p["hb"], p["tb"]
+    for side in (-1, 1):
+        leg_front(cv, L, side, 0, 0, 0, back_view, p["wide"])
+    shoulders = ((9.0, 26.8 + tb), (23.0, 26.8 + tb))
+
+    def draw_arms():
+        for sh, key, side in zip(shoulders, ("l", "r"), (-1, 1)):
+            elbow, hand = p[key]
+            if hand is None:  # idle arm hanging at the side
+                arm_front(cv, L, side, 0.0, tb, back_view)
+            else:
+                bent_arm(cv, L, sh, elbow, hand, hand_r=1.8)
+
+    if p["under"]:
+        draw_arms()
+    torso_front(cv, L, tb, back_view)
+    (head_back if back_view else head_front)(cv, L, hb)
+    if not p["under"]:
+        draw_arms()
+    cv.outline()
+    return cv
+
+
+# side view (faces right): same keys as SIDE_FISH, hb = head drop
+TOOL_SIDE = {
+    "heavy_wind": dict(head=-2, hb=0, torso=(-1, -2), b=0, feet=(4, -4),
+                       near=((9.0, 20.0), (13.6, 8.6)), far=((22.4, 19.6), (15.6, 9.4))),
+    "heavy_strike": dict(head=4, hb=4, torso=(0, 4), b=2, feet=(5, -4),
+                         near=((20.6, 35.6), (26.8, 37.4)), far=((24.0, 34.0), (28.4, 36.4))),
+    "heavy_recover": dict(head=2, hb=2, torso=(0, 2), b=1, feet=(5, -4),
+                          near=((17.6, 33.8), (25.4, 32.6)), far=((23.0, 31.6), (27.2, 31.4))),
+    "hoe_reach": dict(head=0, hb=0, torso=(0, 0), b=0, feet=(4, -3),
+                      near=((20.4, 30.6), (27.0, 25.4)), far=((24.0, 28.6), (28.6, 24.6))),
+    "hoe_chop": dict(head=3, hb=3, torso=(0, 3), b=1, feet=(5, -4),
+                     near=((19.4, 34.4), (26.2, 35.4)), far=((23.6, 33.0), (27.8, 34.4))),
+    "hoe_drag": dict(head=1, hb=2, torso=(-1, 2), b=1, feet=(5, -4),
+                     near=((11.4, 32.6), (21.4, 34.0)), far=((19.0, 33.4), (23.4, 33.2))),
+    "can_hold": dict(head=0, hb=0, torso=(0, 1), b=0, feet=(3, -3),
+                     near=((19.0, 32.8), (26.0, 31.0)), far=None),
+    "can_pour": dict(head=3, hb=2, torso=(0, 3), b=1, feet=(5, -4),
+                     near=((20.4, 33.4), (27.0, 32.4)), far=((24.0, 32.0), (28.4, 31.4))),
+    "bow": dict(head=0, hb=0, torso=(-1, 0), b=0, feet=(5, -4),
+                near=((8.2, 26.8), (18.4, 27.6)), far=((23.0, 28.0), (28.8, 27.6))),
+}
+
+
+def draw_side_work(L, kind):
+    cv = Canvas()
+    p = TOOL_SIDE[kind]
+    b = p["b"]
+    shift, tip = p["torso"]
+    sx = CX + 0.5 + shift + tip * 0.5
+    near_sh, far_sh = (sx - 0.5, 27.8 + b), (sx + 0.5, 27.8 + b)
+    if p["far"]:
+        bent_arm(cv, L, far_sh, *p["far"], far=True)
+    else:
+        arm_side(cv, L, -0.3, b, True)
+    leg_side(cv, L, p["feet"][1], 0, 0, True, True)
+    leg_side(cv, L, p["feet"][0], 0, 0, False, True)
+    torso_side(cv, L, b, shift, tip)
+    head_side(cv, L, p["hb"], p["head"])
+    bent_arm(cv, L, near_sh, *p["near"], hand_r=1.8)
+    cv.outline()
+    return cv
+
+
 # ================================================================ sheet
 def make_sheet(poses=POSES):
     sheet = Image.new("RGBA", (FW * len(poses), FH * 4), (0, 0, 0, 0))
     for row, direction in enumerate(("down", "left", "up", "right")):
         for col, pose in enumerate(poses):
             fish = pose.get("fish")
+            work = pose.get("work")
             if direction in ("down", "up"):
                 back = direction == "up"
-                cv = draw_front_fish(Light(), fish, back) if fish else draw_front(Light(), pose, back)
+                if work:
+                    cv = draw_front_work(Light(), work, back)
+                else:
+                    cv = draw_front_fish(Light(), fish, back) if fish else draw_front(Light(), pose, back)
                 im = cv.image()
             else:  # left: right-facing figure under mirrored light, then flipped
                 L = Light(mirror=direction == "left")
-                im = (draw_side_fish(L, fish) if fish else draw_side(L, pose)).image()
+                if work:
+                    im = draw_side_work(L, work).image()
+                else:
+                    im = (draw_side_fish(L, fish) if fish else draw_side(L, pose)).image()
                 if direction == "left":
                     im = im.transpose(Image.FLIP_LEFT_RIGHT)
             sheet.paste(im, (col * FW, row * FH))
@@ -718,7 +833,7 @@ def preview(sheet, path, s=4):
 
 
 def main():
-    sheet = make_sheet(POSES + FISH_POSES)
+    sheet = make_sheet(POSES + FISH_POSES + TOOL_POSES)
     sheet.save(OUT)
     print("wrote", os.path.relpath(OUT, ROOT), sheet.size)
     preview(sheet, PREVIEW)

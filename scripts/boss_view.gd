@@ -7,6 +7,7 @@ signal defeated(pos: Vector2)
 signal shake(amp: float, secs: float)
 signal sound(name: String, gain: float, pitch: float)
 signal message(msg: String)
+signal prop_hit(cell: Vector2i, kind: String)
 
 var model: BossModel
 var body: Node2D               # y-sorted in the world; this node only draws floor warnings and rocks
@@ -52,6 +53,7 @@ func setup(at: Vector2, p: Player, cm: CaveModel) -> BossView:
 	body.add_child(sprite)
 	model.solid = cm.is_solid
 	model.grid_origin = CaveView.ORIGIN
+	model.props = boulder_props(cm, CaveView.ORIGIN)
 	boulder_node = Node2D.new()
 	boulder_shadow = World.make_shadow(22.0)
 	boulder_shadow.position = Vector2(0, 2)
@@ -75,6 +77,13 @@ func setup(at: Vector2, p: Player, cm: CaveModel) -> BossView:
 	add_child(bar_layer)
 	_place()
 	return self
+
+static func boulder_props(cm: CaveModel, origin: Vector2) -> Array:
+	var out: Array = []
+	for item in HallDecor.layout(cm):
+		if item["solid"]:
+			out.append({"kind": item["kind"], "cell": item["cell"], "rect": BossModel.prop_rect(item["cell"], origin)})
+	return out
 
 func _place() -> void:
 	body.position = model.pos
@@ -119,6 +128,12 @@ func apply_events(events: Array) -> void:
 				_dust(e["at"], 7)
 				_quake(1.0, 0.1)
 				sound.emit("mine", 0.8, 0.65)
+			"prop_hit":
+				prop_hit.emit(e["cell"], e["kind"])
+				var brazier: bool = e["kind"] == "brazier"
+				_dust(e["at"], 8 if brazier else 18)
+				_quake(0.9 if brazier else 1.8, 0.14)
+				sound.emit("chop" if brazier else "mine", 0.9, 0.7 if brazier else 0.55)
 			"boulder_hit":
 				var heading := (e["vel"] as Vector2).normalized()
 				hurt_player.emit(float(e["damage"]), player.position - heading * 8.0, float(e["force"]))
@@ -280,7 +295,7 @@ func _ellipse(at: Vector2, r: float, col: Color, width: float) -> void:
 func _draw_lane() -> void:
 	if model.state != "aim":
 		return
-	var pts := BossModel.trace_lane(model.throw_origin(), model.aim_dir, model.solid, model.grid_origin)
+	var pts := BossModel.trace_lane(model.throw_origin(), model.aim_dir, model.solid, model.grid_origin, 440.0, 56.0, model.props)
 	var from := pts[0]
 	var to := pts[1]
 	var length := from.distance_to(to)

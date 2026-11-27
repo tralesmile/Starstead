@@ -3,7 +3,7 @@ extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --hoopmatch-demo[=lobby|result|world] --fish-demo --chop-demo
 ## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --cook-demo --bag-demo --levelup-demo
-## --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
+## --sapling-demo --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo --pose-demo=axe|pickaxe|club|hoe|can|bow [--pose-phase=0..1 --pose-face=down|left|up|right] (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
 
@@ -107,6 +107,62 @@ func on_ready() -> void:
 		GameState.skill_xp["farming"] = SkillModel.THRESHOLDS[PerkModel.UNLOCK_LEVEL]
 		m.perk_view.open("farming")
 
+## QA: --bankjob-demo[=caught|vault|done|fine].Takes the player's path (night, picked lock, E at the lobby vault door),
+## checks the weekly cooldown survives a save, then poses the room (=done walks out with the bags and prints the take).
+func _bankjob_demo(frame: int) -> void:
+	var view: BankJobView = m.bankjob
+	if frame == 3:
+		GameState.clock.minutes = 17.0 * 60.0   # 23:00
+		ShopHours.mark(GameState.after_hours, "city_bank", "in", GameState.clock.day)
+		for b in m.town.buildings:
+			if String(b["id"]) == "city_bank":
+				m.interior.enter(b)
+	if frame == 14:
+		m.player.position = InteriorView.ORIGIN + Vector2(8.5, 1.5) * 32.0
+	if frame == 16:
+		m.interior.interact()
+		var other: Node = (GameState.get_script() as GDScript).new()
+		other.from_dict(JSON.parse_string(JSON.stringify(GameState.to_dict())))
+		print("BANKJOB open=%s saved_day=%d loaded_day=%d" % [view.visible, GameState.vault_day, other.vault_day])
+		if not view.visible or other.vault_day != GameState.clock.day:
+			printerr("SCRIPT ERROR: bank job did not open or its cooldown was not saved")
+		other.free()
+	if frame == 17 and view.visible:
+		var j: BankJob = view.job
+		view.frozen = true
+		j.t = 1.0
+		j.has_card = true
+		j.pos = Vector2(10.6, 8.4) * 32.0
+		j.hold = 0.7
+		j.hold_id = "fuse"
+		if "--bankjob-demo=vault" in OS.get_cmdline_user_args():
+			j.cams_on = false
+			j.vault_open = true
+			j.taken = [2, 3]
+			j.pos = Vector2(14.4, 2.2) * 32.0
+			j.g_pos = Vector2(344, 150)
+			j.g_face = 0.0
+			j.g_state = BankJob.Guard.SUSPICIOUS
+			j.meter = 0.4
+		elif "--bankjob-demo=caught" in OS.get_cmdline_user_args():
+			j.pos = j.g_pos + Vector2(-50, 10)
+			j.meter = 1.0
+			j.result = "caught"
+		elif "--bankjob-demo=done" in OS.get_cmdline_user_args():
+			j.taken = [0, 1]
+			var before: int = GameState.money
+			j.result = "out"
+			view._finish()
+			print("BANKJOB done money +%d heat %d" % [GameState.money - before, int(m.police.heat)])
+		elif "--bankjob-demo=fine" in OS.get_cmdline_user_args():
+			j.taken = [0, 1]
+			var had: int = GameState.money
+			j.result = "caught"
+			view._finish()
+			print("BANKJOB caught money %d (had %d) heat %d" % [GameState.money, had, int(m.police.heat)])
+	if frame > 17 and view.job.result == "caught":
+		view.end_t = 0.2
+
 func _hoopmatch_demo() -> void:
 	## Screenshot helper: --hoopmatch-demo (live play, your shot meter up) | =lobby | =result | =world (stand at the hoop, press nothing)
 	var args := OS.get_cmdline_user_args()
@@ -139,6 +195,20 @@ func _hoopmatch_demo() -> void:
 	g.selected = int(g.players[maxi(g.owner, 0)]["role"])
 	hv.banner_t = 0.0
 
+## Nearest 7x4 patch of free grass around `from` (for demos that need room).
+func _clear_patch(from: Vector2i) -> Vector2i:
+	for r in range(0, 28):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				var c := from + Vector2i(dx, dy)
+				var ok := true
+				for y in range(-2, 3):
+					for x in range(-3, 4):
+						ok = ok and m.forestry_view._free_ground(c + Vector2i(x, y))
+				if ok:
+					return c
+	return from
+
 func save_roundtrip() -> void:
 	## QA (--save-roundtrip): play a little, save, start over, load, and compare the whole save dictionary.
 	var g := GameState
@@ -157,6 +227,10 @@ func save_roundtrip() -> void:
 	g.skill_xp = {"fishing": 1100}
 	g.choose_perk("fishing", String(PerkModel.options("fishing")[0]["id"]))
 	g.nodes.hit(m.world.gen.trees[0], "axe")
+	g.forestry.plant(pc + Vector2i(2, 3), "acorn")
+	g.forestry.grown[pc + Vector2i(4, 3)] = "pine"
+	g.forestry.register(g.nodes)
+	g.nodes.hit(pc + Vector2i(4, 3), "axe")
 	g.hoops.record(21, 12, 11)
 	m.car.fuel = 21.0
 	m.car.health = 66.0
@@ -270,7 +344,7 @@ func on_process() -> void:
 		if f == 38:
 			m.inv_view.visible = true
 		if f == 55:
-			print("SFX ", m.sfx_director.sfx.play_counts, " ambience ", m.sfx_director.sfx.ambience)
+			print("SFX ", m.sfx_director.sfx.play_counts, " ambience ", m.sfx_director.sfx.ambience, " music ", m.sfx_director.music.starts, " gain ", m.sfx_director.music.gain)
 	if "--perfect-demo" in OS.get_cmdline_user_args() and m.bow.drawing:   # with --bow-demo: hold the string inside the perfect window
 		m.bow.held_t = BowMath.DRAW_TIME + 0.05
 	if "--shop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:  # screenshot helper: the stall with a glut of turnips already sold
@@ -357,6 +431,22 @@ func on_process() -> void:
 		m.player.facing = PlayerMath.Facing.LEFT
 		GameState.warden_day = -1
 		m.cave.boss.model.start_aim(m.player.position)
+	if "--prop-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 62 and m.cave.active and m.cave.boss != null:   # with --cave-demo --cave-floor=6: a boulder thrown at a standing pillar
+		var bm: BossModel = m.cave.boss.model
+		var centre: Vector2 = CaveView.ORIGIN + Vector2(CaveModel.HALL_CENTRE) * 32.0
+		for prop in bm.props:
+			var mid: Vector2 = (prop["rect"] as Rect2).get_center()
+			if prop["kind"] == "pillar" and mid.x < centre.x:
+				var inward := (centre - mid).normalized()
+				bm.pos = mid + inward * 150.0
+				m.player.position = mid + inward * 44.0 + inward.orthogonal() * 90.0
+				GameState.warden_day = -1
+				bm.start_aim(mid)
+				bm.aim_dir = (mid - bm.pos).normalized()
+				bm.set_meta("demo_aim", mid)
+				break
+	if "--prop-demo" in OS.get_cmdline_user_args() and m.cave.active and m.cave.boss != null and m.cave.boss.model.state == "aim" and m.cave.boss.model.has_meta("demo_aim"):
+		m.cave.boss.model.aim_dir = ((m.cave.boss.model.get_meta("demo_aim") as Vector2) - m.cave.boss.model.pos).normalized()
 	if "--cart-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 44 and m.cave.active:   # with --cave-demo: ride the mine cart down the track
 		var at := CartMath.pos_at(m.cave.cart_pts, 0.0)
 		m.player.position = at + Vector2(0, 20)
@@ -388,6 +478,8 @@ func on_process() -> void:
 		m.hangar.open()
 		m.hangar.demo_pos = Vector2(6.5 * 32.0, 6.5 * 32.0)
 		m.hangar.opened = [0]
+	if m._arg_prefix("--bankjob-demo"):
+		_bankjob_demo(Engine.get_process_frames())
 	if m._arg_prefix("--hoopmatch-demo") and Engine.get_process_frames() == 3:
 		_hoopmatch_demo()
 	if "--hoopmatch-demo=world" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 10:   # the real path: press E at the hoop
@@ -583,6 +675,33 @@ func on_process() -> void:
 		GameState.journal.record("carp", 38)
 		GameState.journal.record("carp", 44)
 		m.journal_view.toggle()
+	if "--sapling-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:   # screenshot helper: saplings at three ages, a planted tree, a hardwood stump and a fallen log
+		var fc := _clear_patch(TargetMath.cell_of(m.player.position))
+		m.player.position = TargetMath.center_of(fc)
+		var f := GameState.forestry
+		for i in 3:
+			for row in 2:
+				var c := fc + Vector2i(i - 3, row - 1)
+				f.plant(c, "acorn" if row == 0 else "pine_cone")
+				if f.saplings.has(c):
+					f.saplings[c].age = i * 2
+		f.grown[fc + Vector2i(3, 0)] = "oak"
+		m.forestry_view.spawn_stump(fc + Vector2i(1, 0), 0)
+		m.forestry_view.spawn_stump(fc + Vector2i(1, -1), 1)
+		m.player.facing = PlayerMath.Facing.RIGHT
+		GameState.bag.add("acorn", 3)
+		m.hotbar.selected = 9
+		m.hotbar.place_idx = Hotbar.PLACEABLES.find("acorn")
+		f.rev += 1
+		m.forestry_view.use("acorn", fc + Vector2i(0, 1))   # the real hotbar planting path, then one night's growth
+		m.forestry_view.new_day()
+		var oak := fc + Vector2i(3, 0)
+		m.forestry_view.sync()
+		GameState.nodes.hit(oak, "axe", 99)
+		print("sapling demo: %d saplings, %d acorns left, felled oak sheds %s" % [f.saplings.size(), GameState.bag.count("acorn"), m.forestry_view.fell_drops(oak)])
+		GameState.nodes.nodes[oak].stump_days = 0
+		GameState.nodes.nodes[oak].hp = ResourceNodes.HP["tree"]
+		m.world.sync_props(GameState.nodes)
 	if "--pot-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 3:
 		var pc := TargetMath.cell_of(m.player.position)
 		for dx in range(-3, 0):
@@ -644,7 +763,32 @@ func on_process() -> void:
 	if "--mouse-demo" in OS.get_cmdline_user_args():  # screenshot helper: mouse hovering 2 tiles right of the m.player
 		m.mouse_aim = true
 		m.get_viewport().warp_mouse(Vector2(320 + 2 * 64 + 20, 180 - 10))
+	for a in OS.get_cmdline_user_args():   # screenshot helper: freeze a tool swing (--pose-demo=axe|hoe|can|bow --pose-phase=0..1 --pose-face=down|left|up|right)
+		if a.begins_with("--pose-demo="):
+			_pose_demo(a.substr(12))
 	if "--swing-demo" in OS.get_cmdline_user_args():  # screenshot helper: hold the axe mid-swing
 		m.player.held_tool = "axe"
 		m.player.facing = PlayerMath.Facing.RIGHT
 		m.player.tool_t = 0.14
+
+func _pose_demo(kind: String) -> void:
+	var phase := 0.15
+	var face: int = PlayerMath.Facing.RIGHT
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--pose-phase="):
+			phase = clampf(float(a.substr(13)), 0.0, 0.99)
+		elif a.begins_with("--pose-face="):
+			face = maxi(["down", "left", "up", "right"].find(a.substr(12)), 0)
+	m.player.held_tool = "watering_can" if kind == "can" else kind
+	m.player.facing = face
+	if kind == "bow":   # a half-drawn bow aimed the way the player faces
+		GameState.tools_owned = ToolKit.all_tools()
+		if not "bow" in GameState.tools_owned:
+			GameState.tools_owned.append("bow")
+		m.hotbar.selected = ToolUse.TOOLS.find("club")
+		m.hotbar.melee_idx = 1   # main lowers the bow unless it is the selected hotbar item
+		m.bow.aim = CombatModel.facing_vec(face)
+		m.bow.drawing = true
+		m.bow.held_t = phase
+		return
+	m.player.pose_hold = phase

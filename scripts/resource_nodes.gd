@@ -2,16 +2,21 @@ class_name ResourceNodes
 extends RefCounted
 ## Trees (axe) and rocks (pickaxe): hits to break, drops, tree stump regrows after days.
 
-const HP := {"tree": 5, "rock": 3}
-const DROPS := {"tree": ["wood", 3], "rock": ["stone", 2]}
-const TOOL := {"tree": "axe", "rock": "pickaxe"}
+const HP := {"tree": 5, "rock": 3, "big_stump": 8}
+const DROPS := {"tree": ["wood", 3], "rock": ["stone", 2], "big_stump": ["hardwood", 4]}
+const TOOL := {"tree": "axe", "rock": "pickaxe", "big_stump": "axe"}
+const MIN_POWER := {"big_stump": 2}   # tool power needed to cut at all (2 = copper axe)
 const REGROW_DAYS := 4
+const REGROW := {"big_stump": 7}      # kinds that take longer than REGROW_DAYS to come back
 
 var nodes: Dictionary = {}   # cell -> {"kind", "hp", "stump_days"} ; stump_days>0 means chopped
 var removed_rocks: Dictionary = {}
 
 var mined: Dictionary = {}   # cell -> true: rocks that were broken (kept so a save/reload does not bring them back)
 var saved: Dictionary = {}   # cell -> [hp, stump_days] loaded from a save, applied when the cell registers
+
+static func regrow_days(kind: String) -> int:
+	return int(REGROW.get(kind, REGROW_DAYS))
 
 func add(kind: String, cell: Vector2i) -> void:
 	if kind == "rock" and mined.has(cell):
@@ -21,7 +26,7 @@ func add(kind: String, cell: Vector2i) -> void:
 		var st: Array = saved[cell]
 		saved.erase(cell)
 		nodes[cell].hp = clampi(int(st[0]), 1, HP[kind])
-		nodes[cell].stump_days = clampi(int(st[1]), 0, REGROW_DAYS)
+		nodes[cell].stump_days = clampi(int(st[1]), 0, regrow_days(kind))
 
 func to_array() -> Array:
 	## Only the cells that differ from a fresh world: [x, y, hp, stump_days] for damaged/chopped trees and
@@ -36,6 +41,7 @@ func to_array() -> Array:
 		out.append([c.x, c.y, saved[c][0], saved[c][1]])
 	for c in mined:
 		out.append([c.x, c.y, -1, 0])
+	out.sort()   # same order whatever order the cells registered in (--save-roundtrip compares it)
 	return out
 
 func from_array(a: Array) -> void:
@@ -54,7 +60,7 @@ func from_array(a: Array) -> void:
 				nodes.erase(c)
 			else:
 				nodes[c].hp = clampi(int(e[2]), 1, HP[nodes[c].kind])
-				nodes[c].stump_days = clampi(int(e[3]), 0, REGROW_DAYS)
+				nodes[c].stump_days = clampi(int(e[3]), 0, regrow_days(nodes[c].kind))
 				saved.erase(c)
 
 var seen: Dictionary = {}   # streamed cells already registered (a mined rock must not respawn on reload)
@@ -73,12 +79,14 @@ func hit(cell: Vector2i, tool: String, power: int = 1) -> Dictionary:
 	if not is_solid(cell) or TOOL[nodes[cell].kind] != tool:
 		return {}
 	var n = nodes[cell]
+	if power < int(MIN_POWER.get(n.kind, 0)):
+		return {"blocked": int(MIN_POWER[n.kind])}
 	n.hp -= maxi(power, 1)
 	if n.hp > 0:
 		return {"hit": true, "hp": n.hp}
 	var d: Array = DROPS[n.kind]
-	if n.kind == "tree":
-		n.stump_days = REGROW_DAYS
+	if n.kind != "rock":
+		n.stump_days = regrow_days(n.kind)
 	else:
 		nodes.erase(cell)
 		mined[cell] = true
