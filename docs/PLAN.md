@@ -249,6 +249,12 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 46 queue
+- [ ] Run 46: title screen (continue / new farm / settings / controls / quit) and hide the race START line from a walking new player (CLAIMED 2026-11-27)
+- [ ] Run 46 Phase 3 slice: sports venue jobs at the circuit pit and the Sports Hall (CLAIMED 2026-11-27)
+- [ ] Run 46 graphics: Warden's Hall decor; boss health bar must not cover the Warden (CLAIMED 2026-11-27)
+- [ ] Run 46 physics/feel: a second Stone Warden attack (rolling boulder with real bounce) and footfall shake by distance (CLAIMED 2026-11-27)
+
 ## Run 45 queue (PLAYTEST run)
 - [x] Run 45 PLAYTEST: checklist logged in PLAYTEST.md; worst no (no pause/quit, closing the game lost the day) fixed.
 - [x] Run 45: pause menu (Esc / pad Start: resume, save, volume, sound, controls, leave building or mine, save and quit) + save on window close; wanted heat is saved. [ ] next: title screen, key rebinding
