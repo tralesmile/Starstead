@@ -249,6 +249,13 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 47 queue
+- [ ] Run 47 Phase 1.5 leftovers: tree seeds + saplings you can plant, sap drops, big stumps/logs that need a better axe (CLAIMED 2026-11-27)
+- [ ] Run 47 Phase 3 slice (Act 2): bank vault job with cameras and a patrolling guard (CLAIMED 2026-11-27)
+- [ ] Run 47 graphics: per-tool body poses (chop/mine, hoe, watering) (CLAIMED 2026-11-27)
+- [ ] Run 47 physics/feel: Warden boulder hits the hall's pillars and braziers (CLAIMED 2026-11-27)
+- [ ] Run 47 weakness fix: music (procedural, no assets) (CLAIMED 2026-11-27)
+
 ## Run 46 queue
 - [x] Run 46: title screen (TitleModel + WelcomeView: logo, continue / two-press new farm / start, volume, sound, controls, quit; HUD hidden behind it) and the race START strips only show from a driver's seat. [ ] next: key rebinding, hands-on check with a real keyboard
 - [x] Run 46 Phase 3 slice: venue jobs (Pit Crew, Groundskeeper, Sports Hall Coach; J works inside public workplaces, no longer also opens the fish journal). [ ] next: Sports Hall bonus played by hand
