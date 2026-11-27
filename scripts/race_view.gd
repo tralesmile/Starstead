@@ -18,6 +18,7 @@ var circuit := false                # racing on the Halden circuit (licence need
 var t := 0.0
 var label: Label
 var markers: Array = []
+var gate_nodes: Array[Node2D] = []
 var gates: Array = []               # start line centres (px): the circuit line and the homestead track line
 var rival_nodes: Dictionary = {}
 const RIVAL_TINT := {"rival": Color(0.55, 0.75, 1.3), "rival2": Color(1.3, 1.2, 0.45)}
@@ -46,7 +47,14 @@ func add_gate(pos: Vector2, vertical: bool = false, draw: bool = true) -> void:
 	g.z_index = -8
 	g.set_script(load("res://scripts/start_gate_view.gd"))
 	g.vertical = vertical
+	g.visible = false   # shown while driving (a walking new player took it for something to do on foot)
+	gate_nodes.append(g)
 	world.add_child(g)
+
+## The painted start strips matter only from a driver's seat.
+func _show_gates(on: bool) -> void:
+	for g in gate_nodes:
+		g.visible = on
 
 func at_gate() -> bool:
 	return RaceModel.gate_near(car.position, gates) >= 0
@@ -112,6 +120,7 @@ func _unhandled_input(e: InputEvent) -> void:
 			message.emit("Race length: %d lap%s" % [laps, "s" if laps > 1 else ""])
 
 func _process(delta: float) -> void:
+	_show_gates(car.driving or running)
 	if not running:
 		if not car.driving:
 			label.text = ""

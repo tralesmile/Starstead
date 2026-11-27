@@ -40,3 +40,5 @@
 - Run 44: give a feature subagent a time box in its brief (one took 96 min). A test value must be inside the game's limits (VehicleMath.FUEL_MAX is 40, so a saved 41 was clamped and the check failed). When shader and game logic must agree on a pattern (puddles), generate it once in GDScript and pass it to the shader as a texture.
 - Run 45: ask 'how does a player stop playing?' in playtests: there was no quit/pause and closing lost the day. Demo screens never show a missing screen.
 - Run 45: do not add code or tests while tools/check.sh is running. Parallel screenshot users must set SHOT_DIR.
+- (run 46) tools/check.sh now takes about 18 minutes, longer than a foreground command may run: start it with nohup in the background and poll /tmp/check.log.
+- (run 46) Tell parallel subagents plainly not to chain git or delete commands onto their test commands; one denied part blocks the whole command.

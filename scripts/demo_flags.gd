@@ -27,8 +27,10 @@ func on_ready() -> void:
 		m._open_pause.call_deferred()
 	if "--pause-demo=keys" in OS.get_cmdline_user_args():
 		(func(): m._open_pause(); m.pause_view.show_keys = true; m.pause_view._c.queue_redraw()).call_deferred()
-	if "--welcome-demo" in OS.get_cmdline_user_args():   # screenshot helper: the welcome-back card
-		m._setup_welcome()
+	if "--welcome-demo" in OS.get_cmdline_user_args():   # screenshot helper: the title screen with a save
+		m._setup_welcome(true)
+	if "--title-demo" in OS.get_cmdline_user_args():   # screenshot helper: the title screen, first launch
+		m._setup_welcome(false)
 	if "--save-roundtrip" in OS.get_cmdline_user_args():
 		save_roundtrip.call_deferred()
 	if "--door-demo" in OS.get_cmdline_user_args():   # screenshot helper: two wall runs with doors; you walk up to the right one, the left stays shut
@@ -350,6 +352,11 @@ func on_process() -> void:
 		m.player.facing = PlayerMath.Facing.UP
 		GameState.warden_day = -1
 		m.cave.boss.model.take_hit(400.0 * 0.9)
+	if "--boulder-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 62 and m.cave.active and m.cave.boss != null:   # with --cave-demo --cave-floor=6: the Warden aims a boulder (thrown about 22 frames later at 10 fps)
+		m.player.position = m.cave.boss.model.pos + Vector2(136, 46)
+		m.player.facing = PlayerMath.Facing.LEFT
+		GameState.warden_day = -1
+		m.cave.boss.model.start_aim(m.player.position)
 	if "--cart-demo" in OS.get_cmdline_user_args() and Engine.get_process_frames() == 44 and m.cave.active:   # with --cave-demo: ride the mine cart down the track
 		var at := CartMath.pos_at(m.cave.cart_pts, 0.0)
 		m.player.position = at + Vector2(0, 20)

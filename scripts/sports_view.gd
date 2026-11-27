@@ -57,7 +57,7 @@ func open(m: String) -> bool:
 		you_hp = 40
 		opp = SportsModel.opp_hp(tier)
 		rounds = 0
-		window = SportsModel.bout_window(tier)
+		window = SportsModel.bout_window(tier) + JobModel.new(DataDB.load_json("jobs")).ring_bonus(GameState.job_xp)
 		tele = 0
 		wait_t = rng.randf_range(0.8, 1.6)
 		last_text = "Gloves up! Dodge the telegraphed punch (Left/Right) or jab (Space)"

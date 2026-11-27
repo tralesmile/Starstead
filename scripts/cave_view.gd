@@ -279,6 +279,7 @@ func _build() -> void:
 	_ladder_tiles()
 	_build_rail()
 	if model.is_boss_floor():
+		_add(HallDecor.new().setup(model, ORIGIN, func() -> BossView: return boss))
 		_build_boss()
 
 func _build_boss() -> void:
@@ -297,6 +298,7 @@ func _build_boss() -> void:
 	boss.z_index = -10   # warning rings lie on the floor, under everyone's feet
 	_add(boss)
 	_add(boss.body)
+	_add(boss.boulder_node)
 
 ## --- the mine cart ---
 func _build_rail() -> void:

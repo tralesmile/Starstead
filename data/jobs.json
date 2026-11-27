@@ -348,5 +348,110 @@
     },
     "perk": "rocket",
     "game": "balance"
+  },
+  "pit_crew": {
+    "name": "Pit Crew",
+    "pay": 80,
+    "energy": 32,
+    "xp_per_shift": 13,
+    "hours": {
+      "start": 9,
+      "end": 19
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 10
+    },
+    "ranks": [
+      {
+        "name": "Tyre Carrier",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Wheel Gunner",
+        "pay_mult": 1.3,
+        "xp": 60
+      },
+      {
+        "name": "Crew Chief",
+        "pay_mult": 1.75,
+        "xp": 170
+      }
+    ],
+    "place": "circ_pit",
+    "shift_hours": 4,
+    "perk": "pit",
+    "game": "timing"
+  },
+  "groundskeeper": {
+    "name": "Groundskeeper",
+    "pay": 45,
+    "energy": 25,
+    "xp_per_shift": 10,
+    "hours": {
+      "start": 6,
+      "end": 12
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 0
+    },
+    "ranks": [
+      {
+        "name": "Litter Picker",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Groundskeeper",
+        "pay_mult": 1.25,
+        "xp": 50
+      },
+      {
+        "name": "Head Groundskeeper",
+        "pay_mult": 1.6,
+        "xp": 140
+      }
+    ],
+    "place": "circ_hall",
+    "shift_hours": 3,
+    "perk": "grounds",
+    "game": "balance"
+  },
+  "sparring_partner": {
+    "name": "Sports Hall Coach",
+    "pay": 70,
+    "energy": 35,
+    "xp_per_shift": 12,
+    "hours": {
+      "start": 12,
+      "end": 21
+    },
+    "rep": {
+      "kind": "honest",
+      "min": 5
+    },
+    "ranks": [
+      {
+        "name": "Pad Holder",
+        "pay_mult": 1.0,
+        "xp": 0
+      },
+      {
+        "name": "Sparring Partner",
+        "pay_mult": 1.3,
+        "xp": 60
+      },
+      {
+        "name": "Head Coach",
+        "pay_mult": 1.7,
+        "xp": 160
+      }
+    ],
+    "place": "circ_hall",
+    "shift_hours": 4,
+    "perk": "spar",
+    "game": "sequence"
   }
 }

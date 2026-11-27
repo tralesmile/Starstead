@@ -96,6 +96,8 @@ var demos: DemoFlags
 
 var region_banner: RegionBanner
 var gate_keeper: StoryGate.Keeper
+static var _skip_title := false
+var _title_hidden: Array = []
 
 func _ready() -> void:
 	demos = DemoFlags.new(self)
@@ -251,6 +253,8 @@ func _ready() -> void:
 	if cm.x != RoadNet.NO_CELL:
 		jobs.spots["cave_mouth"] = (Vector2(cm) + Vector2(0.5, 1.8)) * 32.0
 	jobs.message.connect(_say)
+	jobs.car = car
+	jobs.indoor_cb = func() -> String: return String(interior.building.get("id", "")) if interior != null and interior.active else ""
 	add_child(jobs)
 	animals = AnimalView.new()
 	ambient.animals = animals
@@ -517,8 +521,6 @@ func _ready() -> void:
 		if a.begins_with("--hour="):
 			GameState.clock.minutes = (float(a.substr(7)) - 6.0) * 60.0
 	GameState.before_save.connect(_capture_world)
-	if loaded:
-		_setup_welcome()
 	pause_view = PauseView.new()
 	pause_view.persist_volume = PauseModel.quit_saves(OS.get_cmdline_user_args())
 	if pause_view.persist_volume:
@@ -526,6 +528,9 @@ func _ready() -> void:
 		pause_view.apply_volume()
 	pause_view.chosen.connect(_pause_chosen)
 	add_child(pause_view)
+	if loaded or (TitleModel.shows(OS.get_cmdline_user_args()) and not _skip_title):
+		_setup_welcome(loaded)
+	_skip_title = false
 	demos.on_ready()
 	$HUD.queue_free()
 
@@ -557,20 +562,29 @@ func _pause_chosen(id: String) -> void:
 
 ## Closing the window keeps the day: the game used to save only at bedtime and on the ferry.
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and pause_view != null and PauseModel.quit_saves(OS.get_cmdline_user_args()):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and pause_view != null and not (welcome != null and welcome.active) and PauseModel.quit_saves(OS.get_cmdline_user_args()):
 		GameState.save_game()
 
-func _setup_welcome() -> void:
-	## A loaded save puts you, the car and the neighbours' memories back, behind the welcome-back card.
-	player.position = (Vector2(_home_door()) + Vector2(0.5, 1.6)) * 32.0   # old saves: your own door
-	_restore_world()
+func _setup_welcome(has_save: bool) -> void:
+	## The title screen. A loaded save first puts you, the car and the neighbours' memories back.
+	if has_save:
+		player.position = (Vector2(_home_door()) + Vector2(0.5, 1.6)) * 32.0   # old saves: your own door
+		_restore_world()
 	welcome = WelcomeView.new()
 	add_child(welcome)
+	welcome.volume = pause_view.volume
+	welcome.muted = sfx_director.sfx.muted
 	welcome.continued.connect(func(): _welcome_lock(false))
 	welcome.new_game.connect(func():
 		GameState.reset_new()
+		_skip_title = true   # the new farm starts straight away
 		get_tree().reload_current_scene())
-	welcome.open(SaveBoot.summary(GameState.clock.day, GameState.clock.season(), GameState.money))
+	welcome.sound_toggled.connect(func(): welcome.muted = sfx_director.sfx.toggle_mute())
+	welcome.volume_nudged.connect(func(dir: int):
+		pause_view._nudge(dir)
+		welcome.volume = pause_view.volume)
+	welcome.quit_game.connect(func(): get_tree().quit())
+	welcome.open(SaveBoot.summary(GameState.clock.day, GameState.clock.season(), GameState.money) if has_save else "")
 	_welcome_lock(true)
 
 func _capture_world() -> void:
@@ -610,6 +624,20 @@ func _welcome_lock(on: bool) -> void:
 	player.set_physics_process(not on)
 	hotbar.locked = on
 	jobs.set_process_unhandled_input(not on)
+	_title_hud(on)
+
+## A clean title: the HUD, hotbar and key legend are put away until you start.
+func _title_hud(hide_it: bool) -> void:
+	if hide_it:
+		for n in find_children("*", "CanvasLayer", true, false):
+			if n != welcome and n.visible and n.layer >= 0 and n.layer < welcome.layer and not (n is ParallaxBackground):
+				n.visible = false
+				_title_hidden.append(n)
+	else:
+		for n in _title_hidden:
+			if is_instance_valid(n):
+				n.visible = true
+		_title_hidden.clear()
 
 func _process(delta: float) -> void:
 	_overlay_was_open = _overlay_open()
@@ -710,9 +738,11 @@ func _process(delta: float) -> void:
 		if jp != "":
 			prompt.text += "    " + jp
 	if _indoors():
-		prompt.text = interior.prompt() if interior.active else cave.prompt()
+		prompt.text = JobModel.join_prompt(interior.prompt(), "" if interior.busy else jobs.prompt()) if interior.active else cave.prompt()
 	elif prompt.text == "" and not shop.visible:
 		prompt.text = jobs.prompt()
+	elif near.get("kind", "") == "door" and npc_near.is_empty() and not shop.visible:
+		prompt.text = JobModel.join_prompt(prompt.text, jobs.prompt())   # J works on the doorstep, E goes in
 	if prompt.text == "" and not _indoors() and not car.driving and player.position.distance_to(_stall_pos()) < StallTheft.REACH:
 		prompt.text = "T: Swipe something (risky)"
 	var an_near := animals.near(player.position)

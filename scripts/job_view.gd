@@ -1,6 +1,6 @@
 class_name JobView
 extends Node2D
-## Work shifts in play: stand at a workplace (barn, market stall, workshop) and press J.
+## Work shifts in play: stand at a workplace (barn, market stall, workshop) or inside a public one and press J.
 ## Pays money, spends energy, advances the clock, gives xp (promotions) and reputation.
 
 signal message(msg: String)
@@ -8,6 +8,8 @@ signal message(msg: String)
 var model := JobModel.new(DataDB.load_json("jobs"))
 var player: Node2D
 var spots := {}  # place -> Vector2
+var indoor_cb: Callable   # () -> id of the building whose room you are in, "" outdoors
+var car: CarView          # the player's car, for the pit crew perk
 var game_view := ShiftGameView.new()
 var _pending := ""
 
@@ -16,18 +18,19 @@ func setup(p: Node2D, town_buildings: Array, stall_cell: Vector2i) -> void:
 	game_view.finished.connect(_on_game_done)
 	add_child(game_view)
 	for b in town_buildings:
-		spots[String(b["id"])] = TownModel.sprite_bottom_center(b) + Vector2(0, 14)
-	for b in CityModel.buildings():   # police, hospital, cafe, building site
-		spots[String(b["id"])] = TownModel.sprite_bottom_center(b) + Vector2(0, 14)
+		spots[String(b["id"])] = JobModel.door_spot(b)
+	for b in CityModel.buildings() + CircuitModel.buildings():   # police, hospital, cafe, site, pit office, Sports Hall
+		spots[String(b["id"])] = JobModel.door_spot(b)
 	spots["stall"] = (Vector2(stall_cell) + Vector2(0.5, 1.6)) * 32.0
 
 func job_here(radius: float = 60.0) -> String:
 	var hour := 6.0 + GameState.clock.minutes / 60.0
 	var rep := {"honest": GameState.rep_honest, "street": GameState.rep_street}
 	var done := {}
+	var inside := String(indoor_cb.call()) if indoor_cb.is_valid() else ""
 	for id in model.ids():
 		var pl := model.place_of(id)
-		if done.has(pl) or not spots.has(pl) or (spots[pl] as Vector2).distance_to(player.position) >= radius:
+		if done.has(pl) or not JobModel.in_reach(pl, inside, spots, player.position, radius):
 			continue
 		done[pl] = true
 		var pick := model.pick_at(pl, hour, rep, GameState.energy.value, GameState.job_xp)
@@ -37,7 +40,7 @@ func job_here(radius: float = 60.0) -> String:
 
 func prompt() -> String:
 	var id := job_here()
-	if id == "":
+	if id == "" or (car != null and car.driving):
 		return ""
 	var xp := int(GameState.job_xp.get(id, 0))
 	return "J: Work as %s (%s) $%d" % [model.jobs[id]["name"], model.rank_name(id, xp), model.shift_pay(id, xp)]
@@ -96,6 +99,13 @@ func _on_game_done(res: Dictionary) -> void:
 		var q := int(perk["qty"]) + (1 if bool(res.get("perfect", false)) else 0)
 		GameState.add_item(String(perk["item"]), q)
 		msg += "  +%d %s" % [q, String(perk["item"]).replace("_", " ")]
+	if car != null and float(perk["car_fuel"]) > 0.0:
+		var s := JobModel.service_car(car.fuel, car.health, perk)
+		car.fuel = s["fuel"]
+		car.health = s["health"]
+		msg += "  Crew serviced your car (fuel %d%%, health %d%%)" % [int(100.0 * car.fuel / VehicleMath.FUEL_MAX), int(car.health)]
+	if float(perk["ring_window"]) > 0.0:
+		msg += "  Ring training: +%.2fs to dodge" % float(perk["ring_window"])
 	if model.rank_index(id, nxp) > model.rank_index(id, xp):
 		GameState.bump("promotions")
 		msg += "  PROMOTED to %s!" % model.rank_name(id, nxp)
@@ -103,4 +113,7 @@ func _on_game_done(res: Dictionary) -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo and e.keycode == KEY_J:
-		work()
+		if not player.is_physics_processing():
+			return   # driving, a menu or a door fade has the player
+		if work():
+			get_viewport().set_input_as_handled()   # J is also the fish journal: a shift wins at a workplace

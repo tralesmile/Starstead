@@ -196,4 +196,7 @@ static func title_for(job_id: String, k: String) -> String:
 		"mechanic": return "Wrench the bolts - repeat the arrows"
 		"rocket_tech": return "Wire the panel - repeat the arrows"
 		"doctor": return "Run the checks - repeat the arrows"
+		"pit_crew": return "Wheel gun - stop the marker in the green"
+		"groundskeeper": return "Mow straight stripes - LEFT / RIGHT"
+		"sparring_partner": return "Call the combos - repeat the arrows"
 	return {"timing": "Stop the marker in the green", "sequence": "Repeat the arrows", "balance": "Keep the needle in the green"}[k]
