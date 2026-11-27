@@ -249,6 +249,12 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 48 queue
+- [ ] Run 48 Phase 1.5 leftover: rebindable keys (Controls page in pause and title, saved) (CLAIMED 2026-11-27)
+- [ ] Run 48 Phase 3 slice (building system): player-built rooms with a purpose, e.g. shop / garage / bedroom decided by the furniture inside, each doing real work (CLAIMED 2026-11-27)
+- [ ] Run 48 physics/feel: tool hits land on the strike frame of the swing, not on the button press (CLAIMED 2026-11-27)
+- [ ] Run 48 graphics: water pours from the can as droplets that splash on the soil (CLAIMED 2026-11-27)
+
 ## Run 47 queue
 - [x] Run 47 Phase 1.5 leftovers: tree seeds + saplings you can plant, sap drops, hardwood stumps/logs that need a copper axe (Forestry, tested, saved). [ ] next: see seed drops and a sapling maturing in play; starter-axe swing should not flash hit effects on hardwood
 - [x] Run 47 Phase 3 slice (Act 2): Halden Bank vault job (BankJob: patrolling guard, two cameras, fuse box, keycard, 4 cash bags, weekly cooldown saved; tested). [ ] next: hands-on difficulty, controller leave button, hangar guards/keycard door
