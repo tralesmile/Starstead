@@ -249,6 +249,12 @@ Houses, buildings, graphics (5, 10)
 - [ ] Dinosaur/jungle planet (tame and ride dinosaurs), ice planet, desert planet (Act 4)
 - [ ] Endgame (Act 5), carry house to ship module
 
+## Run 49 queue
+- [ ] Run 49 Phase 3 slice (building system): shoppers who walk into your Farm Shop by day, Kitchen and Smithy room types (CLAIMED 2026-11-27)
+- [ ] Run 49 graphics: buildings sit on the ground with contact and sun-cast shadows (CLAIMED 2026-11-27)
+- [ ] Run 49 physics/feel: club and fists land on the strike frame, with a short lunge (CLAIMED 2026-11-27)
+- [ ] Run 49 QA: a real-input check (real clicks and keys) inside tools/check.sh (CLAIMED 2026-11-27)
+
 ## Run 48 queue
 - [x] Run 48 Phase 1.5 leftover: rebindable keys (13 actions, Controls page in pause and title, swap on clash, reset, saved; KeyBinds tested). [ ] next: mouse + gamepad on the page by hand, fixed build/gear keys rebindable, remaining hint sentences that name default keys
 - [x] Run 48 Phase 3 slice (building system): player-built Bedroom, Farm Shop (sells overnight) and Garage (25% off repairs) decided by furniture (RoomModel/FarmShopModel, data/rooms.json, tools/gen_rooms.py, saved, tested). [ ] next: shoppers who walk in, more room types (kitchen, barn, workshop, sports venue), roofs/fade by hand
