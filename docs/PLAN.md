@@ -250,10 +250,11 @@ Houses, buildings, graphics (5, 10)
 - [ ] Endgame (Act 5), carry house to ship module
 
 ## Run 49 queue
-- [ ] Run 49 Phase 3 slice (building system): shoppers who walk into your Farm Shop by day, Kitchen and Smithy room types (CLAIMED 2026-11-27)
-- [ ] Run 49 graphics: buildings sit on the ground with contact and sun-cast shadows (CLAIMED 2026-11-27)
-- [ ] Run 49 physics/feel: club and fists land on the strike frame, with a short lunge (CLAIMED 2026-11-27)
-- [ ] Run 49 QA: a real-input check (real clicks and keys) inside tools/check.sh (CLAIMED 2026-11-27)
+- [x] Run 49 Phase 3 slice (building system): villagers walk into your Farm Shop by day (same daily quota as the night sale), Kitchen (stove + table) and Smithy (anvil + quench tub) rooms (ShopVisit, tested). [ ] next: shoppers who react to what is on the shelves (emote bubbles), barn and sports-venue rooms
+- [x] Run 49 graphics: town, city and circuit buildings get a contact shadow and a sun-cast wedge that swings west to east through the day (BuildingShadow, tested). [ ] next: the same for player-built walls and large props
+- [x] Run 49 physics/feel: club blows land on the strike frame and step the body 5-10 px into the hit (walls still stop it); punches connect after 0.08 s (tested). [ ] next: club hit sparks on the contact point, enemy wind-up telegraphs
+- [x] Run 49 QA: tools/check.sh now drives the running game with real keys and clicks (InputCheck, 16 steps; fails unless it prints its success line)
+- [ ] Run 50 is a PLAYTEST run (docs/PLAYTEST.md checklist)
 
 ## Run 48 queue
 - [x] Run 48 Phase 1.5 leftover: rebindable keys (13 actions, Controls page in pause and title, swap on clash, reset, saved; KeyBinds tested). [ ] next: mouse + gamepad on the page by hand, fixed build/gear keys rebindable, remaining hint sentences that name default keys
@@ -289,6 +290,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Run 44 physics/feel: footfalls splash in puddles; cars throw spray, drag in water and aquaplane above 130 px/s (PuddleMath, tested). [ ] next: hands-on check of the aquaplane strength
 
 ## Backlog (ideas found by research; promote into phases)
+- Run 49: shop-keeping feel, Moonlighter and the shop-sim genre (search returned titles/links only): https://siliconera.com/?p=709874 , https://gamedeveloper.com/design/the-appeal-of-the-shop-simulator-genre . Applied: customers you can watch buy. Idea (from knowledge of Moonlighter, not from these pages): the player sets prices and shoppers react with a face | 2026-11-27
 - Run 47: generative game music frameworks (search returned titles/links only): https://gamasutra.com/audio/deep-dive-generative-music-in-video-games , https://alexlaverty.github.io/blog/music-thats-never-the-same/ . Applied: composed loops per mood with rests. Idea: layer parts in and out with the time of day instead of cross-fading whole tracks | 2026-11-27
 - Run 46: boss readability and phases (search returned titles only): https://gamedeveloper.com/blogs/designing-for-difficulty-readability-in-arpgs , https://molbv.github.io/blog/2025-07-08-boss-phases.html . Applied: a second attack with its own warning shape and a clear punish window. Idea: introduce each attack alone before mixing them | 2026-11-27
 - Run 42: Stardew-style permanent profession choices (https://stardewvalleywiki.com/Professions, https://www.thegamer.com/stardew-valley-profession-tips-guide/) -> done at level 5; a second choice at level 10 is next | 2026-11-26

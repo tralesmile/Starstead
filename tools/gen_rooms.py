@@ -141,10 +141,79 @@ def toolrack():
     save(im, "room_toolrack")
 
 
+def stove():
+    im = canvas(); shadow(im, [0, 40, 31, 47]); d = ImageDraw.Draw(im)
+    block(d, (20, 2, 26, 22), (70, 72, 82), (112, 116, 128), (46, 48, 56))    # flue
+    block(d, (19, 1, 27, 4), STEEL_D, STEEL, (60, 66, 76))
+    block(d, (2, 24, 29, 45), (74, 76, 86), (120, 124, 138), (48, 50, 58))    # iron body
+    block(d, (0, 19, 31, 25), STEEL, STEEL_L, STEEL_D)                          # hotplate
+    d.rectangle([6, 29, 19, 41], fill=(40, 24, 18), outline=OUT)                # fire door
+    d.polygon([(8, 40), (10, 33), (12, 37), (14, 31), (17, 40)], fill=(226, 98, 36))
+    d.polygon([(10, 40), (13, 35), (15, 40)], fill=(250, 200, 80))
+    for x in (9, 12, 15):
+        d.line([x, 30, x, 40], fill=OUT)
+    for y in (30, 35):
+        d.ellipse([23, y, 26, y + 3], fill=CREAM, outline=OUT)
+    block(d, (4, 10, 15, 19), RED, RED_L, RED_D)                                # pot
+    block(d, (3, 9, 16, 12), STEEL, STEEL_L, STEEL_D); d.rectangle([8, 7, 11, 9], fill=WOOD_L, outline=OUT)
+    d.line([8, 5, 9, 3], fill=(236, 240, 244, 200)); d.line([12, 6, 13, 2], fill=(236, 240, 244, 170))
+    for x in (3, 26):
+        d.rectangle([x, 45, x + 2, 47], fill=(48, 50, 58), outline=OUT)
+    save(im, "room_stove")
+
+
+def table():
+    im = canvas(); shadow(im, [0, 40, 31, 47]); d = ImageDraw.Draw(im)
+    for x in (3, 25):
+        block(d, (x, 32, x + 3, 46), WOOD_D, WOOD, WOOD_DD)
+    block(d, (0, 24, 31, 34), WOOD_L, WOOD_LL, WOOD)                            # top
+    d.line([2, 29, 29, 29], fill=WOOD)
+    block(d, (11, 24, 21, 38), CREAM, CREAM_L, CREAM_D)                         # runner
+    d.line([13, 34, 19, 34], fill=RED); d.line([13, 36, 19, 36], fill=RED)
+    d.ellipse([2, 22, 13, 29], fill=CREAM_L, outline=OUT)                       # loaf on a plate
+    d.ellipse([4, 20, 11, 26], fill=(204, 138, 62), outline=OUT); d.line([6, 22, 9, 22], fill=(240, 190, 110))
+    d.rectangle([22, 19, 27, 27], fill=(80, 120, 170), outline=OUT); d.line([23, 20, 23, 26], fill=(140, 180, 220))   # jug
+    d.arc([25, 20, 30, 25], 270, 90, fill=OUT)
+    d.ellipse([15, 24, 19, 28], fill=(214, 70, 50), outline=OUT); d.point([16, 25], fill=(255, 170, 140))
+    save(im, "room_table")
+
+
+def anvil():
+    im = canvas(); shadow(im, [0, 40, 31, 47]); d = ImageDraw.Draw(im)
+    block(d, (7, 33, 24, 45), WOOD_D, WOOD, WOOD_DD)                            # stump
+    d.ellipse([7, 30, 24, 36], fill=WOOD_L, outline=OUT); d.ellipse([11, 32, 20, 34], outline=WOOD_D)
+    block(d, (10, 29, 22, 33), STEEL_D, STEEL, (56, 62, 72))                    # foot
+    block(d, (13, 24, 19, 29), STEEL_D, STEEL, (56, 62, 72))                    # waist
+    d.polygon([(10, 18), (1, 19), (4, 22), (10, 25)], fill=STEEL_D, outline=OUT)   # horn
+    block(d, (9, 17, 29, 25), STEEL_D, STEEL, (56, 62, 72))                     # head
+    d.rectangle([10, 18, 28, 19], fill=STEEL_L)
+    d.line([18, 15, 27, 6], fill=OUT, width=4); d.line([18, 15, 27, 6], fill=WOOD_L, width=2)   # hammer
+    d.polygon([(23, 3), (27, 2), (31, 8), (28, 11)], fill=STEEL, outline=OUT)
+    d.rectangle([11, 15, 18, 16], fill=(250, 140, 50), outline=OUT); d.line([12, 15, 16, 15], fill=(255, 226, 130))   # hot bar
+    for x, y in ((8, 12), (13, 10), (6, 15)):
+        d.point([x, y], fill=(255, 196, 80))
+    save(im, "room_anvil")
+
+
+def tub():
+    im = canvas(); shadow(im, [2, 40, 29, 47]); d = ImageDraw.Draw(im)
+    block(d, (4, 27, 27, 45), WOOD, WOOD_L, WOOD_D)                             # barrel
+    for x in (9, 15, 21):
+        d.line([x, 28, x, 44], fill=WOOD_DD)
+    for y in (30, 41):
+        block(d, (3, y, 28, y + 2), STEEL_D, STEEL, (56, 62, 72))
+    d.ellipse([4, 21, 27, 31], fill=WOOD_L, outline=OUT)
+    d.ellipse([7, 23, 24, 29], fill=(64, 108, 150), outline=OUT); d.line([10, 25, 15, 24], fill=(170, 212, 236))
+    d.line([21, 26, 28, 10], fill=OUT, width=4); d.line([21, 26, 28, 10], fill=STEEL, width=2)   # tongs
+    d.line([18, 26, 24, 11], fill=OUT, width=3); d.line([18, 26, 24, 11], fill=STEEL_D, width=1)
+    d.line([12, 20, 11, 15], fill=(236, 240, 244, 190)); d.line([15, 19, 16, 13], fill=(236, 240, 244, 150))
+    save(im, "room_tub")
+
+
 def signs():
-    """3 hanging door signs, 20x14 each, in data/rooms.json order: shop, garage, bedroom."""
-    sheet = canvas(60, 14)
-    for i in range(3):
+    """5 hanging door signs, 20x14 each, in data/rooms.json order: shop, garage, bedroom, kitchen, smithy."""
+    sheet = canvas(100, 14)
+    for i in range(5):
         im = canvas(20, 14); d = ImageDraw.Draw(im)
         d.line([4, 0, 4, 3], fill=OUT); d.line([15, 0, 15, 3], fill=OUT)
         block(d, (0, 2, 19, 13), CREAM, CREAM_L, CREAM_D)
@@ -154,6 +223,12 @@ def signs():
         elif i == 1:    # spanner
             d.line([6, 10, 12, 6], fill=OUT, width=4); d.line([6, 10, 12, 6], fill=STEEL, width=2)
             d.ellipse([10, 3, 16, 9], fill=STEEL, outline=OUT); d.line([14, 3, 14, 5], fill=CREAM, width=2)
+        elif i == 3:    # cooking pot with steam
+            d.rectangle([6, 7, 13, 11], fill=STEEL, outline=OUT); d.line([4, 7, 15, 7], fill=OUT); d.line([7, 9, 7, 10], fill=STEEL_L)
+            d.line([8, 3, 8, 5], fill=RED); d.line([11, 4, 11, 5], fill=RED)
+        elif i == 4:    # anvil
+            d.rectangle([7, 5, 15, 7], fill=STEEL_D, outline=OUT); d.polygon([(7, 5), (3, 5), (7, 8)], fill=STEEL_D, outline=OUT)
+            d.rectangle([9, 8, 12, 9], fill=STEEL_D); d.rectangle([7, 10, 14, 11], fill=STEEL_D, outline=OUT); d.line([8, 6, 14, 6], fill=STEEL_L)
         else:           # crescent moon
             d.ellipse([6, 4, 13, 11], fill=(70, 96, 170), outline=OUT); d.ellipse([9, 3, 15, 9], fill=CREAM)
             d.point([14, 10], fill=(70, 96, 170))
@@ -162,4 +237,4 @@ def signs():
 
 
 if __name__ == "__main__":
-    bed(); counter(); shelf(); workbench(); toolrack(); signs()
+    bed(); counter(); shelf(); workbench(); toolrack(); stove(); table(); anvil(); tub(); signs()

@@ -1140,17 +1140,33 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "bow":
 		bow.press()
 	elif e.is_action_pressed("use_tool") and hotbar.current() == "club":
-		if GameState.energy.can_use("club") and combat.cd <= 0.0:
+		if GameState.energy.can_use("club") and combat.cd <= 0.0 and not swing_hit.busy():
 			GameState.energy.spend("club")
 			player.held_tool = "club"
 			player.swing()
 			sfx_director.play("swing")
-			combat.attack("club")
+			swing_hit.queue(PoseMath.strike_delay("club"), _club_strike)
 	elif e.is_action_pressed("use_tool") and not swing_hit.busy():
 		var held := hotbar.current()
 		player.held_tool = held
 		player.swing()
 		swing_hit.queue(PoseMath.strike_delay(held), _apply_tool.bind(held, _target_cell()))
+
+## The club lands on the strike frame: step into the blow, then hit. The cooldown counts from the press.
+func _club_strike() -> void:
+	if car.driving or cave.active:
+		return
+	player.lunge(CombatModel.chain_len(combat.combo, combat.since_hit))
+	combat.attack("club")
+	combat.cd = maxf(combat.cd - PoseMath.strike_delay("club"), 0.0)
+
+## Bare fists on small game, a few frames after the press.
+func _fist_strike() -> void:
+	if car.driving or _indoors() or combat.cd > 0.0:
+		return
+	if animals.hunt(player.position + Vector2(0, -8), CombatModel.facing_vec(player.facing), CombatModel.weapon("fist")) > 0:
+		combat.cd = CombatModel.cooldown("fist") - PoseMath.FIST_DELAY
+		GameState.energy.spend("club")
 
 ## The tool's work on a tile. Posed tools call this on the strike frame of the swing (SwingHit), with the tool
 ## and tile picked at the button press, so changing the hotbar mid-swing can not change the blow.
@@ -1228,10 +1244,7 @@ func _apply_tool(tool: String, cell: Vector2i) -> void:
 		return  # chopping a fallen trunk into logs
 	var msg := ToolUse.apply(tool, cell, GameState.farm, GameState.bag, GameState.clock.season(), world.gen, GameState.nodes, GameState.energy, dl, axe_table)
 	if msg == "" and tool == "hand" and combat.cd <= 0.0 and GameState.energy.can_use("club"):   # bare fists on small game
-		if animals.hunt(player.position + Vector2(0, -8), CombatModel.facing_vec(player.facing), CombatModel.weapon("fist")) > 0:
-			combat.cd = CombatModel.cooldown("fist")
-			GameState.energy.spend("club")
-			return
+		swing_hit.queue(PoseMath.FIST_DELAY, _fist_strike)   # nothing else to do with an empty hand: throw a punch
 	if msg == "" and tool == "scythe" and world.cut_tuft(cell):   # wild grass -> hay (feeds cows, sheep, horses)
 		dl.append({"id": "hay", "n": 1})
 		msg = "Cut grass"
@@ -1583,13 +1596,12 @@ func _indoors() -> bool:
 func _cave_tool() -> void:
 	var tool := hotbar.current()
 	if tool == "club":
-		if GameState.energy.can_use("club") and combat.cd <= 0.0:
+		if GameState.energy.can_use("club") and combat.cd <= 0.0 and not swing_hit.busy():
 			GameState.energy.spend("club")
 			player.held_tool = "club"
 			player.swing()
 			combat.cd = CombatModel.cooldown("club")
-			var w := CombatModel.with_mult(CombatModel.weapon("club"), CombatModel.club_mult(GameState.bag, DataDB.load_json("clubs")))
-			cave.club_swing(float(w["dmg"]), float(w["range"]) + 10.0, float(w["force"]))
+			swing_hit.queue(PoseMath.strike_delay("club"), _mine_club_strike)
 		return
 	if tool != "pickaxe":
 		_say("Use the pickaxe on ore, the club on bats")
@@ -1602,6 +1614,13 @@ func _cave_tool() -> void:
 	player.held_tool = tool
 	player.swing()
 	swing_hit.queue(PoseMath.strike_delay(tool), _mine_strike)
+
+func _mine_club_strike() -> void:
+	if not cave.active or cave.busy:
+		return
+	player.lunge(0)
+	var w := CombatModel.with_mult(CombatModel.weapon("club"), CombatModel.club_mult(GameState.bag, DataDB.load_json("clubs")))
+	cave.club_swing(float(w["dmg"]), float(w["range"]) + 10.0, float(w["force"]))
 
 func _mine_strike() -> void:
 	if not cave.active or cave.busy:

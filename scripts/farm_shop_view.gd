@@ -106,8 +106,7 @@ func _process(_d: float) -> void:
 
 func _tonight() -> Dictionary:
 	## What the customers would pay tonight, worked out on copies so nothing changes.
-	var trial := FarmShopModel.new()
-	trial.stock = GameState.farm_shop.stock.duplicate()
+	var trial: FarmShopModel = GameState.farm_shop.copy()
 	var market := MarketModel.new()
 	market.sold = GameState.market.sold.duplicate()
 	return trial.sell_night(price_menu(ShopMenu.new(items), market, GameState.clock.day), rules, shelves)
@@ -136,6 +135,6 @@ func _draw_all() -> void:
 			WoodUI.text(canvas, Vector2(FarmShopModel.COL_X[c], FarmShopModel.LIST_Y - 8), "%d-%d of %d" % [first + 1, first + FarmShopModel.ROWS, list.size()], 9, WoodUI.INK_SOFT, FarmShopModel.COL_W, HORIZONTAL_ALIGNMENT_RIGHT)
 	var t := _tonight()
 	var y := FarmShopModel.LIST_Y + FarmShopModel.ROWS * FarmShopModel.ROW_H
-	WoodUI.text(canvas, Vector2(70, y + 11), "Tonight: up to %d sales (more shelves, more customers). Expected: %d for $%d" % [FarmShopModel.daily_sales(rules, shelves), t.units, t.money], 10, WoodUI.GOOD, 500)
-	WoodUI.text(canvas, Vector2(70, y + 24), msg if msg != "" else "Paid when the day ends, %d%% over the stall price." % roundi((float(rules.premium) - 1.0) * 100.0), 10, WoodUI.INK, 500)
+	WoodUI.text(canvas, Vector2(70, y + 11), "Tonight: up to %d sales (%d bought by day). Expected: %d for $%d" % [FarmShopModel.quota_left(rules, shelves, shop.day_sold), shop.day_sold, t.units, t.money], 10, WoodUI.GOOD, 500)
+	WoodUI.text(canvas, Vector2(70, y + 24), msg if msg != "" else "%d%% over the stall price. Shoppers call by day, the rest at night. More shelves, more custom." % roundi((float(rules.premium) - 1.0) * 100.0), 10, WoodUI.INK, 500)
 	WoodUI.text(canvas, Vector2(70, y + 36), "Click / F / Enter: move one (Shift: stack)   Arrows: choose   E / Esc: close", 9, WoodUI.INK_SOFT, 500)

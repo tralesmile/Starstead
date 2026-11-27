@@ -19,6 +19,7 @@ var inside := false
 var _sprites: Dictionary = {}  # Vector2i -> Node2D
 const DOOR_SHEET: Texture2D = preload("res://assets/sprites/build_door_anim.png")
 var _doors: Dictionary = {}  # Vector2i -> {"s": Sprite2D, "open": 0..1, "want": bool}
+var visitors: Array = []   # positions of others who open doors (shoppers)
 signal door_moved(opening: bool)
 signal message(text: String)
 
@@ -124,7 +125,11 @@ func _refresh_fence_neighbours(cell: Vector2i) -> void:
 func _update_doors(d: float) -> void:
 	for c in _doors:
 		var st: Dictionary = _doors[c]
-		var want := DoorMath.wants_open(player.position.distance_to(Vector2(c) * 32.0 + Vector2(16, 16)), st.want)
+		var at := Vector2(c) * 32.0 + Vector2(16, 16)
+		var dist := player.position.distance_to(at)
+		for v in visitors:
+			dist = minf(dist, (v as Vector2).distance_to(at))
+		var want := DoorMath.wants_open(dist, st.want)
 		if want != st.want:
 			door_moved.emit(want)
 		st.want = want

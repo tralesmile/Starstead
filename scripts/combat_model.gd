@@ -84,6 +84,17 @@ static func combo_weapon(w: Dictionary, combo: int) -> Dictionary:
 	out["force"] = float(w["force"]) * (1.0 + (0.5 if c >= COMBO_MAX - 1 else 0.0))
 	return out
 
+# --- lunge: the blow carries the body a few pixels forward on the strike frame ---
+const LUNGE_PX := 5.0          # first hit of a chain
+const LUNGE_STEP_PX := 2.5     # each chained hit steps in further
+
+static func lunge_px(chain: int) -> float:
+	return LUNGE_PX + LUNGE_STEP_PX * clampi(chain, 0, COMBO_MAX - 1)
+
+static func lunge_velocity(face: Vector2, chain: int, decay: float) -> Vector2:
+	## The push that slides lunge_px(chain) before `decay` (px/s per second) stops it: v = sqrt(2 * decay * d).
+	return face.normalized() * sqrt(2.0 * decay * lunge_px(chain))
+
 static func club_mult(inv: Inventory, clubs: Dictionary) -> float:
 	## Best banded club in the bag scales the base club's damage (1.0 with the plain club).
 	var best := 1.0

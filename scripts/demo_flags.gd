@@ -2,7 +2,7 @@ class_name DemoFlags
 extends RefCounted
 ## Screenshot/QA helpers: command-line flags after `--` (see tools/check.sh and docs/RUNBOOK.md). Kept out of main.gd.
 ## `m` is the Main node. Flags: --car-demo --race-demo --hut-demo --blueprint-demo --build-demo --enter-demo=KIND --sports-demo=MODE --hoopmatch-demo[=lobby|result|world] --fish-demo --chop-demo
-## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --rooms-demo[=shop|garage|missing|night] --cook-demo --bag-demo --levelup-demo
+## --farm-demo --fx-demo --journal-demo --pot-demo --chest-demo --garage-demo --rooms-demo[=shop|garage|missing|night|shoppers|crafts|kitchen|smithy] --cook-demo --bag-demo --levelup-demo
 ## --sapling-demo --perk-demo --craft-demo --crime-demo (use with --at= in Port Halden) --drops-demo --mouse-demo --swing-demo --pose-demo=axe|pickaxe|club|hoe|can|bow [--pose-phase=0..1 --pose-face=down|left|up|right] (plus --hour=H --season=N --zoom=N --at=x,y --rain --fog --storm in main.gd).
 
 var m
@@ -16,6 +16,8 @@ func on_ready() -> void:
 			_rooms_demo.call_deferred(a.get_slice("=", 1) if "=" in a else "")
 		if a.ends_with("-demo") or a.begins_with("--sports-demo") or a.begins_with("--enter-demo") or a.begins_with("--arrow-demo") or a == "--allgear":
 			GameState.tools_owned = ToolKit.all_tools()
+	if "--input-check" in OS.get_cmdline_user_args():   # QA: real key and mouse events through the running game
+		InputCheck.start(m)
 	if "--car-demo" in OS.get_cmdline_user_args():  # screenshot helper: sit in the m.car and floor it
 		m.player.position = m.car.position
 		m.car.enter()
@@ -111,9 +113,13 @@ func on_ready() -> void:
 
 ## --rooms-demo: a Farm Shop, Bedroom and Garage built through the real placement rules on clear ground.
 ## =shop opens the counter, =garage the discounted garage menu, =missing shows an unfinished room, =walkin shows the room-name toast, =night sleeps in the built bed.
+## =shoppers sends a villager into the stocked shop (inside with the sale bubble by frame 40 at 10 fps);
+## =crafts shows a built Kitchen and Smithy, =kitchen / =smithy use the stove / anvil.
 func _rooms_demo(mode: String) -> void:
 	var bm: BuildModel = GameState.build
 	var o := _clear_patch(Vector2i(floori(m.player.position.x / 32.0), floori(m.player.position.y / 32.0)))
+	if mode in ["shoppers", "crafts", "kitchen", "smithy"]:
+		o = _dry_lot(o)   # shoppers and the screenshots need real land all round
 	for y in range(-4, 5):   # a roomy lot: clear trees and rocks for the picture
 		for x in range(-10, 11):
 			var c := o + Vector2i(x, y)
@@ -123,6 +129,8 @@ func _rooms_demo(mode: String) -> void:
 	GameState.bag.add("wood", 400)
 	GameState.bag.add("stone", 60)
 	var lots := [[-8, ["shop_counter", "shelf", "shelf"]], [-2, ["bed"]], [4, ["workbench", "tool_rack"]]]
+	if mode in ["crafts", "kitchen", "smithy"]:
+		lots = [[-6, ["stove", "table"]], [1, ["anvil", "quench_tub"]]]
 	for lot in lots:
 		var a: Vector2i = o + Vector2i(int(lot[0]), -3)
 		for y in 4:
@@ -144,13 +152,20 @@ func _rooms_demo(mode: String) -> void:
 		GameState.bag.add(id, 6)
 	m.mouse_aim = false
 	m.player.facing = PlayerMath.Facing.UP
-	var stand := {"shop": Vector2i(-7, -1), "": Vector2i(-2, 1), "night": Vector2i(-1, -1), "garage": Vector2i(5, -1), "missing": Vector2i(5, -1), "walkin": Vector2i(-1, -1)}
+	var stand := {"shop": Vector2i(-7, -1), "": Vector2i(-2, 1), "night": Vector2i(-1, -1), "garage": Vector2i(5, -1), "missing": Vector2i(5, -1), "walkin": Vector2i(-1, -1), "shoppers": Vector2i(-9, -1), "crafts": Vector2i(-1, -1), "kitchen": Vector2i(-5, -1), "smithy": Vector2i(2, -1)}
 	m.player.position = Vector2(o + stand.get(mode, Vector2i(-2, 1))) * 32.0 + Vector2(16, 20)
 	m.car.position = Vector2(o + Vector2i(6, 2)) * 32.0
 	m.car.health = 55.0
 	await m.get_tree().create_timer(0.3).timeout
 	var target: Vector2i = o + stand.get(mode, Vector2i.ZERO) + Vector2i(0, -1)
-	if mode == "shop" or mode == "night":
+	if mode == "shoppers":
+		await _shopper_demo()
+	elif mode == "kitchen" or mode == "smithy":
+		var view: CanvasLayer = m.cook_view if mode == "kitchen" else m.forge_view
+		print("ROOMS ", mode, " used=", m.rooms.interact(target), " open=", view.visible)
+		if not view.visible:
+			printerr("SCRIPT ERROR: rooms demo: the %s menu did not open" % mode)
+	elif mode == "shop" or mode == "night":
 		if mode == "night":
 			GameState.farm_shop.add(DataDB.load_json("items"), GameState.bag, "turnip", 6, 40)
 			GameState.farm_shop.add(DataDB.load_json("items"), GameState.bag, "cheese", 6, 40)
@@ -163,6 +178,23 @@ func _rooms_demo(mode: String) -> void:
 			m.rooms.shop_ui.transfer(0, 1, true)
 	elif mode == "garage" or mode == "missing":
 		print("ROOMS bench used=", m.rooms.interact(target), " garage=", m.garage_view.visible, " mult=", m.garage_view.repair_mult)
+
+func _shopper_demo() -> void:
+	var items: Dictionary = DataDB.load_json("items")
+	for id in ["turnip", "cheese", "pumpkin"]:
+		GameState.bag.add(id, 6)
+		GameState.farm_shop.add(items, GameState.bag, id, 6, 40)
+	var view: ShopperView = m.rooms.shoppers
+	view.rng.seed = 7
+	view.sold.connect(func(id, money): print("SHOPPER bought ", id, " for $", money, ", money=", GameState.money, " today=", GameState.farm_shop.day_sold))
+	await m.get_tree().create_timer(1.2).timeout
+	if not view.start_visit(2):
+		printerr("SCRIPT ERROR: rooms demo: no shopper set out (shop closed or no way to the door)")
+		return
+	while view.active() and view.state == "in" and view.at < view.route.size() - 1:   # skip to the last step indoors
+		view._step(0.1)
+	if not view.active():
+		printerr("SCRIPT ERROR: rooms demo: the shopper never got inside")
 
 ## QA: --bankjob-demo[=caught|vault|done|fine].Takes the player's path (night, picked lock, E at the lobby vault door),
 ## checks the weekly cooldown survives a save, then poses the room (=done walks out with the bags and prints the take).
@@ -251,6 +283,23 @@ func _hoopmatch_demo() -> void:
 	g.auto = false   # the shooter is now yours: the meter keeps filling on screen
 	g.selected = int(g.players[maxi(g.owner, 0)]["role"])
 	hv.banner_t = 0.0
+
+## Nearest lot of open dry land (no buildings) big enough for two rooms and their front yards.
+func _dry_lot(from: Vector2i) -> Vector2i:
+	for r in range(0, 40):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				if maxi(absi(dx), absi(dy)) != r:
+					continue
+				var c := from + Vector2i(dx, dy)
+				var ok := true
+				for y in range(-4, 4):
+					for x in range(-9, 7):
+						var p := c + Vector2i(x, y)
+						ok = ok and m.world.gen.sdf_at(p.x, p.y) >= 1.2 and m.rooms.shoppers._ground(p)
+				if ok:
+					return c
+	return from
 
 ## Nearest 7x4 patch of free grass around `from` (for demos that need room).
 func _clear_patch(from: Vector2i) -> Vector2i:

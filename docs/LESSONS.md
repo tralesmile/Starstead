@@ -46,3 +46,4 @@
 - (run 47) Never leave a bare `cat >> file` without a heredoc in a command: it waits on stdin until the 2 minute timeout.
 - Run 48: menu code that handles clicks can be dead if an earlier step rewrites the event: test clicks by pushing a real mouse event under xvfb (headless does not move the mouse; use warp_mouse + push_input). Demo flags that call handle() directly hide this.
 - Run 48: in tools/check.sh two specs without a space between them silently become one broken screen that still prints "ok": count the ok names after adding a screen.
+- Run 49: to check a faint overlay (shadows), set its alpha to 1.0 for one screenshot to see its shape and position, then restore. For real-input QA use scripts/input_check.gd and add a step whenever a new menu takes keys or clicks.

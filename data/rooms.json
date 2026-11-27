@@ -2,7 +2,8 @@
   "shop": {
     "name": "Farm Shop", "station": "shop_counter", "needs": {"shop_counter": 1, "shelf": 1}, "min_cells": 4,
     "use": "E at the counter: stock goods, they sell overnight",
-    "premium": 1.15, "stock_cap": 40, "base_sales": 8, "sales_per_shelf": 4, "max_shelves": 3
+    "premium": 1.15, "stock_cap": 40, "base_sales": 8, "sales_per_shelf": 4, "max_shelves": 3,
+    "open": 9, "close": 18, "first_visit_min": [20, 60], "visit_gap_min": [60, 150]
   },
   "garage": {
     "name": "Garage", "station": "workbench", "needs": {"workbench": 1, "tool_rack": 1}, "min_cells": 4,
@@ -12,5 +13,13 @@
   "bedroom": {
     "name": "Bedroom", "station": "bed", "needs": {"bed": 1}, "min_cells": 2,
     "use": "E at the bed: sleep until morning"
+  },
+  "kitchen": {
+    "name": "Kitchen", "station": "stove", "needs": {"stove": 1, "table": 1}, "min_cells": 4,
+    "use": "E at the stove: cook dishes"
+  },
+  "smithy": {
+    "name": "Smithy", "station": "anvil", "needs": {"anvil": 1, "quench_tub": 1}, "min_cells": 4,
+    "use": "E at the anvil: forge gear from bars"
   }
 }

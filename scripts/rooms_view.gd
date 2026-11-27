@@ -1,15 +1,16 @@
 class_name RoomsView
 extends Node2D
 ## Player-built rooms at work: names the room you step into, hangs a sign over the door of each finished room,
-## runs the E key on beds, shop counters and workbenches, and pays the Farm Shop's takings when the day ends.
+## runs the E key on beds, shop counters, workbenches, stoves and anvils, and pays the Farm Shop's takings when the day ends.
 ## The rules are in RoomModel and FarmShopModel; the stock window is FarmShopView.
 
-const SIGNS := ["shop", "garage", "bedroom"]   # frame order in room_signs.png
-const PROMPTS := {"bedroom": "E: Sleep until morning", "shop": "E: Stock your Farm Shop", "garage": "E: Use your garage"}
+const SIGNS := ["shop", "garage", "bedroom", "kitchen", "smithy"]   # frame order in room_signs.png
+const PROMPTS := {"bedroom": "E: Sleep until morning", "shop": "E: Stock your Farm Shop", "garage": "E: Use your garage", "kitchen": "E: Cook at your stove", "smithy": "E: Use your anvil"}
 
 var m   # the Main node
 var rules: Dictionary = DataDB.load_json("rooms")
 var shop_ui: FarmShopView
+var shoppers: ShopperView   # villagers who call at your Farm Shop by day
 var banner: Control
 var title := ""
 var detail := ""
@@ -31,12 +32,15 @@ func setup(main: Node) -> void:
 	banner.draw.connect(_draw_banner)
 	layer.add_child(banner)
 	add_child(layer)
+	shoppers = ShopperView.new()
+	add_child(shoppers)
+	shoppers.setup(main)
 
 func _cell_of(p: Vector2) -> Vector2i:
 	return Vector2i(floori(p.x / 32.0), floori(p.y / 32.0))
 
 func station_near(target: Vector2i) -> Vector2i:
-	## The bed, counter or workbench you face, else one right beside you. Vector2i.MAX when none.
+	## The bed, counter or other station you face, else one right beside you. Vector2i.MAX when none.
 	var pc := _cell_of(m.player.position)
 	var spots := [target] if (target - pc).length_squared() <= 2 else []
 	for d in RoomModel.DIRS:
@@ -78,6 +82,12 @@ func interact(target: Vector2i) -> bool:
 		"shop":
 			_halt()
 			shop_ui.open(int(s.flood.count.get("shelf", 0)))
+		"kitchen":
+			_halt()
+			m.cook_view.open()
+		"smithy":
+			_halt()
+			m.forge_view.open()
 		"garage":
 			var reach := float(rules.garage.car_range_tiles) * 32.0
 			if m.car.position.distance_to(Vector2(c) * 32.0 + Vector2(16, 16)) > reach:
@@ -95,21 +105,25 @@ func _halt() -> void:
 func night() -> void:
 	## Day end (before MarketModel.new_day, so tonight's sales count toward the same glut).
 	var shop: FarmShopModel = GameState.farm_shop
+	shoppers.clear()
 	if shop.total() == 0:
+		shop.new_day()
 		return
-	var shelves := -1
-	for r in RoomModel.find_rooms(GameState.build.placed, rules, GameState.build.defs):
-		if RoomModel.missing(r.flood, rules.shop, GameState.build.defs).is_empty():
-			shelves = maxi(shelves, int(r.flood.count.get("shelf", 0)))   # one shop's worth of customers, however many rooms
-	if shelves < 0:
+	var room := ShopVisit.shop_room(GameState.build.placed, rules, GameState.build.defs)
+	if room.is_empty():
+		shop.new_day()
 		show_banner("Farm Shop closed", "No finished shop room: your %d goods stayed unsold." % shop.total(), false, 7.0)
 		return
 	var menu := FarmShopView.price_menu(ShopMenu.new(DataDB.load_json("items")), GameState.market, maxi(GameState.clock.day - 1, 1))
 	menu.planets = DataDB.load_json("planets")
-	var r := shop.sell_night(menu, rules.shop, shelves)
+	var by_day := shop.day_sold
+	var r := shop.sell_night(menu, rules.shop, int(room.shelves))
 	GameState.money += int(r.money)
 	GameState.bump("farm_shop_sales", int(r.units))
-	show_banner("Farm Shop takings: +$%d" % r.money, "%d sold overnight, %d still on the shelves." % [r.units, shop.total()], true, 7.0)
+	var detail_text := "%d sold overnight, %d still on the shelves." % [r.units, shop.total()]
+	if by_day > 0:
+		detail_text = "%d sold overnight (%d by day), %d still on the shelves." % [r.units, by_day, shop.total()]
+	show_banner("Farm Shop takings: +$%d" % r.money, detail_text, true, 7.0)
 
 func show_banner(t: String, d: String, ok: bool, secs: float) -> void:
 	title = t
@@ -148,7 +162,7 @@ func _process(delta: float) -> void:
 				elif room.type != "":
 					show_banner("Unfinished " + String(room.name), RoomModel.needs_text(room.name, room.missing), false, 4.0)
 				else:
-					show_banner("Empty room", "Add a bed, a shop counter or a workbench to give it a purpose.", false, 3.5)
+					show_banner("Empty room", "Add a bed, shop counter, workbench, stove or anvil to give it a purpose.", false, 3.5)
 		_key = here + "|" + id
 	banner_t = maxf(banner_t - delta, 0.0)
 	banner.visible = banner_t > 0.0 and not m._overlay_open()

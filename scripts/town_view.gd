@@ -185,7 +185,9 @@ func _make(world: World, gen: WorldGen, b: Dictionary) -> void:
 	s.texture = load("res://assets/sprites/%s.png" % b["sprite"])
 	s.offset = Vector2(0, -s.texture.get_height() / 2.0)
 	body.add_child(s)
-	body.add_child(World.make_shadow(s.texture.get_width() * 0.8))
+	var used := s.texture.get_image().get_used_rect()   # the painted part, without the sprite's clear margins
+	var half := s.texture.get_width() / 2.0
+	body.add_child(BuildingShadow.make(used.position.x - half + 3.0, used.end.x - half - 3.0, float(used.size.y)))
 	if String(b["sprite"]) == "house":
 		_porch(body, s.texture.get_height())
 	var cs := CollisionShape2D.new()

@@ -14,6 +14,7 @@ const CAN_POUR := 19
 const BOW_DRAWN := 20
 
 const SWING_TIME := 0.18   # tools without their own pose (scythe, hand, rod, seeds)
+const FIST_DELAY := 0.08   # a punch connects just before the middle of the generic swing
 
 ## Fist position per column as pixels from the player's feet, [down, up, right]; left mirrors right.
 ## Two-handed grips sit between the fists, the can hangs from the right (screen) fist.

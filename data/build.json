@@ -101,5 +101,48 @@
     "sprite": "room_toolrack",
     "furniture": true,
     "room": "garage"
+  },
+  "stove": {
+    "name": "Cooking Stove",
+    "cost": {
+      "stone": 20,
+      "wood": 6
+    },
+    "solid": true,
+    "sprite": "room_stove",
+    "furniture": true,
+    "room": "kitchen"
+  },
+  "table": {
+    "name": "Kitchen Table",
+    "cost": {
+      "wood": 14
+    },
+    "solid": true,
+    "sprite": "room_table",
+    "furniture": true,
+    "room": "kitchen"
+  },
+  "anvil": {
+    "name": "Anvil",
+    "cost": {
+      "stone": 30,
+      "wood": 8
+    },
+    "solid": true,
+    "sprite": "room_anvil",
+    "furniture": true,
+    "room": "smithy"
+  },
+  "quench_tub": {
+    "name": "Quench Tub",
+    "cost": {
+      "wood": 12,
+      "stone": 4
+    },
+    "solid": true,
+    "sprite": "room_tub",
+    "furniture": true,
+    "room": "smithy"
   }
 }

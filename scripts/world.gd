@@ -387,6 +387,8 @@ static func apply_sun(tree: SceneTree, minutes: float) -> void:
 	var dx := ShadowMath.offset_x(minutes)
 	var st := ShadowMath.stretch(minutes)
 	var a := ShadowMath.strength(minutes)
+	for n in tree.get_nodes_in_group("building_shadows"):
+		(n as BuildingShadow).set_sun(minutes)
 	for n in tree.get_nodes_in_group("sun_shadows"):
 		var sh := n as Sprite2D
 		if sh == null or not sh.has_meta("base_scale"):

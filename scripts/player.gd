@@ -215,6 +215,10 @@ func shake(amp: float = 1.0, secs: float = 0.15) -> void:
 func push(from: Vector2, force: float = 1.0) -> void:
 	knock = HitMath.knockback(from, position, force)
 
+## The forward step of a club blow; runs through `knock`, so walls still stop it.
+func lunge(chain: int) -> void:
+	knock += CombatModel.lunge_velocity(CombatModel.facing_vec(facing), chain, HitMath.KNOCK_DECAY)
+
 func swing() -> void:
 	## Show the tool pose briefly (called by main when a tool is used).
 	swing_total = PoseMath.swing_time(held_tool)

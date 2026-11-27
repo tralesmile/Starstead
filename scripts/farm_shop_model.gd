@@ -13,6 +13,8 @@ const LIST_Y := 96.0
 const COL_X := [70.0, 324.0]   # left: your bag, right: on the shelves
 
 var stock: Dictionary = {}   # item id -> units on the shelves
+var day_sold := 0   # of today's customer quota, already bought by day shoppers (saved with the stock)
+var turn := ""      # item the last customer took; the next one takes the next kind
 
 static func row_rect(col: int, i: int) -> Rect2:
 	return Rect2(float(COL_X[col]), LIST_Y + i * ROW_H, COL_W, ROW_H - 2.0)
@@ -56,32 +58,66 @@ static func daily_sales(type: Dictionary, shelves: int) -> int:
 static func unit_price(menu: ShopMenu, id: String, premium: float) -> int:
 	return int(floor(menu._sell_now(id) * premium))
 
+static func quota_left(type: Dictionary, shelves: int, sold: int) -> int:
+	return maxi(daily_sales(type, shelves) - sold, 0)
+
+func next_id() -> String:
+	## Customers take one of each kind in turn: the first kind after the last one taken, else round again.
+	var ids := stock.keys()
+	ids.sort()
+	for id in ids:
+		if String(id) > turn:
+			return id
+	return "" if ids.is_empty() else String(ids[0])
+
+func sell_one(menu: ShopMenu, premium: float) -> Dictionary:
+	## One customer buys one unit: {"id", "money"}, or {} from empty shelves. Does not touch the quota.
+	var id := next_id()
+	if id == "":
+		return {}
+	var money := unit_price(menu, id, premium)
+	if menu.market != null:
+		menu.market.record(id, 1)
+	stock[id] = int(stock[id]) - 1
+	if stock[id] <= 0:
+		stock.erase(id)
+	turn = id
+	return {"id": id, "money": money}
+
 func sell_night(menu: ShopMenu, type: Dictionary, shelves: int) -> Dictionary:
-	## Customers take one unit of each kind in turn until the night's quota or the shelves run out.
-	var left := daily_sales(type, shelves)
+	## The rest of the day's quota (less what day shoppers bought) shops now; then a new day starts.
+	var left := quota_left(type, shelves, day_sold)
 	var money := 0
 	var units := 0
 	while left > 0 and not stock.is_empty():
-		var ids := stock.keys()
-		ids.sort()
-		for id in ids:
-			if left <= 0:
-				break
-			money += unit_price(menu, id, float(type.premium))
-			if menu.market != null:
-				menu.market.record(id, 1)
-			stock[id] = int(stock[id]) - 1
-			if stock[id] <= 0:
-				stock.erase(id)
-			units += 1
-			left -= 1
+		money += int(sell_one(menu, float(type.premium)).money)
+		units += 1
+		left -= 1
+	new_day()
 	return {"money": money, "units": units}
 
+func new_day() -> void:
+	day_sold = 0
+	turn = ""
+
+func copy() -> FarmShopModel:
+	var out := FarmShopModel.new()
+	out.stock = stock.duplicate()
+	out.day_sold = day_sold
+	out.turn = turn
+	return out
+
 func to_dict() -> Dictionary:
-	return stock.duplicate()
+	var out := stock.duplicate()
+	if day_sold > 0:   # keys with "_" are not goods
+		out["_day_sold"] = day_sold
+		out["_turn"] = turn
+	return out
 
 func from_dict(d: Dictionary) -> void:
 	stock = {}
+	day_sold = maxi(int(d.get("_day_sold", 0)), 0)
+	turn = str(d.get("_turn", ""))
 	for k in d:
-		if int(d[k]) > 0:
+		if not str(k).begins_with("_") and int(d[k]) > 0:
 			stock[str(k)] = int(d[k])
