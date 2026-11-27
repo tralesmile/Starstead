@@ -254,7 +254,7 @@ Houses, buildings, graphics (5, 10)
 - [x] Run 49 graphics: town, city and circuit buildings get a contact shadow and a sun-cast wedge that swings west to east through the day (BuildingShadow, tested). [ ] next: the same for player-built walls and large props
 - [x] Run 49 physics/feel: club blows land on the strike frame and step the body 5-10 px into the hit (walls still stop it); punches connect after 0.08 s (tested). [ ] next: club hit sparks on the contact point, enemy wind-up telegraphs
 - [x] Run 49 QA: tools/check.sh now drives the running game with real keys and clicks (InputCheck, 16 steps; fails unless it prints its success line)
-- [ ] Run 50 is a PLAYTEST run (docs/PLAYTEST.md checklist)
+- [ ] Run 50 is a PLAYTEST run (docs/PLAYTEST.md checklist) (CLAIMED 2026-11-27)
 
 ## Run 48 queue
 - [x] Run 48 Phase 1.5 leftover: rebindable keys (13 actions, Controls page in pause and title, swap on clash, reset, saved; KeyBinds tested). [ ] next: mouse + gamepad on the page by hand, fixed build/gear keys rebindable, remaining hint sentences that name default keys
